@@ -1,0 +1,23 @@
+{
+  "extends": "@workspace/typescript-config/react-library.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@storybook/nextjs-vite": [
+        "./node_modules/@storybook/nextjs-vite/dist/index.d.ts"
+      ],
+      "@nswds/ui/globals.css": ["../../packages/ui/src/styles/globals.css"],
+      "@nswds/ui/postcss.config": ["../../packages/ui/postcss.config.mjs"],
+      "@nswds/ui/*": ["../../packages/ui/src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "../../packages/ui/src/**/*.stories.ts",
+    "../../packages/ui/src/**/*.stories.tsx"
+  ],
+  "exclude": ["node_modules", "storybook-static"]
+}

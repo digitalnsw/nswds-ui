@@ -1,0 +1,16 @@
+{
+  "name": "@workspace/prettier-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "files": [
+    "index.cjs"
+  ],
+  "peerDependencies": {
+    "prettier": "^3.8.1"
+  },
+  "dependencies": {
+    "prettier-plugin-organize-imports": "^4.3.0",
+    "prettier-plugin-tailwindcss": "^0.7.2"
+  }
+}

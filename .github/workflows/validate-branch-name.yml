@@ -1,0 +1,46 @@
+# .github/workflows/validate-branch-name.yml
+name: Validate Branch Name
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base branch policy
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 1
+          path: .base-policy
+
+      - name: Check branch name
+        shell: bash
+        run: |
+          # Source policy from the PR base commit so PR changes cannot alter validation.
+          # Fall back to inline defaults for the bootstrap case where the base commit
+          # predates this script being added to the repo.
+          _config="${GITHUB_WORKSPACE}/.base-policy/scripts/branch-name-config.sh"
+          if [[ -f "$_config" ]]; then
+            # shellcheck source=/dev/null
+            source "$_config"
+          else
+            BRANCH_TYPES_REGEX='feature|bugfix|hotfix|release|docs|build|test|refactor|style|chore'
+            STANDARD_BRANCH_REGEX="(${BRANCH_TYPES_REGEX})(/(issue|ticket)/[A-Za-z0-9_-]+)?/[a-z0-9-]+"
+            BRANCH_REGEX="^(${STANDARD_BRANCH_REGEX}|alert-autofix-.+|dependabot/.+)$"
+            SNYK_REGEX='^snyk-upgrade-[0-9a-f]{32}$'
+          fi
+          BRANCH_NAME="${{ github.head_ref }}"
+          echo "Branch name: $BRANCH_NAME"
+
+          if [[ ! "$BRANCH_NAME" =~ $BRANCH_REGEX && ! "$BRANCH_NAME" =~ $SNYK_REGEX ]]; then
+            echo "❌ Branch name '$BRANCH_NAME' does not follow naming convention."
+            exit 1
+          fi
+
+          echo "✅ Branch name '$BRANCH_NAME' follows naming convention."

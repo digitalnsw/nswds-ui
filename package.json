@@ -1,28 +1,35 @@
 {
-  "name": "nswds",
-  "version": "0.0.1",
+  "name": "design",
+  "version": "0.0.0",
   "private": true,
   "scripts": {
+    "branch:create": "scripts/create-branch.sh",
+    "branch:suggest": "scripts/suggest-branch-name.sh",
     "build": "turbo build",
+    "commit": "scripts/git-commit.sh",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "turbo format",
+    "pr:title": "scripts/pull-request.sh",
+    "release": "semantic-release",
+    "registry:build": "turbo registry:build",
+    "registry:validate": "turbo registry:validate",
     "typecheck": "turbo typecheck"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "*",
-    "@workspace/typescript-config": "*",
+    "@workspace/eslint-config": "workspace:*",
+    "@workspace/prettier-config": "workspace:*",
+    "@workspace/semantic-release-config": "workspace:*",
+    "@workspace/typescript-config": "workspace:*",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "semantic-release": "^25.0.3",
     "turbo": "^2.8.17",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite": "^8.0.14"
   },
-  "packageManager": "npm@11.6.3",
+  "packageManager": "pnpm@9.15.0",
   "engines": {
     "node": ">=20"
-  },
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  }
 }
