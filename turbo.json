@@ -5,13 +5,26 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "storybook-static/**",
+        "dist/**"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
     "format": {
       "dependsOn": ["^format"]
+    },
+    "registry:build": {
+      "dependsOn": ["@nswds/ui#build"],
+      "inputs": ["registry.json", "components.json", "scripts/**", "src/**"],
+      "outputs": ["../../apps/registry/public/r/**"]
+    },
+    "registry:validate": {
+      "inputs": ["registry.json"]
     },
     "typecheck": {
       "dependsOn": ["^typecheck"]

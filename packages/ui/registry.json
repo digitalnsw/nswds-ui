@@ -1,0 +1,58 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "@nswds/ui",
+  "homepage": "https://github.com/digitalnsw/nswds-ui",
+  "items": [
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "A button component with variants and sizes.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "src/components/button.tsx",
+          "type": "registry:ui",
+          "target": "components/button.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "icons",
+      "type": "registry:ui",
+      "title": "Icons",
+      "description": "NSWDS icon collection.",
+      "files": [
+        {
+          "path": "src/components/icons.tsx",
+          "type": "registry:ui",
+          "target": "components/icons.tsx"
+        }
+      ]
+    },
+    {
+      "name": "logo",
+      "type": "registry:ui",
+      "title": "Logo",
+      "description": "NSW Government logo component.",
+      "dependencies": ["clsx"],
+      "files": [
+        {
+          "path": "src/components/logo.tsx",
+          "type": "registry:ui",
+          "target": "components/logo.tsx"
+        }
+      ]
+    }
+  ]
+}

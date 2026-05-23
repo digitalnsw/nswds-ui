@@ -1,12 +1,12 @@
-import { Geist, Geist_Mono, Public_Sans } from "next/font/google"
+import { JetBrains_Mono, Public_Sans } from "next/font/google"
 
-import "@workspace/ui/globals.css"
+import "@nswds/ui/globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@workspace/ui/lib/utils";
+import { cn } from "@nswds/ui/lib/utils"
 
-const publicSans = Public_Sans({subsets:['latin'],variable:'--font-sans'})
+const publicSans = Public_Sans({ subsets: ["latin"], variable: "--font-sans" })
 
-const fontMono = Geist_Mono({
+const fontMono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
@@ -20,7 +20,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, "font-sans", publicSans.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        "font-sans",
+        publicSans.variable
+      )}
     >
       <body>
         <ThemeProvider>{children}</ThemeProvider>
