@@ -1,6 +1,6 @@
-import type { Preview } from "@storybook/nextjs-vite";
-import { withThemeByClassName } from "@storybook/addon-themes";
-import "@nswds/ui/globals.css";
+import type { Preview } from '@storybook/nextjs-vite'
+import { withThemeByClassName } from '@storybook/addon-themes'
+import '@nswds/ui/globals.css'
 
 // Discovery summary:
 // - Pure component library; no providers, no data fetching, no portals.
@@ -10,8 +10,8 @@ import "@nswds/ui/globals.css";
 const preview: Preview = {
   decorators: [
     withThemeByClassName({
-      themes: { light: "", dark: "dark" },
-      defaultTheme: "light",
+      themes: { light: '', dark: 'dark' },
+      defaultTheme: 'light',
     }),
   ],
   parameters: {
@@ -22,6 +22,6 @@ const preview: Preview = {
       },
     },
   },
-};
+}
 
-export default preview;
+export default preview
