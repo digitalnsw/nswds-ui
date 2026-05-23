@@ -1,0 +1,5 @@
+{
+  "framework": null,
+  "buildCommand": "pnpm --filter @nswds/ui build && pnpm --filter @nswds/ui registry:build && pnpm build",
+  "outputDirectory": "dist"
+}
