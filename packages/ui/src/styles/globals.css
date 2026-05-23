@@ -2,6 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* NSW primitive palette: --nsw-blue-800, --nsw-red-600, etc. */
+@import "@nswds/tokens/css/colors/global/oklch.css";
+/* NSW semantic utility tokens: --success-*, --danger-*, --info-*, --warning-* */
+@import "@nswds/tokens/css/colors/semantic/oklch.css";
+/* Masterbrand theme: --primary-* → --nsw-blue-*, --accent-* → --nsw-red-* */
+@import "@nswds/tokens/css/colors/themes/masterbrand/oklch.css";
+/* Tailwind bridge: makes fill-nsw-blue-800, text-nsw-red-600, etc. work */
+@import "@nswds/tokens/tailwind/colors/global/oklch.css";
+/* Tailwind bridge: makes fill-primary-800, text-accent-600, etc. work */
+@import "@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css";
+
 @custom-variant dark (&:is(.dark *));
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
