@@ -26,6 +26,7 @@ coverage
 out/
 build
 dist
+storybook-static/
 
 
 # Debug
@@ -34,3 +35,5 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+AGENTS.md
+CLAUDE.md

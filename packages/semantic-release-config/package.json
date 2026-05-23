@@ -1,0 +1,18 @@
+{
+  "name": "@workspace/semantic-release-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "files": [
+    "index.cjs"
+  ],
+  "dependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^12.0.8",
+    "@semantic-release/npm": "^13.1.5",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "conventional-changelog-conventionalcommits": "^9.3.1"
+  }
+}
