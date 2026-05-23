@@ -1,5 +1,5 @@
 {
   "framework": null,
-  "buildCommand": "pnpm build",
+  "buildCommand": "pnpm --filter @nswds/ui build && pnpm build",
   "outputDirectory": "storybook-static"
 }
