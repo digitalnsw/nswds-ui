@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.0.0...@nswds/ui-v1.1.0) (2026-05-23)
+
+### Features
+
+* **vercel.json:** Add configuration for registry, storybook, web apps and fix UI dependency with style updates ([#2](https://github.com/digitalnsw/nswds-ui/issues/2)) ([ddd7943](https://github.com/digitalnsw/nswds-ui/commit/ddd79431ac74c506a1550c47863ee35e2b7f5713))
+
 ## 1.0.0 (2026-05-23)
 
 ### Features
