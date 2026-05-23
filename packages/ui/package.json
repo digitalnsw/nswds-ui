@@ -7,7 +7,8 @@
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "postcss.config.mjs"
   ],
   "sideEffects": [
     "**/*.css"
@@ -59,6 +60,8 @@
       "import": "./dist/index.js"
     },
     "./styles.css": "./dist/styles.css",
+    "./globals.css": "./dist/styles.css",
+    "./postcss.config": "./postcss.config.mjs",
     "./components/*": {
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"

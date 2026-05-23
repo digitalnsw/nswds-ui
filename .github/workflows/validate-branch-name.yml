@@ -23,8 +23,18 @@ jobs:
         shell: bash
         run: |
           # Source policy from the PR base commit so PR changes cannot alter validation.
-          # shellcheck source=/dev/null
-          source "${GITHUB_WORKSPACE}/.base-policy/scripts/branch-name-config.sh"
+          # Fall back to inline defaults for the bootstrap case where the base commit
+          # predates this script being added to the repo.
+          _config="${GITHUB_WORKSPACE}/.base-policy/scripts/branch-name-config.sh"
+          if [[ -f "$_config" ]]; then
+            # shellcheck source=/dev/null
+            source "$_config"
+          else
+            BRANCH_TYPES_REGEX='feature|bugfix|hotfix|release|docs|build|test|refactor|style|chore'
+            STANDARD_BRANCH_REGEX="(${BRANCH_TYPES_REGEX})(/(issue|ticket)/[A-Za-z0-9_-]+)?/[a-z0-9-]+"
+            BRANCH_REGEX="^(${STANDARD_BRANCH_REGEX}|alert-autofix-.+|dependabot/.+)$"
+            SNYK_REGEX='^snyk-upgrade-[0-9a-f]{32}$'
+          fi
           BRANCH_NAME="${{ github.head_ref }}"
           echo "Branch name: $BRANCH_NAME"
 
