@@ -3,8 +3,8 @@
  *
  * Sub-groups live in separate story files so Storybook renders them as
  * collapsible sidebar folders:
- *   Components/Button/Features   → button.features.stories.tsx
- *   Components/Button/Tests      → button.tests.stories.tsx
+ *   Components/Button/Features        → button.features.stories.tsx
+ *   Components/Button/Accessibility   → button.accessibility.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'

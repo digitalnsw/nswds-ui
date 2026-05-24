@@ -25,7 +25,11 @@ function collectEntries(dir: string): Record<string, string> {
 
         const extension = extname(name)
 
-        if (!extensions.has(extension) || name.endsWith('.stories.tsx')) {
+        if (
+          !extensions.has(extension) ||
+          name.endsWith('.stories.tsx') ||
+          name.endsWith('.d.ts')
+        ) {
           return []
         }
 
