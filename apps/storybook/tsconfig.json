@@ -11,6 +11,9 @@
       "storybook/test": [
         "./node_modules/storybook/dist/test/index.d.ts"
       ],
+      "storybook/preview-api": [
+        "./node_modules/storybook/dist/preview-api/index.d.ts"
+      ],
       "@nswds/ui/globals.css": ["../../packages/ui/src/styles/globals.css"],
       "@nswds/ui/postcss.config": ["../../packages/ui/postcss.config.mjs"],
       "@nswds/ui/*": ["../../packages/ui/src/*"]
