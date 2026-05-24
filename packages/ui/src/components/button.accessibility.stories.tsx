@@ -14,7 +14,14 @@ import { Icons } from './icons.js'
 
 type VariantKey = 'solid' | 'soft' | 'surface' | 'outline' | 'ghost' | 'link'
 type SizeKey = 'sm' | 'default' | 'lg' | 'icon'
-type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
+type ColorKey =
+  | 'white'
+  | 'grey'
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'accent'
+  | 'danger'
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
@@ -48,7 +55,8 @@ const docsTemplate = ({
   why: string
   how: string
   caveat: string
-}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+}) =>
+  `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
 function needsGreySurface(color: ColorKey): boolean {
   return lowContrastSet.has(color)
@@ -78,13 +86,21 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>
+    <div
+      className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
+    >
       {children}
     </div>
   )
 }
 
-function TapTargetPanel({ color, compact = false }: { color: ColorKey; compact?: boolean }) {
+function TapTargetPanel({
+  color,
+  compact = false,
+}: {
+  color: ColorKey
+  compact?: boolean
+}) {
   const items: ReadonlyArray<{
     id: string
     label: string
@@ -93,9 +109,25 @@ function TapTargetPanel({ color, compact = false }: { color: ColorKey; compact?:
     icon?: boolean
   }> = [
     { id: 'small-solid', label: 'Small', variant: 'solid', size: 'sm' },
-    { id: 'small-outline', label: 'Small outline', variant: 'outline', size: 'sm' },
-    { id: 'default-solid', label: 'Default', variant: 'solid', size: 'default' },
-    { id: 'icon-ghost', label: 'Icon', variant: 'ghost', size: 'icon', icon: true },
+    {
+      id: 'small-outline',
+      label: 'Small outline',
+      variant: 'outline',
+      size: 'sm',
+    },
+    {
+      id: 'default-solid',
+      label: 'Default',
+      variant: 'solid',
+      size: 'default',
+    },
+    {
+      id: 'icon-ghost',
+      label: 'Icon',
+      variant: 'ghost',
+      size: 'icon',
+      icon: true,
+    },
   ]
 
   return (
@@ -120,18 +152,23 @@ function TapTargetPanel({ color, compact = false }: { color: ColorKey; compact?:
 
               <span
                 className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80"
-                style={{ width: 'max(100%, 2.75rem)', height: 'max(100%, 2.75rem)' }}
+                style={{
+                  width: 'max(100%, 2.75rem)',
+                  height: 'max(100%, 2.75rem)',
+                }}
                 aria-hidden="true"
               />
             </div>
-            <p className={`text-xs ${bodyClasses(color)}`}>{item.id.replaceAll('-', ' ')}</p>
+            <p className={`text-xs ${bodyClasses(color)}`}>
+              {item.id.replaceAll('-', ' ')}
+            </p>
           </div>
         ))}
       </div>
 
       <p className={`text-sm ${bodyClasses(color)}`}>
-        Blue outline = visible button bounds. Red dashed outline = expanded touch target geometry
-        (max(100%, 44px)) used on coarse-pointer devices.
+        Blue outline = visible button bounds. Red dashed outline = expanded
+        touch target geometry (max(100%, 44px)) used on coarse-pointer devices.
       </p>
     </div>
   )
@@ -158,7 +195,9 @@ export const TapTarget: Story = {
     <div className="w-full max-w-6xl space-y-3">
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`tap-target-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
+            Theme: {color}
+          </h4>
           <TapTargetPanel color={color} />
         </ThemeSurface>
       ))}

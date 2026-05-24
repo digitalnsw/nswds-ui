@@ -3,8 +3,8 @@
  *
  * Sub-groups live in separate story files so Storybook renders them as
  * collapsible sidebar folders:
- *   Components/Button/Features   → button.features.stories.tsx
- *   Components/Button/Tests      → button.tests.stories.tsx
+ *   Components/Button/Features        → button.features.stories.tsx
+ *   Components/Button/Accessibility   → button.accessibility.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -13,7 +13,14 @@ import { fn } from 'storybook/test'
 import { Button } from './button.js'
 import { Icons } from './icons.js'
 
-const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
+const variants = [
+  'solid',
+  'soft',
+  'surface',
+  'outline',
+  'ghost',
+  'link',
+] as const
 const sizes = ['sm', 'default', 'lg', 'icon'] as const
 const colors = [
   'white',
@@ -41,9 +48,9 @@ const meta = {
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Button</h1>
             <p className="text-base text-muted-foreground">
-              Buttons communicate actions users can take. Use the primary
-              colour for the main action, and choose quieter variants for
-              secondary or contextual actions.
+              Buttons communicate actions users can take. Use the primary colour
+              for the main action, and choose quieter variants for secondary or
+              contextual actions.
             </p>
           </section>
 
@@ -201,7 +208,8 @@ const meta = {
     },
     'aria-disabled': {
       control: 'boolean',
-      description: 'Marks the button as disabled without removing it from the tab order.',
+      description:
+        'Marks the button as disabled without removing it from the tab order.',
       table: { category: 'Accessibility' },
     },
     className: {
@@ -226,11 +234,17 @@ function getButton(canvasElement: HTMLElement, name: string) {
   return button
 }
 
-function expectAttribute(element: Element, name: string, expectedValue: string) {
+function expectAttribute(
+  element: Element,
+  name: string,
+  expectedValue: string
+) {
   const receivedValue = element.getAttribute(name)
 
   if (receivedValue !== expectedValue) {
-    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
+    throw new Error(
+      `Expected ${name}="${expectedValue}", received "${receivedValue}".`
+    )
   }
 }
 
