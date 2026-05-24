@@ -1,6 +1,14 @@
 // Relative import: Storybook's manager bundle uses esbuild and doesn't read
 // tsconfig paths the way the preview Vite build does, so `@nswds/ui/lib/...`
 // can't be used here without the package being built first.
+import React from 'react'
+import { Select } from 'storybook/internal/components'
+import {
+  addons,
+  types,
+  useGlobals,
+  useStorybookState,
+} from 'storybook/manager-api'
 import {
   DEFAULT_THEME,
   getAccentSwatch,
@@ -11,14 +19,6 @@ import {
   resolvePrimaryHue,
   type ThemeCategory,
 } from '../../../packages/ui/src/lib/theme-palette'
-import React from 'react'
-import { Select } from 'storybook/internal/components'
-import {
-  addons,
-  types,
-  useGlobals,
-  useStorybookState,
-} from 'storybook/manager-api'
 
 // Auto-loaded by Storybook's manager bundle (no entry needed in main.ts).
 // Registers a "Theme" panel tab alongside Controls/Actions/A11y so the
@@ -56,12 +56,12 @@ const CategoryTool = React.memo(function CategoryTool() {
     DEFAULT_THEME.category) as ThemeCategory
   const primaryHue = resolvePrimaryHue(
     category,
-    globals.themePrimary as string | undefined,
+    globals.themePrimary as string | undefined
   )
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined,
+    globals.themeAccent as string | undefined
   )
 
   return (
@@ -79,7 +79,7 @@ const CategoryTool = React.memo(function CategoryTool() {
         const nextAccent = resolveAccentHue(
           nextCategory,
           nextPrimary,
-          accentHue,
+          accentHue
         )
         updateGlobals({
           themeCategory: nextCategory,
@@ -99,12 +99,12 @@ const PrimaryTool = React.memo(function PrimaryTool() {
     DEFAULT_THEME.category) as ThemeCategory
   const primaryHue = resolvePrimaryHue(
     category,
-    globals.themePrimary as string | undefined,
+    globals.themePrimary as string | undefined
   )
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined,
+    globals.themeAccent as string | undefined
   )
 
   const options = getColorHues(category).map((hue) => ({
@@ -140,12 +140,12 @@ const AccentTool = React.memo(function AccentTool() {
     DEFAULT_THEME.category) as ThemeCategory
   const primaryHue = resolvePrimaryHue(
     category,
-    globals.themePrimary as string | undefined,
+    globals.themePrimary as string | undefined
   )
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined,
+    globals.themeAccent as string | undefined
   )
 
   const options = getColorHues(category)
@@ -180,8 +180,7 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: 20,
-    fontFamily:
-      '"Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
+    fontFamily: '"Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif',
   },
   section: {
     display: 'flex',
@@ -287,12 +286,12 @@ function ThemePanel() {
 
   const primaryHue = resolvePrimaryHue(
     category,
-    globals.themePrimary as string | undefined,
+    globals.themePrimary as string | undefined
   )
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined,
+    globals.themeAccent as string | undefined
   )
 
   const primaryHues = getColorHues(category)
@@ -319,8 +318,7 @@ function ThemePanel() {
   }
 
   const [copied, setCopied] = React.useState(false)
-  const shareUrl =
-    typeof window !== 'undefined' ? window.location.href : ''
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl)
@@ -335,7 +333,11 @@ function ThemePanel() {
     <div style={styles.root}>
       <section style={styles.section}>
         <h3 style={styles.h3}>Theme Category</h3>
-        <div role="radiogroup" aria-label="Theme Category" style={styles.segmented}>
+        <div
+          role="radiogroup"
+          aria-label="Theme Category"
+          style={styles.segmented}
+        >
           <button
             type="button"
             role="radio"

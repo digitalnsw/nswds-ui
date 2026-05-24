@@ -2,6 +2,7 @@ import js from "@eslint/js"
 import eslintConfigPrettier from "eslint-config-prettier"
 import onlyWarn from "eslint-plugin-only-warn"
 import turboPlugin from "eslint-plugin-turbo"
+import globals from "globals"
 import tseslint from "typescript-eslint"
 
 /**
@@ -24,6 +25,14 @@ export const config = [
   {
     plugins: {
       onlyWarn,
+    },
+  },
+  {
+    files: ["**/scripts/**/*.{js,mjs,cjs}", "**/*.config.{js,mjs,cjs,ts}"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
   {
