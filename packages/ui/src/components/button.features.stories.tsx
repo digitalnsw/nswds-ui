@@ -11,7 +11,7 @@
  *
  * Low-contrast themes (white and secondary) are rendered on grey-800 surfaces in these stories to preserve visible boundaries in visual diffs and prevent false positives during visual QA. This is noted in each story's description and is implemented via the ThemeSurface helper component that conditionally applies a darker background and adjusted text colors for themes that would otherwise have insufficient contrast against the default light background.
  *
- * The TapTargetPanel component is included in the "States" story to validate touch target geometry across themes. It shows a selection of small buttons with overlaid outlines indicating the visible button bounds and the expanded touch target area (max(100%, 44px)) used on coarse-pointer devices. This allows for quick visual verification that touch targets are correctly applied without needing to test on an actual device.
+ * Touch-target geometry checks live in button.accessibility.stories.tsx (TapTargetPanel) rather than in this file.
  *
  * Overall, these stories serve as a comprehensive visual regression suite for the Button component, ensuring that all design tokens and interaction states are consistently implemented across the full range of themes and variants.
  */
@@ -44,8 +44,6 @@ const colors = [
   'danger',
 ] as const
 
-type VariantKey = (typeof variants)[number]
-type SizeKey = (typeof sizes)[number]
 type ColorKey = (typeof colors)[number]
 
 const lowContrastColors = ['white', 'secondary'] as const
@@ -117,195 +115,11 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>
+    <div
+      className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
+    >
       {children}
     </div>
-  )
-}
-
-function IconLabel({ text }: { text: string }) {
-  return (
-    <>
-      {text}
-      <Icons.arrow_forward data-slot="icon" />
-    </>
-  )
-}
-
-function TapTargetPanel({
-  color,
-  compact = false,
-}: {
-  color: ColorKey
-  compact?: boolean
-}) {
-  const items: ReadonlyArray<{
-    id: string
-    label: string
-    variant: VariantKey
-    size: SizeKey
-    icon?: boolean
-  }> = [
-    { id: 'small-solid', label: 'Small', variant: 'solid', size: 'sm' },
-    {
-      id: 'small-outline',
-      label: 'Small outline',
-      variant: 'outline',
-      size: 'sm',
-    },
-    {
-      id: 'default-solid',
-      label: 'Default',
-      variant: 'solid',
-      size: 'default',
-    },
-    {
-      id: 'icon-ghost',
-      label: 'Icon',
-      variant: 'ghost',
-      size: 'icon',
-      icon: true,
-    },
-  ]
-
-  return (
-    <div className={compact ? 'space-y-3' : 'space-y-4'}>
-      <div className="flex flex-wrap items-start gap-5">
-        {items.map((item) => (
-          <div key={`${color}-${item.id}`} className="space-y-2">
-            <div className="relative inline-flex items-center justify-center">
-              <Button
-                variant={item.variant}
-                color={color}
-                size={item.size}
-                aria-label={item.icon ? 'More options' : undefined}
-              >
-                {item.icon ? <Icons.more_horiz data-slot="icon" /> : item.label}
-              </Button>
-
-              <span
-                className="pointer-events-none absolute inset-0 rounded-sm border border-primary-500/70"
-                aria-hidden="true"
-              />
-
-              <span
-                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80"
-                style={{
-                  width: 'max(100%, 2.75rem)',
-                  height: 'max(100%, 2.75rem)',
-                }}
-                aria-hidden="true"
-              />
-            </div>
-            <p className={`text-xs ${bodyClasses(color)}`}>
-              {item.id.replaceAll('-', ' ')}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <p className={`text-sm ${bodyClasses(color)}`}>
-        Blue outline = visible button bounds. Red dashed outline = expanded
-        touch target geometry (max(100%, 44px)) used on coarse-pointer devices.
-      </p>
-    </div>
-  )
-}
-
-function themePage(color: ColorKey) {
-  return (
-    <ThemeSurface color={color}>
-      <div className="space-y-6">
-        <section className="space-y-1">
-          <h3 className={`text-lg font-semibold ${titleClasses(color)}`}>
-            Theme: {color}
-          </h3>
-          <p className={`text-sm ${bodyClasses(color)}`}>
-            Detailed production audit for this theme across variants, sizes,
-            states, and touch-target behavior.
-          </p>
-        </section>
-
-        <section className="space-y-2">
-          <h4 className={`text-sm font-semibold ${titleClasses(color)}`}>
-            Variant coverage
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {variants.map((variant) => (
-              <Button
-                key={`${color}-variant-${variant}`}
-                variant={variant}
-                color={color}
-              >
-                <IconLabel text={variant} />
-              </Button>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <h4 className={`text-sm font-semibold ${titleClasses(color)}`}>
-            Size coverage
-          </h4>
-          <div className="space-y-2">
-            {(['solid', 'outline'] as const).map((variant) => (
-              <div
-                key={`${color}-size-${variant}`}
-                className="flex flex-wrap items-center gap-2"
-              >
-                <span
-                  className={`w-16 text-xs font-medium uppercase ${bodyClasses(color)}`}
-                >
-                  {variant}
-                </span>
-                {sizes.map((size) => (
-                  <Button
-                    key={`${color}-${variant}-${size}`}
-                    variant={variant}
-                    color={color}
-                    size={size}
-                  >
-                    {size === 'icon' ? <Icons.add data-slot="icon" /> : size}
-                  </Button>
-                ))}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <h4 className={`text-sm font-semibold ${titleClasses(color)}`}>
-            State coverage
-          </h4>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="solid" color={color}>
-              <IconLabel text="Enabled" />
-            </Button>
-            <Button variant="solid" color={color} disabled>
-              <IconLabel text="Disabled" />
-            </Button>
-            <Button variant="outline" color={color} href="#theme-link">
-              <IconLabel text="As link" />
-            </Button>
-            <Button
-              variant="ghost"
-              color={color}
-              size="icon"
-              aria-label="Settings"
-            >
-              <Icons.settings data-slot="icon" />
-            </Button>
-          </div>
-        </section>
-
-        <section className="space-y-2">
-          <h4 className={`text-sm font-semibold ${titleClasses(color)}`}>
-            Touch target validation
-          </h4>
-          <TapTargetPanel color={color} compact />
-        </section>
-      </div>
-    </ThemeSurface>
   )
 }
 
@@ -317,26 +131,6 @@ function getButton(canvasElement: HTMLElement, name: string) {
   if (!button) throw new Error(`Could not find button named "${name}".`)
 
   return button
-}
-
-function makeThemeStory(color: ColorKey): Story {
-  return {
-    name: color,
-    parameters: {
-      docs: {
-        description: {
-          story: docsTemplate({
-            what: `Complete theme page for **${color}** across variants, size scale, states, and touch-target behavior.`,
-            why: 'Prevents token drift and contrast regressions for a single theme during iterative design updates.',
-            how: 'Compare all rows, verify disabled/link/icon states, and confirm dashed touch-target overlays on small controls.',
-            caveat:
-              'Low-contrast themes render on grey-800 surfaces in this story to preserve visible boundaries in visual diffs.',
-          }),
-        },
-      },
-    },
-    render: () => themePage(color),
-  }
 }
 
 // ─── Matrix stories ───────────────────────────────────────────────────────────
@@ -606,7 +400,7 @@ export const WithIcon: Story = {
                 className="w-full justify-center"
               >
                 Next
-                <Icons.arrow_forward data-slot="icon" />
+                <Icons.east data-slot="icon" />
               </Button>
             ))}
           </div>

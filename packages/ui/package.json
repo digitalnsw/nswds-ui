@@ -8,7 +8,8 @@
   },
   "files": [
     "dist",
-    "postcss.config.mjs"
+    "postcss.config.mjs",
+    "src/styles/globals.css.d.ts"
   ],
   "sideEffects": [
     "**/*.css"

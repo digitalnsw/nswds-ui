@@ -51,7 +51,7 @@ export function getColorHues(category: ThemeCategory): readonly string[] {
 /** Hues valid as an accent for the given primary — excludes grey and the primary itself. */
 export function getAccentHues(
   category: ThemeCategory,
-  primaryHue: string,
+  primaryHue: string
 ): string[] {
   return getColorHues(category).filter((h) => h !== primaryHue)
 }
@@ -93,7 +93,7 @@ export function getAccentSwatch(category: ThemeCategory, hue: string): string {
  */
 export function resolvePrimaryHue(
   category: ThemeCategory,
-  requested: string | undefined,
+  requested: string | undefined
 ): string {
   const hues = getColorHues(category)
   if (requested && hues.includes(requested)) return requested
@@ -104,7 +104,7 @@ export function resolvePrimaryHue(
 export function resolveAccentHue(
   category: ThemeCategory,
   primaryHue: string,
-  requested: string | undefined,
+  requested: string | undefined
 ): string {
   const hues = getAccentHues(category, primaryHue)
   if (requested && hues.includes(requested)) return requested
@@ -120,7 +120,7 @@ function writeScale(
   vars: ThemeVars,
   slot: 'primary' | 'accent' | 'grey',
   category: ThemeCategory,
-  hue: string,
+  hue: string
 ) {
   const scale = colors[category]?.[hue]?.colors
   if (!scale) return
@@ -143,7 +143,7 @@ function writeScale(
 export function buildThemeVars(
   category: ThemeCategory,
   primaryHue: string,
-  accentHue: string,
+  accentHue: string
 ): ThemeVars {
   const vars: ThemeVars = {}
   writeScale(vars, 'primary', category, primaryHue)

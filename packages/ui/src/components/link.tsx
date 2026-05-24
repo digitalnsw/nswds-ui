@@ -31,11 +31,11 @@ const Link = forwardRef(function Link(
   ref: React.ForwardedRef<HTMLAnchorElement>
 ) {
   const ContextLink = useContext(LinkComponentContext)
-  const Component = as ?? ContextLink ?? 'a'
+  const component = as ?? ContextLink ?? 'a'
 
   return (
     <Headless.DataInteractive>
-      <Component {...props} ref={ref} />
+      {React.createElement(component, { ...props, ref })}
     </Headless.DataInteractive>
   )
 })

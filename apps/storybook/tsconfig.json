@@ -17,7 +17,7 @@
       "storybook/manager-api": [
         "./node_modules/storybook/dist/manager-api/index.d.ts"
       ],
-      "@nswds/ui/globals.css": ["../../packages/ui/src/styles/globals.css"],
+      "@nswds/ui/globals.css": ["../../packages/ui/src/styles/globals.css.d.ts"],
       "@nswds/ui/postcss.config": ["../../packages/ui/postcss.config.mjs"],
       "@nswds/ui/*": ["../../packages/ui/src/*"]
     }

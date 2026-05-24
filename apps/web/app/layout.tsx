@@ -1,14 +1,14 @@
-import { JetBrains_Mono, Public_Sans } from "next/font/google"
+import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
-import "@nswds/ui/globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@nswds/ui/lib/utils"
+import { ThemeProvider } from '@/components/theme-provider'
+import '@nswds/ui/globals.css'
+import { cn } from '@nswds/ui/lib/utils'
 
-const publicSans = Public_Sans({ subsets: ["latin"], variable: "--font-sans" })
+const publicSans = Public_Sans({ subsets: ['latin'], variable: '--font-sans' })
 
 const fontMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  variable: '--font-mono',
 })
 
 export default function RootLayout({
@@ -21,9 +21,9 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={cn(
-        "antialiased",
+        'antialiased',
         fontMono.variable,
-        "font-sans",
+        'font-sans',
         publicSans.variable
       )}
     >

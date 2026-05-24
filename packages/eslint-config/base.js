@@ -27,6 +27,14 @@ export const config = [
     },
   },
   {
+    files: ["**/*.mjs"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+      },
+    },
+  },
+  {
     ignores: ["dist/**", ".next/**", "**/.turbo/**", "**/coverage/**"],
   },
 ]
