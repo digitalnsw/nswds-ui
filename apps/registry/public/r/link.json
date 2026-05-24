@@ -1,0 +1,18 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "link",
+  "title": "Link",
+  "description": "A link primitive with a provider for app router link components.",
+  "dependencies": [
+    "@headlessui/react"
+  ],
+  "files": [
+    {
+      "path": "src/components/link.tsx",
+      "content": "'use client'\n\nimport * as Headless from '@headlessui/react'\nimport React, { createContext, forwardRef, useContext } from 'react'\n\ntype LinkComponent = React.ElementType\n\ntype LinkProps = Omit<React.ComponentPropsWithoutRef<'a'>, 'href'> & {\n  as?: LinkComponent\n  href: React.ComponentPropsWithoutRef<'a'>['href'] | object\n}\n\nconst LinkComponentContext = createContext<LinkComponent | null>(null)\n\nfunction LinkProvider({\n  children,\n  component,\n}: {\n  children: React.ReactNode\n  component: LinkComponent\n}) {\n  return (\n    <LinkComponentContext.Provider value={component}>\n      {children}\n    </LinkComponentContext.Provider>\n  )\n}\n\nconst Link = forwardRef(function Link(\n  { as, ...props }: LinkProps,\n  ref: React.ForwardedRef<HTMLAnchorElement>\n) {\n  const ContextLink = useContext(LinkComponentContext)\n  const Component = as ?? ContextLink ?? 'a'\n\n  return (\n    <Headless.DataInteractive>\n      <Component {...props} ref={ref} />\n    </Headless.DataInteractive>\n  )\n})\n\nexport { Link, LinkProvider }\nexport type { LinkComponent, LinkProps }\n",
+      "type": "registry:ui",
+      "target": "components/link.tsx"
+    }
+  ],
+  "type": "registry:ui"
+}

@@ -9,7 +9,7 @@
       "title": "Button",
       "description": "A button component with variants and sizes.",
       "dependencies": [
-        "@base-ui/react",
+        "@headlessui/react",
         "class-variance-authority",
         "clsx",
         "tailwind-merge"
@@ -19,6 +19,59 @@
           "path": "src/components/button.tsx",
           "type": "registry:ui",
           "target": "components/button.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "A badge component with variants, colours, sizes, and interactive button/link variants.",
+      "dependencies": [
+        "@headlessui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "src/components/badge.tsx",
+          "type": "registry:ui",
+          "target": "components/badge.tsx"
+        },
+        {
+          "path": "src/components/button.tsx",
+          "type": "registry:ui",
+          "target": "components/button.tsx"
+        },
+        {
+          "path": "src/components/link.tsx",
+          "type": "registry:ui",
+          "target": "components/link.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "description-list",
+      "type": "registry:ui",
+      "title": "Description List",
+      "description": "A responsive description list primitive for term and detail pairs.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "path": "src/components/description-list.tsx",
+          "type": "registry:ui",
+          "target": "components/description-list.tsx"
         },
         {
           "path": "src/lib/utils.ts",
@@ -41,6 +94,20 @@
       ]
     },
     {
+      "name": "link",
+      "type": "registry:ui",
+      "title": "Link",
+      "description": "A link primitive with a provider for app router link components.",
+      "dependencies": ["@headlessui/react"],
+      "files": [
+        {
+          "path": "src/components/link.tsx",
+          "type": "registry:ui",
+          "target": "components/link.tsx"
+        }
+      ]
+    },
+    {
       "name": "logo",
       "type": "registry:ui",
       "title": "Logo",
@@ -51,6 +118,25 @@
           "path": "src/components/logo.tsx",
           "type": "registry:ui",
           "target": "components/logo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "An inline loading spinner with semantic colour and size variants.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "files": [
+        {
+          "path": "src/components/spinner.tsx",
+          "type": "registry:ui",
+          "target": "components/spinner.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
         }
       ]
     }
