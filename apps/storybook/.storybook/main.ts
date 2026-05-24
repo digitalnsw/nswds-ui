@@ -16,7 +16,6 @@ const config: StorybookConfig = {
     '@storybook/addon-docs',
     '@storybook/addon-a11y',
     require.resolve('@storybook/addon-vitest'),
-    'storybook-addon-performance',
   ],
   framework: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

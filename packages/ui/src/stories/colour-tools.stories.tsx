@@ -2,6 +2,8 @@ import { Button } from '@nswds/ui/components/button'
 import { cn } from '@nswds/ui/lib/utils'
 import {
   DEFAULT_THEME,
+  findAccent,
+  findPrimary,
   getAccents,
   getPrimaries,
   type PaletteOption,

@@ -110,6 +110,32 @@ export function getAccents(category: ThemeCategory): PaletteOption[] {
   return category === 'aboriginal' ? ABORIGINAL_ACCENTS : BRAND_ACCENTS
 }
 
+/** Union of both palettes, with the category each option belongs to. */
+export type CategorizedOption = PaletteOption & { category: ThemeCategory }
+
+const withCategory = (
+  category: ThemeCategory,
+  options: PaletteOption[],
+): CategorizedOption[] => options.map((option) => ({ ...option, category }))
+
+export const ALL_PRIMARIES: CategorizedOption[] = [
+  ...withCategory('brand', BRAND_PRIMARIES),
+  ...withCategory('aboriginal', ABORIGINAL_PRIMARIES),
+]
+
+export const ALL_ACCENTS: CategorizedOption[] = [
+  ...withCategory('brand', BRAND_ACCENTS),
+  ...withCategory('aboriginal', ABORIGINAL_ACCENTS),
+]
+
+export function findPrimary(id: string): CategorizedOption | undefined {
+  return ALL_PRIMARIES.find((o) => o.id === id)
+}
+
+export function findAccent(id: string): CategorizedOption | undefined {
+  return ALL_ACCENTS.find((o) => o.id === id)
+}
+
 export const DEFAULT_THEME = {
   category: 'brand' as ThemeCategory,
   primaryId: 'blue',
@@ -142,22 +168,24 @@ function writeScale(
  * (`--color-primary-50`…`-950`, `--color-accent-*`, `--color-grey-*`) because
  * those are what NSW components actually consume.
  *
+ * The category each chosen id belongs to is derived from the palette data, so
+ * the toolbar can list brand + aboriginal options side-by-side without needing
+ * a separate category prop. Grey follows the primary's category.
+ *
  * Pass the result through `setProperty(...)` per key. Keys not returned should
  * be cleared with `removeProperty(...)` to fall back to globals.css.
  */
-export function buildThemeVars(
-  category: ThemeCategory,
-  primaryId: string,
-  accentId: string,
-): ThemeVars {
-  const primary = getPrimaries(category).find((p) => p.id === primaryId)
-  const accent = getAccents(category).find((a) => a.id === accentId)
+export function buildThemeVars(primaryId: string, accentId: string): ThemeVars {
+  const primary = findPrimary(primaryId)
+  const accent = findAccent(accentId)
 
   const vars: ThemeVars = {}
-  if (primary) writeScale(vars, 'primary', category, primary.hue)
-  if (accent) writeScale(vars, 'accent', category, accent.hue)
-  // Grey is category-driven: brand grey under Brand, aboriginal grey under Aboriginal.
-  writeScale(vars, 'grey', category, 'grey')
+  if (primary) writeScale(vars, 'primary', primary.category, primary.hue)
+  if (accent) writeScale(vars, 'accent', accent.category, accent.hue)
+  // Grey follows the primary's category; falls back to the default category if
+  // no primary is selected.
+  const greyCategory = primary?.category ?? DEFAULT_THEME.category
+  writeScale(vars, 'grey', greyCategory, 'grey')
   return vars
 }
 

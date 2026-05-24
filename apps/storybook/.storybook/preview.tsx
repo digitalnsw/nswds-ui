@@ -1,11 +1,13 @@
 import '@nswds/ui/globals.css'
 import {
+  ALL_ACCENTS,
+  ALL_PRIMARIES,
   DEFAULT_THEME,
   THEME_VAR_NAMES,
   buildThemeVars,
-  getAccents,
-  getPrimaries,
-  type ThemeCategory,
+  findAccent,
+  findPrimary,
+  type CategorizedOption,
 } from '@nswds/ui/lib/theme-palette'
 import { definePreview } from '@storybook/react-vite'
 import { initialize, mswLoader } from 'msw-storybook-addon'
@@ -17,14 +19,26 @@ initialize({ onUnhandledRequest: 'bypass' })
 // Discovery summary:
 // - Pure component library; no providers, no data fetching, no portals.
 // - CSS variables for light/dark are applied via the `.dark` class on a
-//   parent element. The themeCategory/themePrimary/themeAccent globals
-//   override the @nswds/tokens scale vars (--color-primary-50…-950, accent,
-//   grey) via setProperty() on documentElement so previews update instantly.
-// - Only `theme` (light/dark) and `themeCategory` live in the toolbar.
-//   Primary/accent are picked from the Tools > Colour Tools story panel,
-//   because Storybook's globalType `items` are static and can't reflect
-//   the current category — listing all options in the toolbar would let
-//   users pick IDs that don't exist in the active palette.
+//   parent element.
+// - Primary and accent globals override the @nswds/tokens scale vars
+//   (--color-primary-50…-950, --color-accent-*, --color-grey-*) via
+//   setProperty() on documentElement so previews update instantly.
+// - The toolbar lists the UNION of brand + aboriginal options, prefixed
+//   with their category (e.g. "Brand · Green", "Aboriginal · Earth Red"),
+//   because Storybook's globalType items are static and can't react to a
+//   category global. The category each chosen id belongs to is derived
+//   from the palette data, so picks are always category-correct.
+
+const categoryLabel: Record<CategorizedOption['category'], string> = {
+  brand: 'Brand',
+  aboriginal: 'Aboriginal',
+}
+
+const buildToolbarItems = (options: CategorizedOption[]) =>
+  options.map((option) => ({
+    value: option.id,
+    title: `${categoryLabel[option.category]} · ${option.label}`,
+  }))
 
 export default definePreview({
   globalTypes: {
@@ -41,31 +55,36 @@ export default definePreview({
         dynamicTitle: true,
       },
     },
-    themeCategory: {
-      name: 'Theme category',
-      description: 'NSW brand palette vs. Aboriginal palette',
-      defaultValue: DEFAULT_THEME.category,
+    themePrimary: {
+      name: 'Primary',
+      description: 'Primary palette',
+      defaultValue: DEFAULT_THEME.primaryId,
       toolbar: {
-        icon: 'category',
-        items: [
-          { value: 'brand', title: 'Brand colors' },
-          { value: 'aboriginal', title: 'Aboriginal colors' },
-        ],
+        icon: 'circlehollow',
+        items: buildToolbarItems(ALL_PRIMARIES),
+        dynamicTitle: true,
+      },
+    },
+    themeAccent: {
+      name: 'Accent',
+      description: 'Accent palette',
+      defaultValue: DEFAULT_THEME.accentId,
+      toolbar: {
+        icon: 'circlehollow',
+        items: buildToolbarItems(ALL_ACCENTS),
         dynamicTitle: true,
       },
     },
   },
   initialGlobals: {
     theme: 'light',
-    themeCategory: DEFAULT_THEME.category,
     themePrimary: DEFAULT_THEME.primaryId,
     themeAccent: DEFAULT_THEME.accentId,
   },
   decorators: [
     (Story, context) => {
       const isDark = context.globals.theme === 'dark'
-      const category = (context.globals.themeCategory ??
-        DEFAULT_THEME.category) as ThemeCategory
+
       const requestedPrimary =
         (context.globals.themePrimary as string | undefined) ??
         DEFAULT_THEME.primaryId
@@ -73,24 +92,18 @@ export default definePreview({
         (context.globals.themeAccent as string | undefined) ??
         DEFAULT_THEME.accentId
 
-      // If the user switched category and the previously selected id no longer
-      // exists in the new palette, fall back to the first option in that list.
-      const primaries = getPrimaries(category)
-      const accents = getAccents(category)
+      // Look the ids up in the union. If a serialised global from an old URL
+      // doesn't match anything, fall back to the defaults.
       const primaryId =
-        primaries.find((p) => p.id === requestedPrimary)?.id ??
-        primaries[0]?.id ??
-        DEFAULT_THEME.primaryId
+        findPrimary(requestedPrimary)?.id ?? DEFAULT_THEME.primaryId
       const accentId =
-        accents.find((a) => a.id === requestedAccent)?.id ??
-        accents[0]?.id ??
-        DEFAULT_THEME.accentId
+        findAccent(requestedAccent)?.id ?? DEFAULT_THEME.accentId
 
       if (typeof document !== 'undefined') {
         document.documentElement.classList.toggle('dark', isDark)
 
         const root = document.documentElement
-        const vars = buildThemeVars(category, primaryId, accentId)
+        const vars = buildThemeVars(primaryId, accentId)
 
         for (const name of THEME_VAR_NAMES) {
           const next = vars[name]
