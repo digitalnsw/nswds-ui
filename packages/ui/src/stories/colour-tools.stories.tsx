@@ -82,30 +82,33 @@ function OptionGrid({
 function ThemeSettings() {
   const [globals, updateGlobals] = useGlobals()
 
-  const category = (globals.themeCategory ??
-    DEFAULT_THEME.category) as ThemeCategory
+  const primaryId =
+    (globals.themePrimary as string | undefined) ?? DEFAULT_THEME.primaryId
+  const accentId =
+    (globals.themeAccent as string | undefined) ?? DEFAULT_THEME.accentId
+
+  // Category is derived from the chosen primary's palette, so the tab always
+  // matches the rendered result.
+  const category: ThemeCategory =
+    findPrimary(primaryId)?.category ?? DEFAULT_THEME.category
+
   const primaries = getPrimaries(category)
   const accents = getAccents(category)
 
-  const primaryId =
-    primaries.find((p) => p.id === globals.themePrimary)?.id ??
-    primaries[0]?.id ??
-    DEFAULT_THEME.primaryId
-  const accentId =
-    accents.find((a) => a.id === globals.themeAccent)?.id ??
-    accents[0]?.id ??
-    DEFAULT_THEME.accentId
-
+  // Switching the category tab swaps primary/accent to the equivalent slot
+  // in the new palette (same hue if possible, otherwise the first option).
   const setCategory = (next: ThemeCategory) => {
     const nextPrimaries = getPrimaries(next)
     const nextAccents = getAccents(next)
+    const currentPrimaryHue = findPrimary(primaryId)?.hue
+    const currentAccentHue = findAccent(accentId)?.hue
     updateGlobals({
-      themeCategory: next,
       themePrimary:
-        nextPrimaries.find((p) => p.id === primaryId)?.id ??
+        nextPrimaries.find((p) => p.hue === currentPrimaryHue)?.id ??
         nextPrimaries[0]?.id,
       themeAccent:
-        nextAccents.find((a) => a.id === accentId)?.id ?? nextAccents[0]?.id,
+        nextAccents.find((a) => a.hue === currentAccentHue)?.id ??
+        nextAccents[0]?.id,
     })
   }
 
@@ -117,7 +120,7 @@ function ThemeSettings() {
         ? window.parent?.location?.href ?? window.location.href
         : ''
     setShareUrl(url)
-  }, [globals.themeCategory, globals.themePrimary, globals.themeAccent])
+  }, [globals.themePrimary, globals.themeAccent])
 
   const [copied, setCopied] = useState(false)
   const copy = async () => {
