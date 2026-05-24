@@ -11,7 +11,7 @@
  *
  * Low-contrast themes (white and secondary) are rendered on grey-800 surfaces in these stories to preserve visible boundaries in visual diffs and prevent false positives during visual QA. This is noted in each story's description and is implemented via the ThemeSurface helper component that conditionally applies a darker background and adjusted text colors for themes that would otherwise have insufficient contrast against the default light background.
  *
- * The TapTargetPanel component is included in the "States" story to validate touch target geometry across themes. It shows a selection of small buttons with overlaid outlines indicating the visible button bounds and the expanded touch target area (max(100%, 44px)) used on coarse-pointer devices. This allows for quick visual verification that touch targets are correctly applied without needing to test on an actual device.
+ * Touch-target geometry checks live in button.accessibility.stories.tsx (TapTargetPanel) rather than in this file.
  *
  * Overall, these stories serve as a comprehensive visual regression suite for the Button component, ensuring that all design tokens and interaction states are consistently implemented across the full range of themes and variants.
  */
