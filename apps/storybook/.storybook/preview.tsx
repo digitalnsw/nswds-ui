@@ -1,3 +1,5 @@
+import addonA11y from "@storybook/addon-a11y";
+import addonDocs from "@storybook/addon-docs";
 import '@nswds/ui/globals.css'
 import {
   DEFAULT_THEME,
@@ -25,6 +27,11 @@ initialize({ onUnhandledRequest: 'bypass' })
 //   Accent picker lives in the Theme addon panel (apps/storybook/.storybook/
 //   manager.tsx) so it's reachable from every story.
 
+// Languages relevant to NSW Government communications. When `language` is set
+// to one of these RTL codes, the decorator flips `direction` to `rtl` unless
+// the user has explicitly overridden it.
+const RTL_LANGUAGES = new Set(['ar', 'he', 'fa', 'ur'])
+
 export default definePreview({
   globalTypes: {
     theme: {
@@ -40,13 +47,50 @@ export default definePreview({
         dynamicTitle: true,
       },
     },
+    language: {
+      name: 'Language',
+      description: 'Locale for content previews — sets the `lang` attribute',
+      defaultValue: 'en',
+      toolbar: {
+        icon: 'globe',
+        items: [
+          { value: 'en', title: 'English' },
+          { value: 'ar', title: 'Arabic' },
+          { value: 'zh-Hans', title: 'Chinese (Simplified)' },
+          { value: 'zh-Hant', title: 'Chinese (Traditional)' },
+          { value: 'vi', title: 'Vietnamese' },
+          { value: 'ko', title: 'Korean' },
+          { value: 'hi', title: 'Hindi' },
+          { value: 'el', title: 'Greek' },
+          { value: 'es', title: 'Spanish' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    direction: {
+      name: 'Direction',
+      description: 'Text direction — sets the `dir` attribute',
+      defaultValue: 'ltr',
+      toolbar: {
+        icon: 'transfer',
+        items: [
+          { value: 'ltr', title: 'left-to-right (ltr)' },
+          { value: 'rtl', title: 'right-to-left (rtl)' },
+        ],
+        dynamicTitle: true,
+      },
+    },
   },
+
   initialGlobals: {
     theme: 'light',
     themeCategory: DEFAULT_THEME.category,
     themePrimary: DEFAULT_THEME.primaryHue,
     themeAccent: DEFAULT_THEME.accentHue,
+    language: 'en',
+    direction: 'ltr',
   },
+
   decorators: [
     (Story, context) => {
       const isDark = context.globals.theme === 'dark'
@@ -65,10 +109,21 @@ export default definePreview({
         context.globals.themeAccent as string | undefined,
       )
 
-      if (typeof document !== 'undefined') {
-        document.documentElement.classList.toggle('dark', isDark)
+      const language = (context.globals.language as string | undefined) ?? 'en'
+      // If the chosen language is RTL and the user hasn't explicitly set
+      // direction to something else, default to rtl.
+      const requestedDirection = context.globals.direction as
+        | string
+        | undefined
+      const direction =
+        requestedDirection ?? (RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr')
 
+      if (typeof document !== 'undefined') {
         const root = document.documentElement
+        root.classList.toggle('dark', isDark)
+        root.setAttribute('lang', language)
+        root.setAttribute('dir', direction)
+
         const vars = buildThemeVars(category, primaryHue, accentHue)
 
         for (const name of THEME_VAR_NAMES) {
@@ -84,7 +139,9 @@ export default definePreview({
       return Story()
     },
   ],
+
   loaders: [mswLoader],
+
   parameters: {
     options: {
       storySort: {
@@ -123,4 +180,6 @@ export default definePreview({
       handlers: mswHandlers,
     },
   },
+
+  addons: [addonDocs(), addonA11y()]
 })
