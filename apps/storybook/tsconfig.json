@@ -5,8 +5,11 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "@storybook/nextjs-vite": [
-        "./node_modules/@storybook/nextjs-vite/dist/index.d.ts"
+      "@storybook/react-vite": [
+        "./node_modules/@storybook/react-vite/dist/index.d.ts"
+      ],
+      "storybook/test": [
+        "./node_modules/storybook/dist/test/index.d.ts"
       ],
       "@nswds/ui/globals.css": ["../../packages/ui/src/styles/globals.css"],
       "@nswds/ui/postcss.config": ["../../packages/ui/postcss.config.mjs"],

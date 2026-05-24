@@ -1,58 +1,397 @@
-"use client"
+'use client'
 
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as Headless from '@headlessui/react'
+import { cva, type VariantProps } from 'class-variance-authority'
+import clsx from 'clsx'
+import React, { forwardRef } from 'react'
 
-import { cn } from "@nswds/ui/lib/utils"
+import { cn } from '../lib/utils.js'
 
-const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-xs/relaxed font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+import { Link } from '../components/link.js'
+
+const styles = {
+  base: [
+    // Base
+    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all',
+    // Focus
+    'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
+    // Disabled
+    'data-disabled:opacity-50 data-disabled:pointer-events-none',
+    // Icon
+    '*:data-[slot=icon]:-mx-0.25 *:data-[slot=icon]:my-0.25 sm:*:data-[slot=icon]:my-0.5 *:data-[slot=icon]:size-(--btn-icon-size) *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) forced-colors:[--btn-icon:ButtonText] forced-colors:data-hover:[--btn-icon:ButtonText]',
+  ],
+  solid: [
+    // Text color
+    'text-(--btn-text)',
+    // Optical border, implemented as the button background to avoid corner artifacts
+    'border-transparent bg-(--btn-border)',
+    // Dark mode: border is rendered on `after` so background is set to button background
+    'dark:bg-(--btn-bg)',
+    // Button background, implemented as foreground layer to stack on top of pseudo-border layer
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-bg)',
+    // Drop shadow, applied to the inset `before` layer so it blends with the border
+    'before:shadow-sm',
+    // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
+    'dark:before:hidden',
+    // Dark mode: Subtle white outline is applied using a border
+    'dark:border-white/5',
+    // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
+    'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
+    // State overlays
+    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    // Dark mode: `after` layer expands to cover entire button
+    'dark:after:-inset-px dark:after:rounded-sm',
+    // Disabled
+    'data-disabled:before:shadow-none data-disabled:after:shadow-none',
+  ],
+  soft: [
+    // Text color
+    'text-(--btn-bg)',
+    // Optical border, implemented as the button background to avoid corner artifacts
+    'border-transparent bg-(--btn-bg)/10',
+    // Dark mode: border is rendered on `after` so background is set to button background
+    'dark:bg-(--btn-bg)/20',
+    // Button background, implemented as foreground layer to stack on top of pseudo-border layer
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-bg)/10',
+    // Drop shadow, applied to the inset `before` layer so it blends with the border
+    'before:shadow-sm',
+    // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
+    'dark:before:bg-white/5',
+    // Dark mode: Subtle white outline is applied using a border
+    'dark:border-white/5',
+    // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
+    'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
+    // State overlays
+    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    // Dark mode: `after` layer expands to cover entire button
+    'dark:after:-inset-px dark:after:rounded-sm',
+    // Disabled
+    'data-disabled:before:shadow-none data-disabled:after:shadow-none',
+  ],
+  surface: [
+    // Text color
+    'text-(--btn-bg)',
+    // Optical border, implemented as the button background to avoid corner artifacts
+    'border-(--btn-bg)/50 border-2 bg-(--btn-bg)/5',
+    // Dark mode: border is rendered on `after` so background is set to button background
+    'dark:bg-(--btn-bg)/30',
+    // Button background, implemented as foreground layer to stack on top of pseudo-border layer
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-bg)/5',
+    // Drop shadow, applied to the inset `before` layer so it blends with the border
+    'before:shadow-sm',
+    // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
+    'dark:before:hidden',
+    // Dark mode: Subtle white outline is applied using a border
+    'dark:border-(--btn-bg)/50',
+    // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
+    'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
+    // Border color on hover
+    'data-active:border-(--btn-bg) data-hover:border-(--btn-bg)',
+    // State overlays
+    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    // Dark mode: `after` layer expands to cover entire button
+    'dark:after:-inset-px dark:after:rounded-sm',
+    // Disabled
+    'data-disabled:before:shadow-none data-disabled:after:shadow-none',
+  ],
+  outline: [
+    // Text color
+    'border-(--btn-bg) text-(--btn-bg) border-2',
+    // Optical border, implemented as the button background to avoid corner artifacts
+    'bg-transparent',
+    // Button background, implemented as foreground layer to stack on top of pseudo-border layer
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-transparent',
+    // Drop shadow, applied to the inset `before` layer so it blends with the border
+    'before:shadow-sm',
+    // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
+    'dark:before:hidden',
+    // Dark mode: Subtle white outline is applied using a border
+    'dark:border-(--btn-bg)',
+    // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
+    'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
+    // State overlays
+    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    // Dark mode: `after` layer expands to cover entire button
+    'dark:after:-inset-px dark:after:rounded-sm',
+    // Disabled
+    'data-disabled:before:shadow-none data-disabled:after:shadow-none',
+  ],
+  ghost: [
+    // Text color
+    'text-(--btn-bg)',
+    // Optical border, implemented as the button background to avoid corner artifacts
+    'border-transparent bg-(--btn-transparent)',
+    // Button background, implemented as foreground layer to stack on top of pseudo-border layer
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-transparent)',
+    // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
+    'dark:before:hidden',
+    // Dark mode: Subtle white outline is applied using a border
+    'dark:border-white/5',
+    // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
+    'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
+    // State overlays
+    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    // Dark mode: `after` layer expands to cover entire button
+    'dark:after:-inset-px dark:after:rounded-sm',
+    // Disabled
+    'data-disabled:before:shadow-none data-disabled:after:shadow-none',
+  ],
+  link: [
+    // Text color — inherits from color token, no background or border
+    'text-(--btn-bg) border-transparent bg-transparent',
+    // Underline on interaction
+    'underline-offset-4 data-hover:underline data-active:underline',
+    // No pseudo-layers needed
+  ],
+  colors: {
+    grey: [
+      // Base
+      '[--btn-bg:var(--color-grey-600)] [--btn-border:var(--color-grey-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-grey-600)]/10 [--btn-active-overlay:var(--color-grey-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+    white: [
+      // Base
+      '[--btn-bg:var(--color-white)] [--btn-border:var(--color-white)]/90 [--btn-text:var(--color-grey-800)]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-white)]/10 [--btn-active-overlay:var(--color-white)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-black)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+    primary: [
+      // Base
+      '[--btn-bg:var(--color-primary-800)] [--btn-border:var(--color-primary-800)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-primary-800)]/10 [--btn-active-overlay:var(--color-primary-800)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+    secondary: [
+      // Base
+      '[--btn-bg:var(--color-primary-200)] [--btn-border:var(--color-primary-200)]/90 [--btn-text:var(--color-primary-800)]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-primary-200)]/10 [--btn-active-overlay:var(--color-primary-200)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/15 data-[variant=solid]:[--btn-active-overlay:var(--color-primary-800)]/10',
+      // State: Active
+      '',
+    ],
+    tertiary: [
+      // Base
+      '[--btn-bg:var(--color-primary-600)] [--btn-border:var(--color-primary-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-primary-600)]/10 [--btn-active-overlay:var(--color-primary-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+    accent: [
+      // Base
+      '[--btn-bg:var(--color-accent-600)] [--btn-border:var(--color-accent-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-accent-600)]/10 [--btn-active-overlay:var(--color-accent-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+    danger: [
+      // Base
+      '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--color-danger-600)]/10 [--btn-active-overlay:var(--color-danger-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      // State: Active
+      '',
+    ],
+  },
+  size: {
+    default:
+      'px-[calc(--spacing(6)-1px)] py-[calc(--spacing(4)-1px)] sm:px-[calc(--spacing(5.5)-1px)] sm:py-[calc(--spacing(3)-1px)] [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
+    sm: 'px-[calc(--spacing(5)-1px)] py-[calc(--spacing(3)-1px)] sm:px-[calc(--spacing(4.5)-1px)] sm:py-[calc(--spacing(2)-1px)] [--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(4)]',
+    lg: 'px-[calc(--spacing(7)-1px)] py-[calc(--spacing(5)-1px)] sm:px-[calc(--spacing(6.5)-1px)] sm:py-[calc(--spacing(4)-1px)] [--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(6)]',
+    icon: 'w-10 h-10 flex-none [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
+  },
+}
+
+const buttonVariants = cva(styles.base, {
+  variants: {
+    variant: {
+      solid: styles.solid,
+      soft: styles.soft,
+      surface: styles.surface,
+      outline: styles.outline,
+      ghost: styles.ghost,
+      link: styles.link,
+    },
+    color: {
+      white: styles.colors.white,
+      grey: styles.colors.grey,
+      primary: styles.colors.primary,
+      secondary: styles.colors.secondary,
+      tertiary: styles.colors.tertiary,
+      accent: styles.colors.accent,
+      danger: styles.colors.danger,
+    },
+    size: {
+      default: styles.size.default,
+      sm: styles.size.sm,
+      lg: styles.size.lg,
+      icon: styles.size.icon,
+    },
+  },
+  defaultVariants: {
+    variant: 'solid',
+    color: 'primary',
+    size: 'default',
+  },
+})
+
+type ButtonProps = VariantProps<typeof buttonVariants> & {
+  className?: string
+  children: React.ReactNode
+  /** Stretch button to fill its container width. */
+  block?: boolean
+  /** Show a spinner and disable interaction. */
+  loading?: boolean
+  /** Horizontal alignment of button content. */
+  alignContent?: 'center' | 'start'
+  disabled?: boolean
+  /** Icon component rendered before the label. */
+  leadingVisual?: React.ElementType
+  /** Icon component rendered after the label. */
+  trailingVisual?: React.ElementType
+  /** Icon component rendered as a trailing action (far end). */
+  trailingAction?: React.ElementType
+  /** Allow the button label to wrap onto multiple lines. Defaults to true. */
+  labelWrap?: boolean
+  /** Optional numeric badge rendered after the label. */
+  count?: number
+} & (
+    | Omit<Headless.ButtonProps, 'as' | 'className' | 'disabled'>
+    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+  )
+
+const Button = forwardRef(function Button(
   {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
-        outline:
-          "border-border hover:bg-input/50 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-input/30",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
-        ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
-        destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default:
-          "h-7 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        xs: "h-5 gap-1 rounded-sm px-2 text-[0.625rem] has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-2.5",
-        sm: "h-6 gap-1 px-2 text-xs/relaxed has-data-[icon=inline-end]:pe-1.5 has-data-[icon=inline-start]:ps-1.5 [&_svg:not([class*='size-'])]:size-3",
-        lg: "h-8 gap-1 px-2.5 text-xs/relaxed has-data-[icon=inline-end]:pe-2 has-data-[icon=inline-start]:ps-2 [&_svg:not([class*='size-'])]:size-4",
-        icon: "size-7 [&_svg:not([class*='size-'])]:size-3.5",
-        "icon-xs": "size-5 rounded-sm [&_svg:not([class*='size-'])]:size-2.5",
-        "icon-sm": "size-6 [&_svg:not([class*='size-'])]:size-3",
-        "icon-lg": "size-8 [&_svg:not([class*='size-'])]:size-4",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+    className,
+    variant,
+    color,
+    size,
+    children,
+    block,
+    loading,
+    alignContent = 'center',
+    disabled,
+    leadingVisual: LeadingVisual,
+    trailingVisual: TrailingVisual,
+    trailingAction: TrailingAction,
+    labelWrap,
+    count,
+    ...props
+  }: ButtonProps,
+  ref: React.ForwardedRef<HTMLElement>
+) {
+  const effectiveDisabled = disabled || loading
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  const classes = cn(
+    buttonVariants({ variant, color, size }),
+    block && 'w-full',
+    alignContent === 'start' && 'justify-start',
+    className
+  )
+
+  const content = (
+    <TouchTarget>
+      {loading && <ButtonSpinner />}
+      {LeadingVisual && <LeadingVisual data-slot="icon" />}
+      {labelWrap === false ? (
+        <span className="whitespace-nowrap">{children}</span>
+      ) : (
+        children
+      )}
+      {count !== undefined && (
+        <span className="rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums opacity-75">
+          {count}
+        </span>
+      )}
+      {TrailingVisual && <TrailingVisual data-slot="icon" />}
+      {TrailingAction && <TrailingAction data-slot="icon" />}
+    </TouchTarget>
+  )
+
+  return 'href' in props ? (
+    <Link
+      data-variant={variant}
+      {...(props as Omit<
+        React.ComponentPropsWithoutRef<typeof Link>,
+        'className' | 'variant'
+      >)}
+      className={classes}
+      ref={ref as React.ForwardedRef<HTMLAnchorElement>}
+    >
+      {content}
+    </Link>
+  ) : (
+    <Headless.Button
+      data-variant={variant}
+      {...(props as Omit<
+        Headless.ButtonProps,
+        'as' | 'className' | 'disabled'
+      >)}
+      disabled={effectiveDisabled}
+      className={clsx(classes, 'cursor-pointer')}
+      ref={ref}
+    >
+      {content}
+    </Headless.Button>
+  )
+})
+
+/** Inline spinner — avoids importing the full Icons module into the button bundle. */
+function ButtonSpinner() {
   return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+    <svg
+      data-slot="icon"
+      className="animate-spin motion-reduce:animate-none"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 22 5.373 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
   )
 }
 
-export { Button, buttonVariants }
+/**
+ * Expand the hit area to at least 44×44px on touch devices
+ */
+function TouchTarget({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <span
+        className="absolute top-1/2 left-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 rounded-sm bg-transparent [@media(pointer:fine)]:hidden"
+        aria-hidden="true"
+      />
+      {children}
+    </>
+  )
+}
+
+export { Button, buttonVariants, TouchTarget }

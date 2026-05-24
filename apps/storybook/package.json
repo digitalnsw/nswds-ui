@@ -12,25 +12,28 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nswds/ui": "workspace:*"
+    "@nswds/ui": "workspace:*",
+    "storybook-addon-performance": "^0.17.3"
   },
   "devDependencies": {
-    "@storybook/addon-a11y": "^10.4.1",
-    "@storybook/addon-themes": "^10.4.1",
-    "@storybook/addon-vitest": "^10.4.1",
-    "@storybook/nextjs-vite": "^10.4.1",
-    "@vitest/browser": "^4.1.7",
-    "@vitest/browser-playwright": "^4.1.7",
+    "@storybook/addon-a11y": "10.5.0-alpha.2",
+    "@storybook/addon-docs": "10.5.0-alpha.2",
+    "@storybook/addon-themes": "10.5.0-alpha.2",
+    "@storybook/addon-vitest": "10.5.0-alpha.2",
+    "@storybook/react-vite": "10.5.0-alpha.2",
     "@tailwindcss/vite": "^4",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
+    "@vitest/browser": "^4.1.7",
+    "@vitest/browser-playwright": "^4.1.7",
+    "@vitest/coverage-v8": "4.1.7",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
     "eslint": "^9.39.2",
     "playwright": "^1.52.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "storybook": "^10.4.1",
+    "storybook": "10.5.0-alpha.2",
     "typescript": "^5.9.3",
     "vite": "^8.0.14",
     "vitest": "^4.1.7"

@@ -33,7 +33,9 @@ function collectEntries(dir: string): Record<string, string> {
 
         return [[entryName, path]]
       })
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([entryNameA], [entryNameB]) =>
+        (entryNameA ?? "").localeCompare(entryNameB ?? "")
+      )
   )
 }
 

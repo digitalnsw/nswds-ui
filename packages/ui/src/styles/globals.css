@@ -12,6 +12,8 @@
 @import "@nswds/tokens/tailwind/colors/global/oklch.css";
 /* Tailwind bridge: makes fill-primary-800, text-accent-600, etc. work */
 @import "@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css";
+/* Tailwind bridge: makes bg-danger-600, text-success-500, etc. work */
+@import "@nswds/tokens/tailwind/colors/semantic/oklch.css";
 
 @custom-variant dark (&:is(.dark *));
 @source "../../../apps/**/*.{ts,tsx}";
