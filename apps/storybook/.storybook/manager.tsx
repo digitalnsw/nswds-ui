@@ -12,6 +12,7 @@ import {
   type ThemeCategory,
 } from '../../../packages/ui/src/lib/theme-palette'
 import React from 'react'
+import { Select } from 'storybook/internal/components'
 import {
   addons,
   types,
@@ -28,6 +29,150 @@ import {
 
 const ADDON_ID = 'nswds/theme'
 const PANEL_ID = `${ADDON_ID}/panel`
+const CATEGORY_TOOL_ID = `${ADDON_ID}/category-tool`
+const PRIMARY_TOOL_ID = `${ADDON_ID}/primary-tool`
+const ACCENT_TOOL_ID = `${ADDON_ID}/accent-tool`
+
+// Small coloured dot rendered next to each option's label in the toolbar
+// dropdowns. Matches the in-panel swatch style.
+const ToolbarSwatch = ({ hex }: { hex: string }) => (
+  <span
+    aria-hidden
+    style={{
+      display: 'inline-block',
+      width: 12,
+      height: 12,
+      borderRadius: '50%',
+      background: hex,
+      border: '1px solid rgba(0,0,0,0.15)',
+      flexShrink: 0,
+    }}
+  />
+)
+
+const CategoryTool = React.memo(function CategoryTool() {
+  const [globals, updateGlobals] = useGlobals()
+  const category = (globals.themeCategory ??
+    DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(
+    category,
+    globals.themePrimary as string | undefined,
+  )
+  const accentHue = resolveAccentHue(
+    category,
+    primaryHue,
+    globals.themeAccent as string | undefined,
+  )
+
+  return (
+    <Select
+      ariaLabel="Theme category"
+      size="small"
+      defaultOptions={category}
+      options={[
+        { value: 'brand', title: 'Brand' },
+        { value: 'aboriginal', title: 'Aboriginal' },
+      ]}
+      onSelect={(next) => {
+        const nextCategory = next as ThemeCategory
+        const nextPrimary = resolvePrimaryHue(nextCategory, primaryHue)
+        const nextAccent = resolveAccentHue(
+          nextCategory,
+          nextPrimary,
+          accentHue,
+        )
+        updateGlobals({
+          themeCategory: nextCategory,
+          themePrimary: nextPrimary,
+          themeAccent: nextAccent,
+        })
+      }}
+    >
+      Category
+    </Select>
+  )
+})
+
+const PrimaryTool = React.memo(function PrimaryTool() {
+  const [globals, updateGlobals] = useGlobals()
+  const category = (globals.themeCategory ??
+    DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(
+    category,
+    globals.themePrimary as string | undefined,
+  )
+  const accentHue = resolveAccentHue(
+    category,
+    primaryHue,
+    globals.themeAccent as string | undefined,
+  )
+
+  const options = getColorHues(category).map((hue) => ({
+    value: hue,
+    title: getHueLabel(category, hue),
+    icon: <ToolbarSwatch hex={getPrimarySwatch(category, hue)} />,
+  }))
+
+  return (
+    <Select
+      ariaLabel="Primary colour"
+      size="small"
+      defaultOptions={primaryHue}
+      options={options}
+      icon={<ToolbarSwatch hex={getPrimarySwatch(category, primaryHue)} />}
+      onSelect={(next) => {
+        const nextPrimary = next as string
+        const nextAccent = resolveAccentHue(category, nextPrimary, accentHue)
+        updateGlobals({
+          themePrimary: nextPrimary,
+          themeAccent: nextAccent,
+        })
+      }}
+    >
+      Primary
+    </Select>
+  )
+})
+
+const AccentTool = React.memo(function AccentTool() {
+  const [globals, updateGlobals] = useGlobals()
+  const category = (globals.themeCategory ??
+    DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(
+    category,
+    globals.themePrimary as string | undefined,
+  )
+  const accentHue = resolveAccentHue(
+    category,
+    primaryHue,
+    globals.themeAccent as string | undefined,
+  )
+
+  const options = getColorHues(category)
+    .filter((h) => h !== primaryHue)
+    .map((hue) => ({
+      value: hue,
+      title: getHueLabel(category, hue),
+      icon: <ToolbarSwatch hex={getAccentSwatch(category, hue)} />,
+    }))
+
+  return (
+    <Select
+      ariaLabel="Accent colour"
+      size="small"
+      defaultOptions={accentHue}
+      options={options}
+      icon={<ToolbarSwatch hex={getAccentSwatch(category, accentHue)} />}
+      onSelect={(next) => {
+        const nextAccent = next as string
+        if (nextAccent === primaryHue) return
+        updateGlobals({ themeAccent: nextAccent })
+      }}
+    >
+      Accent
+    </Select>
+  )
+})
 
 const styles = {
   root: {
@@ -278,7 +423,33 @@ function ThemePanel() {
   )
 }
 
+const matchStoryOrDocs = ({
+  viewMode,
+  tabId,
+}: {
+  viewMode?: string
+  tabId?: string
+}) => !!(viewMode && /^(story|docs)$/.test(viewMode)) && !tabId
+
 addons.register(ADDON_ID, () => {
+  addons.add(CATEGORY_TOOL_ID, {
+    title: 'Theme category',
+    type: types.TOOL,
+    match: matchStoryOrDocs,
+    render: CategoryTool,
+  })
+  addons.add(PRIMARY_TOOL_ID, {
+    title: 'Primary',
+    type: types.TOOL,
+    match: matchStoryOrDocs,
+    render: PrimaryTool,
+  })
+  addons.add(ACCENT_TOOL_ID, {
+    title: 'Accent',
+    type: types.TOOL,
+    match: matchStoryOrDocs,
+    render: AccentTool,
+  })
   addons.add(PANEL_ID, {
     title: 'Theme',
     type: types.PANEL,
