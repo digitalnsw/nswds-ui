@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.1.0...@nswds/ui-v1.2.0) (2026-05-24)
+
+### Features
+
+* **storybook:** Enhance theme customization, improve accessibility, and streamline UI components ([#3](https://github.com/digitalnsw/nswds-ui/issues/3)) ([e62549c](https://github.com/digitalnsw/nswds-ui/commit/e62549c30fc5364ca83d9f24b8042ecbd806ca21))
+
 ## [1.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.0.0...@nswds/ui-v1.1.0) (2026-05-23)
 
 ### Features
