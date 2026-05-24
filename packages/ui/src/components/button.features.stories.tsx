@@ -9,7 +9,7 @@
  *
  * The "By Variant" and "By Colour" stories show the full matrix of themes and variants with default states, while the "Sizes", "With Icon", and "States" stories drill into specific features with additional rows for hover/active states, icon composition, and disabled styling.
  *
- * Low-contrast themes (white, primary/white, light, secondary) are rendered on forced dark surfaces in these stories to preserve visible boundaries in visual diffs and prevent false positives during visual QA. This is noted in each story's description and is implemented via the ThemeSurface helper component that conditionally applies dark backgrounds and adjusted text colors for themes that would otherwise have insufficient contrast against the default light background.
+ * Low-contrast themes (white and secondary) are rendered on grey-800 surfaces in these stories to preserve visible boundaries in visual diffs and prevent false positives during visual QA. This is noted in each story's description and is implemented via the ThemeSurface helper component that conditionally applies a darker background and adjusted text colors for themes that would otherwise have insufficient contrast against the default light background.
  *
  * The TapTargetPanel component is included in the "States" story to validate touch target geometry across themes. It shows a selection of small buttons with overlaid outlines indicating the visible button bounds and the expanded touch target area (max(100%, 44px)) used on coarse-pointer devices. This allows for quick visual verification that touch targets are correctly applied without needing to test on an actual device.
  *
@@ -48,15 +48,14 @@ type VariantKey = (typeof variants)[number]
 type SizeKey = (typeof sizes)[number]
 type ColorKey = (typeof colors)[number]
 
-const lowContrastColors = [
-  'white',
-  'secondary',
-] as const
+const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 const standardColors = colors.filter(
   (color) => !lowContrastSet.has(color)
 ) as ColorKey[]
-const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
+
+const forcedFocusClasses =
+  'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -90,22 +89,22 @@ const docsTemplate = ({
 }) =>
   `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
-function needsDarkSurface(color: ColorKey): boolean {
+function needsGreySurface(color: ColorKey): boolean {
   return lowContrastSet.has(color)
 }
 
 function surfaceClasses(color: ColorKey): string {
-  return needsDarkSurface(color)
-    ? 'rounded-sm border border-grey-700 bg-grey-900 p-4'
+  return needsGreySurface(color)
+    ? 'rounded-sm border border-grey-700 bg-grey-800 p-4'
     : 'rounded-sm border border-border bg-background p-4'
 }
 
 function titleClasses(color: ColorKey): string {
-  return needsDarkSurface(color) ? 'text-grey-50' : 'text-foreground'
+  return needsGreySurface(color) ? 'text-grey-50' : 'text-foreground'
 }
 
 function bodyClasses(color: ColorKey): string {
-  return needsDarkSurface(color) ? 'text-grey-200' : 'text-muted-foreground'
+  return needsGreySurface(color) ? 'text-grey-200' : 'text-muted-foreground'
 }
 
 function ThemeSurface({
@@ -118,9 +117,7 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div
-      className={`${needsDarkSurface(color) ? 'dark ' : ''}${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
-    >
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>
       {children}
     </div>
   )
@@ -333,7 +330,7 @@ function makeThemeStory(color: ColorKey): Story {
             why: 'Prevents token drift and contrast regressions for a single theme during iterative design updates.',
             how: 'Compare all rows, verify disabled/link/icon states, and confirm dashed touch-target overlays on small controls.',
             caveat:
-              'Low-contrast themes render on forced dark surfaces in this story to preserve visible boundaries in visual diffs.',
+              'Low-contrast themes render on grey-800 surfaces in this story to preserve visible boundaries in visual diffs.',
           }),
         },
       },
@@ -354,7 +351,7 @@ export const ByVariant: Story = {
           why: 'Matches design token review flow and quickly reveals per-theme variant drift.',
           how: 'Scan each row horizontally and compare hover/focus/disabled behavior across variants.',
           caveat:
-            'Rows for low-contrast themes are rendered on dark surfaces to avoid false negatives in visual QA.',
+            'Rows for low-contrast themes are rendered on grey-800 surfaces to avoid false negatives in visual QA.',
         }),
       },
     },
@@ -406,7 +403,7 @@ export const ByColour: Story = {
           why: 'Protects against variant implementation regressions during CSS refactors.',
           how: 'Compare each row across themes and verify that variant semantics remain consistent.',
           caveat:
-            'Low-contrast themes are split into a dark-surface section so white/secondary boundaries remain visible.',
+            'Low-contrast themes are split into a grey-800 surface section so white/secondary boundaries remain visible.',
         }),
       },
     },
@@ -450,7 +447,7 @@ export const ByColour: Story = {
         </div>
       </section>
 
-      <section className="dark rounded-sm border border-grey-700 bg-grey-900 p-3">
+      <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
         <div className="overflow-x-auto">
           <div className="min-w-[52rem] space-y-2">
             <div className="grid grid-cols-[9rem_repeat(2,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-grey-200">
@@ -468,7 +465,7 @@ export const ByColour: Story = {
             {variants.map((variant) => (
               <div
                 key={`variant-low-row-${variant}`}
-                className="grid grid-cols-[9rem_repeat(2,minmax(0,1fr))] items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-900/60 p-3"
+                className="grid grid-cols-[9rem_repeat(2,minmax(0,1fr))] items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3"
               >
                 <span className="text-sm font-semibold text-grey-100 capitalize">
                   {variant}
@@ -740,7 +737,7 @@ export const States: Story = {
           why: 'Disabled styling regressions are easy to miss during token or opacity refactors.',
           how: 'Confirm every cell shows reduced opacity and the pointer cursor is suppressed across all theme and variant combinations.',
           caveat:
-            'Low-contrast themes render on dark surfaces to preserve visible boundaries in visual QA.',
+            'Low-contrast themes render on grey-800 surfaces to preserve visible boundaries in visual QA.',
         }),
       },
     },

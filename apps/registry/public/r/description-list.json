@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "description-list",
+  "title": "Description List",
+  "description": "A responsive description list primitive for term and detail pairs.",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "files": [
+    {
+      "path": "src/components/description-list.tsx",
+      "content": "import type * as React from 'react'\n\nimport { cn } from '../lib/utils.js'\n\nexport function DescriptionList({ className, ...props }: React.ComponentPropsWithoutRef<'dl'>) {\n  return (\n    <dl\n      {...props}\n      className={cn(\n        className,\n        'grid grid-cols-1 text-base/6 sm:grid-cols-[min(50%,--spacing(80))_auto] sm:text-sm/6'\n      )}\n    />\n  )\n}\n\nexport function DescriptionTerm({ className, ...props }: React.ComponentPropsWithoutRef<'dt'>) {\n  return (\n    <dt\n      {...props}\n      className={cn(\n        className,\n        'col-start-1 border-t border-border pt-3 text-muted-foreground first:border-none sm:border-t sm:py-3'\n      )}\n    />\n  )\n}\n\nexport function DescriptionDetails({ className, ...props }: React.ComponentPropsWithoutRef<'dd'>) {\n  return (\n    <dd\n      {...props}\n      className={cn(\n        className,\n        'pt-1 pb-3 text-foreground sm:border-t sm:border-border sm:py-3 sm:nth-2:border-none'\n      )}\n    />\n  )\n}\n",
+      "type": "registry:ui",
+      "target": "components/description-list.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n\nexport function truncate(text: string, maxLength: number): string {\n  if (text.length <= maxLength) {\n    return text\n  }\n  return text.slice(0, maxLength) + '...'\n}\n\nexport function kebabCase(str: string) {\n  return str\n    .replace(/([a-z])([A-Z])/g, '$1-$2')\n    .replace(/[\\s_]+/g, '-')\n    .toLowerCase()\n}\n\nexport function camelCase(str: string) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())\n}\n\nexport function humaniseVariant(key: string): string {\n  return key\n    .replace(/([a-z])([A-Z0-9])/g, '$1 $2')\n    .replace(/([0-9])([A-Za-z])/g, '$1 $2')\n    .replace(/_/g, ' ')\n    .replace(/\\bFull\\s?Width\\b/gi, 'full width')\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .replace(/^./, (s) => s.toUpperCase())\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui"
+}

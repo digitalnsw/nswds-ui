@@ -12,11 +12,8 @@ import { Icons } from './icons.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
-const sizes = ['sm', 'default', 'lg', 'icon'] as const
-
-type VariantKey = (typeof variants)[number]
-type SizeKey = (typeof sizes)[number]
+type VariantKey = 'solid' | 'soft' | 'surface' | 'outline' | 'ghost' | 'link'
+type SizeKey = 'sm' | 'default' | 'lg' | 'icon'
 type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
 
 const lowContrastColors = ['white', 'secondary'] as const
@@ -53,21 +50,21 @@ const docsTemplate = ({
   caveat: string
 }) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
-function needsDarkSurface(color: ColorKey): boolean {
+function needsGreySurface(color: ColorKey): boolean {
   return lowContrastSet.has(color)
 }
 
 function titleClasses(color: ColorKey): string {
-  return needsDarkSurface(color) ? 'text-grey-50' : 'text-foreground'
+  return needsGreySurface(color) ? 'text-grey-50' : 'text-foreground'
 }
 
 function bodyClasses(color: ColorKey): string {
-  return needsDarkSurface(color) ? 'text-grey-200' : 'text-muted-foreground'
+  return needsGreySurface(color) ? 'text-grey-200' : 'text-muted-foreground'
 }
 
 function surfaceClasses(color: ColorKey): string {
-  return needsDarkSurface(color)
-    ? 'rounded-sm border border-grey-700 bg-grey-900 p-4'
+  return needsGreySurface(color)
+    ? 'rounded-sm border border-grey-700 bg-grey-800 p-4'
     : 'rounded-sm border border-border bg-background p-4'
 }
 
@@ -81,9 +78,7 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div
-      className={`${needsDarkSurface(color) ? 'dark ' : ''}${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
-    >
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>
       {children}
     </div>
   )

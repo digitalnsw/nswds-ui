@@ -200,7 +200,7 @@ const styles = {
     ],
     danger: [
       // Base
-      '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
+      '[--btn-bg:var(--color-danger-600)] [--btn-border:var(--color-danger-600)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-danger-600)]/10 [--btn-active-overlay:var(--color-danger-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',

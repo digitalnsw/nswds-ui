@@ -25,8 +25,7 @@ function Spinner({ className, size = 'md', ...props }: SpinnerProps) {
         fill="none"
         viewBox="0 0 100 101"
         className={cn(
-          'inline animate-spin text-grey-300',
-          'fill-primary-800',
+          'inline animate-spin text-muted-foreground/30 fill-primary',
           theme.size[size],
           className
         )}

@@ -12,8 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nswds/ui": "workspace:*",
-    "storybook-addon-performance": "^0.17.3"
+    "@nswds/ui": "workspace:*"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "10.5.0-alpha.2",
