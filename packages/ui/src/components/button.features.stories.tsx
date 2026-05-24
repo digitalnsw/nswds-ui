@@ -56,6 +56,7 @@ const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 const standardColors = colors.filter(
   (color) => !lowContrastSet.has(color)
 ) as ColorKey[]
+const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -626,11 +627,11 @@ export const InteractionStates: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Theme-first matrix showing default, hover, and active interaction states: each colour row has three sub-rows.',
-          why: 'Confirms hover and active overlays render correctly across all theme and variant combinations without live interaction.',
-          how: 'Compare the three sub-rows per theme — hover and active rows should show overlay contrast changes and border shifts.',
+          what: 'Theme-first matrix showing default, hover, active, and focused interaction states: each colour row has four sub-rows.',
+          why: 'Confirms hover, active, and focus treatments render correctly across all theme and variant combinations without live interaction.',
+          how: 'Compare the sub-rows per theme — hover and active rows should show overlay contrast changes, while focused rows should show the focus outline.',
           caveat:
-            'Hover and active states are forced via data attributes on native button elements so they remain stable in screenshots.',
+            'Hover and active states are forced via data attributes, and focus is forced with the component focus outline classes so every cell remains stable in screenshots.',
         }),
       },
     },
@@ -704,6 +705,24 @@ export const InteractionStates: Story = {
                 </button>
               ))}
             </div>
+
+            {/* Focused */}
+            <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
+              <span className={`text-xs ${bodyClasses(color)}`}>Focused</span>
+              {variants.map((variant) => (
+                <button
+                  key={`focused-${color}-${variant}`}
+                  data-variant={variant}
+                  className={cn(
+                    buttonVariants({ variant, color }),
+                    forcedFocusClasses,
+                    'w-full justify-center'
+                  )}
+                >
+                  Next
+                </button>
+              ))}
+            </div>
           </div>
         </ThemeSurface>
       ))}
@@ -760,6 +779,65 @@ export const States: Story = {
               >
                 Next
               </Button>
+            ))}
+          </div>
+        </ThemeSurface>
+      ))}
+    </div>
+  ),
+}
+
+export const Focused: Story = {
+  name: 'Focused',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Theme-first matrix with all buttons in the focused state: each row is a colour theme and each column is a variant.',
+          why: 'Focus styling regressions are easy to miss during token or outline refactors.',
+          how: 'Confirm every cell shows a visible focus outline using the button colour token.',
+          caveat:
+            'Focus is forced with the component focus outline classes so every cell can be reviewed at once.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className="w-full max-w-7xl space-y-3">
+      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+        <span>Theme</span>
+        {variants.map((variant) => (
+          <span
+            key={`focused-header-${variant}`}
+            className="text-center capitalize"
+          >
+            {variant}
+          </span>
+        ))}
+      </div>
+
+      {colors.map((color) => (
+        <ThemeSurface
+          key={`focused-row-${color}`}
+          color={color}
+          className="p-3"
+        >
+          <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
+              {color}
+            </span>
+            {variants.map((variant) => (
+              <button
+                key={`focused-${color}-${variant}`}
+                data-variant={variant}
+                className={cn(
+                  buttonVariants({ variant, color }),
+                  forcedFocusClasses,
+                  'w-full justify-center'
+                )}
+              >
+                Next
+              </button>
             ))}
           </div>
         </ThemeSurface>

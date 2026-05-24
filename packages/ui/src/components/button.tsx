@@ -149,63 +149,63 @@ const styles = {
       '[--btn-bg:var(--color-grey-600)] [--btn-border:var(--color-grey-600)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-grey-600)]/10 [--btn-active-overlay:var(--color-grey-600)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     white: [
       // Base
       '[--btn-bg:var(--color-white)] [--btn-border:var(--color-white)]/90 [--btn-text:var(--color-grey-800)]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-white)]/10 [--btn-active-overlay:var(--color-white)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-black)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-black)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     primary: [
       // Base
       '[--btn-bg:var(--color-primary-800)] [--btn-border:var(--color-primary-800)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-primary-800)]/10 [--btn-active-overlay:var(--color-primary-800)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     secondary: [
       // Base
       '[--btn-bg:var(--color-primary-200)] [--btn-border:var(--color-primary-200)]/90 [--btn-text:var(--color-primary-800)]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-primary-200)]/10 [--btn-active-overlay:var(--color-primary-200)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/15 data-[variant=solid]:[--btn-active-overlay:var(--color-primary-800)]/10',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/15',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-primary-800)]/10',
     ],
     tertiary: [
       // Base
       '[--btn-bg:var(--color-primary-600)] [--btn-border:var(--color-primary-600)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-primary-600)]/10 [--btn-active-overlay:var(--color-primary-600)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     accent: [
       // Base
       '[--btn-bg:var(--color-accent-600)] [--btn-border:var(--color-accent-600)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-accent-600)]/10 [--btn-active-overlay:var(--color-accent-600)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     danger: [
       // Base
       '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
       // State: Hover
       '[--btn-hover-overlay:var(--color-danger-600)]/10 [--btn-active-overlay:var(--color-danger-600)]/20',
-      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10 data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
-      '',
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
   },
   size: {

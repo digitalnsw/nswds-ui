@@ -4,7 +4,6 @@
  * Sub-groups live in separate story files so Storybook renders them as
  * collapsible sidebar folders:
  *   Components/Button/Features   → button.features.stories.tsx
- *   Components/Button/Examples   → button.examples.stories.tsx
  *   Components/Button/Tests      → button.tests.stories.tsx
  */
 
@@ -37,6 +36,45 @@ const meta = {
       sort: 'requiredFirst',
     },
     docs: {
+      page: () => (
+        <div className="max-w-3xl space-y-8 text-foreground">
+          <section className="space-y-3">
+            <h1 className="text-4xl font-bold tracking-normal">Button</h1>
+            <p className="text-base text-muted-foreground">
+              Buttons communicate actions users can take. Use the primary
+              colour for the main action, and choose quieter variants for
+              secondary or contextual actions.
+            </p>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
+            <Button>Continue</Button>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
+            <div className="flex flex-wrap gap-3">
+              {variants.map((variant) => (
+                <Button key={variant} variant={variant}>
+                  {variant}
+                </Button>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-bold tracking-normal">Colours</h2>
+            <div className="flex flex-wrap gap-3">
+              {colors.map((color) => (
+                <Button key={color} color={color}>
+                  {color}
+                </Button>
+              ))}
+            </div>
+          </section>
+        </div>
+      ),
       description: {
         component:
           'High-detail button stories for design QA, interaction regression testing, and accessibility verification. Stories are organized by **theme first** and include matrix, stress, and touch-target diagnostics.',

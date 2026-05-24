@@ -6,9 +6,11 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { forwardRef } from 'react'
 
 import { Button } from './button.js'
 import { Icons } from './icons.js'
+import { LinkProvider, type LinkProps } from './link.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -38,6 +40,20 @@ function IconLabel({ text }: { text: string }) {
   )
 }
 
+const RouterLink = forwardRef<HTMLAnchorElement, LinkProps>(function RouterLink(
+  { href, ...props },
+  ref
+) {
+  const resolvedHref =
+    typeof href === 'string'
+      ? href
+      : href && 'pathname' in href && typeof href.pathname === 'string'
+        ? href.pathname
+        : '#'
+
+  return <a {...props} data-router-link="true" href={resolvedHref} ref={ref} />
+})
+
 function getButton(canvasElement: HTMLElement, name: string) {
   const button = Array.from(canvasElement.querySelectorAll('button')).find(
     (el) => el.textContent === name || el.getAttribute('aria-label') === name
@@ -46,6 +62,24 @@ function getButton(canvasElement: HTMLElement, name: string) {
   if (!button) throw new Error(`Could not find button named "${name}".`)
 
   return button
+}
+
+function getLink(canvasElement: HTMLElement, name: string) {
+  const link = Array.from(canvasElement.querySelectorAll('a')).find((el) =>
+    el.textContent?.includes(name)
+  )
+
+  if (!link) throw new Error(`Could not find link named "${name}".`)
+
+  return link
+}
+
+function expectAttribute(element: Element, name: string, expectedValue: string) {
+  const receivedValue = element.getAttribute(name)
+
+  if (receivedValue !== expectedValue) {
+    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
+  }
 }
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
@@ -123,4 +157,72 @@ export const EdgeCases: Story = {
       </div>
     </div>
   ),
+}
+
+export const ContentStress: Story = {
+  name: 'Long Labels',
+  render: () => (
+    <div className="w-full max-w-3xl space-y-2 rounded-sm border border-border bg-background p-4">
+      <Button className="w-full justify-center" color="primary">
+        <IconLabel text="Continue to the final approval and release workflow" />
+      </Button>
+      <Button className="w-full justify-center" color="tertiary" variant="soft">
+        <IconLabel text="Nächster Schritt: Überprüfung und Veröffentlichung" />
+      </Button>
+      <Button className="w-full justify-center" color="accent" variant="outline">
+        <IconLabel text="مرحلہ اگلا: توثیق اور اجراء" />
+      </Button>
+    </div>
+  ),
+}
+
+export const LayoutStress: Story = {
+  name: 'Narrow Containers',
+  render: () => (
+    <div className="grid w-full max-w-5xl gap-4 md:grid-cols-2">
+      <div className="space-y-2 rounded-sm border border-border bg-background p-4">
+        <p className="text-sm font-medium text-foreground">Narrow card</p>
+        <Button className="w-full justify-center" color="primary">
+          <IconLabel text="Primary action" />
+        </Button>
+      </div>
+
+      <div className="dark space-y-2 rounded-sm border border-grey-700 bg-grey-900 p-4">
+        <p className="text-sm font-medium text-grey-100">Narrow card (light token)</p>
+        <Button className="w-full justify-center" color="secondary" variant="outline">
+          <IconLabel text="Secondary outline" />
+        </Button>
+      </div>
+    </div>
+  ),
+}
+
+export const LinkButton: Story = {
+  name: 'Link Button',
+  args: {
+    children: 'View services',
+    href: '#',
+    variant: 'solid',
+  },
+  play: async ({ canvasElement }) => {
+    const link = getLink(canvasElement, 'View services')
+
+    expectAttribute(link, 'href', '#')
+    expectAttribute(link, 'data-variant', 'solid')
+  },
+}
+
+export const RouterAdapter: Story = {
+  name: 'Router Adapter',
+  render: () => (
+    <LinkProvider component={RouterLink}>
+      <Button href={{ pathname: '#' }}>Open dashboard</Button>
+    </LinkProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const link = getLink(canvasElement, 'Open dashboard')
+
+    expectAttribute(link, 'href', '#')
+    expectAttribute(link, 'data-router-link', 'true')
+  },
 }

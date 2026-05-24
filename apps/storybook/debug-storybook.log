@@ -1,0 +1,9 @@
+[12:41:10.935] [INFO] storybook v10.5.0-alpha.2
+[12:41:10.982] [ERROR] [38;2;241;97;97mError: Invariant failed: expected options to have a port[39m
+    at invariant (file:///Users/lauren/Sites/nswds-ui/node_modules/.pnpm/storybook@10.5.0-alpha.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+react@19.2.15_pret_zejtlgwvn2bb77lks5mt7i3hwm/node_modules/storybook/dist/_node-chunks/chunk-ZLNLFIH2.js:20:11)
+    at buildDevStandalone (file:///Users/lauren/Sites/nswds-ui/node_modules/.pnpm/storybook@10.5.0-alpha.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+react@19.2.15_pret_zejtlgwvn2bb77lks5mt7i3hwm/node_modules/storybook/dist/core-server/index.js:19388:3)
+    at async withTelemetry (file:///Users/lauren/Sites/nswds-ui/node_modules/.pnpm/storybook@10.5.0-alpha.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+react@19.2.15_pret_zejtlgwvn2bb77lks5mt7i3hwm/node_modules/storybook/dist/_node-chunks/chunk-774ZWYNN.js:655:12)
+    at async dev (file:///Users/lauren/Sites/nswds-ui/node_modules/.pnpm/storybook@10.5.0-alpha.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+react@19.2.15_pret_zejtlgwvn2bb77lks5mt7i3hwm/node_modules/storybook/dist/bin/core.js:2736:3)
+    at async _Command.<anonymous> (file:///Users/lauren/Sites/nswds-ui/node_modules/.pnpm/storybook@10.5.0-alpha.2_@emnapi+core@1.10.0_@emnapi+runtime@1.10.0_@types+react@19.2.15_pret_zejtlgwvn2bb77lks5mt7i3hwm/node_modules/storybook/dist/bin/core.js:2806:92)
+[12:41:10.983] [WARN] Broken build, fix the error above.
+You may need to refresh the browser.

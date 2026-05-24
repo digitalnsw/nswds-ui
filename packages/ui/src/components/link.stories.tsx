@@ -114,7 +114,7 @@ export const RouterAdapter: Story = {
   },
 }
 
-export const CssCheck: Story = {
+export const StyledLink: Story = {
   args: {
     href: '#',
     children: 'CSS check',

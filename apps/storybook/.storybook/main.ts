@@ -11,9 +11,9 @@ const frameworkDir = dirname(require.resolve('@storybook/react-vite/package.json
 
 const config: StorybookConfig = {
   stories: ['../../../packages/ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  staticDirs: ['../public'],
   addons: [
     '@storybook/addon-docs',
-    '@storybook/addon-themes',
     '@storybook/addon-a11y',
     require.resolve('@storybook/addon-vitest'),
     'storybook-addon-performance',

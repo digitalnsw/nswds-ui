@@ -37,3 +37,5 @@ npm-debug.log*
 *.pem
 AGENTS.md
 CLAUDE.md
+
+/.pnpm-store
