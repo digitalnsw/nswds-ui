@@ -1,9 +1,8 @@
 {
   "extends": "@workspace/typescript-config/react-library.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
-      "@nswds/ui/globals.css": ["./src/styles/globals.css"],
+      "@nswds/ui/globals.css": ["./src/styles/globals.css.d.ts"],
       "@nswds/ui/components/*": ["./src/components/*.tsx"],
       "@nswds/ui/hooks/*": ["./src/hooks/*.ts"],
       "@nswds/ui/lib/*": ["./src/lib/*.ts"],

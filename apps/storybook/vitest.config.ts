@@ -1,8 +1,8 @@
-import { defineConfig } from 'vitest/config'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { defineConfig } from 'vitest/config'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -12,7 +12,7 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      '@base-ui/react/button',
+      '@headlessui/react',
       '@tabler/icons-react',
       'class-variance-authority',
       'clsx',
