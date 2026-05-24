@@ -1,1 +1,3 @@
-export const mswHandlers = {}
+import type { RequestHandler } from 'msw'
+
+export const mswHandlers: RequestHandler[] = []

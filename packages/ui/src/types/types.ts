@@ -38,7 +38,7 @@ export interface ColourScaleProps {
   colorsToUse: ColorData[]
 }
 
-export type colorCategories = {
+export type ColorCategories = {
   name: string
   colors: {
     token: string
@@ -52,7 +52,7 @@ export type colorCategories = {
 
 export type ColorThemes = {
   [key: string]: {
-    [key: string]: colorCategories
+    [key: string]: ColorCategories
   }
 }
 
@@ -104,7 +104,7 @@ export interface ColorData {
 }
 
 export interface ColorsDisplayProps {
-  colorCategories?: colorCategories[]
+  colorCategories?: ColorCategories[]
   baseColors?: string[]
   themeColor?: string | undefined
   colorsToUse: ColorData[]
@@ -121,7 +121,7 @@ export interface ColorSwatchesProps {
 }
 
 export interface ColourOutputProps {
-  colorCategories: colorCategories[]
+  colorCategories: ColorCategories[]
   colorsToUse: ColorData[]
   paletteName: string
   format: Format

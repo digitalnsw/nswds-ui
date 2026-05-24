@@ -7,7 +7,9 @@ import { dirname } from 'path'
 // directory (not the entry point) so that Storybook's preset validator can
 // find `<frameworkDir>/preset.js` — which is what it looks for internally.
 const require = createRequire(import.meta.url)
-const frameworkDir = dirname(require.resolve('@storybook/react-vite/package.json'))
+const frameworkDir = dirname(
+  require.resolve('@storybook/react-vite/package.json')
+)
 
 const config: StorybookConfig = {
   stories: ['../../../packages/ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -16,7 +18,6 @@ const config: StorybookConfig = {
     '@storybook/addon-docs',
     '@storybook/addon-a11y',
     require.resolve('@storybook/addon-vitest'),
-    '@storybook/addon-vitest'
   ],
   framework: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,7 +27,6 @@ const config: StorybookConfig = {
   viteFinal: async (config) => {
     const { default: tailwindcss } = await import('@tailwindcss/vite')
     config.plugins = [...(config.plugins ?? []), tailwindcss()]
-    config.resolve = { ...config.resolve, tsconfigPaths: true }
     return config
   },
 }

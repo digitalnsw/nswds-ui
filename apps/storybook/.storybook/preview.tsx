@@ -1,5 +1,3 @@
-import addonA11y from '@storybook/addon-a11y'
-import addonDocs from '@storybook/addon-docs'
 import '@nswds/ui/globals.css'
 import {
   DEFAULT_THEME,
@@ -9,6 +7,8 @@ import {
   resolvePrimaryHue,
   type ThemeCategory,
 } from '@nswds/ui/lib/theme-palette'
+import addonA11y from '@storybook/addon-a11y'
+import addonDocs from '@storybook/addon-docs'
 import { definePreview } from '@storybook/react-vite'
 import { initialize, mswLoader } from 'msw-storybook-addon'
 
@@ -70,7 +70,6 @@ export default definePreview({
     direction: {
       name: 'Direction',
       description: 'Text direction — sets the `dir` attribute',
-      defaultValue: 'ltr',
       toolbar: {
         icon: 'transfer',
         items: [
@@ -88,7 +87,6 @@ export default definePreview({
     themePrimary: DEFAULT_THEME.primaryHue,
     themeAccent: DEFAULT_THEME.accentHue,
     language: 'en',
-    direction: 'ltr',
   },
 
   decorators: [
@@ -101,20 +99,18 @@ export default definePreview({
       // the current palette can't render — picks always stay in one palette.
       const primaryHue = resolvePrimaryHue(
         category,
-        context.globals.themePrimary as string | undefined,
+        context.globals.themePrimary as string | undefined
       )
       const accentHue = resolveAccentHue(
         category,
         primaryHue,
-        context.globals.themeAccent as string | undefined,
+        context.globals.themeAccent as string | undefined
       )
 
       const language = (context.globals.language as string | undefined) ?? 'en'
       // If the chosen language is RTL and the user hasn't explicitly set
       // direction to something else, default to rtl.
-      const requestedDirection = context.globals.direction as
-        | string
-        | undefined
+      const requestedDirection = context.globals.direction as string | undefined
       const direction =
         requestedDirection ?? (RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr')
 
@@ -181,5 +177,5 @@ export default definePreview({
     },
   },
 
-  addons: [addonDocs(), addonA11y()]
+  addons: [addonDocs(), addonA11y()],
 })

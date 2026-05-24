@@ -330,7 +330,19 @@ const Button = forwardRef(function Button(
         React.ComponentPropsWithoutRef<typeof Link>,
         'className' | 'variant'
       >)}
-      className={classes}
+      {...(effectiveDisabled
+        ? {
+            'aria-disabled': true,
+            'data-disabled': '',
+            tabIndex: -1,
+            onClick: (e: React.MouseEvent<HTMLAnchorElement>) =>
+              e.preventDefault(),
+          }
+        : {})}
+      className={clsx(
+        classes,
+        effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
+      )}
       ref={ref as React.ForwardedRef<HTMLAnchorElement>}
     >
       {content}
@@ -343,7 +355,10 @@ const Button = forwardRef(function Button(
         'as' | 'className' | 'disabled'
       >)}
       disabled={effectiveDisabled}
-      className={clsx(classes, 'cursor-pointer')}
+      className={clsx(
+        classes,
+        effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
+      )}
       ref={ref}
     >
       {content}

@@ -11,8 +11,6 @@ import {
   Variant,
 } from '../types/types.js'
 
-void culori.rgb('tomato')
-
 export const shades = [
   'lightest',
   'lighter',
@@ -82,7 +80,7 @@ export const interpolateColors = (
   return results
 }
 
-export const GenerateInterpolatedColors = (
+export const generateInterpolatedColors = (
   colorArray: string[]
 ): ColorData[] => {
   const newColorArray = addStartStopToColorArray(colorArray)
@@ -281,7 +279,9 @@ export const renderColorOutputToDTFM = (
     if (!match) return str
 
     const colorSpace = match[1]!
-    const channelValues = match[2]!.split(/[\s,]+/).map((val) => parseFloat(val))
+    const channelValues = match[2]!
+      .split(/[\s,]+/)
+      .map((val) => parseFloat(val))
 
     return {
       colorSpace,
@@ -430,8 +430,7 @@ export const getColorValue = (
 
 export const createColorData = (baseColors: string[], format: Format) => {
   return baseColors.map((color) => {
-    const parsedColor = culori.parse(color)
-    if (!parsedColor) {
+    if (!culori.parse(color)) {
       console.warn(`Invalid color: ${color}`)
       return null
     }

@@ -104,46 +104,6 @@ const focusOutline = {
     // Soft
     'dark:data-[variant=soft]:[--focus-outline:var(--color-accent-600)]/60',
   ],
-  error: [
-    // Base
-    '',
-    // Base dark mode
-    '',
-    // Soft
-    '',
-    // Surface
-    '',
-  ],
-  success: [
-    // Base
-    '',
-    // Base dark mode
-    '',
-    // Soft
-    '',
-    // Surface
-    '',
-  ],
-  warning: [
-    // Base
-    '',
-    // Base dark mode
-    '',
-    // Soft
-    '',
-    // Surface
-    '',
-  ],
-  info: [
-    // Base
-    '',
-    // Base dark mode
-    '',
-    // Soft
-    '',
-    // Surface
-    '',
-  ],
 }
 
 const styles = {
@@ -311,15 +271,15 @@ const styles = {
       // States
       '[--badge-hover-overlay:var(--color-primary-800)]/10 data-[variant=solid]:[--badge-hover-overlay:var(--color-white)]/10',
       // Dark mode
-      'dark:text-white dark:bg-[--badge-hover-overlay:var(--color-primary-800)]/40 dark:data-[variant=solid]:bg-[--badge-hover-overlay:var(--color-primary-800)]',
+      'dark:text-white dark:bg-(--badge-bg)/40 dark:data-[variant=solid]:bg-(--badge-bg)',
       // Dark mode states
       'dark:[--badge-hover-overlay:var(--color-primary-800)]/50 dark:data-[variant=solid]:[--badge-hover-overlay:var(--color-white)]/5',
       // Dark border
-      'dark:data-[variant=surface]:border-[--badge-hover-overlay:var(--color-primary-700)]/60',
-      'dark:data-[variant=outline]:border-[--badge-hover-overlay:var(--color-primary-700)]',
+      'dark:data-[variant=surface]:border-(--badge-border)/60',
+      'dark:data-[variant=outline]:border-(--badge-border)',
       // Dark border states
-      'dark:data-[variant=surface]:data-active:border-[--badge-hover-overlay:var(--color-primary-700)]',
-      'dark:data-[variant=surface]:data-hover:border-[--badge-hover-overlay:var(--color-primary-700)]',
+      'dark:data-[variant=surface]:data-active:border-(--badge-border)',
+      'dark:data-[variant=surface]:data-hover:border-(--badge-border)',
     ],
     secondary: [
       // Base
@@ -351,46 +311,6 @@ const styles = {
       // Dark mode states
       'dark:[--badge-hover-overlay:var(--color-accent-500)]/30 dark:data-[variant=solid]:[--badge-hover-overlay:var(--color-white)]/10',
     ],
-    danger: [
-      // Base
-      '',
-      // States
-      '',
-      // Dark mode
-      '',
-      // Dark mode states
-      '',
-    ],
-    success: [
-      // Base
-      '',
-      // States
-      '',
-      // Dark mode
-      '',
-      // Dark mode states
-      '',
-    ],
-    warning: [
-      // Base
-      '',
-      // States
-      '',
-      // Dark mode
-      '',
-      // Dark mode states
-      '',
-    ],
-    info: [
-      // Base
-      '',
-      // States
-      '',
-      // Dark mode
-      '',
-      // Dark mode states
-      '',
-    ],
   },
   size: {
     default:
@@ -418,10 +338,6 @@ const badgeVariants = cva(styles.base, {
       secondary: styles.colors.secondary,
       tertiary: styles.colors.tertiary,
       accent: styles.colors.accent,
-      danger: styles.colors.danger,
-      success: styles.colors.success,
-      warning: styles.colors.warning,
-      info: styles.colors.info,
     },
     size: {
       default: styles.size.default,

@@ -2,7 +2,10 @@ import type * as React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-export function DescriptionList({ className, ...props }: React.ComponentPropsWithoutRef<'dl'>) {
+export function DescriptionList({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'dl'>) {
   return (
     <dl
       {...props}
@@ -14,7 +17,10 @@ export function DescriptionList({ className, ...props }: React.ComponentPropsWit
   )
 }
 
-export function DescriptionTerm({ className, ...props }: React.ComponentPropsWithoutRef<'dt'>) {
+export function DescriptionTerm({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'dt'>) {
   return (
     <dt
       {...props}
@@ -26,13 +32,16 @@ export function DescriptionTerm({ className, ...props }: React.ComponentPropsWit
   )
 }
 
-export function DescriptionDetails({ className, ...props }: React.ComponentPropsWithoutRef<'dd'>) {
+export function DescriptionDetails({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'dd'>) {
   return (
     <dd
       {...props}
       className={cn(
         className,
-        'pt-1 pb-3 text-foreground sm:border-t sm:border-border sm:py-3 sm:nth-2:border-none'
+        'pt-1 pb-3 text-foreground sm:border-t sm:border-border sm:py-3 sm:[&:nth-child(2)]:border-none'
       )}
     />
   )
