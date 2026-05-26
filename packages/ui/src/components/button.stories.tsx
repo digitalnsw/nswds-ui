@@ -30,6 +30,8 @@ const colors = [
   'tertiary',
   'accent',
   'danger',
+  'success',
+  'warning',
 ] as const
 
 const meta = {

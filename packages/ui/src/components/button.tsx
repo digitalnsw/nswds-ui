@@ -198,11 +198,36 @@ const styles = {
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
+    // Semantic colours use the raw NSW token names (--danger-600, --success-600,
+    // --warning-600) rather than Tailwind's `--color-*` bridge aliases. The
+    // bridge aliases are tree-shaken by Tailwind v4 unless a matching utility
+    // class is detected in scanned source, and arbitrary-property usages like
+    // `[--btn-bg:var(--color-success-600)]` do NOT count as a usage signal.
+    // The raw tokens are defined on :root by @nswds/tokens (a plain CSS import,
+    // not a Tailwind theme), so they always resolve.
     danger: [
       // Base
-      '[--btn-bg:var(--color-danger-600)] [--btn-border:var(--color-danger-600)]/90 [--btn-text:white]',
+      '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-danger-600)]/10 [--btn-active-overlay:var(--color-danger-600)]/20',
+      '[--btn-hover-overlay:var(--danger-600)]/10 [--btn-active-overlay:var(--danger-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
+      // State: Active
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+    ],
+    success: [
+      // Base
+      '[--btn-bg:var(--success-600)] [--btn-border:var(--success-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--success-600)]/10 [--btn-active-overlay:var(--success-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
+      // State: Active
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+    ],
+    warning: [
+      // Base
+      '[--btn-bg:var(--warning-600)] [--btn-border:var(--warning-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--warning-600)]/10 [--btn-active-overlay:var(--warning-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
@@ -235,6 +260,8 @@ const buttonVariants = cva(styles.base, {
       tertiary: styles.colors.tertiary,
       accent: styles.colors.accent,
       danger: styles.colors.danger,
+      success: styles.colors.success,
+      warning: styles.colors.warning,
     },
     size: {
       default: styles.size.default,
