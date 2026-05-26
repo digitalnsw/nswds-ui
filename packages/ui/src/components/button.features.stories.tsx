@@ -49,9 +49,6 @@ type ColorKey = (typeof colors)[number]
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
-const standardThemeColors = themeColors.filter(
-  (color) => !lowContrastSet.has(color)
-) as ColorKey[]
 
 const forcedFocusClasses =
   'outline outline-2 outline-offset-2 outline-(--btn-bg)'
@@ -502,13 +499,30 @@ export const InteractionStates: Story = {
           why: 'Confirms hover, active, and focus treatments render correctly across all theme and variant combinations without live interaction.',
           how: 'Compare the sub-rows per theme — hover and active rows should show overlay contrast changes, while focused rows should show the focus outline.',
           caveat:
-            'Hover and active states are forced via data attributes, and focus is forced with the component focus outline classes so every cell remains stable in screenshots.',
+            'Button uses native CSS :hover / :active which cannot be triggered without real pointer events. This story mirrors those rules onto a scoped [data-hover] / [data-active] attribute via the <style> block below so each row paints its state at rest. Focus is forced with the same outline utilities the component applies under :focus.',
         }),
       },
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className="force-state-grid w-full max-w-7xl space-y-3">
+      {/*
+        Mirror the :hover / :active rules from buttonVariants onto [data-hover] /
+        [data-active] so the rows below can paint their state without real
+        pointer events. Scoped to this story container (.force-state-grid)
+        only; the production component still relies on the native pseudo-classes.
+        Active is listed before hover so a button carrying both attrs picks
+        the hover overlay — matches CSS cascade order for :hover then :active.
+      */}
+      <style>{`
+        .force-state-grid [data-active]::after { background-color: var(--btn-active-overlay); }
+        .force-state-grid [data-hover]::after { background-color: var(--btn-hover-overlay); }
+        .force-state-grid [data-hover][data-variant="surface"],
+        .force-state-grid [data-active][data-variant="surface"] { border-color: var(--btn-bg); }
+        .force-state-grid [data-hover][data-variant="link"],
+        .force-state-grid [data-active][data-variant="link"] { text-decoration: underline; text-underline-offset: 4px; }
+      `}</style>
+
       <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Theme</span>
         {variants.map((variant) => (

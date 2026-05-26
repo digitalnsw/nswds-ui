@@ -1,0 +1,68 @@
+name: PR Checks
+
+# Runs on every PR targeting main. Enforces:
+#   - ESLint passes across the workspace
+#   - TypeScript typecheck passes across the workspace
+#   - Storybook stories load and pass their play() functions
+#   - axe-core a11y checks pass for every story (via @storybook/addon-a11y
+#     with `a11y.test: 'error'` in apps/storybook/.storybook/preview.tsx)
+#
+# Mark "Lint, Typecheck & Storybook a11y" as a required status check in
+# Settings → Branches → Branch protection → main to block merges on failure.
+
+on:
+  pull_request:
+    branches: [main]
+
+# Supersede in-flight runs for the same PR so the freshest commit's results
+# are the ones that matter (and we don't burn runner minutes on stale builds).
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Lint, Typecheck & Storybook a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.14.0"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Playwright system deps live outside ~/.cache/ms-playwright and would
+      # need re-installing on every cold runner anyway, so we install both
+      # the browser and its apt deps in one step. Roughly 30-60s on a cold
+      # runner; the browser binary itself is small (~150MB).
+      - name: Install Playwright Chromium
+        run: pnpm --filter @workspace/storybook exec playwright install chromium --with-deps
+
+      # Vitest browser mode runs every story file as a test. The storybookTest
+      # plugin auto-generates a `test()` per story export; @storybook/addon-a11y
+      # runs axe-core in an `afterEach` hook and (because preview.tsx sets
+      # `a11y.test: 'error'`) any violation fails the test.
+      - name: Storybook tests (Vitest browser + axe a11y)
+        run: pnpm --filter @workspace/storybook test

@@ -11,11 +11,11 @@
   },
   "iconLibrary": "tabler",
   "aliases": {
-    "components": "@nswds/ui/components",
-    "utils": "@nswds/ui/lib/utils",
-    "hooks": "@nswds/ui/hooks",
-    "lib": "@nswds/ui/lib",
-    "ui": "@nswds/ui/components"
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "hooks": "@/hooks",
+    "lib": "@/lib",
+    "ui": "@/components"
   },
   "rtl": true,
   "menuColor": "default",

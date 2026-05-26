@@ -16,8 +16,10 @@
 @import "@nswds/tokens/tailwind/colors/semantic/oklch.css";
 
 @custom-variant dark (&:is(.dark *));
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../components/**/*.{ts,tsx}";
+/* @source paths are relative to this file (packages/ui/src/styles/globals.css). */
+/* Reach repo-root apps/** by going up 4 levels: styles → src → ui → packages → root. */
+@source "../../../../apps/**/*.{ts,tsx}";
+/* Scan all of packages/ui/src (components, hooks, lib) for utility classes. */
 @source "../**/*.{ts,tsx}";
 
 @theme inline {
