@@ -1,7 +1,8 @@
-"use client"
+'use client'
 
-import { useMemo } from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import type * as React from 'react'
+import { useMemo } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from "../lib/utils.js"
 import { Label } from "../components/label.js"
