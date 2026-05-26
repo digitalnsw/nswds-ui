@@ -23,6 +23,12 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
     docs: { disable: true },
+    // Skip the axe a11y scan for the icon gallery. It renders the full
+    // ~3,500-icon set in a single grid for developer browsing, and running
+    // axe across that DOM tree blows the 15s Vitest timeout on CI runners.
+    // a11y for individual icons is the responsibility of the components
+    // that *use* them — not this dev-only catalogue.
+    a11y: { test: 'off' },
   },
 } satisfies Meta
 
