@@ -53,6 +53,15 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      # @nswds/ui's `exports` field points subpath imports
+      # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
+      # package must be built before Storybook can resolve them.
+      # apps/storybook/.storybook/main.ts aliases `@nswds/ui/globals.css`
+      # back to source for Tailwind live-scanning, but JS subpath imports
+      # still go through `exports` → `dist/`.
+      - name: Build @nswds/ui
+        run: pnpm --filter @nswds/ui build
+
       # Playwright system deps live outside ~/.cache/ms-playwright and would
       # need re-installing on every cold runner anyway, so we install both
       # the browser and its apt deps in one step. Roughly 30-60s on a cold

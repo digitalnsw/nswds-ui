@@ -33,6 +33,7 @@
     "@workspace/typescript-config": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "culori": "^4.0.2",
     "eslint": "^9.39.2",
     "mockdate": "^3.0.5",
     "msw": "^2.14.6",
