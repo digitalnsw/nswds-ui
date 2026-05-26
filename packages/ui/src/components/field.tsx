@@ -44,7 +44,11 @@ function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-group"
       className={cn(
-        "group/field-group @container/field-group flex w-full flex-col gap-4 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
+        // `has-[>[data-slot=…]]:gap-3` matches when FieldGroup CONTAINS a
+        // checkbox/radio group child. The original `data-[slot=checkbox-group]:gap-3`
+        // was self-referential (this element's slot is `field-group`) and
+        // could never apply. Mirrors the rule on FieldSet above.
+        "group/field-group @container/field-group flex w-full flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3 *:data-[slot=field-group]:gap-4",
         className
       )}
       {...props}
