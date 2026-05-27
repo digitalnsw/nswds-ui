@@ -22,8 +22,6 @@ type LinkVariant = NonNullable<LinkProps['variant']>
 const linkVariantList = [
   'primary',
   'secondary',
-  'tertiary',
-  'accent',
   'white',
 ] as const satisfies ReadonlyArray<LinkVariant>
 
@@ -92,11 +90,11 @@ export const Variants: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Matrix of the five built-in colour variants (`primary` default, `secondary`, `tertiary`, `accent`, `white`) against four interaction states (default, hover, focus, active). Each row is a variant; each column is a state forced at rest so the indicator can be reviewed without pointer events.',
+          what: 'Matrix of the three built-in colour variants (`primary` default, `secondary`, `white`) against four interaction states (default, hover, focus, active). Each row is a variant; each column is a state forced at rest so the indicator can be reviewed without pointer events.',
           why: 'Matches the Button "By Variant" review flow and quickly reveals per-variant state drift across the brand palette in a single visual diff.',
           how: 'Scan each row horizontally and confirm the variant\'s colour, underline, hover overlay, focus ring, and pressed state all read correctly. Toggle the dark-mode addon and repeat.',
           caveat:
-            'Low-contrast variants (white, secondary) are rendered on a `grey-800` surface to avoid false negatives in visual QA. Hover, focus, and active columns pre-apply the styling those pseudo-classes would produce — they are not real pointer/keyboard events.',
+            '`secondary` and `white` are intended for dark surfaces and are rendered on a `grey-800` panel here. Hover, focus, and active columns pre-apply the styling those pseudo-classes would produce — they are not real pointer/keyboard events.',
         }),
       },
     },
@@ -185,23 +183,13 @@ export const InParagraph: Story = {
       </p>
 
       <p>
-        Find your nearest{' '}
-        <Link href="/services" variant="tertiary">
-          service centre
-        </Link>{' '}
-        or browse the full{' '}
-        <Link href="/a-z" variant="tertiary">
-          A–Z of services
-        </Link>{' '}
-        — both pages are kept up to date by the relevant agency.
+        Find your nearest <Link href="/services">service centre</Link> or
+        browse the full <Link href="/a-z">A–Z of services</Link> — both pages
+        are kept up to date by the relevant agency.
       </p>
 
       <p>
-        In an emergency, call{' '}
-        <Link href="tel:000" variant="accent">
-          Triple Zero (000)
-        </Link>
-        . For non-urgent matters visit{' '}
+        For more information visit{' '}
         <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>{' '}
         or contact Service NSW.
       </p>

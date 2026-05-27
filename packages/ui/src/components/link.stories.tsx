@@ -45,26 +45,25 @@ const meta = {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
             <p className="text-sm text-muted-foreground">
-              Five built-in colour variants. Defaults to <code>primary</code>.
+              Three built-in colour variants. Defaults to{' '}
+              <code>primary</code>. Use <code>secondary</code> on dark
+              surfaces where <code>primary</code> would lose contrast, and{' '}
+              <code>white</code> on coloured / image backgrounds.
             </p>
             <div className="flex flex-wrap gap-6">
               <Link href="/primary" variant="primary">
                 Primary
               </Link>
-              <Link href="/secondary" variant="secondary">
-                Secondary
-              </Link>
-              <Link href="/tertiary" variant="tertiary">
-                Tertiary
-              </Link>
-              <Link href="/accent" variant="accent">
-                Accent
-              </Link>
-            </div>
-            <div className="rounded-sm bg-primary-800 p-4">
-              <Link href="/white" variant="white">
-                White (on dark background)
-              </Link>
+              <div className="rounded-sm bg-primary-800 px-3 py-2">
+                <Link href="/secondary" variant="secondary">
+                  Secondary
+                </Link>
+              </div>
+              <div className="rounded-sm bg-primary-800 px-3 py-2">
+                <Link href="/white" variant="white">
+                  White
+                </Link>
+              </div>
             </div>
           </section>
 
@@ -137,7 +136,7 @@ const meta = {
     },
     variant: {
       control: 'select',
-      options: ['primary', 'secondary', 'tertiary', 'accent', 'white'],
+      options: ['primary', 'secondary', 'white'],
       description:
         'Colour variant. Defaults to `primary`. Use `white` on dark surfaces.',
       table: { category: 'Appearance' },

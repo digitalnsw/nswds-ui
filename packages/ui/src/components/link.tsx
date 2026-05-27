@@ -47,12 +47,6 @@ const linkVariants = cva(
         secondary: [
           '[--link-color:var(--color-primary-200)] dark:[--link-color:var(--color-primary-800)]',
         ],
-        tertiary: [
-          '[--link-color:var(--color-primary-600)] dark:[--link-color:var(--color-primary-300)]',
-        ],
-        accent: [
-          '[--link-color:var(--color-accent-600)] dark:[--link-color:var(--color-accent-200)]',
-        ],
         white: [
           '[--link-color:var(--color-white)] dark:[--link-color:var(--color-grey-800)]',
         ],

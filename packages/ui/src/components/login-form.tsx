@@ -44,17 +44,24 @@ export function LoginForm({
                   required
                 />
               </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <a
-                    href="#"
-                    className="ms-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
+              <Field className="relative">
+                <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input id="password" type="password" required />
+                {/*
+                 * Placed AFTER the input in DOM (rather than next to the
+                 * label) so keyboard tab order is email → password → forgot,
+                 * not email → forgot → password. Visually positioned at the
+                 * top-right via absolute positioning to preserve the
+                 * "Forgot your password?" alongside-label layout. See WCAG
+                 * 2.4.3 Focus Order test in
+                 * login-form.accessibility.stories.tsx.
+                 */}
+                <a
+                  href="#"
+                  className="absolute top-0 right-0 text-sm underline-offset-4 hover:underline"
+                >
+                  Forgot your password?
+                </a>
               </Field>
               <Field>
                 <Button type="submit">Login</Button>
