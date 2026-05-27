@@ -28,6 +28,7 @@ function collectEntries(dir: string): Record<string, string> {
         if (
           !extensions.has(extension) ||
           name.endsWith('.stories.tsx') ||
+          name === 'story-helpers.tsx' ||
           name.endsWith('.d.ts')
         ) {
           return []

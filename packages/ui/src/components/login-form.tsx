@@ -1,31 +1,31 @@
 'use client'
 
-import type * as React from "react"
+import type * as React from 'react'
 
-import { cn } from "../lib/utils.js"
-import { Button } from "../components/button.js"
+import { Button } from '../components/button.js'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../components/card.js"
+} from '../components/card.js'
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "../components/field.js"
-import { Input } from "../components/input.js"
+} from '../components/field.js'
+import { Input } from '../components/input.js'
+import { cn } from '../lib/utils.js'
 
 export function LoginForm({
   className,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<'div'>) {
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
+    <div className={cn('flex flex-col gap-6', className)} {...props}>
+      <Card className="w-full px-6 py-10">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
