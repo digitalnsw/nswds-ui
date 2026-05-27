@@ -9,7 +9,7 @@
       "title": "Button",
       "description": "A button component with variants and sizes.",
       "dependencies": [
-        "@headlessui/react",
+        "@base-ui/react",
         "class-variance-authority",
         "clsx",
         "tailwind-merge"
@@ -33,7 +33,7 @@
       "title": "Badge",
       "description": "A badge component with variants, colours, sizes, and interactive button/link variants.",
       "dependencies": [
-        "@headlessui/react",
+        "@base-ui/react",
         "class-variance-authority",
         "clsx",
         "tailwind-merge"
@@ -98,7 +98,7 @@
       "type": "registry:ui",
       "title": "Link",
       "description": "A link primitive with a provider for app router link components.",
-      "dependencies": ["@headlessui/react"],
+      "dependencies": [],
       "files": [
         {
           "path": "src/components/link.tsx",

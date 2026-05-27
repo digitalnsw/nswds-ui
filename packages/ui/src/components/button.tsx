@@ -1,6 +1,6 @@
 'use client'
 
-import * as Headless from '@headlessui/react'
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 import clsx from 'clsx'
 import React, { forwardRef } from 'react'
@@ -18,7 +18,7 @@ const styles = {
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
     // Icon
-    '*:data-[slot=icon]:-mx-0.25 *:data-[slot=icon]:my-0.25 sm:*:data-[slot=icon]:my-0.5 *:data-[slot=icon]:size-(--btn-icon-size) *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) forced-colors:[--btn-icon:ButtonText] forced-colors:data-hover:[--btn-icon:ButtonText]',
+    '*:data-[slot=icon]:-mx-0.25 *:data-[slot=icon]:my-0.25 sm:*:data-[slot=icon]:my-0.5 *:data-[slot=icon]:size-(--btn-icon-size) *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText]',
   ],
   solid: [
     // Text color
@@ -38,7 +38,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // State overlays
-    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    'hover:after:bg-(--btn-hover-overlay) active:after:bg-(--btn-active-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -62,7 +62,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // State overlays
-    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    'hover:after:bg-(--btn-hover-overlay) active:after:bg-(--btn-active-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -86,9 +86,9 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // Border color on hover
-    'data-active:border-(--btn-bg) data-hover:border-(--btn-bg)',
+    'active:border-(--btn-bg) hover:border-(--btn-bg)',
     // State overlays
-    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    'hover:after:bg-(--btn-hover-overlay) active:after:bg-(--btn-active-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -110,7 +110,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // State overlays
-    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    'hover:after:bg-(--btn-hover-overlay) active:after:bg-(--btn-active-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -130,7 +130,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // State overlays
-    'data-hover:after:bg-(--btn-hover-overlay) data-active:after:bg-(--btn-active-overlay)',
+    'hover:after:bg-(--btn-hover-overlay) active:after:bg-(--btn-active-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -140,7 +140,7 @@ const styles = {
     // Text color — inherits from color token, no background or border
     'text-(--btn-bg) border-transparent bg-transparent',
     // Underline on interaction
-    'underline-offset-4 data-hover:underline data-active:underline',
+    'underline-offset-4 hover:underline active:underline',
     // No pseudo-layers needed
   ],
   colors: {
@@ -198,11 +198,36 @@ const styles = {
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
+    // Semantic colours use the raw NSW token names (--danger-600, --success-600,
+    // --warning-600) rather than Tailwind's `--color-*` bridge aliases. The
+    // bridge aliases are tree-shaken by Tailwind v4 unless a matching utility
+    // class is detected in scanned source, and arbitrary-property usages like
+    // `[--btn-bg:var(--color-success-600)]` do NOT count as a usage signal.
+    // The raw tokens are defined on :root by @nswds/tokens (a plain CSS import,
+    // not a Tailwind theme), so they always resolve.
     danger: [
       // Base
-      '[--btn-bg:var(--color-danger-600)] [--btn-border:var(--color-danger-600)]/90 [--btn-text:white]',
+      '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-danger-600)]/10 [--btn-active-overlay:var(--color-danger-600)]/20',
+      '[--btn-hover-overlay:var(--danger-600)]/10 [--btn-active-overlay:var(--danger-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
+      // State: Active
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+    ],
+    success: [
+      // Base
+      '[--btn-bg:var(--success-600)] [--btn-border:var(--success-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--success-600)]/10 [--btn-active-overlay:var(--success-600)]/20',
+      'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
+      // State: Active
+      'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
+    ],
+    warning: [
+      // Base
+      '[--btn-bg:var(--warning-600)] [--btn-border:var(--warning-600)]/90 [--btn-text:white]',
+      // State: Hover
+      '[--btn-hover-overlay:var(--warning-600)]/10 [--btn-active-overlay:var(--warning-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
@@ -235,6 +260,8 @@ const buttonVariants = cva(styles.base, {
       tertiary: styles.colors.tertiary,
       accent: styles.colors.accent,
       danger: styles.colors.danger,
+      success: styles.colors.success,
+      warning: styles.colors.warning,
     },
     size: {
       default: styles.size.default,
@@ -271,7 +298,7 @@ type ButtonProps = VariantProps<typeof buttonVariants> & {
   /** Optional numeric badge rendered after the label. */
   count?: number
 } & (
-    | Omit<Headless.ButtonProps, 'as' | 'className' | 'disabled'>
+    | Omit<ButtonPrimitive.Props, 'className' | 'disabled' | 'render'>
     | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
   )
 
@@ -348,11 +375,11 @@ const Button = forwardRef(function Button(
       {content}
     </Link>
   ) : (
-    <Headless.Button
+    <ButtonPrimitive
       data-variant={variant}
       {...(props as Omit<
-        Headless.ButtonProps,
-        'as' | 'className' | 'disabled'
+        ButtonPrimitive.Props,
+        'className' | 'disabled' | 'render'
       >)}
       disabled={effectiveDisabled}
       className={clsx(
@@ -362,7 +389,7 @@ const Button = forwardRef(function Button(
       ref={ref}
     >
       {content}
-    </Headless.Button>
+    </ButtonPrimitive>
   )
 })
 

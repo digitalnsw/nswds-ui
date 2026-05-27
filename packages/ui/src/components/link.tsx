@@ -1,6 +1,5 @@
 'use client'
 
-import * as Headless from '@headlessui/react'
 import React, { createContext, forwardRef, useContext } from 'react'
 
 type LinkComponent = React.ElementType
@@ -26,6 +25,16 @@ function LinkProvider({
   )
 }
 
+/**
+ * Polymorphic anchor wrapper. Renders an `<a>` by default, or any element
+ * provided via the `as` prop, or via a `<LinkProvider component={…}>` context
+ * (use the context to inject a framework Link like Next.js `next/link`).
+ *
+ * Hover / active / focus styling on consumers should use the native CSS
+ * pseudo-class utilities (`hover:`, `active:`, `focus-visible:`, and their
+ * `group-…` variants) — Tailwind v4 maps them to real CSS, no JS state
+ * tracking required.
+ */
 const Link = forwardRef(function Link(
   { as, ...props }: LinkProps,
   ref: React.ForwardedRef<HTMLAnchorElement>
@@ -33,11 +42,7 @@ const Link = forwardRef(function Link(
   const ContextLink = useContext(LinkComponentContext)
   const component = as ?? ContextLink ?? 'a'
 
-  return (
-    <Headless.DataInteractive>
-      {React.createElement(component, { ...props, ref })}
-    </Headless.DataInteractive>
-  )
+  return React.createElement(component, { ...props, ref })
 })
 
 export { Link, LinkProvider }

@@ -34,23 +34,21 @@ const variants = [
   'link',
 ] as const
 const sizes = ['sm', 'default', 'lg', 'icon'] as const
-const colors = [
+const themeColors = [
   'white',
   'grey',
   'primary',
   'secondary',
   'tertiary',
   'accent',
-  'danger',
 ] as const
+const semanticColors = ['danger', 'success', 'warning'] as const
+const colors = [...themeColors, ...semanticColors] as const
 
 type ColorKey = (typeof colors)[number]
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
-const standardColors = colors.filter(
-  (color) => !lowContrastSet.has(color)
-) as ColorKey[]
 
 const forcedFocusClasses =
   'outline outline-2 outline-offset-2 outline-(--btn-bg)'
@@ -135,22 +133,8 @@ function getButton(canvasElement: HTMLElement, name: string) {
 
 // ─── Matrix stories ───────────────────────────────────────────────────────────
 
-export const ByVariant: Story = {
-  name: 'By Variant',
-  parameters: {
-    docs: {
-      description: {
-        story: docsTemplate({
-          what: 'Theme-first matrix: each row is a color theme and each column is a variant.',
-          why: 'Matches design token review flow and quickly reveals per-theme variant drift.',
-          how: 'Scan each row horizontally and compare hover/focus/disabled behavior across variants.',
-          caveat:
-            'Rows for low-contrast themes are rendered on grey-800 surfaces to avoid false negatives in visual QA.',
-        }),
-      },
-    },
-  },
-  render: () => (
+function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
+  return (
     <div className="w-full max-w-7xl space-y-3">
       <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Theme</span>
@@ -164,7 +148,7 @@ export const ByVariant: Story = {
         ))}
       </div>
 
-      {colors.map((color) => (
+      {rowColors.map((color) => (
         <ThemeSurface key={`theme-row-${color}`} color={color} className="p-3">
           <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
             <span className={`text-sm font-semibold ${titleClasses(color)}`}>
@@ -184,71 +168,73 @@ export const ByVariant: Story = {
         </ThemeSurface>
       ))}
     </div>
-  ),
+  )
 }
 
-export const ByColour: Story = {
-  name: 'By Colour',
+export const ByVariantTheme: Story = {
+  name: 'By Variant - Theme',
   parameters: {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Variant-first matrix: each row is a variant and each column is a theme.',
-          why: 'Protects against variant implementation regressions during CSS refactors.',
-          how: 'Compare each row across themes and verify that variant semantics remain consistent.',
+          what: 'Theme-first matrix limited to brand theme colours (white, grey, primary, secondary, tertiary, accent): each row is a colour theme and each column is a variant.',
+          why: 'Matches design token review flow and quickly reveals per-theme variant drift across the brand palette.',
+          how: 'Scan each row horizontally and compare hover/focus/disabled behavior across variants.',
           caveat:
-            'Low-contrast themes are split into a grey-800 surface section so white/secondary boundaries remain visible.',
+            'Rows for low-contrast themes (white, secondary) are rendered on grey-800 surfaces to avoid false negatives in visual QA.',
         }),
       },
     },
   },
-  render: () => (
+  render: () => <ByVariantMatrix rowColors={themeColors} />,
+}
+
+export const ByVariantSemantic: Story = {
+  name: 'By Variant - Semantic',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Theme-first matrix limited to semantic colours (danger, success, warning): each row is a semantic colour and each column is a variant.',
+          why: 'Keeps status-conveying tokens together so success/warning/danger contrast and weight can be compared in isolation from brand colours.',
+          how: 'Scan each row horizontally and verify the semantic meaning still reads correctly across every variant (e.g. ghost danger still reads as danger).',
+          caveat:
+            'All semantic colours use high-contrast 600-step values on a white text baseline, so no grey surface treatment is needed.',
+        }),
+      },
+    },
+  },
+  render: () => <ByVariantMatrix rowColors={semanticColors} />,
+}
+
+function ByColourMatrix({
+  groupColors,
+}: {
+  groupColors: readonly ColorKey[]
+}) {
+  const standard = groupColors.filter((color) => !lowContrastSet.has(color))
+  const lowContrast = groupColors.filter((color) => lowContrastSet.has(color))
+  const standardCols = standard.length
+  const lowCols = lowContrast.length
+
+  return (
     <div className="w-full max-w-7xl space-y-4">
-      <section className="overflow-x-auto">
-        <div className="min-w-[66rem] space-y-2">
-          <div className="grid grid-cols-[9rem_repeat(5,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
-            <span>Variant</span>
-            {standardColors.map((color) => (
-              <span
-                key={`variant-standard-header-${color}`}
-                className="text-center"
-              >
-                {color}
-              </span>
-            ))}
-          </div>
-
-          {variants.map((variant) => (
+      {standardCols > 0 && (
+        <section className="overflow-x-auto">
+          <div
+            className="space-y-2"
+            style={{ minWidth: `${16 + standardCols * 10}rem` }}
+          >
             <div
-              key={`variant-standard-row-${variant}`}
-              className="grid grid-cols-[9rem_repeat(5,minmax(0,1fr))] items-center gap-2 rounded-sm border border-border bg-background p-3"
+              className="grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground"
+              style={{
+                gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
+              }}
             >
-              <span className="text-sm font-semibold text-foreground capitalize">
-                {variant}
-              </span>
-              {standardColors.map((color) => (
-                <Button
-                  key={`variant-standard-${variant}-${color}`}
-                  variant={variant}
-                  color={color}
-                  className="w-full justify-center"
-                >
-                  Next
-                </Button>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
-        <div className="overflow-x-auto">
-          <div className="min-w-[52rem] space-y-2">
-            <div className="grid grid-cols-[9rem_repeat(2,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-grey-200">
               <span>Variant</span>
-              {lowContrastColors.map((color) => (
+              {standard.map((color) => (
                 <span
-                  key={`variant-low-header-${color}`}
+                  key={`variant-standard-header-${color}`}
                   className="text-center"
                 >
                   {color}
@@ -258,15 +244,18 @@ export const ByColour: Story = {
 
             {variants.map((variant) => (
               <div
-                key={`variant-low-row-${variant}`}
-                className="grid grid-cols-[9rem_repeat(2,minmax(0,1fr))] items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3"
+                key={`variant-standard-row-${variant}`}
+                className="grid items-center gap-2 rounded-sm border border-border bg-background p-3"
+                style={{
+                  gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
+                }}
               >
-                <span className="text-sm font-semibold text-grey-100 capitalize">
+                <span className="text-sm font-semibold text-foreground capitalize">
                   {variant}
                 </span>
-                {lowContrastColors.map((color) => (
+                {standard.map((color) => (
                   <Button
-                    key={`variant-low-${variant}-${color}`}
+                    key={`variant-standard-${variant}-${color}`}
                     variant={variant}
                     color={color}
                     className="w-full justify-center"
@@ -277,10 +266,98 @@ export const ByColour: Story = {
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {lowCols > 0 && (
+        <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
+          <div className="overflow-x-auto">
+            <div
+              className="space-y-2"
+              style={{ minWidth: `${16 + lowCols * 18}rem` }}
+            >
+              <div
+                className="grid items-center gap-2 px-3 text-xs font-semibold text-grey-200"
+                style={{
+                  gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
+                }}
+              >
+                <span>Variant</span>
+                {lowContrast.map((color) => (
+                  <span
+                    key={`variant-low-header-${color}`}
+                    className="text-center"
+                  >
+                    {color}
+                  </span>
+                ))}
+              </div>
+
+              {variants.map((variant) => (
+                <div
+                  key={`variant-low-row-${variant}`}
+                  className="grid items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3"
+                  style={{
+                    gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
+                  }}
+                >
+                  <span className="text-sm font-semibold text-grey-100 capitalize">
+                    {variant}
+                  </span>
+                  {lowContrast.map((color) => (
+                    <Button
+                      key={`variant-low-${variant}-${color}`}
+                      variant={variant}
+                      color={color}
+                      className="w-full justify-center"
+                    >
+                      Next
+                    </Button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
-  ),
+  )
+}
+
+export const ByColourTheme: Story = {
+  name: 'By Colour - Theme',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Variant-first matrix limited to brand theme colours: each row is a variant and each column is a brand colour.',
+          why: 'Protects against variant implementation regressions during CSS refactors of the brand palette.',
+          how: 'Compare each row across brand colours and verify that variant semantics remain consistent.',
+          caveat:
+            'Low-contrast themes (white, secondary) are split into a grey-800 surface section so their boundaries remain visible.',
+        }),
+      },
+    },
+  },
+  render: () => <ByColourMatrix groupColors={themeColors} />,
+}
+
+export const ByColourSemantic: Story = {
+  name: 'By Colour - Semantic',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Variant-first matrix limited to semantic colours: each row is a variant and each column is a semantic colour (danger, success, warning).',
+          why: 'Keeps the status palette together so danger/success/warning can be reviewed for visual parity across every variant.',
+          how: 'Compare each row across the semantic columns and verify hover/active/disabled treatments scale the same way as the brand colours.',
+          caveat:
+            'All semantic colours render on the default background — none qualify as low-contrast.',
+        }),
+      },
+    },
+  },
+  render: () => <ByColourMatrix groupColors={semanticColors} />,
 }
 
 // ─── Sizes ───────────────────────────────────────────────────────────────────
@@ -422,13 +499,30 @@ export const InteractionStates: Story = {
           why: 'Confirms hover, active, and focus treatments render correctly across all theme and variant combinations without live interaction.',
           how: 'Compare the sub-rows per theme — hover and active rows should show overlay contrast changes, while focused rows should show the focus outline.',
           caveat:
-            'Hover and active states are forced via data attributes, and focus is forced with the component focus outline classes so every cell remains stable in screenshots.',
+            'Button uses native CSS :hover / :active which cannot be triggered without real pointer events. This story mirrors those rules onto a scoped [data-hover] / [data-active] attribute via the <style> block below so each row paints its state at rest. Focus is forced with the same outline utilities the component applies under :focus.',
         }),
       },
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className="force-state-grid w-full max-w-7xl space-y-3">
+      {/*
+        Mirror the :hover / :active rules from buttonVariants onto [data-hover] /
+        [data-active] so the rows below can paint their state without real
+        pointer events. Scoped to this story container (.force-state-grid)
+        only; the production component still relies on the native pseudo-classes.
+        Hover is listed before active so a button carrying both attrs picks
+        the active overlay — matching the normal :hover then :active cascade.
+      */}
+      <style>{`
+        .force-state-grid [data-hover]::after { background-color: var(--btn-hover-overlay); }
+        .force-state-grid [data-active]::after { background-color: var(--btn-active-overlay); }
+        .force-state-grid [data-hover][data-variant="surface"],
+        .force-state-grid [data-active][data-variant="surface"] { border-color: var(--btn-bg); }
+        .force-state-grid [data-hover][data-variant="link"],
+        .force-state-grid [data-active][data-variant="link"] { text-decoration: underline; text-underline-offset: 4px; }
+      `}</style>
+
       <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Theme</span>
         {variants.map((variant) => (

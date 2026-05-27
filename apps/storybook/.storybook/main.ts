@@ -1,6 +1,7 @@
 import type { StorybookConfig } from '@storybook/react-vite'
 import { createRequire } from 'module'
-import { dirname } from 'path'
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
 
 // `storybook` CLI is hoisted to the root node_modules, but the framework
 // adapter lives in this workspace's node_modules. Resolve to the package
@@ -27,6 +28,22 @@ const config: StorybookConfig = {
   viteFinal: async (config) => {
     const { default: tailwindcss } = await import('@tailwindcss/vite')
     config.plugins = [...(config.plugins ?? []), tailwindcss()]
+
+    // The `@nswds/ui/globals.css` subpath export resolves to the pre-built
+    // `dist/styles.css`, which only contains utilities scanned at the last
+    // `pnpm build:css`. For dev/preview we need the SOURCE CSS so the Vite
+    // Tailwind plugin can scan packages/ui/src (and apps/**) live and emit
+    // utilities for whatever the stories actually use.
+    const here = dirname(fileURLToPath(import.meta.url))
+    config.resolve = config.resolve ?? {}
+    config.resolve.alias = {
+      ...(config.resolve.alias as Record<string, string> | undefined),
+      '@nswds/ui/globals.css': resolve(
+        here,
+        '../../../packages/ui/src/styles/globals.css'
+      ),
+    }
+
     return config
   },
 }

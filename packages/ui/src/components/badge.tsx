@@ -1,6 +1,6 @@
 'use client'
 
-import * as Headless from '@headlessui/react'
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 import clsx from 'clsx'
 import React, { forwardRef } from 'react'
@@ -131,7 +131,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // White overlay on hover
-    'group-data-active:after:bg-(--badge-hover-overlay) group-data-hover:after:bg-(--badge-hover-overlay)',
+    'group-active:after:bg-(--badge-hover-overlay) group-hover:after:bg-(--badge-hover-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -155,7 +155,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // White overlay on hover
-    'group-data-active:after:bg-(--badge-hover-overlay) group-data-hover:after:bg-(--badge-hover-overlay)',
+    'group-active:after:bg-(--badge-hover-overlay) group-hover:after:bg-(--badge-hover-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -179,9 +179,9 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // Border color on hover
-    'group-data-active:border-(--badge-bg) group-data-hover:border-(--badge-bg)',
+    'group-active:border-(--badge-bg) group-hover:border-(--badge-bg)',
     // White overlay on hover
-    'group-data-active:after:bg-(--badge-hover-overlay) group-data-hover:after:bg-(--badge-hover-overlay)',
+    'group-active:after:bg-(--badge-hover-overlay) group-hover:after:bg-(--badge-hover-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -203,7 +203,7 @@ const styles = {
     // Shim/overlay, inset to match button foreground and used for hover state + highlight shadow
     'after:absolute after:inset-0 after:-z-10 after:rounded-[calc(var(--radius-sm)-1px)]',
     // White overlay on hover
-    'group-data-active:after:bg-(--badge-hover-overlay) group-data-hover:after:bg-(--badge-hover-overlay)',
+    'group-active:after:bg-(--badge-hover-overlay) group-hover:after:bg-(--badge-hover-overlay)',
     // Dark mode: `after` layer expands to cover entire button
     'dark:after:-inset-px dark:after:rounded-sm',
     // Disabled
@@ -278,8 +278,8 @@ const styles = {
       'dark:data-[variant=surface]:border-(--badge-border)/60',
       'dark:data-[variant=outline]:border-(--badge-border)',
       // Dark border states
-      'dark:data-[variant=surface]:data-active:border-(--badge-border)',
-      'dark:data-[variant=surface]:data-hover:border-(--badge-border)',
+      'dark:data-[variant=surface]:active:border-(--badge-border)',
+      'dark:data-[variant=surface]:hover:border-(--badge-border)',
     ],
     secondary: [
       // Base
@@ -381,7 +381,7 @@ const BadgeButton = forwardRef(function BadgeButton(
     className?: string
     children: React.ReactNode
   } & (
-      | Omit<Headless.ButtonProps, 'as' | 'className'>
+      | Omit<ButtonPrimitive.Props, 'className' | 'render'>
       | Omit<
           React.ComponentPropsWithoutRef<typeof Link>,
           'className' | 'variant'
@@ -420,9 +420,9 @@ const BadgeButton = forwardRef(function BadgeButton(
       </TouchTarget>
     </Link>
   ) : (
-    <Headless.Button
+    <ButtonPrimitive
       data-variant={variant}
-      {...(props as Omit<Headless.ButtonProps, 'as' | 'className'>)}
+      {...(props as Omit<ButtonPrimitive.Props, 'className' | 'render'>)}
       className={clsx(classes, 'cursor-pointer')}
       ref={ref}
     >
@@ -431,7 +431,7 @@ const BadgeButton = forwardRef(function BadgeButton(
           {children}
         </Badge>
       </TouchTarget>
-    </Headless.Button>
+    </ButtonPrimitive>
   )
 })
 
