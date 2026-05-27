@@ -145,7 +145,16 @@ export const ByColour: Story = {
     return (
       <div className="w-full max-w-7xl space-y-4">
         {standardCols > 0 && (
-          <section className="overflow-x-auto">
+          // The matrix overflows horizontally on narrow viewports. axe's
+          // `scrollable-region-focusable` rule requires the scrollable
+          // container to be keyboard-reachable OR contain focusable
+          // descendants — Badge renders a non-interactive <span>, so we
+          // make the section itself focusable and label it for AT.
+          <section
+            className="overflow-x-auto"
+            tabIndex={0}
+            aria-label="Badge variant × colour matrix"
+          >
             <div
               className="space-y-2"
               style={{ minWidth: `${16 + standardCols * 9}rem` }}
@@ -196,7 +205,12 @@ export const ByColour: Story = {
 
         {lowCols > 0 && (
           <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
-            <div className="overflow-x-auto">
+            <div
+              className="overflow-x-auto"
+              tabIndex={0}
+              role="region"
+              aria-label="Low-contrast badge variant × colour matrix"
+            >
               <div
                 className="space-y-2"
                 style={{ minWidth: `${16 + lowCols * 16}rem` }}
