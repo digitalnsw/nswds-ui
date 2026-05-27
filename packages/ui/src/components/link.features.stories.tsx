@@ -1,12 +1,17 @@
 /**
  * Link — Features
  *
- * Style variants, external linking, polymorphic rendering, framework
- * integration via LinkProvider, and interaction states.
+ * Built-in colour variants, prose composition, external-link helper,
+ * polymorphic rendering, framework integration via LinkProvider, and
+ * forced interaction states.
  *
- * These stories are intended for design QA and CSS refactor regression review.
- * Link injects no default classes, so each story applies utilities directly
- * to demonstrate the recommended consumer styling.
+ * Stories assume Link's built-in styling (underline, hover halo, focus
+ * ring, variant text colour) is applied automatically by `linkVariants()`.
+ * Most stories use the default `primary` variant; the Variants matrix
+ * exercises all three (`primary`, `secondary`, `white`) on light and dark
+ * surfaces. ExternalLink wraps Link with the standard NSW-external-link
+ * recipe (target="_blank", rel, trailing icon, sr-only suffix). These
+ * stories are intended for design QA and CSS refactor regression review.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'

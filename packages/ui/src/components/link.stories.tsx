@@ -33,7 +33,13 @@ const meta = {
               Link is a polymorphic anchor wrapper. It renders an{' '}
               <code>{'<a>'}</code> by default, or any element you pass via{' '}
               <code>as</code>, or a framework link supplied through{' '}
-              <code>LinkProvider</code>. Styling is left to the consumer.
+              <code>LinkProvider</code>. Built-in styling is applied
+              automatically — underline, hover halo, focus ring, and one of
+              three colour variants via the <code>variant</code> prop
+              (defaults to <code>primary</code>;{' '}
+              <code>secondary</code> and <code>white</code> are intended for
+              dark surfaces). Pass <code>className</code> to layer one-off
+              overrides on top.
             </p>
           </section>
 
@@ -114,7 +120,7 @@ const meta = {
       ),
       description: {
         component:
-          'Polymorphic anchor wrapper that renders an `<a>` by default, accepts any element through the `as` prop, or inherits a framework Link from a surrounding `LinkProvider` context. Styling is fully up to the consumer.',
+          'Polymorphic anchor wrapper that renders an `<a>` by default, accepts any element through the `as` prop, or inherits a framework Link from a surrounding `LinkProvider` context. Ships with built-in styling driven by the `variant` prop (`primary` default, `secondary` and `white` for dark surfaces) — underline, hover halo, and focus ring all derive from a single `--link-color` token. Pass `className` to layer one-off overrides.',
       },
     },
   },

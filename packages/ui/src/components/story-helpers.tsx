@@ -21,7 +21,7 @@ export interface StoryDescription {
   what: string
   why: string
   how: string
-  caveats: string
+  caveat: string
 }
 
 export function docsTemplate({
@@ -29,12 +29,7 @@ export function docsTemplate({
   why,
   how,
   caveat,
-}: {
-  what: string
-  why: string
-  how: string
-  caveat: string
-}): string {
+}: StoryDescription): string {
   return `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 }
 

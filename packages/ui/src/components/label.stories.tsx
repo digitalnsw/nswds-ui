@@ -50,7 +50,18 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Disabled state
             </h2>
-            <div className="grid w-full max-w-sm gap-1.5">
+            <p className="text-sm text-muted-foreground">
+              The Label primitive dims to 50% opacity whenever an ancestor
+              with <code>group</code> + <code>data-disabled="true"</code> is
+              present — the canonical pattern used by <code>Field</code>.
+              (Label also dims when a peer input is disabled, but that
+              requires the input to appear before the label in DOM order;
+              see the Disabled feature story for that pattern.)
+            </p>
+            <div
+              data-disabled="true"
+              className="group grid w-full max-w-sm gap-1.5"
+            >
               <Label htmlFor="label-docs-disabled">
                 Disabled field label
               </Label>
@@ -58,7 +69,7 @@ const meta = {
                 id="label-docs-disabled"
                 type="text"
                 disabled
-                className="peer h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </section>

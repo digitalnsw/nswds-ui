@@ -8,6 +8,24 @@ import { cn } from "../lib/utils.js"
 import { Label } from "../components/label.js"
 import { Separator } from "../components/separator.js"
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Typography hierarchy (deliberate, do not collapse to a single size)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// FieldLabel inherits its font-size from the Label primitive (`text-base/
+// relaxed` = 16px) — the primary form text users read when scanning a form.
+// Every supporting element in this file uses `text-sm/relaxed` (14px) so it
+// reads as secondary information without dropping below the 16px minimum
+// recommended for body copy. The 16/14 gap is intentional: it preserves a
+// scannable visual hierarchy (label > description / error / metadata) while
+// keeping every form element above the 12px floor older versions used.
+//
+// If you find yourself wanting to bump these to text-base, do it in
+// `label.tsx` so FieldLabel moves with the family. If you want to drop
+// them to text-xs, please raise that as a design decision — 12px is below
+// the NSW Government digital service standards minimum body-text size.
+// ─────────────────────────────────────────────────────────────────────────────
+
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
     <fieldset
@@ -31,7 +49,7 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-2 font-medium data-[variant=label]:text-xs/relaxed data-[variant=legend]:text-sm",
+        "mb-2 font-medium data-[variant=label]:text-sm/relaxed data-[variant=legend]:text-sm",
         className
       )}
       {...props}
@@ -125,7 +143,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="field-label"
       className={cn(
-        "flex w-fit items-center gap-2 text-xs/relaxed font-medium group-data-[disabled=true]/field:opacity-50",
+        "flex w-fit items-center gap-2 text-sm/relaxed font-medium group-data-[disabled=true]/field:opacity-50",
         className
       )}
       {...props}
@@ -142,7 +160,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
         // `data-orientation="horizontal"` attribute Field emits. The previous
         // `group-has-data-horizontal/field:` targeted a non-existent
         // `[data-horizontal]` attribute and never fired.
-        "text-start text-xs/relaxed leading-normal font-normal text-muted-foreground group-data-[orientation=horizontal]/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
+        "text-start text-sm/relaxed leading-normal font-normal text-muted-foreground group-data-[orientation=horizontal]/field:text-balance [[data-variant=legend]+&]:-mt-1.5",
         "last:mt-0 nth-last-2:-mt-1",
         "[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className
@@ -164,7 +182,7 @@ function FieldSeparator({
       data-slot="field-separator"
       data-content={!!children}
       className={cn(
-        "relative -my-2 h-5 text-xs/relaxed group-data-[variant=outline]/field-group:-mb-2",
+        "relative -my-2 h-5 text-sm/relaxed group-data-[variant=outline]/field-group:-mb-2",
         className
       )}
       {...props}
@@ -225,7 +243,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-xs/relaxed font-normal text-destructive", className)}
+      className={cn("text-sm/relaxed font-normal text-destructive", className)}
       {...props}
     >
       {content}
