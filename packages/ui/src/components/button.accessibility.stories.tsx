@@ -16,6 +16,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
+import { userEvent } from 'storybook/test'
 
 import { Button } from './button.js'
 import { Icons } from './icons.js'
@@ -432,14 +433,12 @@ export const Keyboard: Story = {
     }
     button.addEventListener('click', handler)
 
-    button.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
-    )
-    button.click() // Enter on a native button triggers click
-    button.dispatchEvent(
-      new KeyboardEvent('keydown', { key: ' ', bubbles: true })
-    )
-    button.click() // Space on a native button triggers click on keyup
+    // userEvent.keyboard() simulates real keyboard input: pressing Enter or
+    // Space on a focused native <button> fires the click event via the
+    // browser's own activation behaviour, so we're actually testing the
+    // keyboard → click pipeline rather than calling .click() ourselves.
+    await userEvent.keyboard('{Enter}')
+    await userEvent.keyboard(' ')
 
     button.removeEventListener('click', handler)
 

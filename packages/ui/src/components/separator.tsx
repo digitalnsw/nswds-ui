@@ -14,7 +14,12 @@ function Separator({
       data-slot="separator"
       orientation={orientation}
       className={cn(
-        "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
+        // Base UI's Separator emits `data-orientation="horizontal|vertical"`
+        // only (see @base-ui/react SeparatorDataAttributes). The previous
+        // `data-horizontal:` / `data-vertical:` selectors targeted
+        // non-existent boolean attributes and never matched, leaving the
+        // separator with no explicit axis sizing.
+        "shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch",
         className
       )}
       {...props}
