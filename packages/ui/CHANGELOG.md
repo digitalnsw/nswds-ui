@@ -1,3 +1,9 @@
+## [1.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.3.0...@nswds/ui-v1.4.0) (2026-05-27)
+
+### Features
+
+* **button:** add semantic colors and refactor color variable names ([#5](https://github.com/digitalnsw/nswds-ui/issues/5)) ([b8565f2](https://github.com/digitalnsw/nswds-ui/commit/b8565f221b09695766142cf6b970f7e0acee655b))
+
 ## [1.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.2.0...@nswds/ui-v1.3.0) (2026-05-24)
 
 ### Features
