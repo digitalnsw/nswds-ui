@@ -511,12 +511,12 @@ export const InteractionStates: Story = {
         [data-active] so the rows below can paint their state without real
         pointer events. Scoped to this story container (.force-state-grid)
         only; the production component still relies on the native pseudo-classes.
-        Active is listed before hover so a button carrying both attrs picks
-        the hover overlay — matches CSS cascade order for :hover then :active.
+        Hover is listed before active so a button carrying both attrs picks
+        the active overlay — matching the normal :hover then :active cascade.
       */}
       <style>{`
-        .force-state-grid [data-active]::after { background-color: var(--btn-active-overlay); }
         .force-state-grid [data-hover]::after { background-color: var(--btn-hover-overlay); }
+        .force-state-grid [data-active]::after { background-color: var(--btn-active-overlay); }
         .force-state-grid [data-hover][data-variant="surface"],
         .force-state-grid [data-active][data-variant="surface"] { border-color: var(--btn-bg); }
         .force-state-grid [data-hover][data-variant="link"],
