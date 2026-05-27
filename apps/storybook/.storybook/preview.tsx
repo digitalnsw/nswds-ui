@@ -170,7 +170,26 @@ export default definePreview({
       // 'todo' - show a11y violations in the test UI only
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
-      test: 'todo',
+      test: 'error',
+      // Pin axe-core to WCAG 2.x AA tags only. NSW Government digital products
+      // are required to meet WCAG 2.1 AA (not AAA), so:
+      //   - AA contrast (4.5:1 normal, 3:1 large/UI) is enforced
+      //   - AAA contrast (7:1 / 4.5:1) is NOT enforced
+      //   - Best-practice / experimental / needs-review rules are NOT enforced
+      // Drop 'wcag22aa' if a 2.2 AA rule starts producing false positives
+      // before NSW formally adopts 2.2.
+      options: {
+        runOnly: {
+          type: 'tag',
+          values: [
+            'wcag2a',
+            'wcag2aa',
+            'wcag21a',
+            'wcag21aa',
+            'wcag22aa',
+          ],
+        },
+      },
     },
     msw: {
       handlers: mswHandlers,

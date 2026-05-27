@@ -12,11 +12,27 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      '@headlessui/react',
+      '@base-ui/react',
       '@tabler/icons-react',
       'class-variance-authority',
       'clsx',
       'tailwind-merge',
+      // `storybook/test` is a subpath export used by stories for `fn()` mocks.
+      // Without pre-bundling, Vite's scanner can't resolve it cleanly in a
+      // pnpm workspace.
+      'storybook/test',
+      // `aria-query` is a CJS-only package consumed by @storybook/addon-vitest's
+      // setup file. Without pre-bundling, Vite serves it raw and the named
+      // exports (elementRoles, roles, aria) don't round-trip through ESM.
+      'aria-query',
+      // Storybook framework + addons. Pre-bundling these prevents Vite from
+      // re-optimising mid-test (which knocks Vitest out of its suite context
+      // and causes "Vitest failed to find the current suite" errors).
+      '@storybook/react-vite',
+      '@storybook/addon-a11y',
+      'msw-storybook-addon',
+      // `culori` is pulled in by @nswds/ui's theme palette helpers.
+      'culori',
     ],
   },
   test: {
