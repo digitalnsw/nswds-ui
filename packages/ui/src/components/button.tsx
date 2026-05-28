@@ -352,6 +352,10 @@ const Button = forwardRef(function Button(
 
   return 'href' in props ? (
     <Link
+      // Opt out of Link's built-in styling — Button supplies its own
+      // complete visual treatment (background, border, focus ring, icon
+      // sizing) and any Link styling layered on top would conflict.
+      variant="unstyled"
       data-variant={variant}
       {...(props as Omit<
         React.ComponentPropsWithoutRef<typeof Link>,
