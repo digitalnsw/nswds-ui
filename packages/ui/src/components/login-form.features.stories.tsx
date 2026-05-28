@@ -143,18 +143,17 @@ export const WithError: Story = {
                   required
                 />
               </Field>
-              <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="login-error-password">
-                    Password
-                  </FieldLabel>
-                  <a
-                    href="#"
-                    className="ms-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
+              {/*
+               * Mirrors the focus-order pattern from login-form.tsx: the
+               * "Forgot your password?" link is placed AFTER the input in DOM
+               * order (so Tab goes email → password → forgot, not email →
+               * forgot → password) and positioned at the top-right via
+               * absolute positioning. See WCAG 2.4.3 Focus Order.
+               */}
+              <Field className="relative">
+                <FieldLabel htmlFor="login-error-password">
+                  Password
+                </FieldLabel>
                 <Input
                   id="login-error-password"
                   type="password"
@@ -163,6 +162,12 @@ export const WithError: Story = {
                   aria-describedby="login-error-password-error"
                   required
                 />
+                <a
+                  href="#"
+                  className="absolute top-0 right-0 text-sm underline-offset-4 hover:underline"
+                >
+                  Forgot your password?
+                </a>
                 <FieldError id="login-error-password-error">
                   Incorrect password
                 </FieldError>

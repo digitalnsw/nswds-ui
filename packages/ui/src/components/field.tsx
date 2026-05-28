@@ -13,12 +13,14 @@ import { Separator } from "../components/separator.js"
 // ─────────────────────────────────────────────────────────────────────────────
 //
 // FieldLabel inherits its font-size from the Label primitive (`text-base/
-// relaxed` = 16px) — the primary form text users read when scanning a form.
-// Every supporting element in this file uses `text-sm/relaxed` (14px) so it
-// reads as secondary information without dropping below the 16px minimum
-// recommended for body copy. The 16/14 gap is intentional: it preserves a
-// scannable visual hierarchy (label > description / error / metadata) while
-// keeping every form element above the 12px floor older versions used.
+// relaxed` = 16px) — the primary form text users read when scanning a form,
+// kept at the 16px ideal for body copy.
+// Every supporting element in this file uses `text-sm/relaxed` (14px). That
+// is below the 16px body-copy ideal but comfortably above the 12px floor
+// older versions used, so it still reads clearly as secondary information.
+// The 16/14 gap is intentional: it preserves a scannable visual hierarchy
+// (label > description / error / metadata) without shrinking supporting text
+// back down to the previous 12px.
 //
 // If you find yourself wanting to bump these to text-base, do it in
 // `label.tsx` so FieldLabel moves with the family. If you want to drop

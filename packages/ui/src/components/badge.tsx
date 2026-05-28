@@ -405,6 +405,10 @@ const BadgeButton = forwardRef(function BadgeButton(
 
   return 'href' in props ? (
     <Link
+      // Opt out of Link's built-in styling — BadgeButton wraps the inner
+      // Badge with its own focus ring / hit target and doesn't want Link's
+      // underline, halo, or icon defaults composing on top.
+      variant="unstyled"
       data-variant={variant}
       {...(props as Omit<
         React.ComponentPropsWithoutRef<typeof Link>,

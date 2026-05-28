@@ -115,8 +115,8 @@ export const FocusOrder: Story = {
         story: wcagStoryMeta({
           criteria: '2.4.3',
           why: 'Tabbing through the form must visit controls in an order that matches the visual reading order: Email → Password → Forgot link → Login → Login with Google → Sign up. A surprising tab order breaks keyboard users.',
-          how: 'Place focus inside the canvas, then Tab repeatedly. The play() function programmatically simulates Tab key presses and asserts document.activeElement matches the expected control at each step.',
-          caveat: 'Storybook can steal initial focus; play() seeds focus on the email input before iterating to make the test deterministic. A live keyboard test in the rendered Storybook canvas is still recommended for sanity.',
+          how: 'Place focus inside the canvas, then Tab repeatedly. The play() function collects every focusable control (input, button, a[href], [tabindex]) in DOM order and asserts that sequence matches the expected reading order. With no tabindex overrides in the form, DOM order IS the Tab order, so this static check is equivalent to tabbing through.',
+          caveat: 'play() asserts DOM/focus order rather than dispatching real Tab key events, so it would not catch a positive `tabindex` that reorders traversal without changing DOM order. A live keyboard test in the rendered Storybook canvas is still recommended for sanity.',
         }),
       },
     },

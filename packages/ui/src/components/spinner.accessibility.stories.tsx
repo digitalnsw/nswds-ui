@@ -101,7 +101,7 @@ export const NonTextContrast: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '1.4.11',
-          why: 'The spinner is a graphical UI component conveying state. Both the moving arc (fill-primary) and the static ring (text-muted-foreground/30) must meet 3:1 contrast against the surrounding background, and the arc must be distinguishable from the ring.',
+          why: 'The spinner is a graphical UI component conveying state. Both the moving arc (fill-primary-800, or fill-white for the white variant) and the static ring (text-grey-400, or text-white/30) must meet 3:1 contrast against the surrounding background, and the arc must be distinguishable from the ring.',
           how: 'Use a colour-contrast checker on the rendered SVG against each surface below. Verify the moving arc is clearly distinguishable from the static ring and that both are visible against the surface colour.',
           caveat:
             'Contrast values depend on the active theme; check both light and dark modes. The grey-800 surface (secondary) below models how the spinner is expected to be used on branded dark panels.',

@@ -5,58 +5,67 @@ import React, { createContext, forwardRef, useContext } from 'react'
 
 import { cn } from '../lib/utils.js'
 
-const linkVariants = cva(
-  [
-    // Base
-    'font-medium underline decoration-current underline-offset-4 transition-colors',
-    // Text colour derives from --link-color; --link-halo and --link-halo-active
-    // derive from --link-color via color-mix so each variant only sets the one
-    // token and the hover/active halos follow automatically.
-    'text-(--link-color)',
-    '[--link-halo:color-mix(in_oklch,var(--link-color)_10%,transparent)]',
-    '[--link-halo-active:color-mix(in_oklch,var(--link-color)_18%,transparent)]',
-    // Hover / active halos use box-shadow + background-color rather than
-    // padding, so inline links sit flush against surrounding text. The
-    // shadows extend the halo 2px above and 4px below the line box, matching
-    // the GOV.UK Design System focus pattern.
-    'hover:bg-(--link-halo) hover:decoration-2',
-    'hover:shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]',
-    // Wrapped lines each get their own halo
-    '[box-decoration-break:clone] [-webkit-box-decoration-break:clone]',
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--link-color)',
-    // Default sizing for icon children — without this, an unsized SVG inside
-    // a Link collapses to 0×0 in flex layouts. `vertical-align: -0.15em`
-    // aligns the icon's box to the text's x-height for inline-flow usage;
-    // flex contexts ignore vertical-align and should set `items-baseline` (or
-    // similar) on the Link itself. Consumers can override per-icon by passing
-    // a `size-*` or `align-*` class on the icon itself.
-    '*:data-[slot=icon]:inline-block *:data-[slot=icon]:size-[1em] *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:align-[-0.15em]',
-  ],
-  {
-    variants: {
-      variant: {
-        primary: [
-          // Link
-          '[--link-color:var(--color-primary-800)] dark:[--link-color:var(--color-primary-200)]',
-          // Visited — shift the link colour, hover/focus follow automatically
-          'visited:[--link-color:var(--color-primary-600)] dark:visited:[--link-color:var(--color-primary-300)]',
-          // Active — deeper halo via --link-halo-active
-          'active:bg-(--link-halo-active) active:decoration-2',
-          'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
-        ],
-        secondary: [
-          '[--link-color:var(--color-primary-200)] dark:[--link-color:var(--color-primary-800)]',
-        ],
-        white: [
-          '[--link-color:var(--color-white)] dark:[--link-color:var(--color-grey-800)]',
-        ],
-      },
+// Shared visual base for all *styled* variants. Pulled out so the `unstyled`
+// variant can omit it entirely (otherwise it wouldn't actually be unstyled).
+const styledBase = [
+  // Typography + transition
+  'font-medium underline decoration-current underline-offset-4 transition-colors',
+  // Text colour derives from --link-color; --link-halo and --link-halo-active
+  // derive from --link-color via color-mix so each variant only sets the one
+  // token and the hover/active halos follow automatically.
+  'text-(--link-color)',
+  '[--link-halo:color-mix(in_oklch,var(--link-color)_10%,transparent)]',
+  '[--link-halo-active:color-mix(in_oklch,var(--link-color)_18%,transparent)]',
+  // Hover / active halos use box-shadow + background-color rather than
+  // padding, so inline links sit flush against surrounding text. The
+  // shadows extend the halo 2px above and 4px below the line box, matching
+  // the GOV.UK Design System focus pattern.
+  'hover:bg-(--link-halo) hover:decoration-2',
+  'hover:shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]',
+  // Wrapped lines each get their own halo
+  '[box-decoration-break:clone] [-webkit-box-decoration-break:clone]',
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--link-color)',
+  // Default sizing for icon children — without this, an unsized SVG inside
+  // a Link collapses to 0×0 in flex layouts. `vertical-align: -0.15em`
+  // aligns the icon's box to the text's x-height for inline-flow usage;
+  // flex contexts ignore vertical-align and should set `items-baseline` (or
+  // similar) on the Link itself. Consumers can override per-icon by passing
+  // a `size-*` or `align-*` class on the icon itself.
+  '*:data-[slot=icon]:inline-block *:data-[slot=icon]:size-[1em] *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:align-[-0.15em]',
+]
+
+const linkVariants = cva('', {
+  variants: {
+    variant: {
+      primary: [
+        ...styledBase,
+        // Link
+        '[--link-color:var(--color-primary-800)] dark:[--link-color:var(--color-primary-200)]',
+        // Visited — shift the link colour, hover/focus follow automatically
+        'visited:[--link-color:var(--color-primary-600)] dark:visited:[--link-color:var(--color-primary-300)]',
+        // Active — deeper halo via --link-halo-active
+        'active:bg-(--link-halo-active) active:decoration-2',
+        'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
+      ],
+      secondary: [
+        ...styledBase,
+        '[--link-color:var(--color-primary-200)] dark:[--link-color:var(--color-primary-800)]',
+      ],
+      white: [
+        ...styledBase,
+        '[--link-color:var(--color-white)] dark:[--link-color:var(--color-grey-800)]',
+      ],
+      // Zero classes — the consumer (typically Button / BadgeButton) is
+      // supplying its own complete visual treatment and doesn't want any
+      // Link styling to compose on top. Intentionally omits the icon defaults
+      // too, so the wrapping component has full control of icon sizing.
+      unstyled: [],
     },
-    defaultVariants: {
-      variant: 'primary',
-    },
-  }
-)
+  },
+  defaultVariants: {
+    variant: 'primary',
+  },
+})
 
 type LinkComponent = React.ElementType
 
@@ -92,6 +101,24 @@ function LinkProvider({
  * `group-…` variants) — Tailwind v4 maps them to real CSS, no JS state
  * tracking required.
  */
+/**
+ * Anchor-only HTML attributes. When `Link` is rendered as a non-anchor
+ * intrinsic element (e.g. `as="button"`), forwarding these produces invalid
+ * markup like `<button href="…">` and React DOM warnings, so they are
+ * stripped. Custom components passed via `as` / `LinkProvider` are assumed to
+ * be anchor-like (e.g. `next/link`) and receive the full prop set.
+ */
+const ANCHOR_ONLY_PROPS = [
+  'href',
+  'target',
+  'rel',
+  'download',
+  'ping',
+  'referrerPolicy',
+  'hrefLang',
+  'type',
+] as const
+
 const Link = forwardRef(function Link(
   { as, variant, className, ...props }: LinkProps,
   ref: React.ForwardedRef<HTMLAnchorElement>
@@ -99,8 +126,22 @@ const Link = forwardRef(function Link(
   const ContextLink = useContext(LinkComponentContext)
   const component = as ?? ContextLink ?? 'a'
 
+  // Drop anchor-only props when the resolved element is a non-anchor
+  // intrinsic tag (e.g. `as="button"`). String components other than 'a'
+  // are real DOM tags that can't accept `href`/`target`/etc; non-string
+  // components (framework links) keep the full set.
+  const isNonAnchorIntrinsic =
+    typeof component === 'string' && component !== 'a'
+
+  const elementProps = { ...props } as Record<string, unknown>
+  if (isNonAnchorIntrinsic) {
+    for (const prop of ANCHOR_ONLY_PROPS) {
+      delete elementProps[prop]
+    }
+  }
+
   return React.createElement(component, {
-    ...props,
+    ...elementProps,
     className: cn(linkVariants({ variant }), className),
     ref,
   })

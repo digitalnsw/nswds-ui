@@ -1,8 +1,10 @@
-"use client"
+'use client'
 
-import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
+import type * as React from 'react'
 
-import { cn } from "../lib/utils.js"
+import { Separator as SeparatorPrimitive } from '@base-ui/react/separator'
+
+import { cn } from '../lib/utils.js'
 
 type SeparatorProps = SeparatorPrimitive.Props & {
   /**
@@ -16,7 +18,7 @@ type SeparatorProps = SeparatorPrimitive.Props & {
 
 function Separator({
   className,
-  orientation = "horizontal",
+  orientation = 'horizontal',
   decorative = false,
   role,
   ...props
@@ -27,7 +29,7 @@ function Separator({
   // boolean attributes and never matched, leaving the separator with no
   // explicit axis sizing.
   const sharedClassName = cn(
-    "shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch",
+    'shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch',
     className
   )
 
@@ -52,7 +54,7 @@ function Separator({
     <SeparatorPrimitive
       data-slot="separator"
       orientation={orientation}
-      role={role ?? "separator"}
+      role={role ?? 'separator'}
       className={sharedClassName}
       {...props}
     />

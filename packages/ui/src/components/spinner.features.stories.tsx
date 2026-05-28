@@ -1,12 +1,14 @@
 /**
  * Spinner — Features
  *
- * Size scale and common composition patterns (inside Button, centered in a
- * content area, paired with visible text, rendered on a dark surface).
+ * Size scale, colour variants, and common composition patterns (inside
+ * Button, centered in a content area, paired with visible text, rendered
+ * on a dark surface).
  *
  * These stories are intended for design QA across the full Spinner surface
- * and as composition reference for consumers — they are not exhaustive prop
- * matrices because Spinner has only a single visual axis (`size`).
+ * and as composition reference for consumers. Spinner has two visual axes:
+ * `size` (xs / sm / md / lg / xl) and `color` (primary / accent / white) —
+ * see the Sizes and Colours stories for the matrices.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -208,11 +210,11 @@ export const ColourOnDark: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Spinner rendered on a low-contrast (grey-800) surface to verify the fill-primary stroke and muted-foreground/30 ring remain visible against a dark background.',
-          why: 'Spinner uses semantic tokens that resolve differently on dark surfaces. This story catches token regressions where the spinner would otherwise become invisible on dark themes or branded dark panels.',
-          how: 'Confirm both the spinning arc (primary) and the static ring (muted-foreground/30) are clearly distinguishable against the dark surface.',
+          what: 'The `white` colour variant rendered on a low-contrast (grey-800) surface to verify the `fill-white` arc and `text-white/30` ring remain visible against a dark background.',
+          why: 'The default `primary` variant (`fill-primary-800` / `text-grey-400`) is tuned for light surfaces and would lose contrast on a dark panel. This story documents using `color="white"` on dark/branded surfaces and catches regressions in those palette classes.',
+          how: 'Confirm both the spinning arc (`fill-white`) and the static ring (`text-white/30`) are clearly distinguishable against the dark surface.',
           caveat:
-            'This is a static colour-contrast preview, not a dark-mode preview — toggling the Storybook theme will also change the spinner colours via the .dark class.',
+            'Spinner colours are palette-specific classes (e.g. `fill-primary-800`, not the semantic `fill-primary`) so the exact NSW shade is preserved. Pick the `color` variant to match the surface rather than relying on a single token that adapts to `.dark`.',
         }),
       },
     },
