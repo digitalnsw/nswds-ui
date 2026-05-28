@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.4.0...@nswds/ui-v1.5.0) (2026-05-28)
+
+### Features
+
+* link variants, ExternalLink, form typography & a11y stories ([#6](https://github.com/digitalnsw/nswds-ui/issues/6)) ([61b03f3](https://github.com/digitalnsw/nswds-ui/commit/61b03f34e8f02b19f7640337cb41b4627d106edd))
+
 ## [1.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.3.0...@nswds/ui-v1.4.0) (2026-05-27)
 
 ### Features
