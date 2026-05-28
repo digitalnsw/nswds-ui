@@ -41,8 +41,12 @@ const linkVariants = cva('', {
         ...styledBase,
         // Link
         '[--link-color:var(--color-primary-800)] dark:[--link-color:var(--color-primary-200)]',
-        // Visited — shift the link colour, hover/focus follow automatically
-        'visited:[--link-color:var(--color-primary-600)] dark:visited:[--link-color:var(--color-primary-300)]',
+        // Visited — set the text colour directly. `:visited` is restricted by
+        // browsers to a small set of paint-only properties (color, *-color,
+        // fill, stroke) and ignores custom properties, so we can't shift
+        // --link-color here. Setting `text-*` works, and the underline follows
+        // because the base uses `decoration-current` (currentColor).
+        'visited:text-primary-600 dark:visited:text-primary-300',
         // Active — deeper halo via --link-halo-active
         'active:bg-(--link-halo-active) active:decoration-2',
         'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
@@ -207,9 +211,7 @@ const ExternalLink = forwardRef(function ExternalLink(
     <Link {...props} target={target} rel={rel} ref={ref}>
       {children}
       {trailingIcon}
-      {newTabLabel ? (
-        <span className="sr-only"> {newTabLabel}</span>
-      ) : null}
+      {newTabLabel ? <span className="sr-only"> {newTabLabel}</span> : null}
     </Link>
   )
 })

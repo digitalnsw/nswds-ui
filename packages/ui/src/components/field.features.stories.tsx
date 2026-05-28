@@ -167,7 +167,7 @@ export const FieldSetWithLegend: Story = {
         story: docsTemplate({
           what: 'FieldSet wraps related Fields under a shared FieldLegend, demonstrating both legend variants (legend and label) and showing several Fields nested inside.',
           why: 'Grouping related controls under a legend gives them a single programmatic name in the accessibility tree — required for radio groups, checkbox groups, and any logical sub-section of a form.',
-          how: 'Inspect the rendered fieldset element: it carries data-slot="field-set" and contains a <legend> with data-slot="field-legend". The legend variant prop switches between the larger sm legend size and the compact xs label size.',
+          how: 'Inspect the rendered fieldset element: it carries data-slot="field-set" and contains a <legend> with data-slot="field-legend". Both legend variants now render at text-sm (14px); the variant prop changes the line-height — `legend` uses the default leading, `label` uses the relaxed leading to match FieldLabel-style spacing.',
           caveat:
             'FieldLegend must be a direct child of <fieldset> — placing it elsewhere breaks the native legend association even though the visual styling still applies.',
         }),
@@ -199,11 +199,7 @@ export const FieldSetWithLegend: Story = {
         </FieldDescription>
         <Field>
           <FieldLabel htmlFor="features-set-tel">Phone number</FieldLabel>
-          <Input
-            id="features-set-tel"
-            type="tel"
-            placeholder="0400 000 000"
-          />
+          <Input id="features-set-tel" type="tel" placeholder="0400 000 000" />
         </Field>
       </FieldSet>
     </div>

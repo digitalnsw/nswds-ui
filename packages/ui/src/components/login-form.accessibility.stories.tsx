@@ -77,7 +77,8 @@ export const LabelAssociation: Story = {
           criteria: '1.3.1',
           why: 'Both the email and password inputs must be programmatically associated with a visible <label> so screen readers can announce the purpose of each field as the user moves through the form.',
           how: 'Run the canvas with VoiceOver or NVDA and Tab through each input — each should announce "Email, edit text" and "Password, secure edit text". The play() function asserts both inputs expose at least one entry in their .labels collection.',
-          caveat: 'LoginForm hardcodes the input ids (#email, #password). If you instantiate LoginForm twice on the same page, the duplicate ids break label association — extend the pattern to scope ids per instance before doing so.',
+          caveat:
+            'LoginForm hardcodes the input ids (#email, #password). If you instantiate LoginForm twice on the same page, the duplicate ids break label association — extend the pattern to scope ids per instance before doing so.',
         }),
       },
     },
@@ -116,7 +117,8 @@ export const FocusOrder: Story = {
           criteria: '2.4.3',
           why: 'Tabbing through the form must visit controls in an order that matches the visual reading order: Email → Password → Forgot link → Login → Login with Google → Sign up. A surprising tab order breaks keyboard users.',
           how: 'Place focus inside the canvas, then Tab repeatedly. The play() function collects every focusable control (input, button, a[href], [tabindex]) in DOM order and asserts that sequence matches the expected reading order. With no tabindex overrides in the form, DOM order IS the Tab order, so this static check is equivalent to tabbing through.',
-          caveat: 'play() asserts DOM/focus order rather than dispatching real Tab key events, so it would not catch a positive `tabindex` that reorders traversal without changing DOM order. A live keyboard test in the rendered Storybook canvas is still recommended for sanity.',
+          caveat:
+            'play() asserts DOM/focus order rather than dispatching real Tab key events, so it would not catch a positive `tabindex` that reorders traversal without changing DOM order. A live keyboard test in the rendered Storybook canvas is still recommended for sanity.',
         }),
       },
     },
@@ -129,9 +131,7 @@ export const FocusOrder: Story = {
   play: async ({ canvasElement }) => {
     const email = getInputById(canvasElement, 'email')
     const password = getInputById(canvasElement, 'password')
-    const forgot = canvasElement.querySelector<HTMLAnchorElement>(
-      'a[href="#"]'
-    )
+    const forgot = canvasElement.querySelector<HTMLAnchorElement>('a[href="#"]')
     if (!forgot) {
       throw new Error('WCAG 2.4.3: could not find Forgot password link.')
     }
@@ -162,7 +162,14 @@ export const FocusOrder: Story = {
       )
     ).filter((el) => !el.hasAttribute('disabled'))
 
-    const expectedOrder = [email, password, forgot, submit, googleButton, signUp]
+    const expectedOrder = [
+      email,
+      password,
+      forgot,
+      submit,
+      googleButton,
+      signUp,
+    ]
     for (let i = 0; i < expectedOrder.length; i++) {
       const expected = expectedOrder[i]
       const actual = focusables[i]
@@ -187,7 +194,8 @@ export const ErrorIdentification: Story = {
           criteria: '3.3.1',
           why: 'When sign-in fails, the offending field must be programmatically marked invalid and the reason must be announced. aria-invalid on the input plus a FieldError with role="alert" near the field satisfies both the visual and assistive-tech requirements.',
           how: 'Focus the password field with a screen reader running — it should announce "Password, invalid entry, Incorrect password". The play() function asserts aria-invalid="true" on the password input and that the FieldError element exists with non-empty text.',
-          caveat: 'Clear aria-invalid and remove the FieldError once the user corrects the value, otherwise AT keeps announcing the stale error. This story shows the persistent error state for review.',
+          caveat:
+            'Clear aria-invalid and remove the FieldError once the user corrects the value, otherwise AT keeps announcing the stale error. This story shows the persistent error state for review.',
         }),
       },
     },
@@ -300,7 +308,8 @@ export const LabelsAndInstructions: Story = {
           criteria: '3.3.2',
           why: 'Each field needs a visible label, and any companion instruction (like the Forgot password? link) must be positioned next to the field it relates to so sighted users see the relationship without reading the underlying markup.',
           how: 'Visually verify the Email and Password labels are above their inputs and that the Forgot link sits inline with the Password label, not in a detached footer. The play() function asserts both labels are non-empty and the Forgot link is rendered inside the same field group as the password input.',
-          caveat: 'Visible labels are non-negotiable here — do not replace them with placeholder text. Placeholder text disappears as soon as the user types and is reported inconsistently by assistive tech.',
+          caveat:
+            'Visible labels are non-negotiable here — do not replace them with placeholder text. Placeholder text disappears as soon as the user types and is reported inconsistently by assistive tech.',
         }),
       },
     },
@@ -314,17 +323,13 @@ export const LabelsAndInstructions: Story = {
     const email = getInputById(canvasElement, 'email')
     const emailLabel = email.labels?.[0]?.textContent?.trim() ?? ''
     if (emailLabel.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: #email has no visible label text.'
-      )
+      throw new Error('WCAG 3.3.2: #email has no visible label text.')
     }
 
     const password = getInputById(canvasElement, 'password')
     const passwordLabel = password.labels?.[0]?.textContent?.trim() ?? ''
     if (passwordLabel.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: #password has no visible label text.'
-      )
+      throw new Error('WCAG 3.3.2: #password has no visible label text.')
     }
 
     // The Forgot password? link must live in the same field group as the
@@ -337,7 +342,10 @@ export const LabelsAndInstructions: Story = {
       )
     }
     const forgotLink = passwordField.querySelector<HTMLAnchorElement>('a')
-    if (!forgotLink || !forgotLink.textContent?.toLowerCase().includes('forgot')) {
+    if (
+      !forgotLink ||
+      !forgotLink.textContent?.toLowerCase().includes('forgot')
+    ) {
       throw new Error(
         'WCAG 3.3.2: the "Forgot password?" link must be inside the same field as the password input.'
       )
@@ -357,7 +365,8 @@ export const NameRoleValue: Story = {
           criteria: '4.1.2',
           why: 'Every interactive control in the form must expose an accessible name and role to assistive technology. The submit button must announce as "Login, button"; the inputs must announce with their visible label text as their name.',
           how: 'Inspect each control in the browser accessibility tree (Chrome DevTools → Accessibility pane). The play() function asserts each input has a non-empty .labels[0] entry and that the submit button has accessible name "Login".',
-          caveat: 'If you swap the submit button text, update this assertion. The accessible name comes from the visible text content of the button via the Base UI Button primitive.',
+          caveat:
+            'If you swap the submit button text, update this assertion. The accessible name comes from the visible text content of the button via the Base UI Button primitive.',
         }),
       },
     },

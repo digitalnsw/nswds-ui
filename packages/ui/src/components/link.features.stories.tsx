@@ -97,7 +97,7 @@ export const Variants: Story = {
         story: docsTemplate({
           what: 'Matrix of the three built-in colour variants (`primary` default, `secondary`, `white`) against four interaction states (default, hover, focus, active). Each row is a variant; each column is a state forced at rest so the indicator can be reviewed without pointer events.',
           why: 'Matches the Button "By Variant" review flow and quickly reveals per-variant state drift across the brand palette in a single visual diff.',
-          how: 'Scan each row horizontally and confirm the variant\'s colour, underline, hover overlay, focus ring, and pressed state all read correctly. Toggle the dark-mode addon and repeat.',
+          how: "Scan each row horizontally and confirm the variant's colour, underline, hover overlay, focus ring, and pressed state all read correctly. Toggle the dark-mode addon and repeat.",
           caveat:
             '`secondary` and `white` are intended for dark surfaces and are rendered on a `grey-800` panel here. Hover, focus, and active columns pre-apply the styling those pseudo-classes would produce — they are not real pointer/keyboard events.',
         }),
@@ -183,20 +183,20 @@ export const InParagraph: Story = {
         <Link href="/about" variant="primary">
           About NSW Government
         </Link>{' '}
-        page explains how the state government is structured, who the
-        ministers are, and how to engage with each agency.
+        page explains how the state government is structured, who the ministers
+        are, and how to engage with each agency.
       </p>
 
       <p>
-        Find your nearest <Link href="/services">service centre</Link> or
-        browse the full <Link href="/a-z">A–Z of services</Link> — both pages
-        are kept up to date by the relevant agency.
+        Find your nearest <Link href="/services">service centre</Link> or browse
+        the full <Link href="/a-z">A–Z of services</Link> — both pages are kept
+        up to date by the relevant agency.
       </p>
 
       <p>
         For more information visit{' '}
-        <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>{' '}
-        or contact Service NSW.
+        <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink> or
+        contact Service NSW.
       </p>
 
       <p className="rounded-sm bg-primary-800 p-4 text-grey-50">
@@ -284,11 +284,11 @@ export const States: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Default, hover, focus, and active rows for the canonical underline-on-hover link styling. Focus is forced via outline utilities so reviewers can see the focus ring without tabbing.',
-          why: 'State styling regressions are easy to miss when token values for `--primary` or focus outline tokens change. Showing every state at rest enables a single-pass visual diff.',
-          how: 'Compare each row visually. Hover row should show the underline; focus row should show a visible outline ring; active row should appear pressed.',
+          what: 'Default, hover, focus, and active rows for the default `primary` variant, each forced at rest. Uses the same `--link-halo` / `--link-color` driven classes as the real interaction states so the preview matches production.',
+          why: 'State styling regressions are easy to miss when the `--link-color` token or the derived `--link-halo` values change. Showing every state at rest enables a single-pass visual diff that tracks the variant system rather than hardcoded palette values.',
+          how: 'Compare each row visually. Hover row should show the box-shadow halo + thicker underline; focus row should show the `--link-color` outline ring; active row should show the deeper `--link-halo-active` halo.',
           caveat:
-            'The `:visited` state cannot be reliably forced in stories — browsers restrict access for privacy reasons, so a visited row is intentionally omitted. Hover and active rows pre-apply the styling those pseudo-classes would produce, rather than triggering real pointer events.',
+            'The `:visited` state cannot be reliably forced in stories — browsers restrict access for privacy reasons, so a visited row is intentionally omitted. Hover/focus/active rows pre-apply the same variable-based classes those pseudo-classes produce, rather than triggering real pointer events; they therefore track non-primary variants and dark mode automatically.',
         }),
       },
     },
@@ -308,7 +308,7 @@ export const States: Story = {
         </span>
         <Link
           href="/hover-state"
-          className="bg-primary-800/10 decoration-2 dark:bg-primary-200/15"
+          className="bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]"
         >
           About NSW Government
         </Link>
@@ -320,7 +320,7 @@ export const States: Story = {
         </span>
         <Link
           href="/focus-state"
-          className="outline outline-2 outline-offset-2 outline-primary-800"
+          className="outline outline-2 outline-offset-2 outline-(--link-color)"
         >
           About NSW Government
         </Link>
@@ -330,7 +330,10 @@ export const States: Story = {
         <span className="w-24 text-xs font-semibold text-muted-foreground">
           Active
         </span>
-        <Link href="/active-state" className="opacity-80">
+        <Link
+          href="/active-state"
+          className="bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]"
+        >
           About NSW Government
         </Link>
       </div>

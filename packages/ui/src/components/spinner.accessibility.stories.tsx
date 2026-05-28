@@ -213,7 +213,7 @@ export const NonTextContent: Story = {
         </p>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-danger/40 bg-danger/5 p-6">
+      <section className="border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6">
         <h4 className="text-sm font-semibold text-foreground">
           Caveat — no aria-label
         </h4>

@@ -79,7 +79,7 @@ export const InButton: Story = {
           why: 'Verifies that the spinner aligns with the button text baseline, does not push the button height, and reads correctly when paired with a label.',
           how: 'Check that the spinner is vertically centered, sized proportionally to the button, and that the surrounding label remains readable.',
           caveat:
-            'When using Spinner inside Button, prefer Button\'s built-in `loading` prop where possible — it handles the swap and disables the button automatically.',
+            "When using Spinner inside Button, prefer Button's built-in `loading` prop where possible — it handles the swap and disables the button automatically.",
         }),
       },
     },
@@ -224,7 +224,11 @@ export const ColourOnDark: Story = {
       <div className="flex flex-wrap items-end gap-8">
         {sizes.map((size) => (
           <div key={size} className="flex flex-col items-center gap-2">
-            <Spinner size={size} color="white" aria-label={`Loading (${size})`} />
+            <Spinner
+              size={size}
+              color="white"
+              aria-label={`Loading (${size})`}
+            />
             <span className="text-xs text-grey-200">{size}</span>
           </div>
         ))}

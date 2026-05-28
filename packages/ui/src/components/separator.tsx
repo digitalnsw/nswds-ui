@@ -33,12 +33,18 @@ function Separator({
     className
   )
 
-  if (decorative) {
-    // Render a plain <div> for decorative separators. Base UI emits
-    // `aria-orientation` based on the orientation prop regardless of role —
-    // and aria-orientation is NOT a permitted attribute on `role="none"`
-    // (axe rule: aria-allowed-attr). Bypass the primitive so the rendered
-    // element is purely presentational, with no ARIA semantics at all.
+  // A consumer passing `role="none"` / `"presentation"` is asking for a
+  // presentational separator just as `decorative` does — treat them the same.
+  // Otherwise Base UI would still emit `aria-orientation` (which it sets from
+  // the orientation prop regardless of role), recreating the axe
+  // `aria-allowed-attr` violation that `decorative` exists to avoid.
+  const isPresentational =
+    decorative || role === 'none' || role === 'presentation'
+
+  if (isPresentational) {
+    // Render a plain <div> for presentational separators. Bypass the
+    // primitive so the rendered element carries no ARIA semantics at all
+    // (no `aria-orientation`).
     return (
       <div
         data-slot="separator"
