@@ -11,21 +11,33 @@ const theme = {
     lg: 'h-8 w-8',
     xl: 'h-10 w-10',
   },
+  color: {
+    primary: 'fill-primary-800 text-grey-400',
+    accent: 'fill-accent-600 text-grey-400',
+    white: 'fill-white text-white/30',
+  },
 }
 
 type SpinnerProps = {
   className?: string
   size?: keyof typeof theme.size
+  color?: keyof typeof theme.color
 } & React.HTMLAttributes<HTMLSpanElement>
 
-function Spinner({ className, size = 'md', ...props }: SpinnerProps) {
+function Spinner({
+  className,
+  size = 'md',
+  color = 'primary',
+  ...props
+}: SpinnerProps) {
   return (
     <span role="status" {...props}>
       <svg
         fill="none"
         viewBox="0 0 100 101"
         className={cn(
-          'inline animate-spin fill-primary text-muted-foreground/30',
+          'inline animate-spin',
+          theme.color[color],
           theme.size[size],
           className
         )}
