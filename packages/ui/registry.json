@@ -81,6 +81,34 @@
       ]
     },
     {
+      "name": "labeled-separator",
+      "type": "registry:ui",
+      "title": "Labeled Separator",
+      "description": "A horizontal divider broken by a centred label, such as an \"or\" rule between sign-in methods.",
+      "dependencies": [
+        "@base-ui/react",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "files": [
+        {
+          "path": "src/components/labeled-separator.tsx",
+          "type": "registry:ui",
+          "target": "components/labeled-separator.tsx"
+        },
+        {
+          "path": "src/components/separator.tsx",
+          "type": "registry:ui",
+          "target": "components/separator.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "icons",
       "type": "registry:ui",
       "title": "Icons",

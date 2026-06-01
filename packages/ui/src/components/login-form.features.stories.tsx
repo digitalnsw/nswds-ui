@@ -154,7 +154,7 @@ export const WithError: Story = {
                * forgot → password) and positioned at the top-right via
                * absolute positioning. See WCAG 2.4.3 Focus Order.
                */}
-              <Field className="relative">
+              <Field className="relative [&>a]:w-auto">
                 <FieldLabel htmlFor="login-error-password">Password</FieldLabel>
                 <Input
                   id="login-error-password"

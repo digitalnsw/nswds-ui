@@ -115,7 +115,7 @@ export const FocusOrder: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '2.4.3',
-          why: 'Tabbing through the form must visit controls in an order that matches the visual reading order: Email → Password → Forgot link → Login → Login with Google → Sign up. A surprising tab order breaks keyboard users.',
+          why: 'Tabbing through the form must visit controls in an order that matches the visual reading order: Single sign-on → Email → Password → Forgot link → Login → Magic link → Sign up. A surprising tab order breaks keyboard users.',
           how: 'Place focus inside the canvas, then Tab repeatedly. The play() function collects every focusable control (input, button, a[href], [tabindex]) in DOM order and asserts that sequence matches the expected reading order. With no tabindex overrides in the form, DOM order IS the Tab order, so this static check is equivalent to tabbing through.',
           caveat:
             'play() asserts DOM/focus order rather than dispatching real Tab key events, so it would not catch a positive `tabindex` that reorders traversal without changing DOM order. A live keyboard test in the rendered Storybook canvas is still recommended for sanity.',
@@ -141,11 +141,17 @@ export const FocusOrder: Story = {
     if (!submit) {
       throw new Error('WCAG 2.4.3: could not find submit button.')
     }
-    const googleButton = Array.from(
+    const ssoButton = Array.from(
       canvasElement.querySelectorAll<HTMLButtonElement>('button')
-    ).find((btn) => btn.textContent?.includes('Login with Google'))
-    if (!googleButton) {
-      throw new Error('WCAG 2.4.3: could not find "Login with Google" button.')
+    ).find((btn) => btn.textContent?.toLowerCase().includes('single sign-on'))
+    if (!ssoButton) {
+      throw new Error('WCAG 2.4.3: could not find "single sign-on" button.')
+    }
+    const magicLinkButton = Array.from(
+      canvasElement.querySelectorAll<HTMLButtonElement>('button')
+    ).find((btn) => btn.textContent?.includes('magic link'))
+    if (!magicLinkButton) {
+      throw new Error('WCAG 2.4.3: could not find "magic link" button.')
     }
     const signUp = Array.from(
       canvasElement.querySelectorAll<HTMLAnchorElement>('a')
@@ -163,11 +169,12 @@ export const FocusOrder: Story = {
     ).filter((el) => !el.hasAttribute('disabled'))
 
     const expectedOrder = [
+      ssoButton,
       email,
       password,
       forgot,
       submit,
-      googleButton,
+      magicLinkButton,
       signUp,
     ]
     for (let i = 0; i < expectedOrder.length; i++) {
