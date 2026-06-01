@@ -58,7 +58,10 @@ const docsTemplate = ({
 }) =>
   `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
-function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement {
+function getInputById(
+  canvasElement: HTMLElement,
+  id: string
+): HTMLInputElement {
   const input = canvasElement.querySelector<HTMLInputElement>(
     `input[id="${id}"]`
   )
@@ -77,7 +80,8 @@ export const LabelAssociation: Story = {
           what: 'Inputs are paired with a visible <label> connected via htmlFor → id, so the field has a programmatic accessible name reported by HTMLInputElement.labels.',
           why: 'WCAG 1.3.1 Info and Relationships (A) requires the label-input relationship to be programmatically determinable. 3.3.2 Labels or Instructions (A) requires labels when content needs user input. 4.1.2 Name, Role, Value (A) requires the accessible name to be exposed to assistive technology.',
           how: 'Tab to the input with VoiceOver or NVDA — the screen reader announces "Email address, edit text". The play() function asserts the input has a matching <label> in its .labels collection and that the label text is non-empty.',
-          caveat: 'When a visible label is not possible, fall back to aria-label or aria-labelledby. Placeholder text is NOT an accessible name — it disappears as soon as the user types and is invisible to many ATs.',
+          caveat:
+            'When a visible label is not possible, fall back to aria-label or aria-labelledby. Placeholder text is NOT an accessible name — it disappears as soon as the user types and is invisible to many ATs.',
         }),
       },
     },
@@ -90,11 +94,7 @@ export const LabelAssociation: Story = {
       >
         Email address
       </label>
-      <Input
-        id="a11y-label-email"
-        type="email"
-        placeholder="you@example.com"
-      />
+      <Input id="a11y-label-email" type="email" placeholder="you@example.com" />
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -126,7 +126,8 @@ export const InputPurpose: Story = {
           what: 'Inputs collecting personal information declare their purpose via the autoComplete attribute, using tokens drawn from the WCAG 1.3.5 input-purpose list.',
           why: 'WCAG 1.3.5 Identify Input Purpose (AA) requires the purpose of fields collecting user data to be programmatically determinable, so browsers and password managers can autofill and AT can adapt the UI for the user.',
           how: 'Open the browser autofill prompt on each field — suggestions should match the declared token. The play() function asserts each input exposes the correct autocomplete attribute value.',
-          caveat: 'autoComplete only applies to fields whose purpose matches a token in the WCAG 1.3.5 input-purpose list (name, email, tel, postal-code, street-address, …). For purpose-less fields, omit the attribute rather than setting "off".',
+          caveat:
+            'autoComplete only applies to fields whose purpose matches a token in the WCAG 1.3.5 input-purpose list (name, email, tel, postal-code, street-address, …). For purpose-less fields, omit the attribute rather than setting "off".',
         }),
       },
     },
@@ -210,7 +211,8 @@ export const FocusAppearance: Story = {
           what: 'The focus indicator is a 2px solid NSW-blue (primary-800) outline with a 2px offset, drawn outside the field bounds so it is never clipped by adjacent content.',
           why: 'WCAG 2.4.7 Focus Visible (AA) requires a visible keyboard focus indicator. 2.4.13 Focus Appearance (AAA, new in 2.2) requires the indicator to be at least 2 CSS pixels thick and to have a contrast ratio of at least 3:1 against adjacent colours. 1.4.11 Non-text Contrast (AA) requires the same 3:1 ratio for the field border itself.',
           how: 'Tab to the first input or hover the second (which has the focus utilities forced on). The play() function asserts the forced input has computed outline-style: solid, outline-width ≥ 2px, and outline-offset ≥ 2px.',
-          caveat: 'Forced focus is shown so the indicator is visible without Storybook stealing keyboard focus on render. The first input still meets all three criteria when focused live — Tab to confirm.',
+          caveat:
+            'Forced focus is shown so the indicator is visible without Storybook stealing keyboard focus on render. The first input still meets all three criteria when focused live — Tab to confirm.',
         }),
       },
     },
@@ -288,7 +290,8 @@ export const ErrorIdentification: Story = {
           what: 'Invalid inputs set aria-invalid="true" and link to an error message via aria-describedby, so the error is announced as part of the field when it receives focus.',
           why: 'WCAG 3.3.1 Error Identification (A) requires that input errors are identified in text and that the affected item is identified to the user. aria-invalid alone is not enough — the field must also point to a programmatic description of the problem.',
           how: 'Focus the field with a screen reader running — VoiceOver announces "Email address, invalid entry, edit text. Please enter a valid email address". The play() function asserts aria-invalid="true", that aria-describedby is set, and that it resolves to a non-empty element in the DOM.',
-          caveat: 'Clear aria-invalid and aria-describedby once the user corrects the value, otherwise AT will keep announcing the (stale) error. This story shows the persistent error state for design review.',
+          caveat:
+            'Clear aria-invalid and aria-describedby once the user corrects the value, otherwise AT will keep announcing the (stale) error. This story shows the persistent error state for design review.',
         }),
       },
     },

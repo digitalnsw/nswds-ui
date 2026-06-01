@@ -79,10 +79,7 @@ function IconGallery() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <p
-              aria-live="polite"
-              className="text-sm text-muted-foreground"
-            >
+            <p aria-live="polite" className="text-sm text-muted-foreground">
               {filtered.length.toLocaleString()} of{' '}
               {iconEntries.length.toLocaleString()} icons
             </p>
@@ -103,10 +100,7 @@ function IconGallery() {
             {filtered.map(([name, Icon]) => (
               <li key={name}>
                 <figure className="group flex h-full flex-col items-center gap-2 rounded-sm border border-border bg-card p-4 transition-colors hover:bg-muted/50">
-                  <Icon
-                    aria-hidden="true"
-                    className="size-8 text-foreground"
-                  />
+                  <Icon aria-hidden="true" className="size-8 text-foreground" />
                   <figcaption className="w-full truncate text-center font-mono text-xs text-muted-foreground">
                     {name}
                   </figcaption>

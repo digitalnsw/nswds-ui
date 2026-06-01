@@ -47,11 +47,11 @@ const meta = {
               Password manager &amp; accessibility
             </h2>
             <p className="text-base text-muted-foreground">
-              The password field uses <code>autoComplete=&quot;new-password&quot;</code>{' '}
-              so password managers offer a generated password, and the
-              requirements hint is linked to the input via{' '}
-              <code>aria-describedby</code> so it is announced to screen
-              readers. Keep both when adapting the source.
+              The password field uses{' '}
+              <code>autoComplete=&quot;new-password&quot;</code> so password
+              managers offer a generated password, and the requirements hint is
+              linked to the input via <code>aria-describedby</code> so it is
+              announced to screen readers. Keep both when adapting the source.
             </p>
           </section>
         </div>

@@ -33,9 +33,9 @@ const meta = {
             <p className="text-base text-muted-foreground">
               LoginForm is a composed pattern that demonstrates how to assemble
               Card, Field, Input, and Button primitives into a sign-in form. It
-              is intended as a starting point for customisation, not a
-              black-box component — copy the source, adapt the fields, swap the
-              providers, and wire it to your own form handler.
+              is intended as a starting point for customisation, not a black-box
+              component — copy the source, adapt the fields, swap the providers,
+              and wire it to your own form handler.
             </p>
           </section>
 

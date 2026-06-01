@@ -64,8 +64,7 @@ export function ForgotPasswordForm({
               </Field>
               <Field>
                 <FieldDescription className="text-center">
-                  Remembered your password?{' '}
-                  <Link href="#">Back to login</Link>
+                  Remembered your password? <Link href="#">Back to login</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

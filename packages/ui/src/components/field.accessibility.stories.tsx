@@ -52,10 +52,10 @@ type Story = StoryObj<typeof meta>
 
 function getInputById(
   canvasElement: HTMLElement,
-  id: string,
+  id: string
 ): HTMLInputElement {
   const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[id="${id}"]`,
+    `input[id="${id}"]`
   )
   if (!input) throw new Error(`Could not find input #${id} in canvas.`)
   return input
@@ -94,11 +94,7 @@ export const InfoAndRelationships: Story = {
         <FieldLegend>Contact details</FieldLegend>
         <Field>
           <FieldLabel htmlFor="a11y-info-tel">Phone number</FieldLabel>
-          <Input
-            id="a11y-info-tel"
-            type="tel"
-            placeholder="0400 000 000"
-          />
+          <Input id="a11y-info-tel" type="tel" placeholder="0400 000 000" />
         </Field>
       </FieldSet>
     </div>
@@ -107,28 +103,28 @@ export const InfoAndRelationships: Story = {
     const email = getInputById(canvasElement, 'a11y-info-email')
     if (!email.labels || email.labels.length === 0) {
       throw new Error(
-        'WCAG 1.3.1: input #a11y-info-email has no associated <label>.',
+        'WCAG 1.3.1: input #a11y-info-email has no associated <label>.'
       )
     }
     const labelText = email.labels[0]?.textContent?.trim() ?? ''
     if (labelText.length === 0) {
       throw new Error(
-        'WCAG 1.3.1: associated <label> for #a11y-info-email has empty text.',
+        'WCAG 1.3.1: associated <label> for #a11y-info-email has empty text.'
       )
     }
 
     const fieldset = canvasElement.querySelector<HTMLFieldSetElement>(
-      '[data-slot="field-set"]',
+      '[data-slot="field-set"]'
     )
     if (!fieldset) {
       throw new Error(
-        'WCAG 1.3.1: expected a <fieldset> wrapping the grouped fields.',
+        'WCAG 1.3.1: expected a <fieldset> wrapping the grouped fields.'
       )
     }
     const legend = fieldset.querySelector('[data-slot="field-legend"]')
     if (!legend) {
       throw new Error(
-        'WCAG 1.3.1: FieldSet is missing a FieldLegend — the group has no programmatic name.',
+        'WCAG 1.3.1: FieldSet is missing a FieldLegend — the group has no programmatic name.'
       )
     }
   },
@@ -174,18 +170,18 @@ export const ErrorIdentification: Story = {
     const error = canvasElement.querySelector('[data-slot="field-error"]')
     if (!error) {
       throw new Error(
-        'WCAG 3.3.1: FieldError element is missing from the canvas.',
+        'WCAG 3.3.1: FieldError element is missing from the canvas.'
       )
     }
     if (error.getAttribute('role') !== 'alert') {
       throw new Error(
-        `WCAG 3.3.1: FieldError expected role="alert", got "${error.getAttribute('role')}".`,
+        `WCAG 3.3.1: FieldError expected role="alert", got "${error.getAttribute('role')}".`
       )
     }
     const text = error.textContent?.trim() ?? ''
     if (text.length === 0) {
       throw new Error(
-        'WCAG 3.3.1: FieldError rendered but contains no message text.',
+        'WCAG 3.3.1: FieldError rendered but contains no message text.'
       )
     }
   },
@@ -230,22 +226,22 @@ export const LabelsOrInstructions: Story = {
     const input = getInputById(canvasElement, 'a11y-labels-postcode')
     if (!input.labels || input.labels.length === 0) {
       throw new Error(
-        'WCAG 3.3.2: input #a11y-labels-postcode has no associated <label>.',
+        'WCAG 3.3.2: input #a11y-labels-postcode has no associated <label>.'
       )
     }
 
     const description = canvasElement.querySelector(
-      '[data-slot="field-description"]',
+      '[data-slot="field-description"]'
     )
     if (!description) {
       throw new Error(
-        'WCAG 3.3.2: Field is missing a FieldDescription for instructional text.',
+        'WCAG 3.3.2: Field is missing a FieldDescription for instructional text.'
       )
     }
     const text = description.textContent?.trim() ?? ''
     if (text.length === 0) {
       throw new Error(
-        'WCAG 3.3.2: FieldDescription rendered but contains no instructional text.',
+        'WCAG 3.3.2: FieldDescription rendered but contains no instructional text.'
       )
     }
   },
@@ -261,7 +257,7 @@ export const NameRoleValue: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '4.1.2',
-          why: 'Assistive technology must be able to determine each user-interface component\'s name, role, and current value. The Field wrapper announces itself as a group, and the input it contains exposes its accessible name via the associated FieldLabel.',
+          why: "Assistive technology must be able to determine each user-interface component's name, role, and current value. The Field wrapper announces itself as a group, and the input it contains exposes its accessible name via the associated FieldLabel.",
           how: 'Inspect the wrapper element: it carries role="group" and data-slot="field". Inspect the input: HTMLInputElement.labels exposes the FieldLabel and contains the accessible name text. The play() function asserts both.',
           caveat:
             'role="group" alone does not give the group an accessible name — pair Field with aria-labelledby pointing at a heading or FieldLegend when the group needs to be announced by name.',
@@ -273,11 +269,7 @@ export const NameRoleValue: Story = {
     <div className="w-full max-w-md">
       <Field>
         <FieldLabel htmlFor="a11y-nrv-email">Email address</FieldLabel>
-        <Input
-          id="a11y-nrv-email"
-          type="email"
-          placeholder="you@example.com"
-        />
+        <Input id="a11y-nrv-email" type="email" placeholder="you@example.com" />
       </Field>
     </div>
   ),
@@ -288,20 +280,20 @@ export const NameRoleValue: Story = {
     }
     if (field.getAttribute('role') !== 'group') {
       throw new Error(
-        `WCAG 4.1.2: Field expected role="group", got "${field.getAttribute('role')}".`,
+        `WCAG 4.1.2: Field expected role="group", got "${field.getAttribute('role')}".`
       )
     }
 
     const input = getInputById(canvasElement, 'a11y-nrv-email')
     if (!input.labels || input.labels.length === 0) {
       throw new Error(
-        'WCAG 4.1.2: input has no associated <label> — accessible name is missing.',
+        'WCAG 4.1.2: input has no associated <label> — accessible name is missing.'
       )
     }
     const name = input.labels[0]?.textContent?.trim() ?? ''
     if (name.length === 0) {
       throw new Error(
-        'WCAG 4.1.2: associated label has empty text — accessible name is empty.',
+        'WCAG 4.1.2: associated label has empty text — accessible name is empty.'
       )
     }
   },
@@ -343,18 +335,18 @@ export const StatusMessages: Story = {
     const error = canvasElement.querySelector('[data-slot="field-error"]')
     if (!error) {
       throw new Error(
-        'WCAG 4.1.3: FieldError element is missing from the canvas.',
+        'WCAG 4.1.3: FieldError element is missing from the canvas.'
       )
     }
     if (error.getAttribute('role') !== 'alert') {
       throw new Error(
-        `WCAG 4.1.3: FieldError expected role="alert" so AT announces it as a status message, got "${error.getAttribute('role')}".`,
+        `WCAG 4.1.3: FieldError expected role="alert" so AT announces it as a status message, got "${error.getAttribute('role')}".`
       )
     }
     const text = error.textContent?.trim() ?? ''
     if (text.length === 0) {
       throw new Error(
-        'WCAG 4.1.3: FieldError rendered but contains no status text to announce.',
+        'WCAG 4.1.3: FieldError rendered but contains no status text to announce.'
       )
     }
   },

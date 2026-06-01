@@ -27,10 +27,10 @@ const meta = {
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Separator</h1>
             <p className="text-base text-muted-foreground">
-              A thin horizontal or vertical divider that visually splits
-              related groups of content. Use it to organise sections inside
-              menus, toolbars, cards, and lists where added whitespace alone
-              would not make the boundary clear enough.
+              A thin horizontal or vertical divider that visually splits related
+              groups of content. Use it to organise sections inside menus,
+              toolbars, cards, and lists where added whitespace alone would not
+              make the boundary clear enough.
             </p>
           </section>
 
@@ -146,7 +146,11 @@ export const Default: Story = {
   },
   play: async ({ canvasElement, args }) => {
     const separator = getSeparator(canvasElement)
-    expectAttribute(separator, 'data-orientation', args.orientation ?? 'horizontal')
+    expectAttribute(
+      separator,
+      'data-orientation',
+      args.orientation ?? 'horizontal'
+    )
   },
 }
 

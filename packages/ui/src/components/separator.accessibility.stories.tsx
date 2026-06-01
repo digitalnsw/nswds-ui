@@ -158,8 +158,8 @@ export const NonTextContrast: Story = {
           </span>
         </div>
         <p className="text-xs text-muted-foreground">
-          Same token, same minimum 3:1 contrast requirement against the
-          surface behind it.
+          Same token, same minimum 3:1 contrast requirement against the surface
+          behind it.
         </p>
       </section>
     </div>

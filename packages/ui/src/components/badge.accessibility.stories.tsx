@@ -117,11 +117,7 @@ function TargetSizePanel({
                 size={item.size}
                 aria-label={item.icon ? 'More options' : undefined}
               >
-                {item.icon ? (
-                  <Icons.more_horiz data-slot="icon" />
-                ) : (
-                  item.label
-                )}
+                {item.icon ? <Icons.more_horiz data-slot="icon" /> : item.label}
               </BadgeButton>
 
               {/* Visible bounds */}

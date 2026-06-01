@@ -49,9 +49,7 @@ const meta = {
             <Card className="max-w-md">
               <CardHeader>
                 <CardTitle>Notifications</CardTitle>
-                <CardDescription>
-                  You have 3 unread messages.
-                </CardDescription>
+                <CardDescription>You have 3 unread messages.</CardDescription>
               </CardHeader>
               <CardContent>
                 Manage how you receive emails and in-app alerts.
