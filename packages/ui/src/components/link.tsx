@@ -120,7 +120,6 @@ const ANCHOR_ONLY_PROPS = [
   'ping',
   'referrerPolicy',
   'hrefLang',
-  'type',
 ] as const
 
 const Link = forwardRef(function Link(
