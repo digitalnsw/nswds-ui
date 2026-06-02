@@ -30,8 +30,8 @@ const meta = {
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Spinner</h1>
             <p className="text-base text-muted-foreground">
-              Spinner is a busy-state indicator for in-flight asynchronous
-              work. Use it to communicate that the page or a region is loading
+              Spinner is a busy-state indicator for in-flight asynchronous work.
+              Use it to communicate that the page or a region is loading
               content, submitting a form, or otherwise waiting on a response
               before the result can be shown.
             </p>
@@ -58,9 +58,9 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">Usage</h2>
             <p className="text-base text-muted-foreground">
               Always supply an <code>aria-label</code> describing what is
-              loading. The outer element has <code>role=&quot;status&quot;</code>{' '}
-              so assistive tech announces the label politely when the spinner
-              appears.
+              loading. The outer element has{' '}
+              <code>role=&quot;status&quot;</code> so assistive tech announces
+              the label politely when the spinner appears.
             </p>
             <div className="flex items-center gap-3">
               <Spinner aria-label="Loading results" />

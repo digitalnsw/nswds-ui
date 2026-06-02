@@ -28,9 +28,9 @@ const meta = {
             <h1 className="text-4xl font-bold tracking-normal">Label</h1>
             <p className="text-base text-muted-foreground">
               Label is a small text element that names an interactive form
-              control. It pairs with an input via{' '}
-              <code>htmlFor</code> so the field has an accessible name, and
-              inherits disabled styling from a sibling or ancestor control.
+              control. It pairs with an input via <code>htmlFor</code> so the
+              field has an accessible name, and inherits disabled styling from a
+              sibling or ancestor control.
             </p>
           </section>
 
@@ -51,20 +51,18 @@ const meta = {
               Disabled state
             </h2>
             <p className="text-sm text-muted-foreground">
-              The Label primitive dims to 50% opacity whenever an ancestor
-              with <code>group</code> + <code>data-disabled="true"</code> is
-              present — the canonical pattern used by <code>Field</code>.
-              (Label also dims when a peer input is disabled, but that
-              requires the input to appear before the label in DOM order;
-              see the Disabled feature story for that pattern.)
+              The Label primitive dims to 50% opacity whenever an ancestor with{' '}
+              <code>group</code> + <code>data-disabled="true"</code> is present
+              — the canonical pattern used by <code>Field</code>. (Label also
+              dims when a peer input is disabled, but that requires the input to
+              appear before the label in DOM order; see the Disabled feature
+              story for that pattern.)
             </p>
             <div
               data-disabled="true"
               className="group grid w-full max-w-sm gap-1.5"
             >
-              <Label htmlFor="label-docs-disabled">
-                Disabled field label
-              </Label>
+              <Label htmlFor="label-docs-disabled">Disabled field label</Label>
               <input
                 id="label-docs-disabled"
                 type="text"

@@ -164,15 +164,12 @@ export const Responsive: Story = {
   render: () => (
     <div className="w-full max-w-5xl space-y-3">
       <div className="flex items-center justify-between rounded-sm border border-grey-700 bg-primary-800 p-4">
-        <Logo
-          logoType="reversed"
-          className="h-8 w-auto md:h-12 lg:h-16"
-        />
+        <Logo logoType="reversed" className="h-8 w-auto md:h-12 lg:h-16" />
         <span className="text-sm text-grey-100">NSW Government</span>
       </div>
       <p className="text-xs text-muted-foreground">
-        Resize the canvas — the Logo scales from h-8 at mobile widths up to
-        h-16 on lg+ viewports.
+        Resize the canvas — the Logo scales from h-8 at mobile widths up to h-16
+        on lg+ viewports.
       </p>
     </div>
   ),

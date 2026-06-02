@@ -81,10 +81,7 @@ export const Contrast: Story = {
         </h4>
         <p className="text-base text-foreground">
           Read more on the{' '}
-          <Link
-            href="/about"
-            variant="primary"
-          >
+          <Link href="/about" variant="primary">
             About NSW Government
           </Link>{' '}
           page.
@@ -97,10 +94,7 @@ export const Contrast: Story = {
         </h4>
         <p className="text-base text-foreground">
           Read more on the{' '}
-          <Link
-            href="/about"
-            variant="primary"
-          >
+          <Link href="/about" variant="primary">
             About NSW Government
           </Link>{' '}
           page.
@@ -128,10 +122,7 @@ export const FocusVisible: Story = {
   },
   render: () => (
     <div className="space-y-4">
-      <Link
-        href="/tab-me"
-        variant="primary"
-      >
+      <Link href="/tab-me" variant="primary">
         Tab here to see real focus
       </Link>
       <Link
@@ -163,10 +154,7 @@ export const Keyboard: Story = {
   },
   render: () => (
     <div className="space-y-4">
-      <Link
-        href="#keyboard-target"
-        variant="primary"
-      >
+      <Link href="#keyboard-target" variant="primary">
         Press me with Enter
       </Link>
       <p className="text-sm text-muted-foreground">
@@ -234,10 +222,7 @@ export const LabelInName: Story = {
         <h4 className="text-sm font-semibold text-foreground">
           Text link (accessible name = visible label)
         </h4>
-        <Link
-          href="/about"
-          variant="primary"
-        >
+        <Link href="/about" variant="primary">
           About NSW Government
         </Link>
       </section>
@@ -295,10 +280,7 @@ export const NameRoleValue: Story = {
   },
   render: () => (
     <div className="flex flex-wrap gap-4">
-      <Link
-        href="/about"
-        variant="primary"
-      >
+      <Link href="/about" variant="primary">
         About NSW Government
       </Link>
       <Link
