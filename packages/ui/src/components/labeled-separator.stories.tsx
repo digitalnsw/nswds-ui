@@ -29,7 +29,7 @@ const meta = {
     children: {
       control: 'text',
       description:
-        'The label rendered between the two rules. Defaults to "or". Pass null to render an unbroken rule.',
+        'The label rendered between the two rules. Defaults to "or". For an unbroken divider, use the Separator component instead.',
       table: { category: 'Content' },
     },
     className: {
@@ -88,8 +88,6 @@ export const Variants: Story = {
       <LabeledSeparator />
       {/* Custom label */}
       <LabeledSeparator>continue with</LabeledSeparator>
-      {/* No label — an unbroken rule */}
-      <LabeledSeparator>{null}</LabeledSeparator>
     </div>
   ),
 }

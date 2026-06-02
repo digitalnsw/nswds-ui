@@ -7,6 +7,9 @@ import { cn } from '../lib/utils.js'
  * A horizontal divider broken by a centred label — e.g. the "or" rule that
  * separates one sign-in method from another in a login form.
  *
+ * Always renders a label (defaulting to "or"); it is not a plain horizontal
+ * rule. For an unbroken divider, use the `Separator` component instead.
+ *
  * The two flanking rules are rendered `decorative` (role="none") because the
  * visible label already conveys the boundary to assistive tech; exposing two
  * `role="separator"` elements either side of it would be redundant noise.
@@ -23,14 +26,12 @@ function LabeledSeparator({
       {...props}
     >
       <Separator decorative className="flex-1" />
-      {children != null && children !== false && (
-        <span
-          data-slot="labeled-separator-content"
-          className="shrink-0 text-sm text-muted-foreground"
-        >
-          {children}
-        </span>
-      )}
+      <span
+        data-slot="labeled-separator-content"
+        className="shrink-0 text-sm text-muted-foreground"
+      >
+        {children}
+      </span>
       <Separator decorative className="flex-1" />
     </div>
   )

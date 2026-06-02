@@ -126,12 +126,17 @@
       "type": "registry:ui",
       "title": "Link",
       "description": "A link primitive with a provider for app router link components.",
-      "dependencies": [],
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "files": [
         {
           "path": "src/components/link.tsx",
           "type": "registry:ui",
           "target": "components/link.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
         }
       ]
     },
