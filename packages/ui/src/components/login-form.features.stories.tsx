@@ -26,8 +26,12 @@ import {
   FieldGroup,
   FieldLabel,
 } from './field.js'
+import { Icons } from './icons.js'
 import { Input } from './input.js'
+import { LabeledSeparator } from './labeled-separator.js'
+import { Link } from './link.js'
 import { LoginForm } from './login-form.js'
+import { Separator } from './separator.js'
 import { docsTemplate } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
@@ -54,7 +58,7 @@ export const Default: Story = {
         story: docsTemplate({
           what: 'LoginForm rendered in its default max-w-md container — the size most consumers will reach for when dropping the pattern into a sign-in route.',
           why: 'Establishes the baseline visual for the pattern so design QA can spot regressions against the canonical Card + Field + Input + Button composition.',
-          how: 'Visually compare against the published Figma frame. Confirm the card has a single primary action, an outline Google sign-in, and a footer with the sign-up link.',
+          how: 'Visually compare against the published Figma frame. Confirm the card has a single primary action (single sign-on), the email/password and magic-link methods divided by labeled separators, and a footer with the sign-up link.',
           caveat:
             'The form is presentational only — the submit button does not POST anywhere. Wire the form to a server action when copying into a real app.',
         }),
@@ -96,7 +100,7 @@ export const LightCardOnDark: Story = {
         story: docsTemplate({
           what: 'LoginForm rendered inside a dark NSW grey-900 container, simulating a sign-in page that uses a branded dark background behind a light card.',
           why: 'Verifies that the Card primitive — and therefore LoginForm — maintains sufficient surface contrast against an arbitrary dark page background.',
-          how: 'Visually confirm the card still reads as the primary surface, the input borders remain visible, and the outline Google button does not blend into the page background.',
+          how: 'Visually confirm the card still reads as the primary surface, the input borders remain visible, and the single sign-on button does not blend into the page background.',
           caveat:
             'Toggling Storybook into dark mode is a different test — that flips the tokens inside the card, not the page around it. This story stresses the page-surface case only.',
         }),
@@ -118,8 +122,8 @@ export const WithError: Story = {
       description: {
         story: docsTemplate({
           what: 'A LoginForm with a FieldError on the password field, demonstrating how to extend the pattern when the form returns a validation error.',
-          why: 'LoginForm itself does not handle errors — this story is the authoring guide for consumers who need to add inline validation. The render copies the LoginForm composition wholesale and adds the error surface so the diff against login-form.tsx is small.',
-          how: 'Compare this render against packages/ui/src/components/login-form.tsx. The only changes are: the password Input has aria-invalid, a FieldError follows the Input, and the Forgot link text is unchanged.',
+          why: 'LoginForm itself does not handle errors — this story is the authoring guide for consumers who need to add inline validation. The render copies the LoginForm composition wholesale (SSO, email/password, magic link, and the separators between them) and adds the error surface so the diff against login-form.tsx is small.',
+          how: 'Compare this render against packages/ui/src/components/login-form.tsx. The only changes are: the password Input has aria-invalid and aria-describedby, and a FieldError follows the Input.',
           caveat:
             'In production code, derive aria-invalid and the FieldError message from your form state library (e.g. react-hook-form, formik, conform). Hardcoding them here is for illustration only.',
         }),
@@ -128,16 +132,23 @@ export const WithError: Story = {
   },
   render: () => (
     <div className="flex w-full max-w-md flex-col gap-6">
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <CardDescription>Choose how you&apos;d like to sign in</CardDescription>
         </CardHeader>
         <CardContent>
           <form>
             <FieldGroup>
+              {/* 1 — Single sign-on: the recommended first option */}
+              <Field>
+                <Button type="button">
+                  <Icons.login />
+                  Continue with single sign-on
+                </Button>
+              </Field>
+              <LabeledSeparator>or sign in with email</LabeledSeparator>
+              {/* 2 — Email + password */}
               <Field>
                 <FieldLabel htmlFor="login-error-email">Email</FieldLabel>
                 <Input
@@ -164,23 +175,38 @@ export const WithError: Story = {
                   aria-describedby="login-error-password-error"
                   required
                 />
-                <a
+                <Link
                   href="#"
-                  className="absolute top-0 right-0 text-sm underline-offset-4 hover:underline"
+                  className="absolute top-0 right-0 text-sm"
                 >
                   Forgot your password?
-                </a>
+                </Link>
                 <FieldError id="login-error-password-error">
                   Incorrect password
                 </FieldError>
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
-                  Login with Google
+                <Button type="submit" variant="outline" color="primary">
+                  <Icons.key />
+                  Login
                 </Button>
+              </Field>
+              {/* 3 — Magic link: passwordless, sent to the email entered above */}
+              <LabeledSeparator>or</LabeledSeparator>
+              <Field>
+                <Button type="button" variant="outline" color="grey">
+                  <Icons.mail />
+                  Email me a magic link instead
+                </Button>
+                <FieldDescription>
+                  We&apos;ll send a password-free sign-in link to the email
+                  above.
+                </FieldDescription>
+              </Field>
+              <Separator className="bg-grey-200" />
+              <Field>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <Link href="#">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -198,7 +224,7 @@ export const MobileNarrow: Story = {
         story: docsTemplate({
           what: 'LoginForm constrained to max-w-xs to simulate the layout on a narrow mobile viewport.',
           why: 'Ensures the card padding, input height, and stacked buttons still hold up at the narrowest realistic width — useful for spotting overflow or cramped spacing before shipping to mobile.',
-          how: 'Confirm the Forgot link does not wrap awkwardly onto its own line, the inputs stay full-width, and the Google sign-in button label fits without truncation.',
+          how: 'Confirm the Forgot link does not wrap awkwardly onto its own line, the inputs stay full-width, and the single sign-on button label fits without truncation.',
           caveat:
             'The pattern is not responsive on its own — at very narrow widths consider replacing the inline Forgot link with a stacked layout.',
         }),
