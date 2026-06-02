@@ -43,8 +43,8 @@ const meta = {
               Single-line text inputs accept short, free-form data such as a
               name, email address, or search query. Always pair an input with a
               visible label so the field has an accessible name, and use the
-              matching HTML type so browsers can offer the correct keyboard
-              and validation behaviour.
+              matching HTML type so browsers can offer the correct keyboard and
+              validation behaviour.
             </p>
           </section>
 
@@ -56,10 +56,7 @@ const meta = {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">With label</h2>
             <div className="grid w-full max-w-sm gap-1.5">
-              <label
-                htmlFor="input-docs-email"
-                className="text-sm font-medium"
-              >
+              <label htmlFor="input-docs-email" className="text-sm font-medium">
                 Email address
               </label>
               <Input

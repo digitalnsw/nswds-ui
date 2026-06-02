@@ -132,7 +132,9 @@ export const WithCheckboxAndRadio: Story = {
       </div>
 
       <fieldset className="grid gap-2">
-        <legend className="text-xs/relaxed font-medium">Preferred contact</legend>
+        <legend className="text-xs/relaxed font-medium">
+          Preferred contact
+        </legend>
         <Label htmlFor="label-features-radio-email">
           <input
             id="label-features-radio-email"

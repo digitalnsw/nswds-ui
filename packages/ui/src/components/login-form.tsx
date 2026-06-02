@@ -16,7 +16,11 @@ import {
   FieldGroup,
   FieldLabel,
 } from '../components/field.js'
+import { Icons } from '../components/icons.js'
 import { Input } from '../components/input.js'
+import { LabeledSeparator } from '../components/labeled-separator.js'
+import { Link } from '../components/link.js'
+import { Separator } from '../components/separator.js'
 import { cn } from '../lib/utils.js'
 
 export function LoginForm({
@@ -29,12 +33,31 @@ export function LoginForm({
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Choose how you&apos;d like to sign in
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
             <FieldGroup>
+              {/*
+               * Best-practice sign-in order, most-recommended first:
+               *   1. Single sign-on (SSO) — the preferred path
+               *   2. Email + password     — the traditional fallback
+               *   3. Magic link           — passwordless, reuses the email
+               * Each method is divided by a LabeledSeparator so it reads as a
+               * distinct alternative. Only SSO carries primary (solid)
+               * emphasis — one primary action per view — with password Login
+               * and the magic link stepped down to outline treatments.
+               */}
+              {/* 1 — Single sign-on: the recommended first option */}
+              <Field>
+                <Button type="button">
+                  <Icons.login />
+                  Continue with single sign-on
+                </Button>
+              </Field>
+              <LabeledSeparator>or sign in with email</LabeledSeparator>
+              {/* 2 — Email + password */}
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input
@@ -44,7 +67,7 @@ export function LoginForm({
                   required
                 />
               </Field>
-              <Field className="relative">
+              <Field className="relative [&>a]:w-auto">
                 <FieldLabel htmlFor="password">Password</FieldLabel>
                 <Input id="password" type="password" required />
                 {/*
@@ -56,20 +79,32 @@ export function LoginForm({
                  * 2.4.3 Focus Order test in
                  * login-form.accessibility.stories.tsx.
                  */}
-                <a
-                  href="#"
-                  className="absolute top-0 right-0 text-sm underline-offset-4 hover:underline"
-                >
+                <Link href="#" className="absolute top-0 right-0 text-sm">
                   Forgot your password?
-                </a>
+                </Link>
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
-                  Login with Google
+                <Button type="submit" variant="outline" color="primary">
+                  <Icons.key />
+                  Login
                 </Button>
+              </Field>
+              {/* 3 — Magic link: passwordless, sent to the email entered above */}
+              <LabeledSeparator>or</LabeledSeparator>
+              <Field>
+                <Button type="button" variant="outline" color="grey">
+                  <Icons.mail />
+                  Email me a magic link instead
+                </Button>
+                <FieldDescription>
+                  We&apos;ll send a password-free sign-in link to the email
+                  above.
+                </FieldDescription>
+              </Field>
+              <Separator className="bg-grey-200" />
+              <Field>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <Link href="#">Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

@@ -70,8 +70,8 @@ const meta = {
             <p className="text-base text-muted-foreground">
               The Logo renders a visually hidden &quot;NSW Government&quot;
               label immediately before the SVG so screen readers announce the
-              mark by name. The SVG itself is decorative
-              (<code>aria-hidden=&quot;true&quot;</code>) so assistive tech is
+              mark by name. The SVG itself is decorative (
+              <code>aria-hidden=&quot;true&quot;</code>) so assistive tech is
               not read the path data.
             </p>
           </section>
@@ -118,8 +118,7 @@ function getLogoSvg(canvasElement: HTMLElement): SVGSVGElement {
 
 function getSrOnlyName(canvasElement: HTMLElement): HTMLSpanElement {
   const span = canvasElement.querySelector<HTMLSpanElement>('span.sr-only')
-  if (!span)
-    throw new Error('Could not find the sr-only accessible name span.')
+  if (!span) throw new Error('Could not find the sr-only accessible name span.')
   return span
 }
 

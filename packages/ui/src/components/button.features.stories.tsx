@@ -207,11 +207,7 @@ export const ByVariantSemantic: Story = {
   render: () => <ByVariantMatrix rowColors={semanticColors} />,
 }
 
-function ByColourMatrix({
-  groupColors,
-}: {
-  groupColors: readonly ColorKey[]
-}) {
+function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
   const standard = groupColors.filter((color) => !lowContrastSet.has(color))
   const lowContrast = groupColors.filter((color) => lowContrastSet.has(color))
   const standardCols = standard.length

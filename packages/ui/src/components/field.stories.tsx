@@ -9,11 +9,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from './field.js'
+import { Field, FieldDescription, FieldLabel } from './field.js'
 import { Input } from './input.js'
 
 const orientations = ['vertical', 'horizontal', 'responsive'] as const
@@ -129,11 +125,7 @@ const meta = {
   render: (args) => (
     <Field {...args}>
       <FieldLabel htmlFor="field-demo">Email</FieldLabel>
-      <Input
-        id="field-demo"
-        type="email"
-        placeholder="you@example.com"
-      />
+      <Input id="field-demo" type="email" placeholder="you@example.com" />
       <FieldDescription>We&apos;ll never share your email.</FieldDescription>
     </Field>
   ),
@@ -158,7 +150,7 @@ export const Default: Story = {
     const received = field.getAttribute('data-orientation')
     if (received !== args.orientation) {
       throw new Error(
-        `Expected data-orientation="${args.orientation}", received "${received}".`,
+        `Expected data-orientation="${args.orientation}", received "${received}".`
       )
     }
   },
@@ -182,9 +174,7 @@ export const Playground: Story = {
           type="email"
           placeholder="you@example.com"
         />
-        <FieldDescription>
-          We&apos;ll never share your email.
-        </FieldDescription>
+        <FieldDescription>We&apos;ll never share your email.</FieldDescription>
       </Field>
     </div>
   ),

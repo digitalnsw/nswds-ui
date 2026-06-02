@@ -35,11 +35,10 @@ const meta = {
               <code>as</code>, or a framework link supplied through{' '}
               <code>LinkProvider</code>. Built-in styling is applied
               automatically — underline, hover halo, focus ring, and one of
-              three colour variants via the <code>variant</code> prop
-              (defaults to <code>primary</code>;{' '}
-              <code>secondary</code> and <code>white</code> are intended for
-              dark surfaces). Pass <code>className</code> to layer one-off
-              overrides on top.
+              three colour variants via the <code>variant</code> prop (defaults
+              to <code>primary</code>; <code>secondary</code> and{' '}
+              <code>white</code> are intended for dark surfaces). Pass{' '}
+              <code>className</code> to layer one-off overrides on top.
             </p>
           </section>
 
@@ -51,10 +50,10 @@ const meta = {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
             <p className="text-sm text-muted-foreground">
-              Three built-in colour variants. Defaults to{' '}
-              <code>primary</code>. Use <code>secondary</code> on dark
-              surfaces where <code>primary</code> would lose contrast, and{' '}
-              <code>white</code> on coloured / image backgrounds.
+              Three built-in colour variants. Defaults to <code>primary</code>.
+              Use <code>secondary</code> on dark surfaces where{' '}
+              <code>primary</code> would lose contrast, and <code>white</code>{' '}
+              on coloured / image backgrounds.
             </p>
             <div className="flex flex-wrap gap-6">
               <Link href="/primary" variant="primary">
@@ -149,8 +148,7 @@ const meta = {
     },
     as: {
       control: false,
-      description:
-        'Override the rendered element (string tag or component).',
+      description: 'Override the rendered element (string tag or component).',
       table: { category: 'Behavior' },
     },
     target: {

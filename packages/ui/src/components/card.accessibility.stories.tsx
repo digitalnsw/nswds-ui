@@ -92,8 +92,7 @@ export const InfoAndRelationships: Story = {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        Changes apply across all NSW Government services linked to your
-        account.
+        Changes apply across all NSW Government services linked to your account.
       </CardContent>
     </Card>
   ),

@@ -45,8 +45,7 @@ function getLogoSvg(canvasElement: HTMLElement): SVGSVGElement {
 
 function getSrOnlyName(canvasElement: HTMLElement): HTMLSpanElement {
   const span = canvasElement.querySelector<HTMLSpanElement>('span.sr-only')
-  if (!span)
-    throw new Error('Could not find the sr-only accessible name span.')
+  if (!span) throw new Error('Could not find the sr-only accessible name span.')
   return span
 }
 
@@ -193,8 +192,8 @@ export const UseOfColour: Story = {
       </div>
       <p className="text-sm text-muted-foreground">
         The mark&apos;s meaning is carried by three independent channels — its
-        distinctive silhouette, the &quot;NSW Government&quot; accessible
-        name, and only then by colour.
+        distinctive silhouette, the &quot;NSW Government&quot; accessible name,
+        and only then by colour.
       </p>
     </div>
   ),
