@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.6.0...@nswds/ui-v1.6.1) (2026-06-02)
+
+### Bug Fixes
+
+* **components:** address PR review on card, link and login-form story ([#8](https://github.com/digitalnsw/nswds-ui/issues/8)) ([8dc973a](https://github.com/digitalnsw/nswds-ui/commit/8dc973a90e7e76659d64a609d8c1421d6c97c95f))
+
 ## [1.6.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.5.0...@nswds/ui-v1.6.0) (2026-06-02)
 
 ### Features
