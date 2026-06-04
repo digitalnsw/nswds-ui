@@ -15,6 +15,11 @@ const theme = {
     primary: 'fill-primary-800 text-grey-400',
     accent: 'fill-accent-600 text-grey-400',
     white: 'fill-white text-white/30',
+    // Inherit the surrounding text colour (e.g. inside a Button, where the
+    // text colour varies per variant/colour). The arc uses currentColor at
+    // full strength; the track is the same colour dimmed via opacity on the
+    // first <path>, so the two-tone effect works from a single hue.
+    current: 'fill-current text-current [&>path:first-child]:opacity-25',
   },
 }
 
@@ -36,7 +41,7 @@ function Spinner({
         fill="none"
         viewBox="0 0 100 101"
         className={cn(
-          'inline animate-spin',
+          'inline animate-spin motion-reduce:animate-none',
           theme.color[color],
           theme.size[size],
           className

@@ -4,11 +4,67 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>NSWDS Registry</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        max-width: 48rem;
+        margin: 3rem auto;
+        padding: 0 1.25rem;
+        line-height: 1.6;
+        color: #1d1d21;
+      }
+      h1 {
+        margin-bottom: 0.25rem;
+      }
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #f4f4f5;
+        padding: 0.85rem 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+      }
+      code:not(pre code) {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        background: #f4f4f5;
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.3rem;
+      }
+    </style>
   </head>
   <body>
     <main>
       <h1>NSWDS Registry</h1>
-      <p>Registry JSON is served from <code>/r</code>.</p>
+      <p>shadcn component registry for <code>@nswds/ui</code>. JSON is served from <code>/r</code>.</p>
+
+      <h2>1. Add the <code>@nswds</code> namespace</h2>
+      <p>In your project's <code>components.json</code>:</p>
+      <pre>{
+  "registries": {
+    "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json"
+  }
+}</pre>
+
+      <h2>2. Install components</h2>
+      <pre>pnpm dlx shadcn@latest add @nswds/button</pre>
+      <p>
+        Available: <code>button</code>, <code>badge</code>, <code>link</code>,
+        <code>logo</code>, <code>icons</code>, <code>spinner</code>,
+        <code>description-list</code>, <code>labeled-separator</code>.
+      </p>
+
+      <h2>3. Install the design tokens (required)</h2>
+      <p>
+        Components style themselves with semantic tokens backed by
+        <code>@nswds/tokens</code>. Without them, colours render unstyled:
+      </p>
+      <pre>pnpm add @nswds/tokens</pre>
+      <p>
+        Then import the token layers into your Tailwind stylesheet — see the
+        <a href="https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md"
+          >full install guide</a
+        >
+        for the copy-paste CSS and dark-mode setup.
+      </p>
     </main>
   </body>
 </html>

@@ -26,19 +26,23 @@ fi
 CONVENTIONAL_COMMIT_REGEX="$("$CONVENTIONAL_CONFIG_SCRIPT" regex)"
 CONVENTIONAL_COMMIT_TYPES_CSV="$("$CONVENTIONAL_CONFIG_SCRIPT" csv)"
 
-# Detect whether curl supports --fail-with-body (curl ≥ 7.76)
+# Set model and endpoint. Override the model via the OPENAI_MODEL env var.
+MODEL="${OPENAI_MODEL:-gpt-4o}"
+ENDPOINT="https://api.openai.com/v1/chat/completions"
+
+# Use --fail-with-body if available; fall back to --fail for BSD/macOS curl.
 CURL_FAIL_FLAG="--fail-with-body"
 if ! curl --help all 2>/dev/null | grep -q -- '--fail-with-body'; then
   CURL_FAIL_FLAG="--fail"
 fi
 
-# Set model and endpoint
-MODEL="gpt-4"
-ENDPOINT="https://api.openai.com/v1/chat/completions"
-
-# Get current branch and base branch
+# Get current branch and base branch.
+# Read the locally-tracked origin HEAD instead of `git remote show origin`:
+# no network call, and it won't abort under set -e if origin is missing or its
+# output format differs. Fall back to main when the ref isn't set.
 branch=$(git rev-parse --abbrev-ref HEAD)
-default_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+default_branch="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
+default_branch="${default_branch:-main}"
 
 # Extract commits from current branch
 commits=$(git log "$default_branch"..HEAD --pretty=format:"%s" | grep -E "$CONVENTIONAL_COMMIT_REGEX" || true)
@@ -66,47 +70,69 @@ messages=$(jq -n \
 
 # Call OpenAI API
 set +e
-response=$(curl -sS $CURL_FAIL_FLAG "$ENDPOINT" \
+response=$(curl -sS "$CURL_FAIL_FLAG" "$ENDPOINT" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}" 2>&1)
+  -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}"
+)
 curl_status=$?
 set -e
 
 if [[ $curl_status -ne 0 ]]; then
   echo "❌ OpenAI API request failed (curl exit code: $curl_status)."
-  echo "$response" | head -c 500
+  echo "$response" | head -c 400
+  echo
   exit 1
 fi
 
+# Fail clearly if the response isn't valid JSON (auth/proxy errors can be HTML).
 if ! echo "$response" | jq -e . >/dev/null 2>&1; then
-  echo "❌ OpenAI API returned non-JSON output."
-  echo "$response" | head -c 500
+  echo "❌ OpenAI API returned a non-JSON response."
+  echo "$response" | head -c 400
+  echo
   exit 1
 fi
 
-if echo "$response" | jq -e '.error' >/dev/null 2>&1; then
+# Surface API-level errors instead of proceeding with a null title.
+if echo "$response" | jq -e '.error' >/dev/null; then
   err_type=$(echo "$response" | jq -r '.error.type // "unknown"')
-  err_msg=$(echo "$response" | jq -r '.error.message // ""' | head -c 300)
+  err_msg=$(echo "$response" | jq -r '.error.message // ""' | head -c 200)
   echo "❌ OpenAI API error ($err_type): $err_msg"
   exit 1
 fi
 
-# Extract and validate title
-title=$(echo "$response" | jq -r '.choices[0].message.content // ""' | head -n 1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
+# Extract title; bail if content is missing/null rather than creating a PR titled "null".
+title=$(echo "$response" | jq -r '.choices[0].message.content // empty' | head -n 1)
 if [[ -z "$title" ]]; then
-  echo "⚠️ OpenAI returned an empty title; falling back to first conventional commit."
-  title=$(echo "$commits" | head -n 1)
+  echo "❌ OpenAI API did not return a title."
+  exit 1
 fi
 
-if [[ -n "$CONVENTIONAL_COMMIT_REGEX" ]] && ! echo "$title" | grep -qE "$CONVENTIONAL_COMMIT_REGEX"; then
-  echo "⚠️ Suggested title does not match Conventional Commit format; falling back to first conventional commit."
-  title=$(echo "$commits" | head -n 1)
+# Normalize the model output the same way ai-pr-title.yml does: strip a leading
+# "Title:", wrapping quotes/backticks/code fences, collapse whitespace, and trim.
+title="$(printf '%s' "$title" | sed -E 's/^Title:[[:space:]]*//I')"
+title="$(printf '%s' "$title" | sed -E 's/^["'\''`]+|["'\''`]+$//g')"
+title="$(printf '%s' "$title" | sed -E 's/^```[a-zA-Z0-9_-]*//; s/```$//')"
+title="$(printf '%s' "$title" | sed -E 's/[[:space:]]+/ /g')"
+title="$(printf '%s' "$title" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+
+# Validate against the repo's Conventional Commit pattern. If the model drifted
+# off-format, fall back to the first conventional commit subject on the branch
+# (guaranteed to exist, since we exit earlier when there are none).
+if [[ ! "$title" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+  echo "⚠️ Suggested title is not in Conventional Commits format: \"$title\""
+  fallback="$(printf '%s\n' "$commits" | head -n 1)"
+  if [[ -n "$fallback" && "$fallback" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+    title="$fallback"
+    echo "↪️ Falling back to first conventional commit subject."
+  else
+    echo "❌ No Conventional-Commit-conforming title available."
+    exit 1
+  fi
 fi
 
 echo ""
-echo "✅ Suggested PR title from OpenAI:"
+echo "✅ Suggested PR title:"
 echo "$title"
 echo ""
 
