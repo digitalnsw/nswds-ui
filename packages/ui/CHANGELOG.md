@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.6.1...@nswds/ui-v1.7.0) (2026-06-04)
+
+### Features
+
+* **web, docs, components:** enhance UX with Spinner integration, SEO improvements, and updated guides; fix button variant and font loading issues ([#9](https://github.com/digitalnsw/nswds-ui/issues/9)) ([8e16250](https://github.com/digitalnsw/nswds-ui/commit/8e162502a8adcde7cf9b0f2d225813be8f775fed))
+
 ## [1.6.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.6.0...@nswds/ui-v1.6.1) (2026-06-02)
 
 ### Bug Fixes
