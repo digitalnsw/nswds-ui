@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
 import { ThemeProvider } from '@/components/theme-provider'
@@ -33,10 +33,6 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteURL),
 
   keywords: [...siteKeywords],
-
-  viewport: 'width=device-width, initial-scale=1',
-
-  themeColor: '#002664',
 
   icons: {
     icon: '/icon.svg',
@@ -85,6 +81,15 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: ['https://digitalnsw.github.io/images/nsw-gov-logo-primary.png'],
   },
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#22272b' },
+  ],
 }
 
 export default function RootLayout({
