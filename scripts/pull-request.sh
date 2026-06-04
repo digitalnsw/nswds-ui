@@ -108,8 +108,31 @@ if [[ -z "$title" ]]; then
   exit 1
 fi
 
+# Normalize the model output the same way ai-pr-title.yml does: strip a leading
+# "Title:", wrapping quotes/backticks/code fences, collapse whitespace, and trim.
+title="$(printf '%s' "$title" | sed -E 's/^Title:[[:space:]]*//I')"
+title="$(printf '%s' "$title" | sed -E 's/^["'\''`]+|["'\''`]+$//g')"
+title="$(printf '%s' "$title" | sed -E 's/^```[a-zA-Z0-9_-]*//; s/```$//')"
+title="$(printf '%s' "$title" | sed -E 's/[[:space:]]+/ /g')"
+title="$(printf '%s' "$title" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+
+# Validate against the repo's Conventional Commit pattern. If the model drifted
+# off-format, fall back to the first conventional commit subject on the branch
+# (guaranteed to exist, since we exit earlier when there are none).
+if [[ ! "$title" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+  echo "⚠️ Suggested title is not in Conventional Commits format: \"$title\""
+  fallback="$(printf '%s\n' "$commits" | head -n 1)"
+  if [[ -n "$fallback" && "$fallback" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+    title="$fallback"
+    echo "↪️ Falling back to first conventional commit subject."
+  else
+    echo "❌ No Conventional-Commit-conforming title available."
+    exit 1
+  fi
+fi
+
 echo ""
-echo "✅ Suggested PR title from OpenAI:"
+echo "✅ Suggested PR title:"
 echo "$title"
 echo ""
 
