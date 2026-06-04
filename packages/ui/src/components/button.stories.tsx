@@ -206,7 +206,7 @@ const meta = {
                 {variants.map((variant) => (
                   <Cell key={variant} label={variant}>
                     <Button variant={variant}>
-                      {variant[0].toUpperCase() + variant.slice(1)}
+                      {variant.charAt(0).toUpperCase() + variant.slice(1)}
                     </Button>
                   </Cell>
                 ))}

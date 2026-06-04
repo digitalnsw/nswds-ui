@@ -280,7 +280,8 @@ const buttonVariants = cva(styles.base, {
 
 type ButtonProps = VariantProps<typeof buttonVariants> & {
   className?: string
-  children: React.ReactNode
+  /** Button label. Optional for icon-only buttons (supply an `aria-label`). */
+  children?: React.ReactNode
   /** Stretch button to fill its container width. */
   block?: boolean
   /** Show a spinner and disable interaction. */
