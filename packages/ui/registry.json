@@ -14,6 +14,7 @@
         "clsx",
         "tailwind-merge"
       ],
+      "registryDependencies": ["link", "spinner"],
       "files": [
         {
           "path": "src/components/button.tsx",

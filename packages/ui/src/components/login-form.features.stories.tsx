@@ -135,7 +135,9 @@ export const WithError: Story = {
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Choose how you&apos;d like to sign in</CardDescription>
+          <CardDescription>
+            Choose how you&apos;d like to sign in
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form>
@@ -175,10 +177,7 @@ export const WithError: Story = {
                   aria-describedby="login-error-password-error"
                   required
                 />
-                <Link
-                  href="#"
-                  className="absolute top-0 right-0 text-sm"
-                >
+                <Link href="#" className="absolute top-0 right-0 text-sm">
                   Forgot your password?
                 </Link>
                 <FieldError id="login-error-password-error">

@@ -1,0 +1,254 @@
+import { Meta } from '@storybook/addon-docs/blocks'
+
+import { Logo } from '../components/logo.js'
+import { Button } from '../components/button.js'
+import { Icons } from '../components/icons.js'
+
+<Meta title="Getting Started/Welcome" />
+
+{/*
+  The whole page is defined as a real JSX component inside an `export` block.
+  Authoring it as JSX (rather than MDX markdown) avoids MDX's automatic
+  paragraph wrapping, which would otherwise nest <p> inside <p>/<h1> and
+  trigger hydration errors. `.sb-unstyled` opts out of Storybook's default
+  docs typography so the Tailwind semantic tokens drive the styling.
+*/}
+
+export const Tile = ({ href, title, icon: Icon, children }) => (
+  <a
+    href={href}
+    className="group flex flex-col rounded-2xl border border-border bg-card p-6 no-underline shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md"
+  >
+    <span className="mb-4 inline-flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+      <Icon className="size-6" />
+    </span>
+    <h3 className="flex items-center gap-1 text-lg font-semibold text-foreground">
+      {title}
+      <span
+        aria-hidden
+        className="transition-transform group-hover:translate-x-0.5"
+      >
+        →
+      </span>
+    </h3>
+    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      {children}
+    </p>
+  </a>
+)
+
+export const Principle = ({ icon: Icon, title, children }) => (
+  <div>
+    <span className="mb-3 inline-flex size-10 items-center justify-center rounded-xl bg-accent text-foreground">
+      <Icon className="size-5" />
+    </span>
+    <h3 className="text-base font-semibold">{title}</h3>
+    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+      {children}
+    </p>
+  </div>
+)
+
+export const ResourceLink = ({ href, children }) => (
+  <a
+    href={href}
+    className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+  >
+    {children}
+  </a>
+)
+
+export const Welcome = () => (
+  <div className="sb-unstyled text-foreground">
+    {/* ---------------------------------------------------------- Hero */}
+    <section className="overflow-hidden rounded-2xl bg-primary text-primary-foreground">
+      <div className="grid items-center gap-8 px-8 py-12 sm:px-12 sm:py-16 md:grid-cols-[1.4fr_1fr]">
+        <div className="space-y-6">
+          <span className="inline-block text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
+            NSW Design System
+          </span>
+          <h1 className="text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">
+            NSWDS&nbsp;UI is the reusable component library for NSW Government
+            digital products.
+          </h1>
+          <p className="max-w-xl text-lg leading-relaxed text-primary-foreground/80">
+            Accessible, token-driven, headless-first components built on
+            Base&nbsp;UI — shipped as an npm package and a shadcn registry so
+            any team can consume them.
+          </p>
+          <div className="flex flex-wrap gap-3 pt-2">
+            <Button
+              href="/?path=/docs/components-button--docs"
+              color="white"
+              variant="solid"
+              size="lg"
+            >
+              Browse components
+            </Button>
+            <Button
+              href="https://github.com/digitalnsw/nswds-ui"
+              color="white"
+              variant="outline"
+              size="lg"
+            >
+              View on GitHub
+            </Button>
+          </div>
+        </div>
+        <div className="hidden justify-self-center md:block">
+          <Logo logoType="mono-white" className="h-44 w-auto opacity-95" />
+        </div>
+      </div>
+    </section>
+
+    {/* --------------------------------------------------------- Intro */}
+    <section className="mx-auto mt-16 max-w-3xl space-y-4 text-center">
+      <h2 className="text-3xl font-bold tracking-tight">
+        A design system, not an application
+      </h2>
+      <p className="text-lg leading-relaxed text-muted-foreground">
+        Every component, token, and API is judged against one question: is it
+        reusable and consumable by external projects? The apps in this repo
+        exist only to develop and preview the system — what ships is{' '}
+        <code className="rounded bg-muted px-1.5 py-0.5 text-[0.9em] font-medium">
+          @nswds/ui
+        </code>
+        .
+      </p>
+    </section>
+
+    {/* --------------------------------------------- Distribution channels */}
+    <section className="mt-16">
+      <h2 className="mb-6 text-2xl font-bold tracking-tight">
+        Two ways to consume
+      </h2>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h3 className="text-lg font-semibold">npm package</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Compiled ESM, shipped with types and CSS. Import components
+            directly.
+          </p>
+          <pre className="mt-4 overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+            <code>{`pnpm add @nswds/ui
+
+import { Button } from "@nswds/ui"`}</code>
+          </pre>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <h3 className="text-lg font-semibold">shadcn registry</h3>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Copy the source straight into your repo and own it from there.
+          </p>
+          <pre className="mt-4 overflow-x-auto rounded-lg bg-muted p-4 text-sm">
+            <code>{`npx shadcn add \\
+  https://<registry-url>/r/button.json`}</code>
+          </pre>
+        </div>
+      </div>
+    </section>
+
+    {/* ------------------------------------------------------ Explore grid */}
+    <section className="mt-16">
+      <h2 className="mb-6 text-2xl font-bold tracking-tight">
+        Explore the system
+      </h2>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Tile
+          href="/?path=/docs/components-button--docs"
+          title="Components"
+          icon={Icons.widgets}
+        >
+          Buttons, forms, cards, badges and more — each with variants,
+          features, and accessibility stories.
+        </Tile>
+        <Tile
+          href="/?path=/docs/components-icons--docs"
+          title="Icons"
+          icon={Icons.shapes}
+        >
+          A full Material-style icon set, tree-shakeable and ready to drop into
+          any component.
+        </Tile>
+        <Tile
+          href="/?path=/docs/components-button--docs"
+          title="Theming"
+          icon={Icons.palette}
+        >
+          Switch primary and accent colours from the toolbar. Brand and
+          Aboriginal palettes, light and dark, share-by-URL.
+        </Tile>
+        <Tile
+          href="/?path=/docs/components-button--accessibility"
+          title="Accessibility"
+          icon={Icons.accessibility}
+        >
+          WCAG 2.1 AA is enforced in CI via axe-core. Behaviour comes from
+          Base&nbsp;UI primitives — never hand-rolled.
+        </Tile>
+        <Tile
+          href="/?path=/docs/components-button--features"
+          title="Tokens"
+          icon={Icons.colors}
+        >
+          Semantic CSS custom properties layered over the NSW masterbrand
+          palette and <code>@nswds/tokens</code>.
+        </Tile>
+        <Tile
+          href="https://github.com/digitalnsw/nswds-ui"
+          title="Contribute"
+          icon={Icons.code}
+        >
+          Conventional Commits, automated releases, and a shadcn registry build.
+          PRs welcome.
+        </Tile>
+      </div>
+    </section>
+
+    {/* -------------------------------------------------------- Principles */}
+    <section className="mt-16">
+      <h2 className="mb-6 text-2xl font-bold tracking-tight">How it's built</h2>
+      <div className="grid gap-8 sm:grid-cols-3">
+        <Principle icon={Icons.accessibility} title="Headless-first">
+          Interactive components wrap{' '}
+          <ResourceLink href="https://base-ui.com/">Base&nbsp;UI</ResourceLink>{' '}
+          primitives, which own focus, keyboard, and ARIA. We style on top.
+        </Principle>
+        <Principle icon={Icons.palette} title="Token-driven">
+          Every visual property is a semantic CSS token. Components reference{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-[0.85em]">
+            bg-primary
+          </code>
+          , never raw palette values.
+        </Principle>
+        <Principle icon={Icons.package} title="Reusable">
+          Built on{' '}
+          <code className="rounded bg-muted px-1.5 py-0.5 text-[0.85em]">
+            @nswds/tokens
+          </code>{' '}
+          and the NSW masterbrand palette so it drops cleanly into any consuming
+          project.
+        </Principle>
+      </div>
+    </section>
+
+    {/* ------------------------------------------------------ Footer links */}
+    <section className="mt-16 mb-4 border-t border-border pt-8">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+        <span className="font-semibold">Resources</span>
+        <ResourceLink href="https://github.com/digitalnsw/nswds-ui">
+          GitHub repository
+        </ResourceLink>
+        <ResourceLink href="https://www.npmjs.com/package/@nswds/ui">
+          npm package
+        </ResourceLink>
+        <ResourceLink href="https://base-ui.com/">Base UI</ResourceLink>
+        <ResourceLink href="https://www.digital.nsw.gov.au/">
+          Digital NSW
+        </ResourceLink>
+      </div>
+    </section>
+  </div>
+)
+
+<Welcome />

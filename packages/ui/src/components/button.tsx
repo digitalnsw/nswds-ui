@@ -8,6 +8,7 @@ import React, { forwardRef } from 'react'
 import { cn } from '../lib/utils.js'
 
 import { Link } from '../components/link.js'
+import { Spinner } from '../components/spinner.js'
 
 const styles = {
   base: [
@@ -279,7 +280,8 @@ const buttonVariants = cva(styles.base, {
 
 type ButtonProps = VariantProps<typeof buttonVariants> & {
   className?: string
-  children: React.ReactNode
+  /** Button label. Optional for icon-only buttons (supply an `aria-label`). */
+  children?: React.ReactNode
   /** Stretch button to fill its container width. */
   block?: boolean
   /** Show a spinner and disable interaction. */
@@ -333,7 +335,18 @@ const Button = forwardRef(function Button(
 
   const content = (
     <TouchTarget>
-      {loading && <ButtonSpinner />}
+      {loading && (
+        <Spinner
+          data-slot="icon"
+          role={undefined}
+          aria-hidden
+          color="current"
+          // `block` overrides Spinner's default `inline` so the svg isn't
+          // pushed below centre by the button's line-height; `size-full` fills
+          // the icon-sized, self-centred wrapper span.
+          className="block size-full"
+        />
+      )}
       {LeadingVisual && <LeadingVisual data-slot="icon" />}
       {labelWrap === false ? (
         <span className="whitespace-nowrap">{children}</span>
@@ -396,34 +409,6 @@ const Button = forwardRef(function Button(
     </ButtonPrimitive>
   )
 })
-
-/** Inline spinner — avoids importing the full Icons module into the button bundle. */
-function ButtonSpinner() {
-  return (
-    <svg
-      data-slot="icon"
-      className="animate-spin motion-reduce:animate-none"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle
-        className="opacity-25"
-        cx="12"
-        cy="12"
-        r="10"
-        stroke="currentColor"
-        strokeWidth="4"
-      />
-      <path
-        className="opacity-75"
-        fill="currentColor"
-        d="M4 12a8 8 0 018-8V0C5.373 0 22 5.373 22 12h-4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-      />
-    </svg>
-  )
-}
 
 /**
  * Expand the hit area to at least 44×44px on touch devices

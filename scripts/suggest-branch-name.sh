@@ -131,6 +131,8 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
   exit 1
 }
 
+# Default to the repo-root .opencommitignore (where it actually lives), not the
+# script dir. An explicit OPENCOMMIT_IGNORE_FILE still wins.
 OPENCOMMIT_IGNORE_FILE="${OPENCOMMIT_IGNORE_FILE:-${repo_root}/.opencommitignore}"
 opencommit_ignore_enabled="false"
 if [[ -f "$OPENCOMMIT_IGNORE_FILE" ]]; then

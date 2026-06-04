@@ -29,7 +29,6 @@ import {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const variants = ['solid', 'soft', 'surface', 'outline'] as const
-const sizes = ['sm', 'default', 'lg'] as const
 const colors = [
   'primary/grey',
   'light',
@@ -43,7 +42,7 @@ const colors = [
 ] as const
 
 type ColorKey = (typeof colors)[number]
-type SizeKey = (typeof sizes)[number]
+type SizeKey = 'sm' | 'default' | 'lg'
 
 const forcedFocusClasses =
   'outline outline-2 outline-offset-2 outline-primary-800'

@@ -13,7 +13,10 @@ const frameworkDir = dirname(
 )
 
 const config: StorybookConfig = {
-  stories: ['../../../packages/ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+  stories: [
+    '../../../packages/ui/src/**/*.mdx',
+    '../../../packages/ui/src/**/*.stories.@(js|jsx|mjs|ts|tsx)',
+  ],
   staticDirs: ['../public'],
   addons: [
     '@storybook/addon-docs',
