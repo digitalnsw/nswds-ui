@@ -1,37 +1,85 @@
 name: Release
+
 on:
   push:
     branches: [main]
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 'lts/*'
+          node-version: '22.14.0'
           registry-url: 'https://registry.npmjs.org'
-          package-manager-cache: false
+
+      - name: Ensure npm supports trusted publishing
+        run: |
+          node --version
+          npm --version
+          node -e "const [major, minor, patch] = process.versions.node.split('.').map(Number); if (major < 22 || (major === 22 && minor < 14)) process.exit(1)"
+          if ! node -e "const version = require('child_process').execSync('npm --version').toString().trim().split('.').map(Number); if (version[0] < 11 || (version[0] === 11 && version[1] < 5) || (version[0] === 11 && version[1] === 5 && version[2] < 1)) process.exit(1)"; then
+            npm install -g npm@^11.5.1
+          fi
+          npm --version
+          node -e "const version = require('child_process').execSync('npm --version').toString().trim().split('.').map(Number); if (version[0] < 11 || (version[0] === 11 && version[1] < 5) || (version[0] === 11 && version[1] === 5 && version[2] < 1)) process.exit(1)"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup pnpm cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
       - name: Install dependencies
-        run: npm clean-install
-      - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-        run: npm audit signatures
+        run: pnpm install --frozen-lockfile
+
+      - name: Build UI package
+        run: pnpm --filter @nswds/ui build
+
+      - name: Capture latest release tag
+        id: before_release
+        run: |
+          tag="$(git tag --list '@nswds/ui-v*' --sort=-v:refname | head -n 1)"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: pnpm release
+
+      - name: Capture published release tag
+        id: after_release
+        run: |
+          tag="$(git tag --list '@nswds/ui-v*' --sort=-v:refname | head -n 1)"
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Build shadcn registry
+        if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
+        run: pnpm registry:build
+
+      - name: Upload shadcn registry artifact
+        if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadcn-registry-${{ github.sha }}
+          path: apps/registry/public/r
+          if-no-files-found: error
