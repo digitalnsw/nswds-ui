@@ -4,6 +4,6 @@ import { config } from "@workspace/eslint-config/react-internal"
 export default [
   ...config,
   {
-    ignores: ["storybook-static/**"],
+    ignores: ["storybook-static/**", "public/mockServiceWorker.js"],
   },
 ]

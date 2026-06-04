@@ -239,7 +239,11 @@ const meta = {
                   <Button size="lg">Button</Button>
                 </Cell>
                 <Cell label="icon">
-                  <Button size="icon" aria-label="Add" leadingVisual={Icons.add} />
+                  <Button
+                    size="icon"
+                    aria-label="Add"
+                    leadingVisual={Icons.add}
+                  />
                 </Cell>
               </div>
             </Preview>
