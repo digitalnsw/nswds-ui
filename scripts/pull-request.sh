@@ -30,9 +30,19 @@ CONVENTIONAL_COMMIT_TYPES_CSV="$("$CONVENTIONAL_CONFIG_SCRIPT" csv)"
 MODEL="${OPENAI_MODEL:-gpt-4o}"
 ENDPOINT="https://api.openai.com/v1/chat/completions"
 
-# Get current branch and base branch
+# Use --fail-with-body if available; fall back to --fail for BSD/macOS curl.
+CURL_FAIL_FLAG="--fail-with-body"
+if ! curl --help all 2>/dev/null | grep -q -- '--fail-with-body'; then
+  CURL_FAIL_FLAG="--fail"
+fi
+
+# Get current branch and base branch.
+# Read the locally-tracked origin HEAD instead of `git remote show origin`:
+# no network call, and it won't abort under set -e if origin is missing or its
+# output format differs. Fall back to main when the ref isn't set.
 branch=$(git rev-parse --abbrev-ref HEAD)
-default_branch=$(git remote show origin | grep 'HEAD branch' | awk '{print $NF}')
+default_branch="$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##' || true)"
+default_branch="${default_branch:-main}"
 
 # Extract commits from current branch
 commits=$(git log "$default_branch"..HEAD --pretty=format:"%s" | grep -E "$CONVENTIONAL_COMMIT_REGEX" || true)
@@ -60,7 +70,7 @@ messages=$(jq -n \
 
 # Call OpenAI API
 set +e
-response=$(curl -sS --fail-with-body "$ENDPOINT" \
+response=$(curl -sS "$CURL_FAIL_FLAG" "$ENDPOINT" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
   -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}"
