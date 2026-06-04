@@ -142,6 +142,8 @@ export default definePreview({
     options: {
       storySort: {
         order: [
+          'Getting Started',
+          ['Welcome'],
           'Components',
           [
             'Button',

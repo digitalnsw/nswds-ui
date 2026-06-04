@@ -21,6 +21,8 @@
 @source '../../../../apps/**/*.{ts,tsx}';
 /* Scan all of packages/ui/src (components, hooks, lib) for utility classes. */
 @source '../**/*.{ts,tsx}';
+/* MDX docs pages (e.g. the Storybook welcome page) also use utility classes. */
+@source '../**/*.mdx';
 
 @theme inline {
   --font-heading: var(--font-sans);

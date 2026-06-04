@@ -21,7 +21,7 @@ jobs:
     steps:
       - name: Checkout code
         if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -42,7 +42,7 @@ jobs:
 
       - name: Get Current PR Title
         id: get-pr-title
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -95,7 +95,7 @@ jobs:
       - name: Get commit messages
         id: commits
         if: ${{ steps.validate-title.outputs.update_needed == 'true' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           CONVENTIONAL_COMMIT_REGEX: ${{ steps.conventional-config.outputs.regex || env.CONVENTIONAL_COMMIT_REGEX_DEFAULT }}
         with:
@@ -269,7 +269,7 @@ jobs:
       - name: Update PR Title if Invalid or Empty
         # Gate on having a suggested title; prevents hard-fail when AI didn't run.
         if: ${{ steps.validate-title.outputs.update_needed == 'true' && steps.ai.outputs.title != '' && github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           CONVENTIONAL_COMMIT_REGEX: ${{ steps.conventional-config.outputs.regex || env.CONVENTIONAL_COMMIT_REGEX_DEFAULT }}
         with:

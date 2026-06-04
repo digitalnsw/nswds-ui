@@ -26,14 +26,8 @@ fi
 CONVENTIONAL_COMMIT_REGEX="$("$CONVENTIONAL_CONFIG_SCRIPT" regex)"
 CONVENTIONAL_COMMIT_TYPES_CSV="$("$CONVENTIONAL_CONFIG_SCRIPT" csv)"
 
-# Detect whether curl supports --fail-with-body (curl ≥ 7.76)
-CURL_FAIL_FLAG="--fail-with-body"
-if ! curl --help all 2>/dev/null | grep -q -- '--fail-with-body'; then
-  CURL_FAIL_FLAG="--fail"
-fi
-
-# Set model and endpoint
-MODEL="gpt-4"
+# Set model and endpoint. Override the model via the OPENAI_MODEL env var.
+MODEL="${OPENAI_MODEL:-gpt-4o}"
 ENDPOINT="https://api.openai.com/v1/chat/completions"
 
 # Get current branch and base branch
@@ -66,43 +60,42 @@ messages=$(jq -n \
 
 # Call OpenAI API
 set +e
-response=$(curl -sS $CURL_FAIL_FLAG "$ENDPOINT" \
+response=$(curl -sS --fail-with-body "$ENDPOINT" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}" 2>&1)
+  -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}"
+)
 curl_status=$?
 set -e
 
 if [[ $curl_status -ne 0 ]]; then
   echo "❌ OpenAI API request failed (curl exit code: $curl_status)."
-  echo "$response" | head -c 500
+  echo "$response" | head -c 400
+  echo
   exit 1
 fi
 
+# Fail clearly if the response isn't valid JSON (auth/proxy errors can be HTML).
 if ! echo "$response" | jq -e . >/dev/null 2>&1; then
-  echo "❌ OpenAI API returned non-JSON output."
-  echo "$response" | head -c 500
+  echo "❌ OpenAI API returned a non-JSON response."
+  echo "$response" | head -c 400
+  echo
   exit 1
 fi
 
-if echo "$response" | jq -e '.error' >/dev/null 2>&1; then
+# Surface API-level errors instead of proceeding with a null title.
+if echo "$response" | jq -e '.error' >/dev/null; then
   err_type=$(echo "$response" | jq -r '.error.type // "unknown"')
-  err_msg=$(echo "$response" | jq -r '.error.message // ""' | head -c 300)
+  err_msg=$(echo "$response" | jq -r '.error.message // ""' | head -c 200)
   echo "❌ OpenAI API error ($err_type): $err_msg"
   exit 1
 fi
 
-# Extract and validate title
-title=$(echo "$response" | jq -r '.choices[0].message.content // ""' | head -n 1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-
+# Extract title; bail if content is missing/null rather than creating a PR titled "null".
+title=$(echo "$response" | jq -r '.choices[0].message.content // empty' | head -n 1)
 if [[ -z "$title" ]]; then
-  echo "⚠️ OpenAI returned an empty title; falling back to first conventional commit."
-  title=$(echo "$commits" | head -n 1)
-fi
-
-if [[ -n "$CONVENTIONAL_COMMIT_REGEX" ]] && ! echo "$title" | grep -qE "$CONVENTIONAL_COMMIT_REGEX"; then
-  echo "⚠️ Suggested title does not match Conventional Commit format; falling back to first conventional commit."
-  title=$(echo "$commits" | head -n 1)
+  echo "❌ OpenAI API did not return a title."
+  exit 1
 fi
 
 echo ""
