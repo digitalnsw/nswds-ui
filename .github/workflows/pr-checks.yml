@@ -66,10 +66,11 @@ jobs:
       - name: Verify registry output is committed
         run: |
           npm run registry:build -w @nswds/ui
-          if [ -n "$(git status --porcelain apps/registry/public/r)" ]; then
+          STATUS="$(git status --porcelain -- apps/registry/public/r)"
+          if [ -n "$STATUS" ]; then
             echo "::error::Registry output is stale. Run 'npm run registry:build' and commit the changes in apps/registry/public/r/."
-            git status --porcelain apps/registry/public/r
-            git diff apps/registry/public/r
+            echo "$STATUS"
+            git diff --stat -- apps/registry/public/r
             exit 1
           fi
 
