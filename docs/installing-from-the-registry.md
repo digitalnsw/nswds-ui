@@ -5,7 +5,7 @@ served at **https://ui.digital.nsw.gov.au/registry**. This guide covers installi
 *your own* project with the `shadcn` CLI.
 
 > Prefer the npm package? If you don't need the source copied into your repo, you can instead
-> `pnpm add @nswds/ui` and import compiled components and CSS directly. See
+> `npm install @nswds/ui` and import compiled components and CSS directly. See
 > [the npm channel](#alternative-the-npm-package) at the bottom. The rest of this guide is the
 > **registry / copy-source** channel.
 
@@ -17,7 +17,7 @@ Your project must already be a shadcn project (it needs a `components.json` and 
 setup). If it isn't:
 
 ```bash
-pnpm dlx shadcn@latest init
+npx shadcn@latest init
 ```
 
 ---
@@ -49,13 +49,13 @@ The registry is public, so no token or auth headers are needed.
 With the namespace configured, use the short form:
 
 ```bash
-pnpm dlx shadcn@latest add @nswds/button
+npx shadcn@latest add @nswds/button
 ```
 
 Install several at once:
 
 ```bash
-pnpm dlx shadcn@latest add @nswds/button @nswds/link @nswds/badge
+npx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 ```
 
 ### Available components
@@ -72,7 +72,7 @@ pnpm dlx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 | `@nswds/labeled-separator` | Labeled separator |
 
 > Without the namespace configured, the same installs work with the full URL, e.g.
-> `pnpm dlx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json`.
+> `npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json`.
 
 The CLI writes the component source into your project (per your `components.json` aliases) and
 installs each component's runtime dependencies (`@base-ui/react`, `class-variance-authority`,
@@ -94,7 +94,7 @@ If you skip this, the components render but every colour falls back to unstyled 
 ### 4a. Install the token package
 
 ```bash
-pnpm add @nswds/tokens
+npm install @nswds/tokens
 ```
 
 ### 4b. Add the token layers to your global stylesheet
@@ -220,7 +220,7 @@ If you don't need the source copied into your repo, consume the compiled package
 tokens come bundled, so there's no step 4:
 
 ```bash
-pnpm add @nswds/ui @nswds/tokens
+npm install @nswds/ui @nswds/tokens
 ```
 
 ```tsx

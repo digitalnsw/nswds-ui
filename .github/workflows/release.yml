@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: '22.14.0'
           registry-url: 'https://registry.npmjs.org'
+          cache: npm
 
       - name: Ensure npm supports trusted publishing
         run: |
@@ -37,23 +38,11 @@ jobs:
           npm --version
           node -e "const version = require('child_process').execSync('npm --version').toString().trim().split('.').map(Number); if (version[0] < 11 || (version[0] === 11 && version[1] < 5) || (version[0] === 11 && version[1] === 5 && version[2] < 1)) process.exit(1)"
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
-      - name: Setup pnpm cache
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.14.0'
-          registry-url: 'https://registry.npmjs.org'
-          cache: pnpm
-
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build UI package
-        run: pnpm --filter @nswds/ui build
+        run: npm run build -w @nswds/ui
 
       - name: Capture latest release tag
         id: before_release
@@ -64,7 +53,7 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm release
+        run: npm run release
 
       - name: Capture published release tag
         id: after_release
@@ -74,7 +63,7 @@ jobs:
 
       - name: Build shadcn registry
         if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
-        run: pnpm registry:build
+        run: npm run registry:build
 
       - name: Upload shadcn registry artifact
         if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
