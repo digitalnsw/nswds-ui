@@ -3,6 +3,8 @@ name: PR Checks
 # Runs on every PR targeting main. Enforces:
 #   - ESLint passes across the workspace
 #   - TypeScript typecheck passes across the workspace
+#   - The committed registry JSON (apps/registry/public/r/) matches a fresh
+#     `registry:build` — generated output must be committed with source changes
 #   - Storybook stories load and pass their play() functions
 #   - axe-core a11y checks pass for every story (via @storybook/addon-a11y
 #     with `a11y.test: 'error'` in apps/storybook/.storybook/preview.tsx)
@@ -56,6 +58,21 @@ jobs:
       # still go through `exports` → `dist/`.
       - name: Build @nswds/ui
         run: npm run build -w @nswds/ui
+
+      # The registry JSON in apps/registry/public/r/ is generated from
+      # packages/ui source and committed to git. Rebuild it here and fail
+      # if the committed output is stale — `git status --porcelain` (not
+      # `git diff`) so brand-new untracked JSON files are caught too.
+      - name: Verify registry output is committed
+        run: |
+          npm run registry:build -w @nswds/ui
+          STATUS="$(git status --porcelain -- apps/registry/public/r)"
+          if [ -n "$STATUS" ]; then
+            echo "::error::Registry output is stale. Run 'npm run registry:build' and commit the changes in apps/registry/public/r/."
+            echo "$STATUS"
+            git diff --stat -- apps/registry/public/r
+            exit 1
+          fi
 
       # Playwright system deps live outside ~/.cache/ms-playwright and would
       # need re-installing on every cold runner anyway, so we install both
