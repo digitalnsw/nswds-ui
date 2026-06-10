@@ -1,4 +1,4 @@
 {
   "framework": "nextjs",
-  "buildCommand": "pnpm --filter @nswds/ui build && next build"
+  "buildCommand": "npm run build -w @nswds/ui && next build"
 }

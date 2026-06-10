@@ -7,9 +7,9 @@ plus a shadcn component registry. This is the system's source monorepo, not an a
 
 - **Registry (copy source into your repo):** see
   [docs/installing-from-the-registry.md](docs/installing-from-the-registry.md) — configure the
-  `@nswds` namespace once, then `pnpm dlx shadcn@latest add @nswds/button`.
+  `@nswds` namespace once, then `npx shadcn@latest add @nswds/button`.
   Registry: https://ui.digital.nsw.gov.au/registry
-- **npm package (compiled, versioned):** `pnpm add @nswds/ui @nswds/tokens`, then
+- **npm package (compiled, versioned):** `npm install @nswds/ui @nswds/tokens`, then
   `import { Button } from "@nswds/ui"`.
 
 Either way, the components depend on the `@nswds/tokens` design tokens — the install guide covers

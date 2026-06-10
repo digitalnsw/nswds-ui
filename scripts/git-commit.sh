@@ -69,6 +69,26 @@ if ! curl --help all 2>/dev/null | grep -q -- '--fail-with-body'; then
   CURL_FAIL_FLAG="--fail"
 fi
 
+# Detect a locally-installed commitlint so we can validate candidate messages
+# against the exact rules the commit-msg hook enforces. When absent (non-Node
+# repo, deps not installed), fall back to the Conventional Commits regex.
+COMMITLINT_AVAILABLE="false"
+if command -v npx >/dev/null 2>&1 && npx --no-install commitlint --version >/dev/null 2>&1; then
+  COMMITLINT_AVAILABLE="true"
+fi
+
+# Returns 0 when the message passes the project's commit rules.
+commit_passes_lint() {
+  local msg="$1"
+  if [[ "$COMMITLINT_AVAILABLE" == "true" ]]; then
+    printf '%s' "$msg" | npx --no-install commitlint >/dev/null 2>&1
+    return
+  fi
+  local subject
+  subject="$(printf '%s\n' "$msg" | sed -n '1p')"
+  [[ "$subject" =~ $CONVENTIONAL_COMMIT_REGEX ]]
+}
+
 # Check current branch
 printf "🔍 Current branch:\n"
 BRANCH="$(git branch --show-current)"
@@ -194,9 +214,16 @@ You're an expert developer writing Conventional Commits.
 Task:
 - Suggest ONE git commit message for the staged changes.
 - Format the first line as: type(scope): description  (or type: description)
-- Allowed types: ${CONVENTIONAL_COMMIT_TYPES_CSV}
-- Keep the subject line under ~72 chars if possible.
-- If helpful, include a short body after a blank line (bullets ok).
+- Allowed types (lowercase): ${CONVENTIONAL_COMMIT_TYPES_CSV}
+- Subject rules (enforced by commitlint):
+  - type must be lowercase and from the allowed list
+  - write the description in the imperative mood ("add", not "added"/"adds")
+  - do NOT capitalize the first word of the description
+  - do NOT end the subject with a period
+  - keep the subject <= 100 chars (aim for ~72)
+- If helpful, add a body: leave ONE blank line after the subject, then wrap body
+  lines at <= 100 chars (bullets ok).
+- For a breaking change, use "type!: ..." or a "BREAKING CHANGE: ..." footer.
 - Do NOT use code fences. Do NOT wrap in quotes. Do NOT prefix with "Title:" or similar.
 
 Branch name: ${BRANCH}
@@ -281,20 +308,17 @@ set -e
     exit 1
   fi
 
-  SUBJECT_LINE="$(printf "%s\n" "$COMMIT_MSG" | sed -n '1p')"
-
-  if [[ "$SUBJECT_LINE" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+  if commit_passes_lint "$COMMIT_MSG"; then
     break
   fi
 
   attempt=$((attempt + 1))
   if [[ $attempt -le $max_attempts ]]; then
-    printf "⚠️ Model output didn't match Conventional Commits. Retrying (%d/%d)...\n" "$attempt" "$max_attempts"
+    printf "⚠️ Model output failed commit-message validation. Retrying (%d/%d)...\n" "$attempt" "$max_attempts"
   fi
 done
 
-SUBJECT_LINE="$(printf "%s\n" "$COMMIT_MSG" | sed -n '1p')"
-if [[ ! "$SUBJECT_LINE" =~ $CONVENTIONAL_COMMIT_REGEX ]]; then
+if ! commit_passes_lint "$COMMIT_MSG"; then
   printf "⚠️ Still invalid after retries. Using a safe fallback.\n"
   COMMIT_MSG="${DEFAULT_CONVENTIONAL_COMMIT_TYPE}: update"
 fi

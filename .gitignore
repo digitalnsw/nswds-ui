@@ -38,7 +38,6 @@ npm-debug.log*
 AGENTS.md
 CLAUDE.md
 
-/.pnpm-store
 /.kiro
 /.playwright-cli
 /.claude

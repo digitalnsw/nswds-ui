@@ -43,6 +43,14 @@ module.exports = {
         pkgRoot,
       },
     ],
+    [
+      // The npm plugin bumps packages/ui/package.json; regenerate the root
+      // lockfile so the workspace version stays in sync (npm ci fails otherwise).
+      "@semantic-release/exec",
+      {
+        prepareCmd: "npm install --package-lock-only",
+      },
+    ],
     "@semantic-release/github",
     [
       "@semantic-release/git",
@@ -50,7 +58,7 @@ module.exports = {
         assets: [
           `${pkgRoot}/CHANGELOG.md`,
           `${pkgRoot}/package.json`,
-          "pnpm-lock.yaml",
+          "package-lock.json",
         ],
         message:
           "chore(release): @nswds/ui ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",

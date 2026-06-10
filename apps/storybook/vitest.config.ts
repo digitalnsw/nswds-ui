@@ -18,8 +18,8 @@ export default defineConfig({
       'clsx',
       'tailwind-merge',
       // `storybook/test` is a subpath export used by stories for `fn()` mocks.
-      // Without pre-bundling, Vite's scanner can't resolve it cleanly in a
-      // pnpm workspace.
+      // Without pre-bundling, Vite's scanner can't resolve it cleanly in an
+      // npm workspace.
       'storybook/test',
       // `aria-query` is a CJS-only package consumed by @storybook/addon-vitest's
       // setup file. Without pre-bundling, Vite serves it raw and the named
