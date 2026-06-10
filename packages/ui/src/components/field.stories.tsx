@@ -26,10 +26,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Field</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Field is a composition wrapper that groups a form control with its
               label, helper description, and error message. It standardises
               spacing and orientation so every input in a form shares a
@@ -57,7 +57,7 @@ const meta = {
             <div className="space-y-6">
               {orientations.map((orientation) => (
                 <div key={orientation} className="space-y-2">
-                  <p className="text-sm font-medium text-foreground capitalize">
+                  <p className="text-foreground text-sm font-medium capitalize">
                     {orientation}
                   </p>
                   <Field orientation={orientation}>
@@ -166,7 +166,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       <Field {...args}>
         <FieldLabel htmlFor="field-playground">Email</FieldLabel>
         <Input

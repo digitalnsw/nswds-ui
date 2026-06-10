@@ -17,7 +17,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         // (which reads `outline-style: var(--tw-outline-style)`).
         'h-12 w-full min-w-0 rounded-sm px-4 py-2 text-base transition-colors',
         // Default — 1px grey-02 border on surface-default
-        'border border-grey-600 bg-background text-grey-800',
+        'bg-background border border-grey-600 text-grey-800',
         // Dark mode — flip text to a light grey so it's readable on dark surface
         // (mirrors how border-grey-600 → dark:border-grey-200 is handled below).
         'dark:text-grey-100',
@@ -37,7 +37,7 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         'aria-invalid:border-2 aria-invalid:border-danger-600 aria-invalid:hover:bg-danger-50 aria-invalid:focus:outline-danger-600',
         'aria-invalid:dark:border-danger-200 aria-invalid:dark:hover:bg-danger-900/30 aria-invalid:dark:focus:outline-danger-200',
         // Dark mode — invert grey border for sufficient contrast against dark surfaces
-        'dark:border-grey-100 dark:bg-input/30',
+        'dark:bg-input/30 dark:border-grey-100',
         'dark:hover:bg-input/50 dark:focus:outline-grey-100',
         className
       )}

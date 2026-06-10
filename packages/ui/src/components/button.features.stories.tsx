@@ -136,7 +136,7 @@ function getButton(canvasElement: HTMLElement, name: string) {
 function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
   return (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {variants.map((variant) => (
           <span
@@ -222,7 +222,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
             style={{ minWidth: `${16 + standardCols * 10}rem` }}
           >
             <div
-              className="grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground"
+              className="text-muted-foreground grid items-center gap-2 px-3 text-xs font-semibold"
               style={{
                 gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
               }}
@@ -241,12 +241,12 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
             {variants.map((variant) => (
               <div
                 key={`variant-standard-row-${variant}`}
-                className="grid items-center gap-2 rounded-sm border border-border bg-background p-3"
+                className="border-border bg-background grid items-center gap-2 rounded-sm border p-3"
                 style={{
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
-                <span className="text-sm font-semibold text-foreground capitalize">
+                <span className="text-foreground text-sm font-semibold capitalize">
                   {variant}
                 </span>
                 {standard.map((color) => (
@@ -375,7 +375,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className="w-full max-w-5xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {sizes.map((size) => (
           <span key={`size-header-${size}`} className="text-center capitalize">
@@ -447,7 +447,7 @@ export const WithIcon: Story = {
   },
   render: () => (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {variants.map((variant) => (
           <span
@@ -519,7 +519,7 @@ export const InteractionStates: Story = {
         .force-state-grid [data-active][data-variant="link"] { text-decoration: underline; text-underline-offset: 4px; }
       `}</style>
 
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {variants.map((variant) => (
           <span
@@ -628,7 +628,7 @@ export const States: Story = {
   },
   render: () => (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {variants.map((variant) => (
           <span
@@ -685,7 +685,7 @@ export const Focused: Story = {
   },
   render: () => (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
         <span>Theme</span>
         {variants.map((variant) => (
           <span

@@ -24,12 +24,12 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">
               ForgotPasswordForm
             </h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               ForgotPasswordForm is a composed pattern that demonstrates how to
               assemble Card, Field, Input, and Button primitives into a
               password-reset request form. It is the destination of the
@@ -50,7 +50,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Account-enumeration safety
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               When wiring the form, show the same confirmation message whether
               or not the submitted address has an account. Revealing that an
               email is &ldquo;not found&rdquo; lets an attacker enumerate
@@ -136,7 +136,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-md rounded-sm border p-6">
       <ForgotPasswordForm {...args} />
     </div>
   ),

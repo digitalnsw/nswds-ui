@@ -73,7 +73,7 @@ function Section({
       <div className="space-y-2">
         <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
         {description ? (
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
             {description}
           </p>
         ) : null}
@@ -98,7 +98,7 @@ function Preview({
     <div
       className={cn(
         'rounded-xl border p-8',
-        dark ? 'border-transparent bg-primary' : 'border-border bg-muted/40',
+        dark ? 'bg-primary border-transparent' : 'border-border bg-muted/40',
         className
       )}
     >
@@ -117,7 +117,7 @@ function Cell({
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="flex min-h-12 items-center">{children}</div>
-      <span className="text-xs font-medium tracking-wide text-muted-foreground">
+      <span className="text-muted-foreground text-xs font-medium tracking-wide">
         {label}
       </span>
     </div>
@@ -172,15 +172,15 @@ const meta = {
         // variant text colour *inside docs only* — it renders correctly in real
         // apps and in the story canvas. The `[&_code]` styles restore the inline
         // code chips that `sb-unstyled` would otherwise reset.
-        <div className="sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground">
+        <div className="sb-unstyled text-foreground [&_code]:bg-muted [&_code]:text-foreground max-w-4xl space-y-16 py-2 [&_code]:rounded [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium">
           {/* Intro */}
           <section className="space-y-4">
             <h1 className="text-5xl font-bold tracking-tight">Button</h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+            <p className="text-muted-foreground max-w-2xl text-lg leading-relaxed">
               Buttons let people take actions and make choices. Pair a{' '}
-              <strong className="font-semibold text-foreground">variant</strong>{' '}
+              <strong className="text-foreground font-semibold">variant</strong>{' '}
               (how much emphasis it carries) with a{' '}
-              <strong className="font-semibold text-foreground">colour</strong>{' '}
+              <strong className="text-foreground font-semibold">colour</strong>{' '}
               (which role it plays) — use one high-emphasis button for the
               primary action and quieter treatments for everything else.
             </p>
@@ -258,7 +258,7 @@ const meta = {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold">Brand colours</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
                     Drawn from the active masterbrand theme and the toolbar
                     Primary / Accent pickers. Use <code>primary</code> for the
                     main action; <code>tertiary</code> and <code>accent</code>{' '}
@@ -276,7 +276,7 @@ const meta = {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold">On dark surfaces</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
                     Theme colours designed to sit on coloured or dark
                     backgrounds — their lighter treatments do not read on white.
                     Use <code>white</code> for a high-contrast action and{' '}
@@ -294,7 +294,7 @@ const meta = {
               <div className="space-y-4">
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold">Semantic colours</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
                     Fixed meanings that stay constant across themes. Reserve{' '}
                     <code>danger</code> for destructive actions, and use{' '}
                     <code>success</code> / <code>warning</code> sparingly for
@@ -580,7 +580,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       <Button {...args}>{args.children}</Button>
     </div>
   ),

@@ -408,7 +408,7 @@ export const Keyboard: Story = {
   render: () => (
     <div className="space-y-4">
       <Button>Press me</Button>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Tab to focus, then press Enter or Space to activate.
       </p>
     </div>
@@ -469,7 +469,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+        <h4 className="text-foreground text-sm font-semibold">
           Text labels (accessible name = visible label)
         </h4>
         <div className="flex flex-wrap gap-3">
@@ -480,7 +480,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+        <h4 className="text-foreground text-sm font-semibold">
           Icon-only (accessible name supplied via aria-label)
         </h4>
         <div className="flex flex-wrap gap-3">

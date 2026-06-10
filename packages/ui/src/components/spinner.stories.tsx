@@ -26,10 +26,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Spinner</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Spinner is a busy-state indicator for in-flight asynchronous work.
               Use it to communicate that the page or a region is loading
               content, submitting a form, or otherwise waiting on a response
@@ -48,7 +48,7 @@ const meta = {
               {sizes.map((size) => (
                 <div key={size} className="flex flex-col items-center gap-2">
                   <Spinner size={size} aria-label={`Loading (${size})`} />
-                  <span className="text-xs text-muted-foreground">{size}</span>
+                  <span className="text-muted-foreground text-xs">{size}</span>
                 </div>
               ))}
             </div>
@@ -56,7 +56,7 @@ const meta = {
 
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Usage</h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Always supply an <code>aria-label</code> describing what is
               loading. The outer element has{' '}
               <code>role=&quot;status&quot;</code> so assistive tech announces
@@ -64,7 +64,7 @@ const meta = {
             </p>
             <div className="flex items-center gap-3">
               <Spinner aria-label="Loading results" />
-              <span className="text-sm text-foreground">Loading results…</span>
+              <span className="text-foreground text-sm">Loading results…</span>
             </div>
           </section>
         </div>
@@ -147,7 +147,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="flex w-full max-w-xl items-center justify-center rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background flex w-full max-w-xl items-center justify-center rounded-sm border p-6">
       <Spinner {...args} />
     </div>
   ),

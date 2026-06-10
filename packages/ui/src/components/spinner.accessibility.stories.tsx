@@ -69,7 +69,7 @@ export const StatusMessage: Story = {
   render: () => (
     <div className="space-y-4">
       <Spinner aria-label="Loading results" />
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Outer element has role=&quot;status&quot; and aria-label=&quot;Loading
         results&quot;.
       </p>
@@ -111,8 +111,8 @@ export const NonTextContrast: Story = {
   },
   render: () => (
     <div className="space-y-4">
-      <div className="rounded-sm border border-border bg-background p-6">
-        <h4 className="mb-3 text-sm font-semibold text-foreground">
+      <div className="border-border bg-background rounded-sm border p-6">
+        <h4 className="text-foreground mb-3 text-sm font-semibold">
           On default background
         </h4>
         <div className="flex flex-wrap items-end gap-6">
@@ -154,28 +154,28 @@ export const UseOfColour: Story = {
   },
   render: () => (
     <div className="space-y-6">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-6">
+        <h4 className="text-foreground text-sm font-semibold">
           Animation + accessible name (recommended)
         </h4>
         <div className="flex items-center gap-3">
           <Spinner aria-label="Loading results" />
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             Visible animation + role=&quot;status&quot; +
             aria-label=&quot;Loading results&quot;.
           </span>
         </div>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-6">
+        <h4 className="text-foreground text-sm font-semibold">
           Pair with visible text for maximum clarity
         </h4>
         <div className="flex items-center gap-3">
           <Spinner size="sm" aria-label="Loading results" />
-          <span className="text-sm text-foreground">Loading results…</span>
+          <span className="text-foreground text-sm">Loading results…</span>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           A visible &quot;Loading…&quot; label removes any reliance on the
           spinner&apos;s colour or motion to convey the state.
         </p>
@@ -202,25 +202,25 @@ export const NonTextContent: Story = {
   },
   render: () => (
     <div className="space-y-6">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-6">
+        <h4 className="text-foreground text-sm font-semibold">
           Correct — aria-label supplied
         </h4>
         <Spinner aria-label="Loading search results" />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           The outer span exposes the accessible name; the SVG remains
           decorative.
         </p>
       </section>
 
       <section className="border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+        <h4 className="text-foreground text-sm font-semibold">
           Caveat — no aria-label
         </h4>
         <span data-no-label-spinner>
           <Spinner />
         </span>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Without aria-label, the role=&quot;status&quot; element has no
           accessible name. Screen readers will announce only the live region
           with no context — always supply a label.

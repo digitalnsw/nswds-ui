@@ -47,10 +47,10 @@ export const Horizontal: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md space-y-3 rounded-sm border border-border bg-background p-4">
-      <p className="text-sm text-foreground">Section one</p>
+    <div className="border-border bg-background w-full max-w-md space-y-3 rounded-sm border p-4">
+      <p className="text-foreground text-sm">Section one</p>
       <Separator />
-      <p className="text-sm text-foreground">Section two</p>
+      <p className="text-foreground text-sm">Section two</p>
     </div>
   ),
 }
@@ -71,12 +71,12 @@ export const Vertical: Story = {
     },
   },
   render: () => (
-    <div className="flex h-12 items-stretch gap-3 rounded-sm border border-border bg-background px-4">
-      <span className="flex items-center text-sm text-foreground">Home</span>
+    <div className="border-border bg-background flex h-12 items-stretch gap-3 rounded-sm border px-4">
+      <span className="text-foreground flex items-center text-sm">Home</span>
       <Separator orientation="vertical" />
-      <span className="flex items-center text-sm text-foreground">About</span>
+      <span className="text-foreground flex items-center text-sm">About</span>
       <Separator orientation="vertical" />
-      <span className="flex items-center text-sm text-foreground">Contact</span>
+      <span className="text-foreground flex items-center text-sm">Contact</span>
     </div>
   ),
 }
@@ -97,36 +97,36 @@ export const InMenu: Story = {
     },
   },
   render: () => (
-    <div className="w-56 rounded-sm border border-border bg-background py-1 shadow-sm">
+    <div className="border-border bg-background w-56 rounded-sm border py-1 shadow-sm">
       <button
         type="button"
-        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted block w-full px-3 py-2 text-left text-sm"
       >
         Profile
       </button>
       <button
         type="button"
-        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted block w-full px-3 py-2 text-left text-sm"
       >
         Settings
       </button>
       <Separator />
       <button
         type="button"
-        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted block w-full px-3 py-2 text-left text-sm"
       >
         Help
       </button>
       <button
         type="button"
-        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted block w-full px-3 py-2 text-left text-sm"
       >
         Keyboard shortcuts
       </button>
       <Separator />
       <button
         type="button"
-        className="block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted block w-full px-3 py-2 text-left text-sm"
       >
         Sign out
       </button>
@@ -150,48 +150,48 @@ export const InToolbar: Story = {
     },
   },
   render: () => (
-    <div className="flex h-10 items-stretch gap-1 rounded-sm border border-border bg-background px-2">
+    <div className="border-border bg-background flex h-10 items-stretch gap-1 rounded-sm border px-2">
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Bold
       </button>
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Italic
       </button>
       <Separator orientation="vertical" />
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Left
       </button>
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Center
       </button>
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Right
       </button>
       <Separator orientation="vertical" />
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Link
       </button>
       <button
         type="button"
-        className="px-2 text-sm text-foreground hover:bg-muted"
+        className="text-foreground hover:bg-muted px-2 text-sm"
       >
         Image
       </button>
@@ -215,16 +215,16 @@ export const WithLabel: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md space-y-4 rounded-sm border border-border bg-background p-4">
-      <p className="text-sm text-foreground">Continue with Google</p>
+    <div className="border-border bg-background w-full max-w-md space-y-4 rounded-sm border p-4">
+      <p className="text-foreground text-sm">Continue with Google</p>
       <div className="flex items-center gap-3">
         <Separator className="flex-1" />
-        <span className="text-xs font-medium text-muted-foreground uppercase">
+        <span className="text-muted-foreground text-xs font-medium uppercase">
           or
         </span>
         <Separator className="flex-1" />
       </div>
-      <p className="text-sm text-foreground">Sign in with email</p>
+      <p className="text-foreground text-sm">Sign in with email</p>
     </div>
   ),
 }

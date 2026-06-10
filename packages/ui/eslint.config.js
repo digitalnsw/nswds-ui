@@ -1,4 +1,4 @@
-import { config } from "@workspace/eslint-config/react-internal"
+import { config } from '@workspace/eslint-config/react-internal'
 
 /** @type {import("eslint").Linter.Config} */
 export default [
@@ -11,21 +11,21 @@ export default [
     //   the guard in scripts/rewrite-registry-aliases.mjs.
     // shadcn add writes files with "@/..." imports; convert them to relative
     // paths as part of the Radix → Base UI cleanup step.
-    files: ["src/**/*.{ts,tsx}"],
+    files: ['src/**/*.{ts,tsx}'],
     rules: {
-      "no-restricted-imports": [
-        "error",
+      'no-restricted-imports': [
+        'error',
         {
           patterns: [
             {
-              group: ["@/*"],
+              group: ['@/*'],
               message:
                 "Use a relative import inside packages/ui/src — @/* won't resolve when apps/web transpiles this file.",
             },
             {
-              group: ["@nswds/ui/*"],
+              group: ['@nswds/ui/*'],
               message:
-                "Use a relative import inside packages/ui/src — self-imports leak into registry output.",
+                'Use a relative import inside packages/ui/src — self-imports leak into registry output.',
             },
           ],
         },

@@ -52,13 +52,13 @@ export const AllVariants: Story = {
   },
   render: () => (
     <div className="grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="space-y-3 rounded-sm border border-border bg-background p-6">
+      <div className="border-border bg-background space-y-3 rounded-sm border p-6">
         <Logo logoType="default" className="h-16 w-auto" />
-        <p className="text-sm text-muted-foreground">default</p>
+        <p className="text-muted-foreground text-sm">default</p>
       </div>
-      <div className="space-y-3 rounded-sm border border-border bg-background p-6">
+      <div className="border-border bg-background space-y-3 rounded-sm border p-6">
         <Logo logoType="mono-black" className="h-16 w-auto" />
-        <p className="text-sm text-muted-foreground">mono-black</p>
+        <p className="text-muted-foreground text-sm">mono-black</p>
       </div>
       <div className="space-y-3 rounded-sm border border-grey-700 bg-grey-900 p-6">
         <Logo logoType="reversed" className="h-16 w-auto" />
@@ -88,22 +88,22 @@ export const Sizes: Story = {
     },
   },
   render: () => (
-    <div className="flex w-full max-w-5xl flex-wrap items-end gap-8 rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background flex w-full max-w-5xl flex-wrap items-end gap-8 rounded-sm border p-6">
       <div className="space-y-2">
         <Logo className="h-8 w-auto" />
-        <p className="text-xs text-muted-foreground">h-8 · 32px</p>
+        <p className="text-muted-foreground text-xs">h-8 · 32px</p>
       </div>
       <div className="space-y-2">
         <Logo className="h-12 w-auto" />
-        <p className="text-xs text-muted-foreground">h-12 · 48px</p>
+        <p className="text-muted-foreground text-xs">h-12 · 48px</p>
       </div>
       <div className="space-y-2">
         <Logo className="h-16 w-auto" />
-        <p className="text-xs text-muted-foreground">h-16 · 64px</p>
+        <p className="text-muted-foreground text-xs">h-16 · 64px</p>
       </div>
       <div className="space-y-2">
         <Logo className="h-24 w-auto" />
-        <p className="text-xs text-muted-foreground">h-24 · 96px</p>
+        <p className="text-muted-foreground text-xs">h-24 · 96px</p>
       </div>
     </div>
   ),
@@ -126,11 +126,11 @@ export const Backgrounds: Story = {
   },
   render: () => (
     <div className="grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="space-y-3 rounded-sm border border-border bg-white p-6">
+      <div className="border-border space-y-3 rounded-sm border bg-white p-6">
         <Logo logoType="default" className="h-16 w-auto" />
         <p className="text-sm text-grey-700">white · default</p>
       </div>
-      <div className="space-y-3 rounded-sm border border-border bg-grey-100 p-6">
+      <div className="border-border space-y-3 rounded-sm border bg-grey-100 p-6">
         <Logo logoType="default" className="h-16 w-auto" />
         <p className="text-sm text-grey-700">grey-100 · default</p>
       </div>
@@ -167,7 +167,7 @@ export const Responsive: Story = {
         <Logo logoType="reversed" className="h-8 w-auto md:h-12 lg:h-16" />
         <span className="text-sm text-grey-100">NSW Government</span>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         Resize the canvas — the Logo scales from h-8 at mobile widths up to h-16
         on lg+ viewports.
       </p>

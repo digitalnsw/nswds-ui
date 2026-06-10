@@ -23,10 +23,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Separator</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               A thin horizontal or vertical divider that visually splits related
               groups of content. Use it to organise sections inside menus,
               toolbars, cards, and lists where added whitespace alone would not
@@ -36,27 +36,27 @@ const meta = {
 
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Horizontal</h2>
-            <div className="w-full max-w-md space-y-3 rounded-sm border border-border bg-background p-4">
-              <p className="text-sm text-foreground">Section one</p>
+            <div className="border-border bg-background w-full max-w-md space-y-3 rounded-sm border p-4">
+              <p className="text-foreground text-sm">Section one</p>
               <Separator />
-              <p className="text-sm text-foreground">Section two</p>
+              <p className="text-foreground text-sm">Section two</p>
               <Separator />
-              <p className="text-sm text-foreground">Section three</p>
+              <p className="text-foreground text-sm">Section three</p>
             </div>
           </section>
 
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Vertical</h2>
-            <div className="flex h-12 items-stretch gap-3 rounded-sm border border-border bg-background px-4">
-              <span className="flex items-center text-sm text-foreground">
+            <div className="border-border bg-background flex h-12 items-stretch gap-3 rounded-sm border px-4">
+              <span className="text-foreground flex items-center text-sm">
                 Home
               </span>
               <Separator orientation="vertical" />
-              <span className="flex items-center text-sm text-foreground">
+              <span className="text-foreground flex items-center text-sm">
                 About
               </span>
               <Separator orientation="vertical" />
-              <span className="flex items-center text-sm text-foreground">
+              <span className="text-foreground flex items-center text-sm">
                 Contact
               </span>
             </div>
@@ -93,18 +93,18 @@ const meta = {
   render: (args) => {
     if (args.orientation === 'vertical') {
       return (
-        <div className="flex h-12 items-stretch gap-3 rounded-sm border border-border bg-background px-4">
-          <span className="flex items-center text-sm text-foreground">A</span>
+        <div className="border-border bg-background flex h-12 items-stretch gap-3 rounded-sm border px-4">
+          <span className="text-foreground flex items-center text-sm">A</span>
           <Separator {...args} />
-          <span className="flex items-center text-sm text-foreground">B</span>
+          <span className="text-foreground flex items-center text-sm">B</span>
         </div>
       )
     }
     return (
-      <div className="w-full max-w-md space-y-3 rounded-sm border border-border bg-background p-4">
-        <p className="text-sm text-foreground">Above</p>
+      <div className="border-border bg-background w-full max-w-md space-y-3 rounded-sm border p-4">
+        <p className="text-foreground text-sm">Above</p>
         <Separator {...args} />
-        <p className="text-sm text-foreground">Below</p>
+        <p className="text-foreground text-sm">Below</p>
       </div>
     )
   },
@@ -164,22 +164,22 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       {args.orientation === 'vertical' ? (
         <div className="flex h-12 items-stretch gap-3">
-          <span className="flex items-center text-sm text-foreground">
+          <span className="text-foreground flex items-center text-sm">
             Item A
           </span>
           <Separator {...args} />
-          <span className="flex items-center text-sm text-foreground">
+          <span className="text-foreground flex items-center text-sm">
             Item B
           </span>
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-foreground">Block above</p>
+          <p className="text-foreground text-sm">Block above</p>
           <Separator {...args} />
-          <p className="text-sm text-foreground">Block below</p>
+          <p className="text-foreground text-sm">Block below</p>
         </div>
       )}
     </div>

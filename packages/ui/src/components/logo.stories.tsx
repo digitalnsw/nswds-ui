@@ -25,10 +25,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Logo</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               The NSW Government waratah lockup. Use it as the primary brand
               mark on agency websites, applications, and digital products.
               Choose the variant that gives the strongest contrast against the
@@ -44,13 +44,13 @@ const meta = {
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
             <div className="flex flex-wrap items-center gap-6">
-              <div className="rounded-sm border border-border bg-background p-6">
+              <div className="border-border bg-background rounded-sm border p-6">
                 <Logo logoType="default" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-muted-foreground">default</p>
+                <p className="text-muted-foreground mt-3 text-xs">default</p>
               </div>
-              <div className="rounded-sm border border-border bg-background p-6">
+              <div className="border-border bg-background rounded-sm border p-6">
                 <Logo logoType="mono-black" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-muted-foreground">mono-black</p>
+                <p className="text-muted-foreground mt-3 text-xs">mono-black</p>
               </div>
               <div className="rounded-sm border border-grey-700 bg-grey-900 p-6">
                 <Logo logoType="reversed" className="h-16 w-auto" />
@@ -67,7 +67,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Accessible name
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               The Logo renders a visually hidden &quot;NSW Government&quot;
               label immediately before the SVG so screen readers announce the
               mark by name. The SVG itself is decorative (

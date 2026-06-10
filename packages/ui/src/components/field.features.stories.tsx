@@ -63,7 +63,7 @@ export const Orientations: Story = {
   render: () => (
     <div className="w-full max-w-2xl space-y-8">
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Vertical</p>
+        <p className="text-foreground text-sm font-semibold">Vertical</p>
         <Field orientation="vertical">
           <FieldLabel htmlFor="features-vertical">Email</FieldLabel>
           <Input
@@ -78,7 +78,7 @@ export const Orientations: Story = {
       </section>
 
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Horizontal</p>
+        <p className="text-foreground text-sm font-semibold">Horizontal</p>
         <Field orientation="horizontal">
           <FieldLabel htmlFor="features-horizontal">Email</FieldLabel>
           <Input
@@ -90,7 +90,7 @@ export const Orientations: Story = {
       </section>
 
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Responsive</p>
+        <p className="text-foreground text-sm font-semibold">Responsive</p>
         <FieldGroup>
           <Field orientation="responsive">
             <FieldLabel htmlFor="features-responsive">Email</FieldLabel>
@@ -281,7 +281,7 @@ export const States: Story = {
   render: () => (
     <div className="w-full max-w-2xl space-y-8">
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Default</p>
+        <p className="text-foreground text-sm font-semibold">Default</p>
         <Field>
           <FieldLabel htmlFor="features-state-default">Email</FieldLabel>
           <Input
@@ -296,7 +296,7 @@ export const States: Story = {
       </section>
 
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Disabled</p>
+        <p className="text-foreground text-sm font-semibold">Disabled</p>
         <Field data-disabled="true">
           <FieldLabel htmlFor="features-state-disabled">Email</FieldLabel>
           <Input
@@ -312,7 +312,7 @@ export const States: Story = {
       </section>
 
       <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Invalid</p>
+        <p className="text-foreground text-sm font-semibold">Invalid</p>
         <Field data-invalid="true">
           <FieldLabel htmlFor="features-state-invalid">Email</FieldLabel>
           <Input

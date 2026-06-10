@@ -27,10 +27,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">LoginForm</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               LoginForm is a composed pattern that demonstrates how to assemble
               Card, Field, Input, and Button primitives into a sign-in form. It
               is intended as a starting point for customisation, not a black-box
@@ -50,7 +50,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Customising the pattern
             </h2>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               LoginForm exposes only a wrapper <code>className</code> prop on
               purpose — extending the pattern means copying the component
               source, not configuring it through props. Treat this file as the
@@ -129,7 +129,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-md rounded-sm border p-6">
       <LoginForm {...args} />
     </div>
   ),

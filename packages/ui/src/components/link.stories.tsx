@@ -26,10 +26,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Link</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Link is a polymorphic anchor wrapper. It renders an{' '}
               <code>{'<a>'}</code> by default, or any element you pass via{' '}
               <code>as</code>, or a framework link supplied through{' '}
@@ -49,7 +49,7 @@ const meta = {
 
           <section className="space-y-4">
             <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Three built-in colour variants. Defaults to <code>primary</code>.
               Use <code>secondary</code> on dark surfaces where{' '}
               <code>primary</code> would lose contrast, and <code>white</code>{' '}
@@ -87,7 +87,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Rendered as a button
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Use <code>as</code> to render Link as a different element while
               keeping the same props pipeline.
             </p>
@@ -100,7 +100,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               With LinkProvider
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Wrap a subtree with <code>LinkProvider</code> to inject a
               framework Link (e.g. <code>next/link</code>) without changing
               consumer call sites.
@@ -224,7 +224,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       <Link {...args} />
     </div>
   ),

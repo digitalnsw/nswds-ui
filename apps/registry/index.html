@@ -34,15 +34,20 @@
   <body>
     <main>
       <h1>NSWDS Registry</h1>
-      <p>shadcn component registry for <code>@nswds/ui</code>. JSON is served from <code>/r</code>.</p>
+      <p>
+        shadcn component registry for <code>@nswds/ui</code>. JSON is served
+        from <code>/r</code>.
+      </p>
 
       <h2>1. Add the <code>@nswds</code> namespace</h2>
       <p>In your project's <code>components.json</code>:</p>
-      <pre>{
+      <pre>
+{
   "registries": {
     "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json"
   }
-}</pre>
+}</pre
+      >
 
       <h2>2. Install components</h2>
       <pre>npx shadcn@latest add @nswds/button</pre>
@@ -60,7 +65,8 @@
       <pre>npm install @nswds/tokens</pre>
       <p>
         Then import the token layers into your Tailwind stylesheet — see the
-        <a href="https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md"
+        <a
+          href="https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md"
           >full install guide</a
         >
         for the copy-paste CSS and dark-mode setup.

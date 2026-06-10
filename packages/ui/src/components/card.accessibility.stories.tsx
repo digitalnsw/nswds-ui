@@ -173,8 +173,8 @@ export const NonTextContrast: Story = {
   },
   render: () => (
     <div className="space-y-4">
-      <div className="rounded-sm border border-border bg-background p-6">
-        <p className="mb-3 text-sm font-semibold text-foreground">
+      <div className="border-border bg-background rounded-sm border p-6">
+        <p className="text-foreground mb-3 text-sm font-semibold">
           Default surface
         </p>
         <Card className="max-w-md">

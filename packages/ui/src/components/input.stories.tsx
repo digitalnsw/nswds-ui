@@ -36,10 +36,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Input</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Single-line text inputs accept short, free-form data such as a
               name, email address, or search query. Always pair an input with a
               visible label so the field has an accessible name, and use the
@@ -201,7 +201,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       <Input {...args} />
     </div>
   ),

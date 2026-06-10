@@ -50,13 +50,13 @@ function IconGallery() {
   }, [query])
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="bg-background text-foreground min-h-screen">
       <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
         <header className="space-y-3">
           <h1 className="text-4xl font-bold tracking-normal">Icons</h1>
-          <p className="text-base text-muted-foreground">
+          <p className="text-muted-foreground text-base">
             The full NSWDS icon set. Reference an icon as{' '}
-            <code className="rounded-sm bg-muted px-1.5 py-0.5 text-sm text-foreground">
+            <code className="bg-muted text-foreground rounded-sm px-1.5 py-0.5 text-sm">
               {'<Icons.<name> />'}
             </code>{' '}
             — every entry inherits <code>currentColor</code>, so colour and size
@@ -64,11 +64,11 @@ function IconGallery() {
           </p>
         </header>
 
-        <div className="sticky top-0 z-10 -mx-6 border-b border-border bg-background/95 px-6 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+        <div className="border-border bg-background/95 supports-[backdrop-filter]:bg-background/75 sticky top-0 z-10 -mx-6 border-b px-6 py-4 backdrop-blur">
           <div className="flex flex-col gap-2">
             <label
               htmlFor="icon-search"
-              className="text-sm font-medium text-foreground"
+              className="text-foreground text-sm font-medium"
             >
               Search icons
             </label>
@@ -79,7 +79,7 @@ function IconGallery() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-            <p aria-live="polite" className="text-sm text-muted-foreground">
+            <p aria-live="polite" className="text-muted-foreground text-sm">
               {filtered.length.toLocaleString()} of{' '}
               {iconEntries.length.toLocaleString()} icons
             </p>
@@ -87,8 +87,8 @@ function IconGallery() {
         </div>
 
         {filtered.length === 0 ? (
-          <div className="rounded-sm border border-dashed border-border p-12 text-center">
-            <p className="text-base text-muted-foreground">
+          <div className="border-border rounded-sm border border-dashed p-12 text-center">
+            <p className="text-muted-foreground text-base">
               No icons match <span className="font-medium">{query}</span>.
             </p>
           </div>
@@ -99,9 +99,9 @@ function IconGallery() {
           >
             {filtered.map(([name, Icon]) => (
               <li key={name}>
-                <figure className="group flex h-full flex-col items-center gap-2 rounded-sm border border-border bg-card p-4 transition-colors hover:bg-muted/50">
-                  <Icon aria-hidden="true" className="size-8 text-foreground" />
-                  <figcaption className="w-full truncate text-center font-mono text-xs text-muted-foreground">
+                <figure className="group border-border bg-card hover:bg-muted/50 flex h-full flex-col items-center gap-2 rounded-sm border p-4 transition-colors">
+                  <Icon aria-hidden="true" className="text-foreground size-8" />
+                  <figcaption className="text-muted-foreground w-full truncate text-center font-mono text-xs">
                     {name}
                   </figcaption>
                 </figure>

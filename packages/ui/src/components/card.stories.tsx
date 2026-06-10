@@ -33,10 +33,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
+        <div className="text-foreground max-w-3xl space-y-8">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Card</h1>
-            <p className="text-base text-muted-foreground">
+            <p className="text-muted-foreground text-base">
               Card is a generic content container that groups related
               information into a bordered, rounded surface. It composes from
               header, title, description, action, content, and footer parts so
@@ -158,7 +158,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
       <Card {...args}>
         <CardHeader>
           <CardTitle>Project status</CardTitle>
@@ -166,7 +166,7 @@ export const Playground: Story = {
             Quarterly summary across active workstreams.
           </CardDescription>
           <CardAction>
-            <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
+            <button className="text-primary text-xs font-medium underline-offset-4 hover:underline">
               View all
             </button>
           </CardAction>

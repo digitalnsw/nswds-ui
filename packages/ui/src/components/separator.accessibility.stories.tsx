@@ -66,26 +66,26 @@ export const InfoAndRelationships: Story = {
   },
   render: () => (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-4">
+        <h4 className="text-foreground text-sm font-semibold">
           Semantic (role=&quot;separator&quot;)
         </h4>
-        <p className="text-sm text-foreground">Personal details</p>
+        <p className="text-foreground text-sm">Personal details</p>
         <Separator data-testid="semantic-separator" />
-        <p className="text-sm text-foreground">Account settings</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-foreground text-sm">Account settings</p>
+        <p className="text-muted-foreground text-xs">
           Exposed to assistive tech as a region boundary.
         </p>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-4">
+        <h4 className="text-foreground text-sm font-semibold">
           Decorative (hidden from AT)
         </h4>
-        <p className="text-sm text-foreground">Marketing section</p>
+        <p className="text-foreground text-sm">Marketing section</p>
         <Separator decorative data-testid="decorative-separator" />
-        <p className="text-sm text-foreground">Featured products</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-foreground text-sm">Featured products</p>
+        <p className="text-muted-foreground text-xs">
           Pass <code>decorative</code> when the divider is purely visual.
         </p>
       </section>
@@ -131,33 +131,33 @@ export const NonTextContrast: Story = {
   },
   render: () => (
     <div className="space-y-4">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-4">
+        <h4 className="text-foreground text-sm font-semibold">
           Horizontal on the default background
         </h4>
-        <p className="text-sm text-foreground">Content above the line</p>
+        <p className="text-foreground text-sm">Content above the line</p>
         <Separator />
-        <p className="text-sm text-foreground">Content below the line</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-foreground text-sm">Content below the line</p>
+        <p className="text-muted-foreground text-xs">
           The horizontal line uses the <code>bg-border</code> token and must
           measure at least 3:1 against the surrounding background.
         </p>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className="border-border bg-background space-y-3 rounded-sm border p-4">
+        <h4 className="text-foreground text-sm font-semibold">
           Vertical on the default background
         </h4>
         <div className="flex h-12 items-stretch gap-3">
-          <span className="flex items-center text-sm text-foreground">
+          <span className="text-foreground flex items-center text-sm">
             Left
           </span>
           <Separator orientation="vertical" />
-          <span className="flex items-center text-sm text-foreground">
+          <span className="text-foreground flex items-center text-sm">
             Right
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-muted-foreground text-xs">
           Same token, same minimum 3:1 contrast requirement against the surface
           behind it.
         </p>

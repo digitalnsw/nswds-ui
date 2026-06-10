@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ["@workspace/semantic-release-config"],
+  extends: ['@workspace/semantic-release-config'],
 }
