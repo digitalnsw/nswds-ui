@@ -6,6 +6,9 @@
   "dependencies": [
     "clsx"
   ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
   "files": [
     {
       "path": "src/components/logo.tsx",
