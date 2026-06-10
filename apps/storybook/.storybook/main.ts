@@ -34,7 +34,7 @@ const config: StorybookConfig = {
 
     // The `@nswds/ui/globals.css` subpath export resolves to the pre-built
     // `dist/styles.css`, which only contains utilities scanned at the last
-    // `pnpm build:css`. For dev/preview we need the SOURCE CSS so the Vite
+    // `npm run build:css`. For dev/preview we need the SOURCE CSS so the Vite
     // Tailwind plugin can scan packages/ui/src (and apps/**) live and emit
     // utilities for whatever the stories actually use.
     const here = dirname(fileURLToPath(import.meta.url))

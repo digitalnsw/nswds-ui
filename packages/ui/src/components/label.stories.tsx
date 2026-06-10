@@ -53,11 +53,10 @@ const meta = {
             <p className="text-sm text-muted-foreground">
               The Label primitive dims to 50% opacity whenever an ancestor with{' '}
               <code>group</code> + <code>{'data-disabled="true"'}</code> is
-              present
-              — the canonical pattern used by <code>Field</code>. (Label also
-              dims when a peer input is disabled, but that requires the input to
-              appear before the label in DOM order; see the Disabled feature
-              story for that pattern.)
+              present — the canonical pattern used by <code>Field</code>. (Label
+              also dims when a peer input is disabled, but that requires the
+              input to appear before the label in DOM order; see the Disabled
+              feature story for that pattern.)
             </p>
             <div
               data-disabled="true"

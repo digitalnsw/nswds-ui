@@ -2,6 +2,10 @@
   "name": "design",
   "version": "0.0.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "branch:create": "scripts/create-branch.sh",
     "branch:suggest": "scripts/suggest-branch-name.sh",
@@ -14,13 +18,17 @@
     "release": "semantic-release",
     "registry:build": "turbo registry:build",
     "registry:validate": "turbo registry:validate",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/prettier-config": "workspace:*",
-    "@workspace/semantic-release-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@commitlint/cli": "^21.0.2",
+    "@commitlint/config-conventional": "^21.0.2",
+    "@workspace/eslint-config": "*",
+    "@workspace/prettier-config": "*",
+    "@workspace/semantic-release-config": "*",
+    "@workspace/typescript-config": "*",
+    "husky": "^9.1.7",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "semantic-release": "^25.0.3",
@@ -28,8 +36,9 @@
     "typescript": "5.9.3",
     "vite": "^8.0.14"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "npm@11.5.1",
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "npm": ">=11.5.1"
   }
 }

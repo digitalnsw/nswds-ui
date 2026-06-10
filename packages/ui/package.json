@@ -15,12 +15,12 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "pnpm run build:js && pnpm run build:css",
+    "build": "npm run build:js && npm run build:css",
     "build:css": "tailwindcss -i ./src/styles/globals.css -o ./dist/styles.css --minify",
     "build:js": "tsup",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "registry:build": "pnpm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r",
+    "registry:build": "npm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r",
     "registry:validate": "shadcn registry validate registry.json --cwd .",
     "typecheck": "tsc --noEmit"
   },
@@ -48,8 +48,8 @@
     "@types/node": "^25.1.0",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "@workspace/eslint-config": "workspace:*",
-    "@workspace/typescript-config": "workspace:*",
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
     "eslint": "^9.39.2",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

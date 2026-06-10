@@ -33,25 +33,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9.15.0
-
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
           node-version: "22.14.0"
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: npm run typecheck
 
       # @nswds/ui's `exports` field points subpath imports
       # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
@@ -60,18 +55,18 @@ jobs:
       # back to source for Tailwind live-scanning, but JS subpath imports
       # still go through `exports` → `dist/`.
       - name: Build @nswds/ui
-        run: pnpm --filter @nswds/ui build
+        run: npm run build -w @nswds/ui
 
       # Playwright system deps live outside ~/.cache/ms-playwright and would
       # need re-installing on every cold runner anyway, so we install both
       # the browser and its apt deps in one step. Roughly 30-60s on a cold
       # runner; the browser binary itself is small (~150MB).
       - name: Install Playwright Chromium
-        run: pnpm --filter @workspace/storybook exec playwright install chromium --with-deps
+        run: npm exec -w @workspace/storybook -- playwright install chromium --with-deps
 
       # Vitest browser mode runs every story file as a test. The storybookTest
       # plugin auto-generates a `test()` per story export; @storybook/addon-a11y
       # runs axe-core in an `afterEach` hook and (because preview.tsx sets
       # `a11y.test: 'error'`) any violation fails the test.
       - name: Storybook tests (Vitest browser + axe a11y)
-        run: pnpm --filter @workspace/storybook test
+        run: npm run test -w @workspace/storybook
