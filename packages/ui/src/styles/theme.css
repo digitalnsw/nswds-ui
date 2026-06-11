@@ -81,6 +81,18 @@
   --border: var(--grey-250);
   --input: var(--grey-250);
   --ring: var(--grey-450);
+  /* Form input tokens — Input references ONLY these, so brand themes and
+     dark mode restyle it by remapping tokens (no dark: variants in the
+     component). Values mirror the pre-token rendering exactly. */
+  --input-border: var(--grey-600);
+  --input-foreground: var(--grey-800);
+  --input-placeholder: var(--grey-500);
+  --input-surface: var(--background);
+  --input-surface-hover: var(--grey-100);
+  --input-ring: var(--grey-600);
+  --input-invalid-border: var(--danger-600);
+  --input-invalid-surface-hover: var(--danger-50);
+  --input-invalid-ring: var(--danger-600);
   --chart-1: var(--primary-450);
   --chart-2: var(--primary-550);
   --chart-3: var(--primary-600);
@@ -116,6 +128,19 @@
   --border: var(--grey-800);
   --input: var(--grey-750);
   --ring: var(--grey-550);
+  --input-border: var(--grey-100);
+  --input-foreground: var(--grey-100);
+  --input-placeholder: var(--grey-300);
+  --input-surface: color-mix(in oklab, var(--input) 30%, transparent);
+  --input-surface-hover: color-mix(in oklab, var(--input) 50%, transparent);
+  --input-ring: var(--grey-100);
+  --input-invalid-border: var(--danger-200);
+  --input-invalid-surface-hover: color-mix(
+    in oklab,
+    var(--danger-900) 30%,
+    transparent
+  );
+  --input-invalid-ring: var(--danger-200);
   --chart-1: var(--primary-450);
   --chart-2: var(--primary-550);
   --chart-3: var(--primary-600);

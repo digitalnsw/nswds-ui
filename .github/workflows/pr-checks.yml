@@ -62,6 +62,12 @@ jobs:
       - name: Component drift check
         run: npm run check:drift -w @nswds/ui
 
+      # The generated src/icons/ modules are lint/format-exempt, so this is
+      # their only structural guard: every module exports its expected
+      # PascalCase icon and the index barrel matches the directory exactly.
+      - name: Icon module parity check
+        run: npm run check:icons -w @nswds/ui
+
       # @nswds/ui's `exports` field points subpath imports
       # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
       # package must be built before Storybook can resolve them.
@@ -78,6 +84,12 @@ jobs:
       # actually receive.
       - name: Package checks (publint + attw)
         run: npm run check:package -w @nswds/ui
+
+      # Exercises the packed tarball the way a consumer receives it: cold
+      # install into fixtures/consumer, tsc, vite build, and a tree-shaking
+      # assertion (unimported icons must not reach the bundle).
+      - name: Consumer fixture (pack, install, build, tree-shake)
+        run: ./scripts/test-consumer-fixture.sh
 
       # The registry JSON in apps/registry/public/r/ is generated from
       # packages/ui source and committed to git. Rebuild it here and fail

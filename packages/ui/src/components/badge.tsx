@@ -25,11 +25,11 @@ const focusOutline = {
     '[--focus-outline:var(--color-grey-300)]',
     // Base dark mode
     'dark:[--focus-outline:var(--color-grey-100)]',
-    // Soft
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-grey-200)]/30',
     // Surface
     'data-[variant=surface]:[--focus-outline:var(--color-grey-600)]',
-    // Soft, Surface and outline dark mode
+    // Surface dark mode
     'dark:data-[variant=surface]:[--focus-outline:var(--color-white)]/70',
   ],
   'primary/white': [
@@ -39,7 +39,7 @@ const focusOutline = {
     'dark:[--focus-outline:var(--color-white)]',
     // Soft
     'data-[variant=soft]:[--focus-outline:var(--color-primary-800)]/20',
-    // Surface
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-grey-200)]/30',
   ],
   grey: [
@@ -59,49 +59,39 @@ const focusOutline = {
   white: [
     // Base
     '[--focus-outline:var(--color-white)]',
-    // Base dark mode
-    'data-[variant=soft]:[--focus-outline:var(--color-white)]/20',
     // Soft
-    '',
-    // Surface
-    '',
+    'data-[variant=soft]:[--focus-outline:var(--color-white)]/20',
   ],
   primary: [
     // Base
     '[--focus-outline:var(--color-primary-800)]',
-    // Base dark mode
-    'data-[variant=soft]:[--focus-outline:var(--color-primary-800)]/20',
     // Soft
+    'data-[variant=soft]:[--focus-outline:var(--color-primary-800)]/20',
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-primary-800)]/60',
-    // Surface
-    '',
   ],
   secondary: [
     // Base
     '[--focus-outline:var(--color-primary-200)]',
-    // Base dark mode
-    'data-[variant=soft]:[--focus-outline:var(--color-primary-200)]/20',
     // Soft
+    'data-[variant=soft]:[--focus-outline:var(--color-primary-200)]/20',
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-primary-200)]/60',
-    // Surface
-    '',
   ],
   tertiary: [
     // Base
     '[--focus-outline:var(--color-primary-600)]',
-    // Base dark mode
-    'data-[variant=soft]:[--focus-outline:var(--color-primary-600)]/20',
     // Soft
+    'data-[variant=soft]:[--focus-outline:var(--color-primary-600)]/20',
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-primary-600)]/60',
-    // Surface
-    '',
   ],
   accent: [
     // Base
     '[--focus-outline:var(--color-accent-600)]',
-    // Base dark mode
-    'data-[variant=soft]:[--focus-outline:var(--color-accent-600)]/20',
     // Soft
+    'data-[variant=soft]:[--focus-outline:var(--color-accent-600)]/20',
+    // Soft dark mode
     'dark:data-[variant=soft]:[--focus-outline:var(--color-accent-600)]/60',
   ],
 }
@@ -352,22 +342,22 @@ const badgeVariants = cva(styles.base, {
   },
 })
 
-function Badge({
-  variant,
-  color,
-  size,
-  className,
-  ...props
-}: VariantProps<typeof badgeVariants> &
-  React.ComponentPropsWithoutRef<'span'>) {
+type BadgeProps = VariantProps<typeof badgeVariants> &
+  React.ComponentPropsWithoutRef<'span'>
+
+const Badge = forwardRef(function Badge(
+  { variant, color, size, className, ...props }: BadgeProps,
+  ref: React.ForwardedRef<HTMLSpanElement>
+) {
   return (
     <span
       {...props}
       data-variant={variant}
       className={cn(badgeVariants({ variant, color, size }), className)}
+      ref={ref}
     />
   )
-}
+})
 
 /** Visual/content props shared by `BadgeButton` and `BadgeLink`. */
 type BadgeOwnProps = VariantProps<typeof badgeVariants> & {
@@ -449,4 +439,4 @@ const BadgeLink = forwardRef(function BadgeLink(
 })
 
 export { Badge, BadgeButton, BadgeLink, badgeVariants }
-export type { BadgeButtonProps, BadgeLinkProps }
+export type { BadgeButtonProps, BadgeLinkProps, BadgeProps }

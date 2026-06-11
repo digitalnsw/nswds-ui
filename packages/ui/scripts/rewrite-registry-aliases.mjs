@@ -17,6 +17,14 @@ import { join, posix } from 'node:path'
 
 const [outputDir = '../../apps/registry/public/r'] = process.argv.slice(2)
 
+// Stamp every item (and a version.json endpoint) with the @nswds/ui version
+// the registry was built from, so consumers can correlate the two
+// distribution channels. Deterministic — read from package.json, no
+// timestamps — so the CI freshness check still byte-compares.
+const { version: packageVersion } = JSON.parse(
+  readFileSync('package.json', 'utf8')
+)
+
 const SOURCE_EXTENSIONS = /\.(tsx|ts|jsx|js)$/
 
 // Matches static imports/exports (`from '...'`), side-effect imports
@@ -86,11 +94,19 @@ for (const file of jsonFiles) {
   const filePath = join(outputDir, file)
   const item = JSON.parse(readFileSync(filePath, 'utf8'))
 
-  if (!Array.isArray(item.files)) {
-    continue
+  let changed = false
+
+  if (item.meta?.nswdsVersion !== packageVersion) {
+    item.meta = { ...item.meta, nswdsVersion: packageVersion }
+    changed = true
   }
 
-  let changed = false
+  if (!Array.isArray(item.files)) {
+    if (changed) {
+      writeFileSync(filePath, `${JSON.stringify(item, null, 2)}\n`)
+    }
+    continue
+  }
 
   for (const entry of item.files) {
     if (typeof entry.content !== 'string' || typeof entry.path !== 'string') {
@@ -110,3 +126,8 @@ for (const file of jsonFiles) {
     writeFileSync(filePath, `${JSON.stringify(item, null, 2)}\n`)
   }
 }
+
+writeFileSync(
+  join(outputDir, 'version.json'),
+  `${JSON.stringify({ name: '@nswds/ui', version: packageVersion }, null, 2)}\n`
+)

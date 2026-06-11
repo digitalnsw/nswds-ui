@@ -47,7 +47,16 @@
           "sidebar-accent": "var(--grey-100)",
           "sidebar-accent-foreground": "var(--grey-800)",
           "sidebar-border": "var(--grey-250)",
-          "sidebar-ring": "var(--grey-450)"
+          "sidebar-ring": "var(--grey-450)",
+          "input-border": "var(--grey-600)",
+          "input-foreground": "var(--grey-800)",
+          "input-placeholder": "var(--grey-500)",
+          "input-surface": "var(--background)",
+          "input-surface-hover": "var(--grey-100)",
+          "input-ring": "var(--grey-600)",
+          "input-invalid-border": "var(--danger-600)",
+          "input-invalid-surface-hover": "var(--danger-50)",
+          "input-invalid-ring": "var(--danger-600)"
         },
         "dark": {
           "background": "var(--grey-950)",
@@ -80,7 +89,16 @@
           "sidebar-accent": "var(--grey-800)",
           "sidebar-accent-foreground": "var(--grey-50)",
           "sidebar-border": "var(--grey-800)",
-          "sidebar-ring": "var(--grey-550)"
+          "sidebar-ring": "var(--grey-550)",
+          "input-border": "var(--grey-100)",
+          "input-foreground": "var(--grey-100)",
+          "input-placeholder": "var(--grey-300)",
+          "input-surface": "color-mix(in oklab, var(--input) 30%, transparent)",
+          "input-surface-hover": "color-mix(in oklab, var(--input) 50%, transparent)",
+          "input-invalid-border": "var(--danger-200)",
+          "input-invalid-surface-hover": "color-mix(in oklab, var(--danger-900) 30%, transparent)",
+          "input-invalid-ring": "var(--danger-200)",
+          "input-ring": "var(--grey-100)"
         }
       }
     },

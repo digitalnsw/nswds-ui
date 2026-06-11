@@ -44,3 +44,8 @@ CLAUDE.md
 
 # OS junk
 .DS_Store
+
+# Consumer fixture installs into a temp dir, but guard local manual runs
+fixtures/consumer/node_modules/
+fixtures/consumer/dist/
+fixtures/consumer/package-lock.json

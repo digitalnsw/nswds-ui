@@ -1,0 +1,76 @@
+name: Chromatic
+
+# Visual regression testing over the Storybook catalogue. This is the gate
+# that proves "no visual change" claims (patch releases legitimately change
+# pixels in a design system — this is how those changes get reviewed).
+#
+# SETUP (one-time, requires a Chromatic account):
+#   1. Create a project at https://www.chromatic.com for this repo.
+#   2. Add the project token as the CHROMATIC_PROJECT_TOKEN repo secret.
+# Until the secret exists, the job no-ops with a notice instead of failing.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: chromatic-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  chromatic:
+    name: Visual regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check for project token
+        id: token
+        run: |
+          if [ -n "${{ secrets.CHROMATIC_PROJECT_TOKEN }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::CHROMATIC_PROJECT_TOKEN secret not set — skipping visual regression. See .github/workflows/chromatic.yml for setup."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.token.outputs.present == 'true'
+        uses: actions/checkout@v6
+        with:
+          # Chromatic uses git history for baseline selection.
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        if: steps.token.outputs.present == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.14.0'
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.token.outputs.present == 'true'
+        run: npm ci
+
+      - name: Build @nswds/ui
+        if: steps.token.outputs.present == 'true'
+        run: npm run build -w @nswds/ui
+
+      - name: Publish to Chromatic
+        if: steps.token.outputs.present == 'true'
+        uses: chromaui/action@latest
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: apps/storybook
+          buildScriptName: build
+          # Snapshot only stories affected by the change — keeps usage within
+          # the free tier for most PRs.
+          onlyChanged: true
+          # Changes on main become the new baseline automatically; PRs still
+          # require explicit acceptance in the Chromatic UI.
+          autoAcceptChanges: main

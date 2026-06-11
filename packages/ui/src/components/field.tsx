@@ -265,3 +265,17 @@ export {
   FieldSet,
   FieldTitle,
 }
+
+// Derived prop types — exact component props for consumers wrapping these.
+export type FieldProps = React.ComponentProps<typeof Field>
+export type FieldSetProps = React.ComponentProps<typeof FieldSet>
+export type FieldLegendProps = React.ComponentProps<typeof FieldLegend>
+export type FieldGroupProps = React.ComponentProps<typeof FieldGroup>
+export type FieldContentProps = React.ComponentProps<typeof FieldContent>
+export type FieldLabelProps = React.ComponentProps<typeof FieldLabel>
+export type FieldTitleProps = React.ComponentProps<typeof FieldTitle>
+export type FieldDescriptionProps = React.ComponentProps<
+  typeof FieldDescription
+>
+export type FieldSeparatorProps = React.ComponentProps<typeof FieldSeparator>
+export type FieldErrorProps = React.ComponentProps<typeof FieldError>

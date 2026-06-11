@@ -46,3 +46,9 @@ export function DescriptionDetails({
     />
   )
 }
+
+export type DescriptionListProps = React.ComponentProps<typeof DescriptionList>
+export type DescriptionTermProps = React.ComponentProps<typeof DescriptionTerm>
+export type DescriptionDetailsProps = React.ComponentProps<
+  typeof DescriptionDetails
+>

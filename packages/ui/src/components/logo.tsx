@@ -57,3 +57,5 @@ export function Logo({ logoType = 'default', ...props }: LogoProps) {
     </>
   )
 }
+
+export type { LogoProps }

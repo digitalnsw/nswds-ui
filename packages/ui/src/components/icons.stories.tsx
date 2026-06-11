@@ -33,6 +33,11 @@ const meta = {
     // a11y for individual icons is the responsibility of the components
     // that *use* them — not this dev-only catalogue.
     a11y: { test: 'off' },
+    // Exclude from Chromatic for the same reason: the full grid is
+    // 1,200×64,434px, which exceeds Chromatic's 25,000,000px capture limit
+    // (and a searchable catalogue isn't a visual-regression target — icons
+    // are snapshotted via the components that use them).
+    chromatic: { disableSnapshot: true },
   },
 } satisfies Meta
 
