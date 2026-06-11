@@ -1,0 +1,12 @@
+# Snyk policy — https://docs.snyk.io/manage-risk/policies/the-.snyk-file
+version: v1.5.0
+exclude:
+  code:
+    # Generated Mock Service Worker runtime (`msw init`, integrity-checksummed
+    # vendor code — "Please do NOT modify this file"). Snyk Code flags its
+    # `addEventListener('message', …)` handler for a missing origin check, but
+    # that advisory describes window-to-window postMessage; this is a Service
+    # Worker message handler, which only same-origin clients can reach. The
+    # file ships only with the Storybook preview site, never with the
+    # published @nswds/ui package or the registry.
+    - apps/storybook/public/mockServiceWorker.js
