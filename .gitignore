@@ -41,3 +41,6 @@ CLAUDE.md
 /.kiro
 /.playwright-cli
 /.claude
+
+# OS junk
+.DS_Store

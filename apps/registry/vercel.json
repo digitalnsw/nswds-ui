@@ -1,5 +1,6 @@
 {
   "framework": null,
   "buildCommand": "npm run build -w @nswds/ui && npm run registry:build -w @nswds/ui && npm run build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "ignoreCommand": "! git log -1 --pretty=format:%s | grep -q '^chore(release): @nswds/ui'"
 }

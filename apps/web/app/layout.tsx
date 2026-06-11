@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
 import { ThemeProvider } from '@/components/theme-provider'
-import '@nswds/ui/globals.css'
+// Import the SOURCE dev entry (not the `@nswds/ui/globals.css` export, which
+// resolves to the prebuilt dist/styles.css) so this app's Tailwind build
+// scans apps/** live and emits utilities for the sandbox's own classes.
+import '../../../packages/ui/src/styles/globals.css'
 
 import {
   siteDescription,

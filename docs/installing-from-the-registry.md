@@ -2,7 +2,7 @@
 
 The `@nswds/ui` components are distributed through a [shadcn](https://ui.shadcn.com/) registry
 served at **https://ui.digital.nsw.gov.au/registry**. This guide covers installing them into
-*your own* project with the `shadcn` CLI.
+_your own_ project with the `shadcn` CLI.
 
 > Prefer the npm package? If you don't need the source copied into your repo, you can instead
 > `npm install @nswds/ui` and import compiled components and CSS directly. See
@@ -32,8 +32,8 @@ Add a `registries` entry to your project's **`components.json`** so the CLI know
   "$schema": "https://ui.shadcn.com/schema.json",
   // ...your existing config...
   "registries": {
-    "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json"
-  }
+    "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json",
+  },
 }
 ```
 
@@ -60,16 +60,22 @@ npx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 
 ### Available components
 
-| Namespace ref | Installs |
-|---|---|
-| `@nswds/button` | Button |
-| `@nswds/badge` | Badge |
-| `@nswds/link` | Link |
-| `@nswds/logo` | NSW logo |
-| `@nswds/icons` | Icon set |
-| `@nswds/spinner` | Spinner |
-| `@nswds/description-list` | Description list |
-| `@nswds/labeled-separator` | Labeled separator |
+| Namespace ref              | Installs                                                                                  |
+| -------------------------- | ----------------------------------------------------------------------------------------- |
+| `@nswds/button`            | Button                                                                                    |
+| `@nswds/badge`             | Badge                                                                                     |
+| `@nswds/card`              | Card                                                                                      |
+| `@nswds/field`             | Form field layout primitives                                                              |
+| `@nswds/input`             | Input                                                                                     |
+| `@nswds/label`             | Label                                                                                     |
+| `@nswds/link`              | Link                                                                                      |
+| `@nswds/logo`              | NSW logo                                                                                  |
+| `@nswds/icons`             | Icon set                                                                                  |
+| `@nswds/separator`         | Separator                                                                                 |
+| `@nswds/spinner`           | Spinner                                                                                   |
+| `@nswds/description-list`  | Description list                                                                          |
+| `@nswds/labeled-separator` | Labeled separator                                                                         |
+| `@nswds/theme`             | Semantic token CSS variables (installed automatically as a dependency of every component) |
 
 > Without the namespace configured, the same installs work with the full URL, e.g.
 > `npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json`.
@@ -80,117 +86,35 @@ installs each component's runtime dependencies (`@base-ui/react`, `class-varianc
 
 ---
 
-## 4. ⚠️ Required: install the design tokens
+## 4. Finish the token wiring
 
-**This is the step people miss.** `shadcn add` copies the component source but **not** the CSS
-token layers the components depend on. Every NSWDS component styles itself with *semantic* tokens
-(`bg-primary`, `text-foreground`, `border-border`, `bg-destructive`, …). Those semantic tokens are
-in turn defined in terms of the NSW palette shipped by [`@nswds/tokens`](https://www.npmjs.com/package/@nswds/tokens)
-(`--primary-*`, `--grey-*`, `--danger-*`).
+Every component depends on the `@nswds/theme` registry item, so `shadcn add` automatically:
 
-If you skip this, the components render but every colour falls back to unstyled / transparent —
-`bg-primary` resolves to nothing.
+- installs the [`@nswds/tokens`](https://www.npmjs.com/package/@nswds/tokens) npm package, and
+- writes the semantic CSS variables (`--primary`, `--background`, `--border`, … for `:root` and
+  `.dark`) into your Tailwind entry CSS.
 
-### 4a. Install the token package
-
-```bash
-npm install @nswds/tokens
-```
-
-### 4b. Add the token layers to your global stylesheet
-
-Paste the following into your Tailwind entry CSS (the file with `@import "tailwindcss";` — often
-`globals.css` or `app.css`), after the Tailwind import. This is the same token foundation NSWDS
-uses internally; the source of truth is
-[`packages/ui/src/styles/globals.css`](../packages/ui/src/styles/globals.css).
+One step remains manual — the semantic variables reference the NSW palette
+(`--primary-800`, `--grey-*`, `--danger-*`), which ships as plain CSS in `@nswds/tokens`. Add
+these imports to your Tailwind entry CSS (the file with `@import "tailwindcss";`), after the
+Tailwind import:
 
 ```css
-/* --- NSW primitive palette + Tailwind bridges (from @nswds/tokens) --- */
-@import "@nswds/tokens/css/colors/global/oklch.css";
-@import "@nswds/tokens/css/colors/semantic/oklch.css";
-@import "@nswds/tokens/css/colors/themes/masterbrand/oklch.css";
-@import "@nswds/tokens/tailwind/colors/global/oklch.css";
-@import "@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css";
-@import "@nswds/tokens/tailwind/colors/semantic/oklch.css";
-
-@custom-variant dark (&:is(.dark *));
-
-/* --- Map shadcn semantic tokens onto the NSW palette --- */
-:root {
-  --background: var(--grey-50);
-  --foreground: var(--grey-800);
-  --card: var(--grey-50);
-  --card-foreground: var(--grey-800);
-  --popover: var(--grey-50);
-  --popover-foreground: var(--grey-800);
-  --primary: var(--primary-600);
-  --primary-foreground: var(--primary-50);
-  --secondary: var(--grey-100);
-  --secondary-foreground: var(--grey-800);
-  --muted: var(--grey-100);
-  --muted-foreground: var(--grey-550);
-  --accent: var(--grey-100);
-  --accent-foreground: var(--grey-800);
-  --destructive: var(--danger-500);
-  --border: var(--grey-250);
-  --input: var(--grey-250);
-  --ring: var(--grey-450);
-  --radius: 0.45rem;
-}
-
-.dark {
-  --background: var(--grey-950);
-  --foreground: var(--grey-50);
-  --card: var(--grey-850);
-  --card-foreground: var(--grey-50);
-  --popover: var(--grey-850);
-  --popover-foreground: var(--grey-50);
-  --primary: var(--primary-700);
-  --primary-foreground: var(--primary-50);
-  --secondary: var(--grey-800);
-  --secondary-foreground: var(--grey-50);
-  --muted: var(--grey-800);
-  --muted-foreground: var(--grey-450);
-  --accent: var(--grey-800);
-  --accent-foreground: var(--grey-50);
-  --destructive: var(--danger-350);
-  --border: var(--grey-800);
-  --input: var(--grey-750);
-  --ring: var(--grey-550);
-}
-
-/* --- Expose the semantic tokens as Tailwind utilities (bg-primary, text-foreground, …) --- */
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-}
+@import '@nswds/tokens/css/colors/global/oklch.css';
+@import '@nswds/tokens/css/colors/semantic/oklch.css';
+@import '@nswds/tokens/css/colors/themes/masterbrand/oklch.css';
+@import '@nswds/tokens/tailwind/colors/global/oklch.css';
+@import '@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css';
+@import '@nswds/tokens/tailwind/colors/semantic/oklch.css';
 ```
 
-> This is a trimmed foundation covering what the current components use. NSWDS's full token set
-> (sidebar, chart, heading-font tokens) lives in
-> [`packages/ui/src/styles/globals.css`](../packages/ui/src/styles/globals.css) — copy from there
-> if you add components that need them.
+(The CLI prints this reminder after installing the theme item.)
 
-### 4c. Dark mode
+If you skip this, the components render but every colour falls back to unstyled / transparent —
+`bg-primary` resolves to nothing. The source of truth for the full token foundation is
+[`packages/ui/src/styles/globals.css`](../packages/ui/src/styles/globals.css).
+
+### Dark mode
 
 Toggle the `.dark` class on a root element (e.g. with
 [`next-themes`](https://github.com/pacocoursey/next-themes)). The `.dark` block above remaps the
@@ -201,7 +125,7 @@ same semantic tokens to their dark values.
 ## 5. Verify
 
 ```tsx
-import { Button } from "@/components/button"
+import { Button } from '@/components/button'
 
 export default function Demo() {
   return <Button>NSW button</Button>
@@ -224,8 +148,8 @@ npm install @nswds/ui @nswds/tokens
 ```
 
 ```tsx
-import "@nswds/ui/globals.css"   // ships the full token foundation + component styles
-import { Button } from "@nswds/ui"
+import '@nswds/ui/globals.css' // ships the full token foundation + component styles
+import { Button } from '@nswds/ui'
 ```
 
 Trade-off: you get versioned, upgradeable components but cannot edit their source. The registry

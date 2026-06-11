@@ -1,0 +1,12 @@
+/*
+ * PUBLISH entry — `build:css` compiles this into dist/styles.css, the
+ * stylesheet npm consumers import as `@nswds/ui/globals.css`.
+ *
+ * Scans ONLY packages/ui/src so the published artefact contains exactly the
+ * utilities the components themselves use — never classes that happen to
+ * appear in the apps/ sandboxes (those belong to globals.css, the dev entry).
+ */
+@import './theme.css';
+
+/* Scan packages/ui/src (components, hooks, lib) for utility classes. */
+@source '../**/*.{ts,tsx}';
