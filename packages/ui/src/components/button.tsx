@@ -341,10 +341,13 @@ const Button = forwardRef(function Button(
           role={undefined}
           aria-hidden
           color="current"
+          // The button's own label + aria-busy convey the busy state; the
+          // spinner's default "Loading" announcement would be redundant.
+          label=""
           // `block` overrides Spinner's default `inline` so the svg isn't
           // pushed below centre by the button's line-height; `size-full` fills
           // the icon-sized, self-centred wrapper span.
-          className="block size-full"
+          svgClassName="block size-full"
         />
       )}
       {LeadingVisual && <LeadingVisual data-slot="icon" />}
@@ -370,6 +373,7 @@ const Button = forwardRef(function Button(
       // sizing) and any Link styling layered on top would conflict.
       variant="unstyled"
       data-variant={variant}
+      aria-busy={loading || undefined}
       {...(props as Omit<
         React.ComponentPropsWithoutRef<typeof Link>,
         'className' | 'variant'
@@ -394,6 +398,7 @@ const Button = forwardRef(function Button(
   ) : (
     <ButtonPrimitive
       data-variant={variant}
+      aria-busy={loading || undefined}
       {...(props as Omit<
         ButtonPrimitive.Props,
         'className' | 'disabled' | 'render'

@@ -24,27 +24,39 @@ const theme = {
 }
 
 type SpinnerProps = {
+  /** Applied to the outer status element, like every other spread prop. */
   className?: string
+  /** Applied to the inner svg (sizing/colour live there). */
+  svgClassName?: string
   size?: keyof typeof theme.size
   color?: keyof typeof theme.color
+  /**
+   * Accessible name announced for the `role="status"` element. Defaults to
+   * "Loading"; pass an empty string to suppress when surrounding content
+   * already conveys the busy state (e.g. inside a Button with a label).
+   */
+  label?: string
 } & React.HTMLAttributes<HTMLSpanElement>
 
 function Spinner({
   className,
+  svgClassName,
   size = 'md',
   color = 'primary',
+  label = 'Loading',
   ...props
 }: SpinnerProps) {
   return (
-    <span role="status" {...props}>
+    <span role="status" className={className} {...props}>
       <svg
         fill="none"
         viewBox="0 0 100 101"
+        aria-hidden="true"
         className={cn(
           'inline animate-spin motion-reduce:animate-none',
           theme.color[color],
           theme.size[size],
-          className
+          svgClassName
         )}
       >
         <path
@@ -56,8 +68,10 @@ function Spinner({
           fill="currentFill"
         />
       </svg>
+      {label ? <span className="sr-only">{label}</span> : null}
     </span>
   )
 }
 
 export { Spinner }
+export type { SpinnerProps }
