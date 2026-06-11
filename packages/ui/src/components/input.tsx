@@ -16,31 +16,25 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         // on the element, which then suppresses the focus outline below
         // (which reads `outline-style: var(--tw-outline-style)`).
         'h-12 w-full min-w-0 rounded-sm px-4 py-2 text-base transition-colors',
-        // Default — 1px grey-02 border on surface-default
-        'border border-grey-600 bg-background text-grey-800',
-        // Dark mode — flip text to a light grey so it's readable on dark surface
-        // (mirrors how border-grey-600 → dark:border-grey-200 is handled below).
-        'dark:text-grey-100',
+        // Every colour routes through the --input-* semantic tokens (layer 3,
+        // theme.css / the registry theme item). Dark mode and brand themes
+        // restyle the input by remapping tokens — no dark: variants here.
+        'border border-(--input-border) bg-(--input-surface) text-(--input-foreground)',
         // Hover
-        'hover:bg-grey-100',
+        'hover:bg-(--input-surface-hover)',
         // Focus — `focus-visible:` per the design-system policy (matches
         // Button/Link). For text fields this is behaviour-preserving:
         // browsers flag keyboard-editable controls as :focus-visible even
         // when focused by pointer, so the ring still shows on click.
-        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-grey-600',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--input-ring)',
         // File input slot
-        'file:inline-flex file:h-8 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-grey-800 dark:file:text-grey-100',
+        'file:inline-flex file:h-8 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-(--input-foreground)',
         // Placeholder styles
-        'placeholder:text-grey-500',
-        'dark:placeholder:text-grey-300',
+        'placeholder:text-(--input-placeholder)',
         // Disabled
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
-        // Invalid — 2px danger-600 border, danger-50 hover surface (Figma error variants)
-        'aria-invalid:border-2 aria-invalid:border-danger-600 aria-invalid:hover:bg-danger-50 aria-invalid:focus-visible:outline-danger-600',
-        'aria-invalid:dark:border-danger-200 aria-invalid:dark:hover:bg-danger-900/30 aria-invalid:dark:focus-visible:outline-danger-200',
-        // Dark mode — invert grey border for sufficient contrast against dark surfaces
-        'dark:border-grey-100 dark:bg-input/30',
-        'dark:hover:bg-input/50 dark:focus-visible:outline-grey-100',
+        // Invalid — 2px danger border, danger hover surface (Figma error variants)
+        'aria-invalid:border-2 aria-invalid:border-(--input-invalid-border) aria-invalid:hover:bg-(--input-invalid-surface-hover) aria-invalid:focus-visible:outline-(--input-invalid-ring)',
         className
       )}
       {...props}
