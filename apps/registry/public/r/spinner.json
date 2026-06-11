@@ -24,5 +24,8 @@
       "target": "lib/utils.ts"
     }
   ],
-  "type": "registry:ui"
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "2.0.0"
+  }
 }
