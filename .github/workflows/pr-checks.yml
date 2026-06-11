@@ -3,6 +3,9 @@ name: PR Checks
 # Runs on every PR targeting main. Enforces:
 #   - ESLint passes across the workspace
 #   - TypeScript typecheck passes across the workspace
+#   - Prettier formatting is clean
+#   - Every component ships on both channels (barrel + registry) — check:drift
+#   - The packed npm artefact is well-formed (publint + arethetypeswrong)
 #   - The committed registry JSON (apps/registry/public/r/) matches a fresh
 #     `registry:build` — generated output must be committed with source changes
 #   - Storybook stories load and pass their play() functions
@@ -38,7 +41,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "22.14.0"
+          node-version: '22.14.0'
           cache: npm
 
       - name: Install dependencies
@@ -50,6 +53,15 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Format check
+        run: npx prettier --check .
+
+      # Every component under packages/ui/src/components must ship on BOTH
+      # channels (src/index.ts barrel + registry.json) or be explicitly
+      # allowlisted as internal in the script.
+      - name: Component drift check
+        run: npm run check:drift -w @nswds/ui
+
       # @nswds/ui's `exports` field points subpath imports
       # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
       # package must be built before Storybook can resolve them.
@@ -58,6 +70,14 @@ jobs:
       # still go through `exports` → `dist/`.
       - name: Build @nswds/ui
         run: npm run build -w @nswds/ui
+
+      # publint validates package.json/files/exports against the packed
+      # tarball; attw checks that every exports entry resolves with correct
+      # types under bundler + node16 ESM resolution. Both run on `npm pack`
+      # output, so this is the closest thing to testing what npm consumers
+      # actually receive.
+      - name: Package checks (publint + attw)
+        run: npm run check:package -w @nswds/ui
 
       # The registry JSON in apps/registry/public/r/ is generated from
       # packages/ui source and committed to git. Rebuild it here and fail
