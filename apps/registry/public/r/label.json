@@ -1,8 +1,8 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry-item.json",
-  "name": "description-list",
-  "title": "Description List",
-  "description": "A responsive description list primitive for term and detail pairs.",
+  "name": "label",
+  "title": "Label",
+  "description": "A form label with disabled-state styling.",
   "dependencies": [
     "clsx",
     "tailwind-merge"
@@ -12,10 +12,10 @@
   ],
   "files": [
     {
-      "path": "src/components/description-list.tsx",
-      "content": "import type * as React from 'react'\n\nimport { cn } from '@/lib/utils'\n\nexport function DescriptionList({\n  className,\n  ...props\n}: React.ComponentPropsWithoutRef<'dl'>) {\n  return (\n    <dl\n      {...props}\n      className={cn(\n        className,\n        'grid grid-cols-1 text-base/6 sm:grid-cols-[min(50%,--spacing(80))_auto] sm:text-sm/6'\n      )}\n    />\n  )\n}\n\nexport function DescriptionTerm({\n  className,\n  ...props\n}: React.ComponentPropsWithoutRef<'dt'>) {\n  return (\n    <dt\n      {...props}\n      className={cn(\n        className,\n        'col-start-1 border-t border-border pt-3 text-muted-foreground first:border-none sm:border-t sm:py-3'\n      )}\n    />\n  )\n}\n\nexport function DescriptionDetails({\n  className,\n  ...props\n}: React.ComponentPropsWithoutRef<'dd'>) {\n  return (\n    <dd\n      {...props}\n      className={cn(\n        className,\n        'pt-1 pb-3 text-foreground sm:border-t sm:border-border sm:py-3 sm:[&:nth-child(2)]:border-none'\n      )}\n    />\n  )\n}\n",
+      "path": "src/components/label.tsx",
+      "content": "'use client'\n\nimport * as React from 'react'\n\nimport { cn } from '@/lib/utils'\n\nfunction Label({ className, ...props }: React.ComponentProps<'label'>) {\n  return (\n    <label\n      data-slot=\"label\"\n      className={cn(\n        'flex items-center gap-2 text-base/relaxed font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50',\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nexport { Label }\n",
       "type": "registry:ui",
-      "target": "components/description-list.tsx"
+      "target": "components/label.tsx"
     },
     {
       "path": "src/lib/utils.ts",

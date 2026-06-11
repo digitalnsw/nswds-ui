@@ -6,11 +6,21 @@ const config = {
       2,
       'always',
       [
-        'feat', 'fix', 'refactor', 'perf', 'style', 'test',
-        'build', 'ops', 'docs', 'chore', 'merge', 'revert',
+        'feat',
+        'fix',
+        'refactor',
+        'perf',
+        'style',
+        'test',
+        'build',
+        'ops',
+        'docs',
+        'chore',
+        'merge',
+        'revert',
       ],
     ],
   },
-};
+}
 
-export default config;
+export default config

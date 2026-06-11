@@ -1,6 +1,27 @@
 {
   "name": "@nswds/ui",
   "version": "1.7.0",
+  "description": "Reusable design system components for NSW Government digital products — Base UI primitives styled with NSW design tokens.",
+  "license": "MIT",
+  "homepage": "https://github.com/digitalnsw/nswds-ui#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digitalnsw/nswds-ui.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/digitalnsw/nswds-ui/issues"
+  },
+  "keywords": [
+    "nsw",
+    "nswds",
+    "design-system",
+    "react",
+    "components",
+    "base-ui",
+    "tailwindcss",
+    "shadcn"
+  ],
   "type": "module",
   "private": false,
   "publishConfig": {
@@ -16,8 +37,10 @@
   ],
   "scripts": {
     "build": "npm run build:js && npm run build:css",
-    "build:css": "tailwindcss -i ./src/styles/globals.css -o ./dist/styles.css --minify",
+    "build:css": "tailwindcss -i ./src/styles/package.css -o ./dist/styles.css --minify",
     "build:js": "tsup",
+    "check:drift": "node scripts/check-component-drift.mjs",
+    "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./postcss.config",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "registry:build": "npm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r",
@@ -30,7 +53,6 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "culori": "^4.0.2",
-    "next-themes": "^0.4.6",
     "tailwind-merge": "^3.6.0"
   },
   "peerDependencies": {
@@ -38,6 +60,7 @@
     "react-dom": "^18.3.0 || ^19.0.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.3",
     "@storybook/addon-docs": "10.5.0-alpha.2",
     "@storybook/react-vite": "10.5.0-alpha.2",
     "@tailwindcss/cli": "^4.3.0",
@@ -50,6 +73,7 @@
     "@workspace/eslint-config": "*",
     "@workspace/typescript-config": "*",
     "eslint": "^9.39.2",
+    "publint": "^0.3.21",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "shadcn": "^4.8.0",
@@ -64,7 +88,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./styles.css": "./dist/styles.css",
+    "./styles.css": {
+      "types": "./src/styles/globals.css.d.ts",
+      "default": "./dist/styles.css"
+    },
     "./globals.css": {
       "types": "./src/styles/globals.css.d.ts",
       "import": "./dist/styles.css",
@@ -74,10 +101,6 @@
     "./components/*": {
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"
-    },
-    "./hooks/*": {
-      "types": "./dist/hooks/*.d.ts",
-      "import": "./dist/hooks/*.js"
     },
     "./lib/*": {
       "types": "./dist/lib/*.d.ts",
