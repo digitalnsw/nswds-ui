@@ -98,3 +98,12 @@ export {
   CardHeader,
   CardTitle,
 }
+
+// Derived prop types — exact component props for consumers wrapping these.
+export type CardProps = React.ComponentProps<typeof Card>
+export type CardHeaderProps = React.ComponentProps<typeof CardHeader>
+export type CardTitleProps = React.ComponentProps<typeof CardTitle>
+export type CardDescriptionProps = React.ComponentProps<typeof CardDescription>
+export type CardActionProps = React.ComponentProps<typeof CardAction>
+export type CardContentProps = React.ComponentProps<typeof CardContent>
+export type CardFooterProps = React.ComponentProps<typeof CardFooter>

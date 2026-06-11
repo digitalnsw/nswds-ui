@@ -352,22 +352,22 @@ const badgeVariants = cva(styles.base, {
   },
 })
 
-function Badge({
-  variant,
-  color,
-  size,
-  className,
-  ...props
-}: VariantProps<typeof badgeVariants> &
-  React.ComponentPropsWithoutRef<'span'>) {
+type BadgeProps = VariantProps<typeof badgeVariants> &
+  React.ComponentPropsWithoutRef<'span'>
+
+const Badge = forwardRef(function Badge(
+  { variant, color, size, className, ...props }: BadgeProps,
+  ref: React.ForwardedRef<HTMLSpanElement>
+) {
   return (
     <span
       {...props}
       data-variant={variant}
       className={cn(badgeVariants({ variant, color, size }), className)}
+      ref={ref}
     />
   )
-}
+})
 
 /** Visual/content props shared by `BadgeButton` and `BadgeLink`. */
 type BadgeOwnProps = VariantProps<typeof badgeVariants> & {
@@ -449,4 +449,4 @@ const BadgeLink = forwardRef(function BadgeLink(
 })
 
 export { Badge, BadgeButton, BadgeLink, badgeVariants }
-export type { BadgeButtonProps, BadgeLinkProps }
+export type { BadgeButtonProps, BadgeLinkProps, BadgeProps }
