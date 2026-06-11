@@ -1,5 +1,5 @@
-# Snyk policy — https://docs.snyk.io/manage-risk/policies/the-.snyk-file
-version: v1.5.0
+# Snyk policy — https://docs.snyk.io/scan-fix-and-prevent/prevent/policies/the-.snyk-file
+version: v1.25.0
 exclude:
   code:
     # Generated Mock Service Worker runtime (`msw init`, integrity-checksummed
