@@ -70,7 +70,7 @@ npx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 | `@nswds/label`             | Label                                                                                     |
 | `@nswds/link`              | Link                                                                                      |
 | `@nswds/logo`              | NSW logo                                                                                  |
-| `@nswds/icons`             | Icon set                                                                                  |
+| `@nswds/icons`             | Curated icon subset (the full set ships per-icon in the npm package: `@nswds/ui/icons`)   |
 | `@nswds/separator`         | Separator                                                                                 |
 | `@nswds/spinner`           | Spinner                                                                                   |
 | `@nswds/description-list`  | Description list                                                                          |
