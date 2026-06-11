@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.0.0...@nswds/ui-v2.1.0) (2026-06-11)
+
+### Features
+
+* **ui:** quality maturity pass — consumer fixture, link-component tests, Input tokens, icon tooling ([#17](https://github.com/digitalnsw/nswds-ui/issues/17)) ([d4c90cd](https://github.com/digitalnsw/nswds-ui/commit/d4c90cdb0b11c8d9cf95ffda530a015d88cc334d))
+
 ## [2.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.8.0...@nswds/ui-v2.0.0) (2026-06-11)
 
 ### ⚠ BREAKING CHANGES
