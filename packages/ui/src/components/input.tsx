@@ -23,9 +23,11 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         'dark:text-grey-100',
         // Hover
         'hover:bg-grey-100',
-        // Focus — Uses `focus:`
-        // (not `focus-visible:`) so the ring shows on click as well as keyboard.
-        'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-grey-600',
+        // Focus — `focus-visible:` per the design-system policy (matches
+        // Button/Link). For text fields this is behaviour-preserving:
+        // browsers flag keyboard-editable controls as :focus-visible even
+        // when focused by pointer, so the ring still shows on click.
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-grey-600',
         // File input slot
         'file:inline-flex file:h-8 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-grey-800 dark:file:text-grey-100',
         // Placeholder styles
@@ -34,11 +36,11 @@ function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
         // Disabled
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
         // Invalid — 2px danger-600 border, danger-50 hover surface (Figma error variants)
-        'aria-invalid:border-2 aria-invalid:border-danger-600 aria-invalid:hover:bg-danger-50 aria-invalid:focus:outline-danger-600',
-        'aria-invalid:dark:border-danger-200 aria-invalid:dark:hover:bg-danger-900/30 aria-invalid:dark:focus:outline-danger-200',
+        'aria-invalid:border-2 aria-invalid:border-danger-600 aria-invalid:hover:bg-danger-50 aria-invalid:focus-visible:outline-danger-600',
+        'aria-invalid:dark:border-danger-200 aria-invalid:dark:hover:bg-danger-900/30 aria-invalid:dark:focus-visible:outline-danger-200',
         // Dark mode — invert grey border for sufficient contrast against dark surfaces
         'dark:border-grey-100 dark:bg-input/30',
-        'dark:hover:bg-input/50 dark:focus:outline-grey-100',
+        'dark:hover:bg-input/50 dark:focus-visible:outline-grey-100',
         className
       )}
       {...props}

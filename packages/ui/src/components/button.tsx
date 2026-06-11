@@ -14,8 +14,9 @@ const styles = {
   base: [
     // Base
     'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all',
-    // Focus
-    'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
+    // Focus — focus-visible only (keyboard/AT), matching Link. Pointer
+    // clicks don't paint the ring; this is the design system's policy.
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg)',
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
     // Icon
