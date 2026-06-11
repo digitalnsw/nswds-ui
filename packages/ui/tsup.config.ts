@@ -72,14 +72,50 @@ function restoreUseClientDirectives(entries: Record<string, string>) {
   }
 }
 
-const entries = collectEntries(srcDir)
+// The ~3900 generated icon modules (src/icons/) are identical in shape, so
+// running rollup-dts over them is pointless and slow — their declarations
+// are written programmatically in onSuccess instead.
+function writeIconDeclarations(entries: Record<string, string>) {
+  for (const [entryName, sourcePath] of Object.entries(entries)) {
+    if (!entryName.startsWith('icons/')) {
+      continue
+    }
 
-export default defineConfig({
-  entry: entries,
+    const outputPath = join('dist', `${entryName}.d.ts`)
+    const source = readFileSync(sourcePath, 'utf8')
+
+    if (entryName === 'icons/types' || entryName === 'icons/index') {
+      // Both files are declaration-shaped already (type alias / re-exports).
+      writeFileSync(outputPath, source.replace(/^\/\/ Generated[^\n]*\n/, ''))
+      continue
+    }
+
+    const match = source.match(/export function (\w+)\(/)
+    if (!match) {
+      throw new Error(`Cannot find icon export in ${sourcePath}`)
+    }
+
+    writeFileSync(
+      outputPath,
+      `import type { IconProps } from './types.js'\nexport declare function ${match[1]}(props: IconProps): import('react').JSX.Element\n`
+    )
+  }
+}
+
+const entries = collectEntries(srcDir)
+const iconEntries = Object.fromEntries(
+  Object.entries(entries).filter(([entryName]) =>
+    entryName.startsWith('icons/')
+  )
+)
+const coreEntries = Object.fromEntries(
+  Object.entries(entries).filter(
+    ([entryName]) => !entryName.startsWith('icons/')
+  )
+)
+
+const shared = {
   format: ['esm'],
-  dts: true,
-  sourcemap: true,
-  clean: true,
   bundle: false,
   splitting: false,
   treeshake: true,
@@ -87,7 +123,30 @@ export default defineConfig({
   esbuildOptions(options) {
     options.jsx = 'automatic'
   },
-  async onSuccess() {
-    restoreUseClientDirectives(entries)
+} satisfies Parameters<typeof defineConfig>[0]
+
+export default defineConfig([
+  {
+    ...shared,
+    entry: coreEntries,
+    dts: true,
+    sourcemap: true,
+    clean: true,
+    async onSuccess() {
+      restoreUseClientDirectives(coreEntries)
+    },
   },
-})
+  // The ~3900 generated icon modules: no sourcemaps (trivial generated code
+  // would triple the published size) and no rollup-dts (declarations are
+  // formulaic and written programmatically instead).
+  {
+    ...shared,
+    entry: iconEntries,
+    dts: false,
+    sourcemap: false,
+    clean: false,
+    async onSuccess() {
+      writeIconDeclarations(iconEntries)
+    },
+  },
+])

@@ -12,8 +12,13 @@ import { fn } from 'storybook/test'
 
 import { cn } from '../lib/utils.js'
 
+import {
+  IconAdd,
+  IconArrowForward,
+  IconExpandMore,
+  IconSearch,
+} from '../icons/index.js'
 import { Button, ButtonLink } from './button.js'
-import { Icons } from './icons.js'
 
 const variants = [
   'solid',
@@ -242,7 +247,7 @@ const meta = {
                   <Button
                     size="icon"
                     aria-label="Add"
-                    leadingVisual={Icons.add}
+                    leadingVisual={IconAdd}
                   />
                 </Cell>
               </div>
@@ -318,15 +323,15 @@ const meta = {
             <Preview>
               <div className="flex flex-wrap items-center gap-8">
                 <Cell label="leadingVisual">
-                  <Button leadingVisual={Icons.add}>Add item</Button>
+                  <Button leadingVisual={IconAdd}>Add item</Button>
                 </Cell>
                 <Cell label="trailingVisual">
-                  <Button trailingVisual={Icons.arrow_forward}>Next</Button>
+                  <Button trailingVisual={IconArrowForward}>Next</Button>
                 </Cell>
                 <Cell label="icon only">
                   <Button
                     aria-label="Search"
-                    leadingVisual={Icons.search}
+                    leadingVisual={IconSearch}
                     size="icon"
                   />
                 </Cell>
@@ -364,7 +369,7 @@ const meta = {
                 <ButtonLink
                   href="#"
                   variant="solid"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
                 </ButtonLink>
@@ -373,7 +378,7 @@ const meta = {
                 <ButtonLink
                   href="#"
                   variant="outline"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
                 </ButtonLink>
@@ -382,7 +387,7 @@ const meta = {
                 <ButtonLink
                   href="#"
                   variant="link"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
                 </ButtonLink>
@@ -419,10 +424,10 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        search: Icons.search,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        search: IconSearch,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered before the label.',
       table: { category: 'Content' },
@@ -432,10 +437,10 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        search: Icons.search,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        search: IconSearch,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered after the label.',
       table: { category: 'Content' },
@@ -445,9 +450,9 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered as a trailing action (far end).',
       table: { category: 'Content' },

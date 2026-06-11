@@ -11,6 +11,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { IconKey, IconLogin, IconMail } from '../icons/index.js'
 import { Button } from './button.js'
 import {
   Card,
@@ -26,7 +27,6 @@ import {
   FieldGroup,
   FieldLabel,
 } from './field.js'
-import { Icons } from './icons.js'
 import { Input } from './input.js'
 import { LabeledSeparator } from './labeled-separator.js'
 import { Link } from './link.js'
@@ -145,7 +145,7 @@ export const WithError: Story = {
               {/* 1 — Single sign-on: the recommended first option */}
               <Field>
                 <Button type="button">
-                  <Icons.login />
+                  <IconLogin />
                   Continue with single sign-on
                 </Button>
               </Field>
@@ -186,7 +186,7 @@ export const WithError: Story = {
               </Field>
               <Field>
                 <Button type="submit" variant="outline" color="primary">
-                  <Icons.key />
+                  <IconKey />
                   Login
                 </Button>
               </Field>
@@ -194,7 +194,7 @@ export const WithError: Story = {
               <LabeledSeparator>or</LabeledSeparator>
               <Field>
                 <Button type="button" variant="outline" color="grey">
-                  <Icons.mail />
+                  <IconMail />
                   Email me a magic link instead
                 </Button>
                 <FieldDescription>

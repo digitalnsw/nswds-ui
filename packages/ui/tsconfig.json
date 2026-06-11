@@ -7,6 +7,8 @@
       "@/lib/*": ["./src/lib/*"],
       "@/*": ["./src/*"],
       "@nswds/ui/components/*": ["./src/components/*.tsx"],
+      "@nswds/ui/icons": ["./src/icons/index.ts"],
+      "@nswds/ui/icons/*": ["./src/icons/*.tsx"],
       "@nswds/ui/postcss.config": ["./postcss.config.mjs"],
       "@nswds/ui/*": ["./src/*"]
     }
