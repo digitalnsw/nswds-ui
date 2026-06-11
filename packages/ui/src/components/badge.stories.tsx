@@ -37,10 +37,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="text-foreground max-w-3xl space-y-8">
+        <div className="max-w-3xl space-y-8 text-foreground">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Badge</h1>
-            <p className="text-muted-foreground text-base">
+            <p className="text-base text-muted-foreground">
               Badges are small inline pills used to indicate status, count, or
               category. The Badge component is presentational by default and
               becomes interactive when paired with BadgeButton, which expands
@@ -171,7 +171,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
+    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
       <Badge {...args}>{args.children}</Badge>
     </div>
   ),

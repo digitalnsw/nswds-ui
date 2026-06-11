@@ -28,7 +28,7 @@ function LabeledSeparator({
       <Separator decorative className="flex-1" />
       <span
         data-slot="labeled-separator-content"
-        className="text-muted-foreground shrink-0 text-sm"
+        className="shrink-0 text-sm text-muted-foreground"
       >
         {children}
       </span>

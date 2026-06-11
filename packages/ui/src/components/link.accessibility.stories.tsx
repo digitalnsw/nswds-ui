@@ -76,10 +76,10 @@ export const Contrast: Story = {
   render: () => (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           On default background
         </h4>
-        <p className="text-foreground text-base">
+        <p className="text-base text-foreground">
           Read more on the{' '}
           <Link href="/about" variant="primary">
             About NSW Government
@@ -88,11 +88,11 @@ export const Contrast: Story = {
         </p>
       </section>
 
-      <section className="border-border bg-muted space-y-2 rounded-sm border p-4">
-        <h4 className="text-foreground text-sm font-semibold">
+      <section className="space-y-2 rounded-sm border border-border bg-muted p-4">
+        <h4 className="text-sm font-semibold text-foreground">
           On muted surface
         </h4>
-        <p className="text-foreground text-base">
+        <p className="text-base text-foreground">
           Read more on the{' '}
           <Link href="/about" variant="primary">
             About NSW Government
@@ -157,7 +157,7 @@ export const Keyboard: Story = {
       <Link href="#keyboard-target" variant="primary">
         Press me with Enter
       </Link>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Tab to focus, then press Enter to activate. Space does not activate
         links — it scrolls the page.
       </p>
@@ -219,7 +219,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Text link (accessible name = visible label)
         </h4>
         <Link href="/about" variant="primary">
@@ -228,7 +228,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Icon-only link (accessible name supplied via aria-label)
         </h4>
         <Link

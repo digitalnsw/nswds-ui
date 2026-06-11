@@ -206,7 +206,7 @@ export const UseOfColour: Story = {
   render: () => (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Status communicated by label + colour (not colour alone)
         </h4>
         <div className="flex flex-wrap items-center gap-3">
@@ -219,7 +219,7 @@ export const UseOfColour: Story = {
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Count badges — the number is the label
         </h4>
         <div className="flex flex-wrap items-center gap-3">
@@ -292,7 +292,7 @@ export const Keyboard: Story = {
   render: () => (
     <div className="space-y-4">
       <BadgeButton>Press me</BadgeButton>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Tab to focus, then press Enter or Space to activate.
       </p>
     </div>
@@ -353,7 +353,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className="space-y-6">
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Text labels (accessible name = visible label)
         </h4>
         <div className="flex flex-wrap gap-3">
@@ -364,7 +364,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className="space-y-2">
-        <h4 className="text-foreground text-sm font-semibold">
+        <h4 className="text-sm font-semibold text-foreground">
           Icon-only (accessible name supplied via aria-label)
         </h4>
         <div className="flex flex-wrap gap-3">

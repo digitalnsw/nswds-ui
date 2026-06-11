@@ -106,7 +106,7 @@ export const Variants: Story = {
   },
   render: () => (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="text-muted-foreground grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
+      <div className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Variant</span>
         <span className="text-center">Default</span>
         <span className="text-center">Hover</span>
@@ -177,7 +177,7 @@ export const InParagraph: Story = {
     },
   },
   render: () => (
-    <div className="text-foreground max-w-2xl space-y-4 text-base/7">
+    <div className="max-w-2xl space-y-4 text-base/7 text-foreground">
       <p>
         The{' '}
         <Link href="/about" variant="primary">
@@ -296,14 +296,14 @@ export const States: Story = {
   render: () => (
     <div className="space-y-3">
       <div className="flex items-center gap-4">
-        <span className="text-muted-foreground w-24 text-xs font-semibold">
+        <span className="w-24 text-xs font-semibold text-muted-foreground">
           Default
         </span>
         <Link href="/default-state">About NSW Government</Link>
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-muted-foreground w-24 text-xs font-semibold">
+        <span className="w-24 text-xs font-semibold text-muted-foreground">
           Hover
         </span>
         <Link
@@ -315,7 +315,7 @@ export const States: Story = {
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-muted-foreground w-24 text-xs font-semibold">
+        <span className="w-24 text-xs font-semibold text-muted-foreground">
           Focus
         </span>
         <Link
@@ -327,7 +327,7 @@ export const States: Story = {
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-muted-foreground w-24 text-xs font-semibold">
+        <span className="w-24 text-xs font-semibold text-muted-foreground">
           Active
         </span>
         <Link

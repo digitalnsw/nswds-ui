@@ -26,7 +26,7 @@ export function DescriptionTerm({
       {...props}
       className={cn(
         className,
-        'border-border text-muted-foreground col-start-1 border-t pt-3 first:border-none sm:border-t sm:py-3'
+        'col-start-1 border-t border-border pt-3 text-muted-foreground first:border-none sm:border-t sm:py-3'
       )}
     />
   )
@@ -41,7 +41,7 @@ export function DescriptionDetails({
       {...props}
       className={cn(
         className,
-        'text-foreground sm:border-border pt-1 pb-3 sm:border-t sm:py-3 sm:[&:nth-child(2)]:border-none'
+        'pt-1 pb-3 text-foreground sm:border-t sm:border-border sm:py-3 sm:[&:nth-child(2)]:border-none'
       )}
     />
   )

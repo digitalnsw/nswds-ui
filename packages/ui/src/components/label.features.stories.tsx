@@ -55,7 +55,7 @@ export const WithInput: Story = {
         id="label-features-input"
         type="email"
         placeholder="you@example.com"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),
@@ -88,7 +88,7 @@ export const WithRequiredIndicator: Story = {
         id="label-required-input"
         type="text"
         required
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),
@@ -116,7 +116,7 @@ export const WithCheckboxAndRadio: Story = {
           <input
             id="label-features-news"
             type="checkbox"
-            className="border-input size-4 rounded-sm border"
+            className="size-4 rounded-sm border border-input"
           />
           Subscribe to the newsletter
         </Label>
@@ -124,7 +124,7 @@ export const WithCheckboxAndRadio: Story = {
           <input
             id="label-features-terms"
             type="checkbox"
-            className="border-input size-4 rounded-sm border"
+            className="size-4 rounded-sm border border-input"
             defaultChecked
           />
           I agree to the terms of service
@@ -141,7 +141,7 @@ export const WithCheckboxAndRadio: Story = {
             type="radio"
             name="label-features-contact"
             defaultChecked
-            className="border-input size-4 border"
+            className="size-4 border border-input"
           />
           Email
         </Label>
@@ -150,7 +150,7 @@ export const WithCheckboxAndRadio: Story = {
             id="label-features-radio-sms"
             type="radio"
             name="label-features-contact"
-            className="border-input size-4 border"
+            className="size-4 border border-input"
           />
           SMS
         </Label>
@@ -182,14 +182,14 @@ export const Disabled: Story = {
           type="text"
           disabled
           defaultValue="cannot edit"
-          className="peer border-input bg-background h-9 rounded-sm border px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className="peer h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
         <Label htmlFor="label-features-disabled">Read-only field</Label>
       </div>
 
       <fieldset
         data-disabled="true"
-        className="group border-border grid gap-1.5 rounded-sm border p-3"
+        className="group grid gap-1.5 rounded-sm border border-border p-3"
       >
         <Label htmlFor="label-features-group-disabled">
           Group-disabled label
@@ -198,7 +198,7 @@ export const Disabled: Story = {
           id="label-features-group-disabled"
           type="text"
           disabled
-          className="border-input bg-background h-9 rounded-sm border px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className="h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         />
       </fieldset>
     </div>
@@ -228,7 +228,7 @@ export const Truncated: Story = {
       <input
         id="label-features-truncated"
         type="text"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),

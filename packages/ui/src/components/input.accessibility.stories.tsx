@@ -90,7 +90,7 @@ export const LabelAssociation: Story = {
     <div className="grid w-full max-w-md gap-1.5">
       <label
         htmlFor="a11y-label-email"
-        className="text-foreground text-sm font-medium"
+        className="text-sm font-medium text-foreground"
       >
         Email address
       </label>
@@ -222,7 +222,7 @@ export const FocusAppearance: Story = {
       <div className="grid gap-1.5">
         <label
           htmlFor="a11y-focus-live"
-          className="text-foreground text-sm font-medium"
+          className="text-sm font-medium text-foreground"
         >
           Tab into me (live focus)
         </label>
@@ -232,7 +232,7 @@ export const FocusAppearance: Story = {
       <div className="grid gap-1.5">
         <label
           htmlFor="a11y-focus-forced"
-          className="text-foreground text-sm font-medium"
+          className="text-sm font-medium text-foreground"
         >
           Forced focus (utilities applied directly)
         </label>
@@ -243,9 +243,9 @@ export const FocusAppearance: Story = {
         />
       </div>
 
-      <p className="text-foreground text-xs">
+      <p className="text-xs text-foreground">
         Indicator:{' '}
-        <code className="bg-muted text-foreground rounded px-1 py-0.5 text-xs">
+        <code className="rounded bg-muted px-1 py-0.5 text-xs text-foreground">
           outline: 2px solid var(--color-primary-800); outline-offset: 2px
         </code>
         . NSW blue against white surface ≈ 9:1 contrast — comfortably above the
@@ -300,7 +300,7 @@ export const ErrorIdentification: Story = {
     <div className="grid w-full max-w-md gap-1.5">
       <label
         htmlFor="a11y-error-input"
-        className="text-foreground text-sm font-medium"
+        className="text-sm font-medium text-foreground"
       >
         Email address
       </label>

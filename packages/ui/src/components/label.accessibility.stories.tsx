@@ -90,7 +90,7 @@ export const InfoAndRelationships: Story = {
         id="a11y-relationships-email"
         type="email"
         placeholder="you@example.com"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),
@@ -148,7 +148,7 @@ export const LabelInName: Story = {
         id="a11y-label-in-name-input"
         type="search"
         placeholder="e.g. driver licence"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),
@@ -192,11 +192,11 @@ export const LabelsOrInstructions: Story = {
         autoComplete="tel"
         placeholder="0400 000 000"
         aria-describedby="a11y-instructions-phone-hint"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
       <p
         id="a11y-instructions-phone-hint"
-        className="text-muted-foreground text-xs"
+        className="text-xs text-muted-foreground"
       >
         Enter an Australian mobile number starting with 04.
       </p>
@@ -254,7 +254,7 @@ export const NameRoleValue: Story = {
         inputMode="numeric"
         autoComplete="postal-code"
         placeholder="2000"
-        className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
       />
     </div>
   ),

@@ -23,10 +23,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="text-foreground max-w-3xl space-y-8">
+        <div className="max-w-3xl space-y-8 text-foreground">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">Label</h1>
-            <p className="text-muted-foreground text-base">
+            <p className="text-base text-muted-foreground">
               Label is a small text element that names an interactive form
               control. It pairs with an input via <code>htmlFor</code> so the
               field has an accessible name, and inherits disabled styling from a
@@ -41,7 +41,7 @@ const meta = {
               <input
                 id="label-docs-email"
                 type="email"
-                className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+                className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
               />
             </div>
           </section>
@@ -50,7 +50,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Disabled state
             </h2>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               The Label primitive dims to 50% opacity whenever an ancestor with{' '}
               <code>group</code> + <code>{'data-disabled="true"'}</code> is
               present — the canonical pattern used by <code>Field</code>. (Label
@@ -67,7 +67,7 @@ const meta = {
                 id="label-docs-disabled"
                 type="text"
                 disabled
-                className="border-input bg-background h-9 rounded-sm border px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </section>
@@ -87,7 +87,7 @@ const meta = {
                 id="label-docs-required"
                 type="text"
                 required
-                className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+                className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
               />
             </div>
           </section>
@@ -132,7 +132,7 @@ const meta = {
         <input
           id={args.htmlFor}
           type="text"
-          className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+          className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
         />
       ) : null}
     </div>
@@ -192,14 +192,14 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="border-border bg-background w-full max-w-xl rounded-sm border p-6">
+    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
       <div className="grid w-full gap-1.5">
         <Label {...args} />
         {args.htmlFor ? (
           <input
             id={args.htmlFor}
             type="text"
-            className="border-input bg-background h-9 rounded-sm border px-3 text-sm"
+            className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
           />
         ) : null}
       </div>

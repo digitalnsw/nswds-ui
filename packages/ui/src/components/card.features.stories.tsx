@@ -100,7 +100,7 @@ export const Composition: Story = {
           Quarterly summary across active workstreams.
         </CardDescription>
         <CardAction>
-          <button className="text-primary text-xs font-medium underline-offset-4 hover:underline">
+          <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
             View all
           </button>
         </CardAction>
@@ -195,7 +195,7 @@ export const CardWithoutDescription: Story = {
       <CardHeader>
         <CardTitle>Single-row header</CardTitle>
         <CardAction>
-          <button className="text-primary text-xs font-medium underline-offset-4 hover:underline">
+          <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
             Edit
           </button>
         </CardAction>

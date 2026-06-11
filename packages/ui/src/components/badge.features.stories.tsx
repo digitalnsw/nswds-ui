@@ -82,7 +82,7 @@ export const ByVariant: Story = {
   },
   render: () => (
     <div className="w-full max-w-7xl space-y-3">
-      <div className="text-muted-foreground grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
+      <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Colour</span>
         {variants.map((variant) => (
           <span
@@ -160,7 +160,7 @@ export const ByColour: Story = {
               style={{ minWidth: `${16 + standardCols * 9}rem` }}
             >
               <div
-                className="text-muted-foreground grid items-center gap-2 px-3 text-xs font-semibold"
+                className="grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground"
                 style={{
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
@@ -179,12 +179,12 @@ export const ByColour: Story = {
               {variants.map((variant) => (
                 <div
                   key={`by-colour-standard-row-${variant}`}
-                  className="border-border bg-background grid items-center gap-2 rounded-sm border p-3"
+                  className="grid items-center gap-2 rounded-sm border border-border bg-background p-3"
                   style={{
                     gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className="text-foreground text-sm font-semibold capitalize">
+                  <span className="text-sm font-semibold text-foreground capitalize">
                     {variant}
                   </span>
                   {standard.map((color) => (
@@ -283,7 +283,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className="w-full max-w-5xl space-y-3">
-      <div className="text-muted-foreground grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
+      <div className="grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Colour</span>
         {sizes.map((size) => (
           <span key={`sizes-header-${size}`} className="text-center capitalize">
@@ -362,7 +362,7 @@ export const States: Story = {
         .force-state-grid [data-active][data-variant="surface"] { border-color: var(--badge-bg); }
       `}</style>
 
-      <div className="text-muted-foreground grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold">
+      <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
         <span>Colour</span>
         {variants.map((variant) => (
           <span

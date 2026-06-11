@@ -70,7 +70,7 @@ export const NonTextContent: Story = {
   render: () => (
     <div className="space-y-4">
       <Logo className="h-16 w-auto" />
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         Run a screen reader (VoiceOver, NVDA, JAWS) over the logo above and
         confirm it is announced as &quot;NSW Government&quot;.
       </p>
@@ -116,7 +116,7 @@ export const NonTextContrast: Story = {
       <ThemeSurface color="primary">
         <div className="space-y-3">
           <Logo logoType="default" className="h-16 w-auto" />
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             default on background — wordmark blue against white
           </p>
         </div>
@@ -125,7 +125,7 @@ export const NonTextContrast: Story = {
       <ThemeSurface color="primary">
         <div className="space-y-3">
           <Logo logoType="mono-black" className="h-16 w-auto" />
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             mono-black on background — solid black against white
           </p>
         </div>
@@ -171,15 +171,15 @@ export const UseOfColour: Story = {
   render: () => (
     <div className="w-full max-w-5xl space-y-4">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="border-border bg-background space-y-2 rounded-sm border p-6">
+        <div className="space-y-2 rounded-sm border border-border bg-background p-6">
           <Logo logoType="default" className="h-16 w-auto" />
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             Colour — shape + wordmark + brand fills
           </p>
         </div>
-        <div className="border-border bg-background space-y-2 rounded-sm border p-6">
+        <div className="space-y-2 rounded-sm border border-border bg-background p-6">
           <Logo logoType="mono-black" className="h-16 w-auto" />
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             Monochrome — same shape, identity preserved without colour
           </p>
         </div>
@@ -190,7 +190,7 @@ export const UseOfColour: Story = {
           </p>
         </div>
       </div>
-      <p className="text-muted-foreground text-sm">
+      <p className="text-sm text-muted-foreground">
         The mark&apos;s meaning is carried by three independent channels — its
         distinctive silhouette, the &quot;NSW Government&quot; accessible name,
         and only then by colour.

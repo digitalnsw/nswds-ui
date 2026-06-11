@@ -23,10 +23,10 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="text-foreground max-w-3xl space-y-8">
+        <div className="max-w-3xl space-y-8 text-foreground">
           <section className="space-y-3">
             <h1 className="text-4xl font-bold tracking-normal">SignUpForm</h1>
-            <p className="text-muted-foreground text-base">
+            <p className="text-base text-muted-foreground">
               SignUpForm is a composed pattern that demonstrates how to assemble
               Card, Field, Input, and Button primitives into an account-creation
               form. It pairs with LoginForm&apos;s &ldquo;Sign up&rdquo; link.
@@ -46,7 +46,7 @@ const meta = {
             <h2 className="text-2xl font-bold tracking-normal">
               Password manager &amp; accessibility
             </h2>
-            <p className="text-muted-foreground text-base">
+            <p className="text-base text-muted-foreground">
               The password field uses{' '}
               <code>autoComplete=&quot;new-password&quot;</code> so password
               managers offer a generated password, and the requirements hint is
@@ -149,7 +149,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="border-border bg-background w-full max-w-md rounded-sm border p-6">
+    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
       <SignUpForm {...args} />
     </div>
   ),
