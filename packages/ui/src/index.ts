@@ -14,7 +14,4 @@ export * from './components/separator.js'
 export * from './components/spinner.js'
 
 // Utils
-export * from './lib/color-palette.js'
-export * from './lib/colors.js'
-export * from './lib/theme-palette.js'
 export * from './lib/utils.js'

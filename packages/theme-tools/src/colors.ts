@@ -1,5 +1,4 @@
 import * as culori from 'culori'
-import { camelCase, kebabCase } from '../lib/utils.js'
 import {
   ColorData,
   // DesignTokensTheme,
@@ -9,7 +8,8 @@ import {
   Format,
   Output,
   Variant,
-} from '../types/types.js'
+} from './types.js'
+import { camelCase, kebabCase } from './utils.js'
 
 export const shades = [
   'lightest',

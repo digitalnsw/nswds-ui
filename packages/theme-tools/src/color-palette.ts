@@ -1,5 +1,5 @@
-import { generateColorThemes, oklchConverter } from '../lib/colors.js'
-import { ColorThemes, Palette } from '../types/types.js'
+import { generateColorThemes, oklchConverter } from './colors.js'
+import { ColorThemes, Palette } from './types.js'
 
 export const sequential = {
   ember: [
