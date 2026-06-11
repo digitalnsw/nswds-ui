@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.7.0...@nswds/ui-v1.8.0) (2026-06-11)
+
+### Features
+
+* **ui:** ship missing components, portable registry items, and package quality gates ([#14](https://github.com/digitalnsw/nswds-ui/issues/14)) ([6cf1d55](https://github.com/digitalnsw/nswds-ui/commit/6cf1d55aa546f828b49877172d5949d2d29bfb68)), closes [#3](https://github.com/digitalnsw/nswds-ui/issues/3)
+
 ## [1.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v1.6.1...@nswds/ui-v1.7.0) (2026-06-04)
 
 ### Features
