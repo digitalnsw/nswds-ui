@@ -17,7 +17,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { userEvent } from 'storybook/test'
 
-import { Badge, BadgeButton } from './badge.js'
+import { Badge, BadgeButton, BadgeLink } from './badge.js'
 import { Icons } from './icons.js'
 import {
   ThemeSurface,
@@ -450,9 +450,9 @@ export const NameRoleValue: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <BadgeButton color="primary">Activate</BadgeButton>
-      <BadgeButton color="accent" href="#">
+      <BadgeLink color="accent" href="#">
         Go to link
-      </BadgeButton>
+      </BadgeLink>
       <BadgeButton color="grey" aria-label="More options">
         <Icons.more_horiz data-slot="icon" />
       </BadgeButton>

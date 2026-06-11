@@ -12,7 +12,7 @@ import { fn } from 'storybook/test'
 
 import { cn } from '../lib/utils.js'
 
-import { Button } from './button.js'
+import { Button, ButtonLink } from './button.js'
 import { Icons } from './icons.js'
 
 const variants = [
@@ -357,35 +357,35 @@ const meta = {
           {/* As a link */}
           <Section
             title="As a link"
-            description="Pass an href and the button renders as an anchor element while keeping its full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
+            description="ButtonLink renders an anchor element with the button's full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
           >
             <Preview className="flex flex-wrap items-center gap-8">
               <Cell label="solid">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="solid"
                   trailingVisual={Icons.arrow_forward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
               <Cell label="outline">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="outline"
                   trailingVisual={Icons.arrow_forward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
               <Cell label="link">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="link"
                   trailingVisual={Icons.arrow_forward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
             </Preview>
           </Section>
@@ -461,11 +461,6 @@ const meta = {
       control: 'number',
       description: 'Optional numeric badge rendered after the label.',
       table: { category: 'Content' },
-    },
-    href: {
-      control: 'text',
-      description: 'When provided, button renders as a link.',
-      table: { category: 'Behavior' },
     },
     disabled: {
       control: 'boolean',

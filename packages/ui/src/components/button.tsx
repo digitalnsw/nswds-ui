@@ -278,7 +278,8 @@ const buttonVariants = cva(styles.base, {
   },
 })
 
-type ButtonProps = VariantProps<typeof buttonVariants> & {
+/** Visual/content props shared by `Button` and `ButtonLink`. */
+type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
   className?: string
   /** Button label. Optional for icon-only buttons (supply an `aria-label`). */
   children?: React.ReactNode
@@ -299,41 +300,54 @@ type ButtonProps = VariantProps<typeof buttonVariants> & {
   labelWrap?: boolean
   /** Optional numeric badge rendered after the label. */
   count?: number
-} & (
-    | Omit<ButtonPrimitive.Props, 'className' | 'disabled' | 'render'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+}
+
+type ButtonProps = ButtonOwnProps &
+  Omit<ButtonPrimitive.Props, 'className' | 'disabled'>
+
+type ButtonLinkProps = ButtonOwnProps &
+  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+
+function buttonClasses({
+  variant,
+  color,
+  size,
+  block,
+  alignContent,
+  className,
+  effectiveDisabled,
+}: ButtonOwnProps & { effectiveDisabled?: boolean }) {
+  return clsx(
+    cn(
+      buttonVariants({ variant, color, size }),
+      block && 'w-full',
+      alignContent === 'start' && 'justify-start',
+      className
+    ),
+    effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
   )
+}
 
-const Button = forwardRef(function Button(
-  {
-    className,
-    variant,
-    color,
-    size,
-    children,
-    block,
-    loading,
-    alignContent = 'center',
-    disabled,
-    leadingVisual: LeadingVisual,
-    trailingVisual: TrailingVisual,
-    trailingAction: TrailingAction,
-    labelWrap,
-    count,
-    ...props
-  }: ButtonProps,
-  ref: React.ForwardedRef<HTMLElement>
-) {
-  const effectiveDisabled = disabled || loading
-
-  const classes = cn(
-    buttonVariants({ variant, color, size }),
-    block && 'w-full',
-    alignContent === 'start' && 'justify-start',
-    className
-  )
-
-  const content = (
+/** Shared inner layout: spinner, visuals, label, count, touch target. */
+function ButtonContent({
+  loading,
+  leadingVisual: LeadingVisual,
+  trailingVisual: TrailingVisual,
+  trailingAction: TrailingAction,
+  labelWrap,
+  count,
+  children,
+}: Pick<
+  ButtonOwnProps,
+  | 'loading'
+  | 'leadingVisual'
+  | 'trailingVisual'
+  | 'trailingAction'
+  | 'labelWrap'
+  | 'count'
+  | 'children'
+>) {
+  return (
     <TouchTarget>
       {loading && (
         <Spinner
@@ -365,19 +379,107 @@ const Button = forwardRef(function Button(
       {TrailingAction && <TrailingAction data-slot="icon" />}
     </TouchTarget>
   )
+}
 
-  return 'href' in props ? (
+/**
+ * Action button on the Base UI button primitive. For button-styled
+ * navigation, use `ButtonLink` — the `href` polymorphism that previously
+ * lived on this component was removed in v2.
+ *
+ * Base UI's `render` prop is available for composition (e.g. rendering a
+ * framework-specific element while keeping Button behaviour).
+ */
+const Button = forwardRef(function Button(
+  {
+    className,
+    variant,
+    color,
+    size,
+    children,
+    block,
+    loading,
+    alignContent = 'center',
+    disabled,
+    leadingVisual,
+    trailingVisual,
+    trailingAction,
+    labelWrap,
+    count,
+    ...props
+  }: ButtonProps,
+  ref: React.ForwardedRef<HTMLButtonElement>
+) {
+  const effectiveDisabled = disabled || loading
+
+  return (
+    <ButtonPrimitive
+      data-variant={variant}
+      aria-busy={loading || undefined}
+      {...props}
+      disabled={effectiveDisabled}
+      className={buttonClasses({
+        variant,
+        color,
+        size,
+        block,
+        alignContent,
+        className,
+        effectiveDisabled,
+      })}
+      ref={ref}
+    >
+      <ButtonContent
+        loading={loading}
+        leadingVisual={leadingVisual}
+        trailingVisual={trailingVisual}
+        trailingAction={trailingAction}
+        labelWrap={labelWrap}
+        count={count}
+      >
+        {children}
+      </ButtonContent>
+    </ButtonPrimitive>
+  )
+})
+
+/**
+ * Button-styled anchor. Renders through `Link`, so it picks up the
+ * framework link component from `LinkProvider` (e.g. next/link) and accepts
+ * all anchor props. Disabled/loading states are conveyed with
+ * `aria-disabled` and a click guard, since anchors have no `disabled`
+ * attribute.
+ */
+const ButtonLink = forwardRef(function ButtonLink(
+  {
+    className,
+    variant,
+    color,
+    size,
+    children,
+    block,
+    loading,
+    alignContent = 'center',
+    disabled,
+    leadingVisual,
+    trailingVisual,
+    trailingAction,
+    labelWrap,
+    count,
+    ...props
+  }: ButtonLinkProps,
+  ref: React.ForwardedRef<HTMLAnchorElement>
+) {
+  const effectiveDisabled = disabled || loading
+
+  return (
     <Link
-      // Opt out of Link's built-in styling — Button supplies its own
+      // Opt out of Link's built-in styling — ButtonLink supplies its own
       // complete visual treatment (background, border, focus ring, icon
       // sizing) and any Link styling layered on top would conflict.
       variant="unstyled"
       data-variant={variant}
       aria-busy={loading || undefined}
-      {...(props as Omit<
-        React.ComponentPropsWithoutRef<typeof Link>,
-        'className' | 'variant'
-      >)}
+      {...props}
       {...(effectiveDisabled
         ? {
             'aria-disabled': true,
@@ -387,31 +489,28 @@ const Button = forwardRef(function Button(
               e.preventDefault(),
           }
         : {})}
-      className={clsx(
-        classes,
-        effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
-      )}
-      ref={ref as React.ForwardedRef<HTMLAnchorElement>}
-    >
-      {content}
-    </Link>
-  ) : (
-    <ButtonPrimitive
-      data-variant={variant}
-      aria-busy={loading || undefined}
-      {...(props as Omit<
-        ButtonPrimitive.Props,
-        'className' | 'disabled' | 'render'
-      >)}
-      disabled={effectiveDisabled}
-      className={clsx(
-        classes,
-        effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
-      )}
+      className={buttonClasses({
+        variant,
+        color,
+        size,
+        block,
+        alignContent,
+        className,
+        effectiveDisabled,
+      })}
       ref={ref}
     >
-      {content}
-    </ButtonPrimitive>
+      <ButtonContent
+        loading={loading}
+        leadingVisual={leadingVisual}
+        trailingVisual={trailingVisual}
+        trailingAction={trailingAction}
+        labelWrap={labelWrap}
+        count={count}
+      >
+        {children}
+      </ButtonContent>
+    </Link>
   )
 })
 
@@ -430,4 +529,5 @@ function TouchTarget({ children }: { children: React.ReactNode }) {
   )
 }
 
-export { Button, buttonVariants, TouchTarget }
+export { Button, ButtonLink, buttonVariants, TouchTarget }
+export type { ButtonLinkProps, ButtonProps }
