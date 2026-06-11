@@ -16,11 +16,11 @@ import {
   FieldGroup,
   FieldLabel,
 } from '../components/field.js'
-import { Icons } from '../components/icons.js'
 import { Input } from '../components/input.js'
 import { LabeledSeparator } from '../components/labeled-separator.js'
 import { Link } from '../components/link.js'
 import { Separator } from '../components/separator.js'
+import { IconKey, IconLogin, IconMail } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
 
 export function LoginForm({
@@ -52,7 +52,7 @@ export function LoginForm({
               {/* 1 — Single sign-on: the recommended first option */}
               <Field>
                 <Button type="button">
-                  <Icons.login />
+                  <IconLogin />
                   Continue with single sign-on
                 </Button>
               </Field>
@@ -85,7 +85,7 @@ export function LoginForm({
               </Field>
               <Field>
                 <Button type="submit" variant="outline" color="primary">
-                  <Icons.key />
+                  <IconKey />
                   Login
                 </Button>
               </Field>
@@ -93,7 +93,7 @@ export function LoginForm({
               <LabeledSeparator>or</LabeledSeparator>
               <Field>
                 <Button type="button" variant="outline" color="grey">
-                  <Icons.mail />
+                  <IconMail />
                   Email me a magic link instead
                 </Button>
                 <FieldDescription>

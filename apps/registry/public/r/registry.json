@@ -303,12 +303,107 @@
       "name": "icons",
       "type": "registry:ui",
       "title": "Icons",
-      "description": "NSWDS icon collection.",
+      "description": "Curated NSWDS icon subset used by the shipped components and patterns. The full Material Symbols set is available per-icon from the @nswds/ui npm package (import { IconSearch } from '@nswds/ui/icons').",
       "files": [
         {
-          "path": "src/components/icons.tsx",
+          "path": "src/icons/types.ts",
           "type": "registry:ui",
-          "target": "components/icons.tsx"
+          "target": "icons/types.ts"
+        },
+        {
+          "path": "src/icons/accessibility.tsx",
+          "type": "registry:ui",
+          "target": "icons/accessibility.tsx"
+        },
+        {
+          "path": "src/icons/add.tsx",
+          "type": "registry:ui",
+          "target": "icons/add.tsx"
+        },
+        {
+          "path": "src/icons/arrow-forward.tsx",
+          "type": "registry:ui",
+          "target": "icons/arrow-forward.tsx"
+        },
+        {
+          "path": "src/icons/close.tsx",
+          "type": "registry:ui",
+          "target": "icons/close.tsx"
+        },
+        {
+          "path": "src/icons/code.tsx",
+          "type": "registry:ui",
+          "target": "icons/code.tsx"
+        },
+        {
+          "path": "src/icons/colors.tsx",
+          "type": "registry:ui",
+          "target": "icons/colors.tsx"
+        },
+        {
+          "path": "src/icons/east.tsx",
+          "type": "registry:ui",
+          "target": "icons/east.tsx"
+        },
+        {
+          "path": "src/icons/expand-more.tsx",
+          "type": "registry:ui",
+          "target": "icons/expand-more.tsx"
+        },
+        {
+          "path": "src/icons/key.tsx",
+          "type": "registry:ui",
+          "target": "icons/key.tsx"
+        },
+        {
+          "path": "src/icons/login.tsx",
+          "type": "registry:ui",
+          "target": "icons/login.tsx"
+        },
+        {
+          "path": "src/icons/mail.tsx",
+          "type": "registry:ui",
+          "target": "icons/mail.tsx"
+        },
+        {
+          "path": "src/icons/more-horiz.tsx",
+          "type": "registry:ui",
+          "target": "icons/more-horiz.tsx"
+        },
+        {
+          "path": "src/icons/open-in-new.tsx",
+          "type": "registry:ui",
+          "target": "icons/open-in-new.tsx"
+        },
+        {
+          "path": "src/icons/package.tsx",
+          "type": "registry:ui",
+          "target": "icons/package.tsx"
+        },
+        {
+          "path": "src/icons/palette.tsx",
+          "type": "registry:ui",
+          "target": "icons/palette.tsx"
+        },
+        {
+          "path": "src/icons/person-add.tsx",
+          "type": "registry:ui",
+          "target": "icons/person-add.tsx"
+        },
+        {
+          "path": "src/icons/search.tsx",
+          "type": "registry:ui",
+          "target": "icons/search.tsx"
+        },
+        {
+          "path": "src/icons/shapes.tsx",
+          "type": "registry:ui",
+          "target": "icons/shapes.tsx"
+        },
+        {
+          "path": "src/icons/widgets.tsx",
+          "type": "registry:ui",
+          "target": "icons/widgets.tsx"
         }
       ]
     },

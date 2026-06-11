@@ -6,10 +6,9 @@
       "@/hooks/*": ["./src/hooks/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/*": ["./src/*"],
-      "@nswds/ui/globals.css": ["./src/styles/globals.css.d.ts"],
       "@nswds/ui/components/*": ["./src/components/*.tsx"],
-      "@nswds/ui/hooks/*": ["./src/hooks/*.ts"],
-      "@nswds/ui/lib/*": ["./src/lib/*.ts"],
+      "@nswds/ui/icons": ["./src/icons/index.ts"],
+      "@nswds/ui/icons/*": ["./src/icons/*.tsx"],
       "@nswds/ui/postcss.config": ["./postcss.config.mjs"],
       "@nswds/ui/*": ["./src/*"]
     }

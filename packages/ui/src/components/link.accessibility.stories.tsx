@@ -15,7 +15,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { userEvent } from 'storybook/test'
 
-import { Icons } from './icons.js'
+import { IconOpenInNew } from '../icons/index.js'
 import { Link } from './link.js'
 import { wcagStoryMeta } from './story-helpers.js'
 
@@ -237,7 +237,7 @@ export const LabelInName: Story = {
           variant="primary"
           className="inline-flex"
         >
-          <Icons.open_in_new data-slot="icon" aria-hidden="true" />
+          <IconOpenInNew data-slot="icon" aria-hidden="true" />
         </Link>
       </section>
     </div>
@@ -289,7 +289,7 @@ export const NameRoleValue: Story = {
         variant="primary"
         className="inline-flex"
       >
-        <Icons.open_in_new data-slot="icon" aria-hidden="true" />
+        <IconOpenInNew data-slot="icon" aria-hidden="true" />
       </Link>
     </div>
   ),

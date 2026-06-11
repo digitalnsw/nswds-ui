@@ -19,9 +19,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 
+import { IconAdd, IconEast } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
 import { Button, buttonVariants } from './button.js'
-import { Icons } from './icons.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -414,7 +414,7 @@ export const Sizes: Story = {
                         : 'w-full justify-center'
                     }
                   >
-                    {size === 'icon' ? <Icons.add data-slot="icon" /> : 'Next'}
+                    {size === 'icon' ? <IconAdd data-slot="icon" /> : 'Next'}
                   </Button>
                 ))}
               </div>
@@ -473,7 +473,7 @@ export const WithIcon: Story = {
                 className="w-full justify-center"
               >
                 Next
-                <Icons.east data-slot="icon" />
+                <IconEast data-slot="icon" />
               </Button>
             ))}
           </div>

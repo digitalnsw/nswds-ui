@@ -12,8 +12,13 @@ import { fn } from 'storybook/test'
 
 import { cn } from '../lib/utils.js'
 
-import { Button } from './button.js'
-import { Icons } from './icons.js'
+import {
+  IconAdd,
+  IconArrowForward,
+  IconExpandMore,
+  IconSearch,
+} from '../icons/index.js'
+import { Button, ButtonLink } from './button.js'
 
 const variants = [
   'solid',
@@ -242,7 +247,7 @@ const meta = {
                   <Button
                     size="icon"
                     aria-label="Add"
-                    leadingVisual={Icons.add}
+                    leadingVisual={IconAdd}
                   />
                 </Cell>
               </div>
@@ -318,15 +323,15 @@ const meta = {
             <Preview>
               <div className="flex flex-wrap items-center gap-8">
                 <Cell label="leadingVisual">
-                  <Button leadingVisual={Icons.add}>Add item</Button>
+                  <Button leadingVisual={IconAdd}>Add item</Button>
                 </Cell>
                 <Cell label="trailingVisual">
-                  <Button trailingVisual={Icons.arrow_forward}>Next</Button>
+                  <Button trailingVisual={IconArrowForward}>Next</Button>
                 </Cell>
                 <Cell label="icon only">
                   <Button
                     aria-label="Search"
-                    leadingVisual={Icons.search}
+                    leadingVisual={IconSearch}
                     size="icon"
                   />
                 </Cell>
@@ -357,35 +362,35 @@ const meta = {
           {/* As a link */}
           <Section
             title="As a link"
-            description="Pass an href and the button renders as an anchor element while keeping its full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
+            description="ButtonLink renders an anchor element with the button's full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
           >
             <Preview className="flex flex-wrap items-center gap-8">
               <Cell label="solid">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="solid"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
               <Cell label="outline">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="outline"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
               <Cell label="link">
-                <Button
+                <ButtonLink
                   href="#"
                   variant="link"
-                  trailingVisual={Icons.arrow_forward}
+                  trailingVisual={IconArrowForward}
                 >
                   View documentation
-                </Button>
+                </ButtonLink>
               </Cell>
             </Preview>
           </Section>
@@ -419,10 +424,10 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        search: Icons.search,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        search: IconSearch,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered before the label.',
       table: { category: 'Content' },
@@ -432,10 +437,10 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        search: Icons.search,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        search: IconSearch,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered after the label.',
       table: { category: 'Content' },
@@ -445,9 +450,9 @@ const meta = {
       options: ['none', 'arrow_forward', 'add', 'chevron_down'],
       mapping: {
         none: undefined,
-        arrow_forward: Icons.arrow_forward,
-        add: Icons.add,
-        chevron_down: Icons.expand_more,
+        arrow_forward: IconArrowForward,
+        add: IconAdd,
+        chevron_down: IconExpandMore,
       },
       description: 'Icon component rendered as a trailing action (far end).',
       table: { category: 'Content' },
@@ -461,11 +466,6 @@ const meta = {
       control: 'number',
       description: 'Optional numeric badge rendered after the label.',
       table: { category: 'Content' },
-    },
-    href: {
-      control: 'text',
-      description: 'When provided, button renders as a link.',
-      table: { category: 'Behavior' },
     },
     disabled: {
       control: 'boolean',

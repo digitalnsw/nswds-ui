@@ -9,13 +9,17 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type * as React from 'react'
 import { useMemo, useState } from 'react'
 
-import { Icons, type IconName } from './icons.js'
+import * as AllIcons from '../icons/index.js'
 import { Input } from './input.js'
 
-const iconEntries = Object.entries(Icons) as Array<
-  [IconName, (typeof Icons)[IconName]]
+// The icons index re-exports one named component per icon (plus the IconProps
+// type, which is erased at runtime), so the runtime namespace is exactly the
+// icon set.
+const iconEntries = Object.entries(AllIcons) as Array<
+  [string, (props: React.SVGProps<SVGSVGElement>) => React.JSX.Element]
 >
 
 const meta = {
@@ -37,7 +41,11 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 function normalise(value: string) {
-  return value.toLowerCase().replace(/^_+/, '').replace(/_/g, ' ')
+  // IconArrowForward -> "arrow forward"
+  return value
+    .replace(/^Icon/, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .toLowerCase()
 }
 
 function IconGallery() {
@@ -55,9 +63,9 @@ function IconGallery() {
         <header className="space-y-3">
           <h1 className="text-4xl font-bold tracking-normal">Icons</h1>
           <p className="text-base text-muted-foreground">
-            The full NSWDS icon set. Reference an icon as{' '}
+            The full NSWDS icon set. Import an icon by name, e.g.{' '}
             <code className="rounded-sm bg-muted px-1.5 py-0.5 text-sm text-foreground">
-              {'<Icons.<name> />'}
+              {"import { IconSearch } from '@nswds/ui/icons'"}
             </code>{' '}
             — every entry inherits <code>currentColor</code>, so colour and size
             come from the surrounding utility classes.

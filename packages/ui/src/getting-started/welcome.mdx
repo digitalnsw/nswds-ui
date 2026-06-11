@@ -2,7 +2,6 @@ import { Meta } from '@storybook/addon-docs/blocks'
 
 import { Logo } from '../components/logo.js'
 import { Button } from '../components/button.js'
-import { Icons } from '../components/icons.js'
 
 <Meta title="Getting Started/Welcome" />
 
@@ -133,6 +132,7 @@ export const Welcome = () => (
             <code>{`npm install @nswds/ui
 
 import { Button } from "@nswds/ui"`}</code>
+import { IconAccessibility, IconCode, IconColors, IconPackage, IconPalette, IconShapes, IconWidgets } from '../icons/index.js'
           </pre>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">
@@ -157,7 +157,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="/?path=/docs/components-button--docs"
           title="Components"
-          icon={Icons.widgets}
+          icon={IconWidgets}
         >
           Buttons, forms, cards, badges and more — each with variants,
           features, and accessibility stories.
@@ -165,7 +165,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="/?path=/docs/components-icons--docs"
           title="Icons"
-          icon={Icons.shapes}
+          icon={IconShapes}
         >
           A full Material-style icon set, tree-shakeable and ready to drop into
           any component.
@@ -173,7 +173,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="/?path=/docs/components-button--docs"
           title="Theming"
-          icon={Icons.palette}
+          icon={IconPalette}
         >
           Switch primary and accent colours from the toolbar. Brand and
           Aboriginal palettes, light and dark, share-by-URL.
@@ -181,7 +181,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="/?path=/docs/components-button--accessibility"
           title="Accessibility"
-          icon={Icons.accessibility}
+          icon={IconAccessibility}
         >
           WCAG 2.1 AA is enforced in CI via axe-core. Behaviour comes from
           Base&nbsp;UI primitives — never hand-rolled.
@@ -189,7 +189,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="/?path=/docs/components-button--features"
           title="Tokens"
-          icon={Icons.colors}
+          icon={IconColors}
         >
           Semantic CSS custom properties layered over the NSW masterbrand
           palette and <code>@nswds/tokens</code>.
@@ -197,7 +197,7 @@ import { Button } from "@nswds/ui"`}</code>
         <Tile
           href="https://github.com/digitalnsw/nswds-ui"
           title="Contribute"
-          icon={Icons.code}
+          icon={IconCode}
         >
           Conventional Commits, automated releases, and a shadcn registry build.
           PRs welcome.
@@ -209,19 +209,19 @@ import { Button } from "@nswds/ui"`}</code>
     <section className="mt-16">
       <h2 className="mb-6 text-2xl font-bold tracking-tight">How it's built</h2>
       <div className="grid gap-8 sm:grid-cols-3">
-        <Principle icon={Icons.accessibility} title="Headless-first">
+        <Principle icon={IconAccessibility} title="Headless-first">
           Interactive components wrap{' '}
           <ResourceLink href="https://base-ui.com/">Base&nbsp;UI</ResourceLink>{' '}
           primitives, which own focus, keyboard, and ARIA. We style on top.
         </Principle>
-        <Principle icon={Icons.palette} title="Token-driven">
+        <Principle icon={IconPalette} title="Token-driven">
           Every visual property is a semantic CSS token. Components reference{' '}
           <code className="rounded bg-muted px-1.5 py-0.5 text-[0.85em]">
             bg-primary
           </code>
           , never raw palette values.
         </Principle>
-        <Principle icon={Icons.package} title="Reusable">
+        <Principle icon={IconPackage} title="Reusable">
           Built on{' '}
           <code className="rounded bg-muted px-1.5 py-0.5 text-[0.85em]">
             @nswds/tokens

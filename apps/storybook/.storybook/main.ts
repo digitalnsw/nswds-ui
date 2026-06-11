@@ -32,11 +32,12 @@ const config: StorybookConfig = {
     const { default: tailwindcss } = await import('@tailwindcss/vite')
     config.plugins = [...(config.plugins ?? []), tailwindcss()]
 
-    // The `@nswds/ui/globals.css` subpath export resolves to the pre-built
-    // `dist/styles.css`, which only contains utilities scanned at the last
-    // `npm run build:css`. For dev/preview we need the SOURCE CSS so the Vite
+    // `@nswds/ui/globals.css` is a workspace-internal specifier that exists
+    // ONLY through this alias (the package's exports map ships compiled CSS
+    // as `./styles.css`). It points at the SOURCE dev entry so the Vite
     // Tailwind plugin can scan packages/ui/src (and apps/**) live and emit
-    // utilities for whatever the stories actually use.
+    // utilities for whatever the stories actually use; the matching tsconfig
+    // path in apps/storybook/tsconfig.json keeps typecheck happy.
     const here = dirname(fileURLToPath(import.meta.url))
     config.resolve = config.resolve ?? {}
     config.resolve.alias = {

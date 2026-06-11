@@ -16,9 +16,9 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { userEvent } from 'storybook/test'
+import { IconClose, IconMoreHoriz } from '../icons/index.js'
 
-import { Badge, BadgeButton } from './badge.js'
-import { Icons } from './icons.js'
+import { Badge, BadgeButton, BadgeLink } from './badge.js'
 import {
   ThemeSurface,
   bodyClasses,
@@ -116,7 +116,7 @@ function TargetSizePanel({
                 size={item.size}
                 aria-label={item.icon ? 'More options' : undefined}
               >
-                {item.icon ? <Icons.more_horiz data-slot="icon" /> : item.label}
+                {item.icon ? <IconMoreHoriz data-slot="icon" /> : item.label}
               </BadgeButton>
 
               {/* Visible bounds */}
@@ -369,10 +369,10 @@ export const LabelInName: Story = {
         </h4>
         <div className="flex flex-wrap gap-3">
           <BadgeButton color="primary" aria-label="More options">
-            <Icons.more_horiz data-slot="icon" />
+            <IconMoreHoriz data-slot="icon" />
           </BadgeButton>
           <BadgeButton color="accent" aria-label="Dismiss notification">
-            <Icons.close data-slot="icon" />
+            <IconClose data-slot="icon" />
           </BadgeButton>
         </div>
       </section>
@@ -450,11 +450,11 @@ export const NameRoleValue: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <BadgeButton color="primary">Activate</BadgeButton>
-      <BadgeButton color="accent" href="#">
+      <BadgeLink color="accent" href="#">
         Go to link
-      </BadgeButton>
+      </BadgeLink>
       <BadgeButton color="grey" aria-label="More options">
-        <Icons.more_horiz data-slot="icon" />
+        <IconMoreHoriz data-slot="icon" />
       </BadgeButton>
       <Badge color="primary">Static badge</Badge>
     </div>
