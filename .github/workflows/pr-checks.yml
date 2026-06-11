@@ -62,6 +62,12 @@ jobs:
       - name: Component drift check
         run: npm run check:drift -w @nswds/ui
 
+      # The generated src/icons/ modules are lint/format-exempt, so this is
+      # their only structural guard: every module exports its expected
+      # PascalCase icon and the index barrel matches the directory exactly.
+      - name: Icon module parity check
+        run: npm run check:icons -w @nswds/ui
+
       # @nswds/ui's `exports` field points subpath imports
       # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
       # package must be built before Storybook can resolve them.
