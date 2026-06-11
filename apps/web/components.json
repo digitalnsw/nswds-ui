@@ -14,7 +14,7 @@
     "components": "@/components",
     "hooks": "@/hooks",
     "lib": "@/lib",
-    "utils": "@nswds/ui/lib/utils",
+    "utils": "@nswds/ui",
     "ui": "@nswds/ui/components"
   },
   "rtl": true,

@@ -30,6 +30,7 @@
     "@vitest/browser-playwright": "^4.1.7",
     "@vitest/coverage-v8": "^4.1.7",
     "@workspace/eslint-config": "*",
+    "@workspace/theme-tools": "*",
     "@workspace/typescript-config": "*",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

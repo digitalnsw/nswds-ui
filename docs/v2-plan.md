@@ -1,5 +1,9 @@
 # @nswds/ui 2.0 plan
 
+> **Status: implemented.** All six items below landed on the `release/v2` branch (one commit
+> per item, each with a `BREAKING CHANGE` footer). Consumer-facing changes are documented in
+> [migrating-to-v2.md](migrating-to-v2.md); this file remains as the design rationale.
+
 Breaking changes batched into a single major so consumers migrate once. Everything here is
 **breaking for npm consumers**; registry consumers are unaffected unless noted (they own their
 copies). Land each item as its own PR on a `release/v2` branch; release with a

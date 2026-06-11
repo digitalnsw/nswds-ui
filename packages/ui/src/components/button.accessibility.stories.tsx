@@ -18,8 +18,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 import { userEvent } from 'storybook/test'
 
+import {
+  IconAdd,
+  IconClose,
+  IconMoreHoriz,
+  IconSearch,
+} from '../icons/index.js'
 import { Button } from './button.js'
-import { Icons } from './icons.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -268,7 +273,7 @@ function TargetSizePanel({
                 size={item.size}
                 aria-label={item.icon ? 'More options' : undefined}
               >
-                {item.icon ? <Icons.more_horiz data-slot="icon" /> : item.label}
+                {item.icon ? <IconMoreHoriz data-slot="icon" /> : item.label}
               </Button>
 
               {/* Visible bounds */}
@@ -485,13 +490,13 @@ export const LabelInName: Story = {
         </h4>
         <div className="flex flex-wrap gap-3">
           <Button size="icon" variant="ghost" aria-label="More options">
-            <Icons.more_horiz data-slot="icon" />
+            <IconMoreHoriz data-slot="icon" />
           </Button>
           <Button size="icon" variant="outline" aria-label="Add item">
-            <Icons.add data-slot="icon" />
+            <IconAdd data-slot="icon" />
           </Button>
           <Button size="icon" variant="solid" aria-label="Search">
-            <Icons.search data-slot="icon" />
+            <IconSearch data-slot="icon" />
           </Button>
         </div>
       </section>
@@ -607,7 +612,7 @@ export const NameRoleValue: Story = {
         Disabled
       </Button>
       <Button size="icon" variant="ghost" aria-label="Close">
-        <Icons.close data-slot="icon" />
+        <IconClose data-slot="icon" />
       </Button>
     </div>
   ),

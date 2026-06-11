@@ -1,4 +1,7 @@
 import '@nswds/ui/globals.css'
+import addonA11y from '@storybook/addon-a11y'
+import addonDocs from '@storybook/addon-docs'
+import { definePreview } from '@storybook/react-vite'
 import {
   DEFAULT_THEME,
   THEME_VAR_NAMES,
@@ -6,10 +9,7 @@ import {
   resolveAccentHue,
   resolvePrimaryHue,
   type ThemeCategory,
-} from '@nswds/ui/lib/theme-palette'
-import addonA11y from '@storybook/addon-a11y'
-import addonDocs from '@storybook/addon-docs'
-import { definePreview } from '@storybook/react-vite'
+} from '@workspace/theme-tools'
 import { initialize, mswLoader } from 'msw-storybook-addon'
 
 import { mswHandlers } from './msw-handlers'

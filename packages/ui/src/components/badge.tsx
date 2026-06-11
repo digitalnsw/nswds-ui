@@ -369,30 +369,21 @@ function Badge({
   )
 }
 
-const BadgeButton = forwardRef(function BadgeButton(
-  {
-    variant,
-    color,
-    size,
+/** Visual/content props shared by `BadgeButton` and `BadgeLink`. */
+type BadgeOwnProps = VariantProps<typeof badgeVariants> & {
+  className?: string
+  children: React.ReactNode
+}
+
+type BadgeButtonProps = BadgeOwnProps & Omit<ButtonPrimitive.Props, 'className'>
+
+type BadgeLinkProps = BadgeOwnProps &
+  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+
+function badgeWrapperClasses({ color, className }: BadgeOwnProps) {
+  return clsx(
     className,
-    children,
-    ...props
-  }: VariantProps<typeof badgeVariants> & {
-    className?: string
-    children: React.ReactNode
-  } & (
-      | Omit<ButtonPrimitive.Props, 'className' | 'render'>
-      | Omit<
-          React.ComponentPropsWithoutRef<typeof Link>,
-          'className' | 'variant'
-        >
-    ),
-  ref: React.ForwardedRef<HTMLElement>
-) {
-  const badgeColor = color ?? undefined
-  const classes = clsx(
-    className,
-    focusOutline[badgeColor as keyof typeof focusOutline],
+    focusOutline[(color ?? undefined) as keyof typeof focusOutline],
     [
       // Base
       'group relative inline-flex rounded-sm',
@@ -402,36 +393,29 @@ const BadgeButton = forwardRef(function BadgeButton(
       'disabled:pointer-events-none disabled:opacity-50',
     ]
   )
+}
 
-  return 'href' in props ? (
-    <Link
-      // Opt out of Link's built-in styling — BadgeButton wraps the inner
-      // Badge with its own focus ring / hit target and doesn't want Link's
-      // underline, halo, or icon defaults composing on top.
-      variant="unstyled"
-      data-variant={variant}
-      {...(props as Omit<
-        React.ComponentPropsWithoutRef<typeof Link>,
-        'className' | 'variant'
-      >)}
-      className={classes}
-      ref={ref as React.ForwardedRef<HTMLAnchorElement>}
-    >
-      <TouchTarget>
-        <Badge variant={variant} color={badgeColor} size={size}>
-          {children}
-        </Badge>
-      </TouchTarget>
-    </Link>
-  ) : (
+/**
+ * Interactive badge on the Base UI button primitive. For badge-styled
+ * navigation, use `BadgeLink` — the `href` polymorphism that previously
+ * lived on this component was removed in v2.
+ */
+const BadgeButton = forwardRef(function BadgeButton(
+  { variant, color, size, className, children, ...props }: BadgeButtonProps,
+  ref: React.ForwardedRef<HTMLButtonElement>
+) {
+  return (
     <ButtonPrimitive
       data-variant={variant}
-      {...(props as Omit<ButtonPrimitive.Props, 'className' | 'render'>)}
-      className={clsx(classes, 'cursor-pointer')}
+      {...props}
+      className={clsx(
+        badgeWrapperClasses({ color, className, children }),
+        'cursor-pointer'
+      )}
       ref={ref}
     >
       <TouchTarget>
-        <Badge variant={variant} color={badgeColor} size={size}>
+        <Badge variant={variant} color={color ?? undefined} size={size}>
           {children}
         </Badge>
       </TouchTarget>
@@ -439,4 +423,30 @@ const BadgeButton = forwardRef(function BadgeButton(
   )
 })
 
-export { Badge, BadgeButton, badgeVariants }
+/** Badge-styled anchor; renders through `Link` (so `LinkProvider` applies). */
+const BadgeLink = forwardRef(function BadgeLink(
+  { variant, color, size, className, children, ...props }: BadgeLinkProps,
+  ref: React.ForwardedRef<HTMLAnchorElement>
+) {
+  return (
+    <Link
+      // Opt out of Link's built-in styling — BadgeLink wraps the inner
+      // Badge with its own focus ring / hit target and doesn't want Link's
+      // underline, halo, or icon defaults composing on top.
+      variant="unstyled"
+      data-variant={variant}
+      {...props}
+      className={badgeWrapperClasses({ color, className, children })}
+      ref={ref}
+    >
+      <TouchTarget>
+        <Badge variant={variant} color={color ?? undefined} size={size}>
+          {children}
+        </Badge>
+      </TouchTarget>
+    </Link>
+  )
+})
+
+export { Badge, BadgeButton, BadgeLink, badgeVariants }
+export type { BadgeButtonProps, BadgeLinkProps }

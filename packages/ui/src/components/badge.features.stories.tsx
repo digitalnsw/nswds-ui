@@ -17,9 +17,9 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { IconEast } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
-import { Badge, BadgeButton, badgeVariants } from './badge.js'
-import { Icons } from './icons.js'
+import { Badge, BadgeButton, BadgeLink, badgeVariants } from './badge.js'
 import {
   ThemeSurface,
   bodyClasses,
@@ -488,10 +488,10 @@ export const BadgeButtonShowcase: Story = {
                   New
                 </BadgeButton>
               ))}
-              <BadgeButton color={color} href="#">
-                <Icons.east data-slot="icon" />
+              <BadgeLink color={color} href="#">
+                <IconEast data-slot="icon" />
                 Link badge
-              </BadgeButton>
+              </BadgeLink>
             </div>
           </div>
         </ThemeSurface>

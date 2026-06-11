@@ -1,14 +1,3 @@
-// Relative import: Storybook's manager bundle uses esbuild and doesn't read
-// tsconfig paths the way the preview Vite build does, so `@nswds/ui/lib/...`
-// can't be used here without the package being built first.
-import React from 'react'
-import { Select } from 'storybook/internal/components'
-import {
-  addons,
-  types,
-  useGlobals,
-  useStorybookState,
-} from 'storybook/manager-api'
 import {
   DEFAULT_THEME,
   getAccentSwatch,
@@ -18,7 +7,15 @@ import {
   resolveAccentHue,
   resolvePrimaryHue,
   type ThemeCategory,
-} from '../../../packages/ui/src/lib/theme-palette'
+} from '@workspace/theme-tools'
+import React from 'react'
+import { Select } from 'storybook/internal/components'
+import {
+  addons,
+  types,
+  useGlobals,
+  useStorybookState,
+} from 'storybook/manager-api'
 
 // Auto-loaded by Storybook's manager bundle (no entry needed in main.ts).
 // Registers a "Theme" panel tab alongside Controls/Actions/A11y so the

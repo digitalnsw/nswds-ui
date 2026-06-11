@@ -19,7 +19,7 @@
     },
     {
       "path": "src/lib/utils.ts",
-      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n\nexport function truncate(text: string, maxLength: number): string {\n  if (text.length <= maxLength) {\n    return text\n  }\n  return text.slice(0, maxLength) + '...'\n}\n\nexport function kebabCase(str: string) {\n  return str\n    .replace(/([a-z])([A-Z])/g, '$1-$2')\n    .replace(/[\\s_]+/g, '-')\n    .toLowerCase()\n}\n\nexport function camelCase(str: string) {\n  return str\n    .toLowerCase()\n    .replace(/[^a-zA-Z0-9]+(.)/g, (_, chr) => chr.toUpperCase())\n}\n\nexport function humaniseVariant(key: string): string {\n  return key\n    .replace(/([a-z])([A-Z0-9])/g, '$1 $2')\n    .replace(/([0-9])([A-Za-z])/g, '$1 $2')\n    .replace(/_/g, ' ')\n    .replace(/\\bFull\\s?Width\\b/gi, 'full width')\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .replace(/^./, (s) => s.toUpperCase())\n}\n",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
       "type": "registry:lib",
       "target": "lib/utils.ts"
     }

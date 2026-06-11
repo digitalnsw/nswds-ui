@@ -18,10 +18,10 @@ import {
   FieldLegend,
   FieldSet,
 } from '../components/field.js'
-import { Icons } from '../components/icons.js'
 import { Input } from '../components/input.js'
 import { LabeledSeparator } from '../components/labeled-separator.js'
 import { Link } from '../components/link.js'
+import { IconLogin, IconPersonAdd } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -71,7 +71,7 @@ export function SignUpForm({
                   with a single click — no separate password required.
                 </FieldDescription>
                 <Button type="button">
-                  <Icons.login />
+                  <IconLogin />
                   Create account with Microsoft Entra ID
                 </Button>
               </Field>
@@ -134,7 +134,7 @@ export function SignUpForm({
               </FieldSet>
               <Field>
                 <Button type="submit">
-                  <Icons.person_add />
+                  <IconPersonAdd />
                   Create account
                 </Button>
                 <FieldDescription className="text-center">
