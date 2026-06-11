@@ -38,3 +38,7 @@ function LabeledSeparator({
 }
 
 export { LabeledSeparator }
+
+export type LabeledSeparatorProps = React.ComponentProps<
+  typeof LabeledSeparator
+>

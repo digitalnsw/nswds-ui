@@ -8,7 +8,9 @@
       "type": "registry:theme",
       "title": "NSWDS Theme",
       "description": "NSW Government semantic design tokens — maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
-      "dependencies": ["@nswds/tokens"],
+      "dependencies": [
+        "@nswds/tokens"
+      ],
       "docs": "Add the @nswds/tokens layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/global/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/semantic/oklch.css\";\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
       "cssVars": {
         "theme": {
@@ -47,7 +49,16 @@
           "sidebar-accent": "var(--grey-100)",
           "sidebar-accent-foreground": "var(--grey-800)",
           "sidebar-border": "var(--grey-250)",
-          "sidebar-ring": "var(--grey-450)"
+          "sidebar-ring": "var(--grey-450)",
+          "input-border": "var(--grey-600)",
+          "input-foreground": "var(--grey-800)",
+          "input-placeholder": "var(--grey-500)",
+          "input-surface": "var(--background)",
+          "input-surface-hover": "var(--grey-100)",
+          "input-ring": "var(--grey-600)",
+          "input-invalid-border": "var(--danger-600)",
+          "input-invalid-surface-hover": "var(--danger-50)",
+          "input-invalid-ring": "var(--danger-600)"
         },
         "dark": {
           "background": "var(--grey-950)",
@@ -80,7 +91,16 @@
           "sidebar-accent": "var(--grey-800)",
           "sidebar-accent-foreground": "var(--grey-50)",
           "sidebar-border": "var(--grey-800)",
-          "sidebar-ring": "var(--grey-550)"
+          "sidebar-ring": "var(--grey-550)",
+          "input-border": "var(--grey-100)",
+          "input-foreground": "var(--grey-100)",
+          "input-placeholder": "var(--grey-300)",
+          "input-surface": "color-mix(in oklab, var(--input) 30%, transparent)",
+          "input-surface-hover": "color-mix(in oklab, var(--input) 50%, transparent)",
+          "input-invalid-border": "var(--danger-200)",
+          "input-invalid-surface-hover": "color-mix(in oklab, var(--danger-900) 30%, transparent)",
+          "input-invalid-ring": "var(--danger-200)",
+          "input-ring": "var(--grey-100)"
         }
       }
     },
@@ -147,7 +167,10 @@
       "type": "registry:ui",
       "title": "Card",
       "description": "A content container with header, content, footer, action, and description slots.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -169,7 +192,10 @@
       "type": "registry:ui",
       "title": "Description List",
       "description": "A responsive description list primitive for term and detail pairs.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -191,7 +217,11 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
-      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
         "https://ui.digital.nsw.gov.au/registry/r/label.json",
@@ -215,7 +245,11 @@
       "type": "registry:ui",
       "title": "Input",
       "description": "A text input built on the Base UI input primitive with NSW form styling.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "dependencies": [
+        "@base-ui/react",
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -237,7 +271,10 @@
       "type": "registry:ui",
       "title": "Label",
       "description": "A form label with disabled-state styling.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -259,7 +296,10 @@
       "type": "registry:ui",
       "title": "Labeled Separator",
       "description": "A horizontal divider broken by a centred label, such as an \"or\" rule between sign-in methods.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
         "https://ui.digital.nsw.gov.au/registry/r/separator.json"
@@ -282,7 +322,11 @@
       "type": "registry:ui",
       "title": "Separator",
       "description": "A semantic or decorative divider built on the Base UI separator primitive.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "dependencies": [
+        "@base-ui/react",
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -412,7 +456,11 @@
       "type": "registry:ui",
       "title": "Link",
       "description": "A link primitive with a provider for app router link components.",
-      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -434,7 +482,9 @@
       "type": "registry:ui",
       "title": "Logo",
       "description": "NSW Government logo component.",
-      "dependencies": ["clsx"],
+      "dependencies": [
+        "clsx"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -451,7 +501,10 @@
       "type": "registry:ui",
       "title": "Spinner",
       "description": "An inline loading spinner with semantic colour and size variants.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
@@ -468,5 +521,8 @@
         }
       ]
     }
-  ]
+  ],
+  "meta": {
+    "nswdsVersion": "2.0.0"
+  }
 }

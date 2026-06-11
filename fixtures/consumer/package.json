@@ -1,0 +1,22 @@
+{
+  "name": "nswds-consumer-fixture",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Minimal consumer app for verifying the packed @nswds/ui tarball: install, typecheck, build, tree-shaking. Run via scripts/test-consumer-fixture.sh.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@nswds/tokens": "^3.4.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.14"
+  }
+}

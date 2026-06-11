@@ -14,8 +14,9 @@ const styles = {
   base: [
     // Base
     'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all',
-    // Focus
-    'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
+    // Focus — focus-visible only (keyboard/AT), matching Link. Pointer
+    // clicks don't paint the ring; this is the design system's policy.
+    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg)',
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
     // Icon
@@ -300,6 +301,12 @@ type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
   labelWrap?: boolean
   /** Optional numeric badge rendered after the label. */
   count?: number
+  /**
+   * Visually-hidden suffix announced after `count`, giving the bare number
+   * context for screen readers (e.g. "unread messages" → "Inbox 3 unread
+   * messages").
+   */
+  countLabel?: string
 }
 
 type ButtonProps = ButtonOwnProps &
@@ -336,6 +343,7 @@ function ButtonContent({
   trailingAction: TrailingAction,
   labelWrap,
   count,
+  countLabel,
   children,
 }: Pick<
   ButtonOwnProps,
@@ -345,6 +353,7 @@ function ButtonContent({
   | 'trailingAction'
   | 'labelWrap'
   | 'count'
+  | 'countLabel'
   | 'children'
 >) {
   return (
@@ -373,6 +382,7 @@ function ButtonContent({
       {count !== undefined && (
         <span className="rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums opacity-75">
           {count}
+          {countLabel ? <span className="sr-only"> {countLabel}</span> : null}
         </span>
       )}
       {TrailingVisual && <TrailingVisual data-slot="icon" />}
@@ -405,11 +415,21 @@ const Button = forwardRef(function Button(
     trailingAction,
     labelWrap,
     count,
+    countLabel,
     ...props
   }: ButtonProps,
   ref: React.ForwardedRef<HTMLButtonElement>
 ) {
   const effectiveDisabled = disabled || loading
+
+  if (process.env.NODE_ENV !== 'production') {
+    const rest = props as Record<string, unknown>
+    if (size === 'icon' && !rest['aria-label'] && !rest['aria-labelledby']) {
+      console.warn(
+        '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
+      )
+    }
+  }
 
   return (
     <ButtonPrimitive
@@ -435,6 +455,7 @@ const Button = forwardRef(function Button(
         trailingAction={trailingAction}
         labelWrap={labelWrap}
         count={count}
+        countLabel={countLabel}
       >
         {children}
       </ButtonContent>
@@ -465,11 +486,21 @@ const ButtonLink = forwardRef(function ButtonLink(
     trailingAction,
     labelWrap,
     count,
+    countLabel,
     ...props
   }: ButtonLinkProps,
   ref: React.ForwardedRef<HTMLAnchorElement>
 ) {
   const effectiveDisabled = disabled || loading
+
+  if (process.env.NODE_ENV !== 'production') {
+    const rest = props as Record<string, unknown>
+    if (size === 'icon' && !rest['aria-label'] && !rest['aria-labelledby']) {
+      console.warn(
+        '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
+      )
+    }
+  }
 
   return (
     <Link
@@ -507,6 +538,7 @@ const ButtonLink = forwardRef(function ButtonLink(
         trailingAction={trailingAction}
         labelWrap={labelWrap}
         count={count}
+        countLabel={countLabel}
       >
         {children}
       </ButtonContent>
