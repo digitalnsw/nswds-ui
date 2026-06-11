@@ -148,7 +148,7 @@ npm install @nswds/ui @nswds/tokens
 ```
 
 ```tsx
-import '@nswds/ui/globals.css' // ships the full token foundation + component styles
+import '@nswds/ui/styles.css' // ships the full token foundation + component styles
 import { Button } from '@nswds/ui'
 ```
 

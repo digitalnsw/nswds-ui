@@ -90,19 +90,11 @@
       "types": "./src/styles/globals.css.d.ts",
       "default": "./dist/styles.css"
     },
-    "./globals.css": {
-      "types": "./src/styles/globals.css.d.ts",
-      "import": "./dist/styles.css",
-      "default": "./dist/styles.css"
-    },
     "./postcss.config": "./postcss.config.mjs",
     "./components/*": {
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"
     },
-    "./lib/*": {
-      "types": "./dist/lib/*.d.ts",
-      "import": "./dist/lib/*.js"
-    }
+    "./package.json": "./package.json"
   }
 }
