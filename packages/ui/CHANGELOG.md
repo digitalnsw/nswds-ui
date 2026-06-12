@@ -1,3 +1,9 @@
+## [2.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.1.0...@nswds/ui-v2.1.1) (2026-06-12)
+
+### Bug Fixes
+
+* **release:** disable npm provenance — unsupported for private repos ([#18](https://github.com/digitalnsw/nswds-ui/issues/18)) ([37e06e0](https://github.com/digitalnsw/nswds-ui/commit/37e06e0974b8cbc059eeaaf05d47dc7c0e06ce42)), closes [#3](https://github.com/digitalnsw/nswds-ui/issues/3)
+
 ## [2.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.0.0...@nswds/ui-v2.1.0) (2026-06-11)
 
 ### Features
