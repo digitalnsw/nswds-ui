@@ -1,6 +1,7 @@
 {
   "name": "design",
   "version": "0.0.0",
+  "description": "UI components for NSW Government digital products, providing reusable design elements and patterns for consistent user interfaces.",
   "private": true,
   "workspaces": [
     "apps/*",

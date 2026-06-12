@@ -53,6 +53,12 @@ const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 const forcedFocusClasses =
   'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
+// Matrix cells stretch buttons so columns read uniformly — except the link
+// variant, which hugs its label (its hover halo wraps the text like an
+// inline Link), so it centres at its natural width instead.
+const cellClasses = (variant: (typeof variants)[number]) =>
+  variant === 'link' ? 'justify-self-center' : 'w-full justify-center'
+
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
@@ -159,7 +165,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
                 key={`${color}-${variant}`}
                 variant={variant}
                 color={color}
-                className="w-full justify-center"
+                className={cellClasses(variant)}
               >
                 Next
               </Button>
@@ -254,7 +260,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                     key={`variant-standard-${variant}-${color}`}
                     variant={variant}
                     color={color}
-                    className="w-full justify-center"
+                    className={cellClasses(variant)}
                   >
                     Next
                   </Button>
@@ -305,7 +311,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                       key={`variant-low-${variant}-${color}`}
                       variant={variant}
                       color={color}
-                      className="w-full justify-center"
+                      className={cellClasses(variant)}
                     >
                       Next
                     </Button>
@@ -411,7 +417,7 @@ export const Sizes: Story = {
                     className={
                       size === 'icon'
                         ? 'justify-self-center'
-                        : 'w-full justify-center'
+                        : cellClasses(variant)
                     }
                   >
                     {size === 'icon' ? <IconAdd data-slot="icon" /> : 'Next'}
@@ -470,7 +476,7 @@ export const WithIcon: Story = {
                 key={`icon-${color}-${variant}`}
                 variant={variant}
                 color={color}
-                className="w-full justify-center"
+                className={cellClasses(variant)}
               >
                 Next
                 <IconEast data-slot="icon" />
@@ -515,8 +521,16 @@ export const InteractionStates: Story = {
         .force-state-grid [data-active]::after { background-color: var(--btn-active-overlay); }
         .force-state-grid [data-hover][data-variant="surface"],
         .force-state-grid [data-active][data-variant="surface"] { border-color: var(--btn-bg); }
-        .force-state-grid [data-hover][data-variant="link"],
-        .force-state-grid [data-active][data-variant="link"] { text-decoration: underline; text-underline-offset: 4px; }
+        .force-state-grid [data-hover][data-variant="link"]::after { background-color: var(--link-halo); }
+        .force-state-grid [data-active][data-variant="link"]::after { background-color: var(--link-halo-active); }
+        .force-state-grid [data-hover][data-variant="link"] {
+          box-shadow: 0 -2px 0 var(--link-halo), 0 4px 0 var(--link-halo);
+          text-decoration-thickness: 2px;
+        }
+        .force-state-grid [data-active][data-variant="link"] {
+          box-shadow: 0 -2px 0 var(--link-halo-active), 0 4px 0 var(--link-halo-active);
+          text-decoration-thickness: 2px;
+        }
       `}</style>
 
       <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
@@ -544,7 +558,7 @@ export const InteractionStates: Story = {
                   key={`default-${color}-${variant}`}
                   variant={variant}
                   color={color}
-                  className="w-full justify-center"
+                  className={cellClasses(variant)}
                 >
                   Next
                 </Button>
@@ -561,7 +575,7 @@ export const InteractionStates: Story = {
                   data-hover=""
                   className={cn(
                     buttonVariants({ variant, color }),
-                    'w-full justify-center'
+                    cellClasses(variant)
                   )}
                 >
                   Next
@@ -579,7 +593,7 @@ export const InteractionStates: Story = {
                   data-active=""
                   className={cn(
                     buttonVariants({ variant, color }),
-                    'w-full justify-center'
+                    cellClasses(variant)
                   )}
                 >
                   Next
@@ -597,7 +611,7 @@ export const InteractionStates: Story = {
                   className={cn(
                     buttonVariants({ variant, color }),
                     forcedFocusClasses,
-                    'w-full justify-center'
+                    cellClasses(variant)
                   )}
                 >
                   Next
@@ -656,7 +670,7 @@ export const States: Story = {
                 variant={variant}
                 color={color}
                 disabled
-                className="w-full justify-center"
+                className={cellClasses(variant)}
               >
                 Next
               </Button>
@@ -714,7 +728,7 @@ export const Focused: Story = {
                 className={cn(
                   buttonVariants({ variant, color }),
                   forcedFocusClasses,
-                  'w-full justify-center'
+                  cellClasses(variant)
                 )}
               >
                 Next
