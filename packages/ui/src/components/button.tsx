@@ -152,7 +152,7 @@ const styles = {
     'after:absolute after:inset-0 after:-z-10',
     'hover:after:bg-(--link-halo) active:after:bg-(--link-halo-active)',
     'hover:shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]',
-    'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]'
+    'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
   ],
   colors: {
     grey: [
@@ -289,12 +289,12 @@ const buttonVariants = cva(styles.base, {
     {
       variant: 'link',
       className: [
-        'p-0 sm:p-0 border-0 rounded-none',
+        'rounded-none border-0 p-0 sm:p-0',
         // Hug the label even in stretching grid/flex contexts so the hover
         // halo wraps the text like an inline Link, not the allocated box.
         // `block` still wins — its w-full is applied after this in cn().
         'w-fit',
-        'font-medium text-[length:inherit]',
+        'text-[length:inherit] font-medium',
         '*:data-[slot=icon]:size-[1em]',
       ],
     },
