@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/%40nswds%2Fui)](https://www.npmjs.com/package/@nswds/ui)
 [![PR Checks](https://github.com/digitalnsw/nswds-ui/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/digitalnsw/nswds-ui/actions/workflows/pr-checks.yml)
+[![Release](https://github.com/digitalnsw/nswds-ui/actions/workflows/release.yml/badge.svg)](https://github.com/digitalnsw/nswds-ui/actions/workflows/release.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A reusable design system for NSW Government digital products — the published `@nswds/ui` package
