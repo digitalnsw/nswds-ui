@@ -1,6 +1,7 @@
 # Copilot Cloud Agent Onboarding
 
 ## Repository overview
+
 - Monorepo managed with **npm workspaces** + **Turborepo**.
 - Main package: `packages/ui` (`@nswds/ui`) — published component library.
 - Supporting apps:
@@ -9,11 +10,13 @@
   - `apps/web` as a Next.js consumer app.
 
 ## Environment and setup
+
 - Required toolchain (from root `package.json`): **Node >=20**, **npm >=11.5.1**.
 - Install dependencies from repo root:
   - `npm ci`
 
 ## High-signal commands
+
 - Workspace-wide:
   - `npm run lint`
   - `npm run typecheck`
@@ -27,7 +30,9 @@
   - `npm run test -w @workspace/storybook`
 
 ## CI expectations to preserve
+
 The PR workflow (`.github/workflows/pr-checks.yml`) enforces:
+
 - lint + typecheck + Prettier check
 - component drift check (`check:drift`)
 - icon module parity check (`check:icons`)
@@ -37,10 +42,12 @@ The PR workflow (`.github/workflows/pr-checks.yml`) enforces:
 - Storybook interaction + axe accessibility tests
 
 When changing components or registry-linked files, expect to run both:
+
 - `npm run registry:build -w @nswds/ui`
 - then commit changes in `apps/registry/public/r/`
 
 ## Important repo conventions
+
 - Formatting comes from shared Prettier config (`@workspace/prettier-config`):
   - `semi: false`
   - `singleQuote: true`
@@ -50,6 +57,7 @@ When changing components or registry-linked files, expect to run both:
 - `packages/ui/src` enforces **relative internal imports** (no `@/*` or `@nswds/ui/*` self-imports in source).
 
 ## Branch and commit conventions
+
 - Branch names are validated by regex in `scripts/branch-name-config.sh`.
   - Pattern supports: `{type}[/issue/{id}|/ticket/{id}]/{short-description}`
   - Allowed types include: `feature|bugfix|hotfix|release|docs|build|test|refactor|style|chore`
@@ -57,6 +65,7 @@ When changing components or registry-linked files, expect to run both:
   - `feat, fix, refactor, perf, style, test, build, ops, docs, chore, merge, revert`
 
 ## Errors encountered during onboarding (and workarounds)
+
 1. README references `AGENTS.md`, but that file is not present at repository root.
    - Workaround: derive contributor/validation workflow from `README.md`, workspace `package.json` scripts, and `.github/workflows/pr-checks.yml`.
 2. Initial Storybook test run failed because Playwright Chromium binary was missing:
@@ -66,6 +75,7 @@ When changing components or registry-linked files, expect to run both:
      - Re-run: `npm run test -w @workspace/storybook` (passed)
 
 ## Suggested agent workflow for changes
+
 1. Start at repo root and run `npm ci`.
 2. Make targeted changes in the relevant workspace.
 3. Run at least `npm run lint`, `npm run typecheck`, and affected package checks.
