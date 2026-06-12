@@ -79,8 +79,10 @@ jobs:
               echo "✔ npm has @nswds/ui@${expected}"
               exit 0
             fi
-            echo "Attempt ${attempt}/6: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in 20s…"
-            sleep 20
+            if [ "$attempt" -lt 6 ]; then
+              echo "Attempt ${attempt}/6: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in 20s…"
+              sleep 20
+            fi
           done
           echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} never appeared on npm — the publish failed or was skipped. Check the Release step log; consumers are still receiving the previous version."
           exit 1

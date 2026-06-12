@@ -44,7 +44,9 @@ jobs:
               registry_version="$fetched"
               break
             fi
-            sleep 10
+            if [ "$attempt" -lt 3 ]; then
+              sleep 10
+            fi
           done
 
           echo "git tag:  ${tag_version}"
