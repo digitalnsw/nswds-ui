@@ -44,11 +44,15 @@ module.exports = {
       },
     ],
     [
-      // The npm plugin bumps packages/ui/package.json; regenerate the root
-      // lockfile so the workspace version stays in sync (npm ci fails otherwise).
+      // The npm plugin bumps packages/ui/package.json; regenerate (1) the root
+      // lockfile so the workspace version stays in sync (npm ci fails
+      // otherwise) and (2) the registry JSON, whose items are stamped with
+      // meta.nswdsVersion from package.json — without rebuilding here, every
+      // PR branched after a release fails the registry freshness check on the
+      // version line.
       '@semantic-release/exec',
       {
-        prepareCmd: 'npm install --package-lock-only',
+        prepareCmd: 'npm install --package-lock-only && npm run registry:build',
       },
     ],
     '@semantic-release/github',
@@ -59,6 +63,7 @@ module.exports = {
           `${pkgRoot}/CHANGELOG.md`,
           `${pkgRoot}/package.json`,
           'package-lock.json',
+          'apps/registry/public/r/**',
         ],
         message:
           'chore(release): @nswds/ui ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',

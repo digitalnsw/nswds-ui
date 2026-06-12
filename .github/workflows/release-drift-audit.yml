@@ -1,0 +1,103 @@
+name: Release drift audit
+
+# Weekly consistency check across the three places a release must agree:
+#   latest @nswds/ui-v* git tag  ↔  npm `latest`  ↔  deployed registry version
+#
+# Catches stranded releases even when the failing run itself is lost to
+# history (semantic-release pushes tags BEFORE publishing, so a failed npm
+# publish leaves tags with no package — v1.8.0–v2.1.0 sat in that state for
+# a week before a consumer noticed). Also acts as the npm ↔ shadcn-registry
+# channel-coordination check.
+
+on:
+  schedule:
+    # Mondays 21:00 UTC ≈ Tuesday 08:00 AEST
+    - cron: '0 21 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    name: Tag vs npm vs registry
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (tags only)
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Compare release channels
+        run: |
+          tag_version="$(git tag --list '@nswds/ui-v*' --sort=-v:refname | head -n 1)"
+          tag_version="${tag_version#@nswds/ui-v}"
+
+          npm_version="$(npm view @nswds/ui version 2>/dev/null || echo 'UNREACHABLE')"
+
+          registry_version="UNREACHABLE"
+          for attempt in 1 2 3; do
+            fetched="$(curl -sf --max-time 20 https://ui.digital.nsw.gov.au/registry/r/version.json | jq -r '.version' 2>/dev/null || true)"
+            if [ -n "$fetched" ]; then
+              registry_version="$fetched"
+              break
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep 10
+            fi
+          done
+
+          echo "git tag:  ${tag_version}"
+          echo "npm:      ${npm_version}"
+          echo "registry: ${registry_version}"
+
+          problems=""
+          if [ "$npm_version" != "$tag_version" ]; then
+            problems="${problems}npm latest (${npm_version}) does not match the latest git tag (${tag_version}). "
+          fi
+          if [ "$registry_version" != "$tag_version" ]; then
+            problems="${problems}Deployed registry version (${registry_version}) does not match the latest git tag (${tag_version}). "
+          fi
+
+          if [ -n "$problems" ]; then
+            echo "::error::Release channel drift: ${problems}A release likely failed after tagging — check the Release workflow runs."
+            exit 1
+          fi
+          echo "✔ All three release channels agree on ${tag_version}"
+
+  alert-on-failure:
+    name: File release-failure issue
+    needs: audit
+    if: failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Create or update the release-failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create release-failure \
+            --repo "$GITHUB_REPOSITORY" \
+            --color B60205 \
+            --description "Automated: a Release workflow run failed" \
+            --force
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          body="The weekly release drift audit found the release channels out of sync (git tag ↔ npm ↔ deployed registry).
+
+          - Run: ${run_url}
+          - Compare \`git tag --list '@nswds/ui-v*'\`, \`npm view @nswds/ui version\`, and https://ui.digital.nsw.gov.au/registry/r/version.json
+
+          _Filed automatically by release-drift-audit.yml._"
+          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            echo "Commented on existing issue #$existing"
+          else
+            gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Release drift: git tags, npm, and registry disagree" \
+              --label release-failure \
+              --body "$body"
+          fi
