@@ -3,6 +3,11 @@ name: Release
 on:
   push:
     branches: [main]
+  # Manual escape hatch: a push to main can be silently skipped if the HEAD
+  # commit message contains a skip-ci directive anywhere — including QUOTED IN
+  # PROSE in a squashed commit body, which is exactly how the v2.1.1 release
+  # failed to trigger. This lets a stranded release be run by hand.
+  workflow_dispatch:
 
 permissions:
   id-token: write
