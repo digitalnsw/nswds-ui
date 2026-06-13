@@ -1,7 +1,7 @@
 {
   "name": "@nswds/ui",
   "version": "2.1.1",
-  "description": "Reusable design system components for NSW Government digital products — Base UI primitives styled with NSW design tokens.",
+  "description": "UI components for NSW Government digital products, providing reusable design elements and patterns for consistent user interfaces.",
   "license": "MIT",
   "homepage": "https://github.com/digitalnsw/nswds-ui#readme",
   "repository": {
