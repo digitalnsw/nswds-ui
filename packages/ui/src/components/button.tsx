@@ -14,9 +14,10 @@ const styles = {
   base: [
     // Base
     'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all',
-    // Focus — focus-visible only (keyboard/AT), matching Link. Pointer
-    // clicks don't paint the ring; this is the design system's policy.
-    'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg)',
+    // Focus — deliberately `focus:` (paints on pointer clicks too), unlike
+    // Link/Input which use `focus-visible:`. Buttons give click feedback with
+    // the ring; links only ring for keyboard/AT focus. Do not "unify" this.
+    'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
     // Icon
@@ -141,9 +142,19 @@ const styles = {
   link: [
     // Text color — inherits from color token, no background or border
     'text-(--btn-bg) border-transparent bg-transparent',
-    // Underline on interaction
-    'underline-offset-4 hover:underline active:underline',
-    // No pseudo-layers needed
+    // Halo tokens derive from the colour token via color-mix, mirroring Link
+    '[--link-halo:color-mix(in_oklch,var(--btn-bg)_10%,transparent)]',
+    '[--link-halo-active:color-mix(in_oklch,var(--btn-bg)_18%,transparent)]',
+    // Resting underline, thickened on interaction — matching Link
+    'underline underline-offset-4 hover:decoration-2 active:decoration-2',
+    // Hover / active halos match the GOV.UK-style halo on Link (see link.tsx
+    // styledBase): the fill is painted on the `after` layer — consistent with
+    // the other variants' hover overlays — and the box-shadow extends it 2px
+    // above and 4px below the line box
+    'after:absolute after:inset-0 after:-z-10',
+    'hover:after:bg-(--link-halo) active:after:bg-(--link-halo-active)',
+    'hover:shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]',
+    'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
   ],
   colors: {
     grey: [
@@ -272,6 +283,24 @@ const buttonVariants = cva(styles.base, {
       icon: styles.size.icon,
     },
   },
+  compoundVariants: [
+    // The link variant reads as an inline Link despite the <button> tag:
+    // strip the button chrome (padding from `size`, border, radius, bold
+    // weight) and adopt Link's typography and 1em icon sizing so the hover
+    // halo hugs the text instead of filling a button-shaped box.
+    {
+      variant: 'link',
+      className: [
+        'rounded-none border-0 p-0 sm:p-0',
+        // Hug the label even in stretching grid/flex contexts so the hover
+        // halo wraps the text like an inline Link, not the allocated box.
+        // `block` still wins — its w-full is applied after this in cn().
+        'w-fit',
+        'text-[length:inherit] font-medium',
+        '*:data-[slot=icon]:size-[1em]',
+      ],
+    },
+  ],
   defaultVariants: {
     variant: 'solid',
     color: 'primary',
