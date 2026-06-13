@@ -1,3 +1,9 @@
+## [2.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.1.1...@nswds/ui-v2.2.0) (2026-06-13)
+
+### Features
+
+* **ui:** improve button styling and update documentation ([#22](https://github.com/digitalnsw/nswds-ui/issues/22)) ([51791e9](https://github.com/digitalnsw/nswds-ui/commit/51791e9cf0ea33afd0ac4a950a1a5df13d562061))
+
 ## [2.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.1.0...@nswds/ui-v2.1.1) (2026-06-12)
 
 ### Bug Fixes
