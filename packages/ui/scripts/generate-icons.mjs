@@ -66,8 +66,12 @@ export type IconProps = SVGProps<SVGSVGElement>
 `
 }
 
-function indexContent() {
-  const lines = iconFiles().map((file) => `export * from './${file}.js'`)
+// `files` defaults to a fresh directory read for the writers (which have just
+// mutated src/icons/); check() passes its own snapshot so the canonical barrel
+// is built from the same file list its parity checks use — one readdir, no
+// chance of the two reasoning about different snapshots.
+function indexContent(files = iconFiles()) {
+  const lines = files.map((file) => `export * from './${file}.js'`)
   return `${BANNER}export type { IconProps } from './types.js'
 ${lines.join('\n')}
 `
@@ -199,7 +203,7 @@ function check() {
   // index.ts or a relocated IconProps export — the silent "Sort Lines" drift.
   // This byte comparison is what catches export order, IconProps placement,
   // banner, and trailing-newline drift.
-  if (index !== indexContent()) {
+  if (index !== indexContent(files)) {
     problems.push(
       'src/icons/index.ts is not in canonical generated form (export order, IconProps placement, or banner drift)'
     )
