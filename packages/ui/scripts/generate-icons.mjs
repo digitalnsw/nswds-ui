@@ -56,25 +56,35 @@ function iconFiles() {
     .sort()
 }
 
-function writeTypes() {
-  writeFileSync(
-    join(outDir, 'types.ts'),
-    `${BANNER}import type { SVGProps } from 'react'
+// Canonical generated content for types.ts / index.ts. These are the single
+// source of truth shared by the writers (regenerate/index) and check(), so the
+// exact-match check can never drift from what the generator actually produces.
+function typesContent() {
+  return `${BANNER}import type { SVGProps } from 'react'
 
 export type IconProps = SVGProps<SVGSVGElement>
 `
-  )
+}
+
+// `files` defaults to a fresh directory read for the writers (which have just
+// mutated src/icons/); check() passes its own snapshot so the canonical barrel
+// is built from the same file list its parity checks use — one readdir, no
+// chance of the two reasoning about different snapshots.
+function indexContent(files = iconFiles()) {
+  const lines = files.map((file) => `export * from './${file}.js'`)
+  return `${BANNER}export type { IconProps } from './types.js'
+${lines.join('\n')}
+`
+}
+
+function writeTypes() {
+  writeFileSync(join(outDir, 'types.ts'), typesContent())
 }
 
 function writeIndex() {
-  const lines = iconFiles().map((file) => `export * from './${file}.js'`)
-  writeFileSync(
-    join(outDir, 'index.ts'),
-    `${BANNER}export type { IconProps } from './types.js'
-${lines.join('\n')}
-`
-  )
-  return lines.length
+  const content = indexContent()
+  writeFileSync(join(outDir, 'index.ts'), content)
+  return content.match(/^export \* from /gm)?.length ?? 0
 }
 
 function writeIconModule(key, body) {
@@ -171,17 +181,33 @@ ${pathLines}
   console.log(`✔ Wrote ${outDir}/${fileBase(key)}.tsx (${exportName(key)})`)
 }
 
+function readOrEmpty(name) {
+  const path = join(outDir, name)
+  return existsSync(path) ? readFileSync(path, 'utf8') : ''
+}
+
 function check() {
   const problems = []
 
   if (!existsSync(join(outDir, 'types.ts'))) {
     problems.push('missing src/icons/types.ts')
+  } else if (readOrEmpty('types.ts') !== typesContent()) {
+    problems.push('src/icons/types.ts drifted from generated form')
   }
 
   const files = iconFiles()
-  const index = existsSync(join(outDir, 'index.ts'))
-    ? readFileSync(join(outDir, 'index.ts'), 'utf8')
-    : ''
+  const index = readOrEmpty('index.ts')
+
+  // Exact-match against the canonical barrel. The parity checks below are
+  // order-INDEPENDENT (Set membership), so on their own they miss a reordered
+  // index.ts or a relocated IconProps export — the silent "Sort Lines" drift.
+  // This byte comparison is what catches export order, IconProps placement,
+  // banner, and trailing-newline drift.
+  if (index !== indexContent(files)) {
+    problems.push(
+      'src/icons/index.ts is not in canonical generated form (export order, IconProps placement, or banner drift)'
+    )
+  }
 
   const indexed = new Set(
     [...index.matchAll(/^export \* from '\.\/(.+)\.js'$/gm)].map(([, f]) => f)
