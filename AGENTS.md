@@ -8,22 +8,22 @@
 ## 1. Purpose & Philosophy
 
 This is a **reusable design system** for NSW Government digital products. It is NOT an application.
-It is built to be consumed by *other* teams' projects — the apps inside this monorepo
+It is built to be consumed by _other_ teams' projects — the apps inside this monorepo
 (`apps/web`, `apps/storybook`) exist only to develop and preview the system, not as end products.
 
 **Two distribution channels:**
 
-| Channel | How consumers use it |
-|---|---|
-| npm package `@nswds/ui` | `import { Button } from '@nswds/ui'` — compiled ESM, shipped with types and CSS |
-| shadcn registry | `npx shadcn add https://<registry-url>/r/button.json` — copies source directly into the consumer's repo |
+| Channel                 | How consumers use it                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------- |
+| npm package `@nswds/ui` | `import { Button } from '@nswds/ui'` — compiled ESM, shipped with types and CSS                         |
+| shadcn registry         | `npx shadcn add https://<registry-url>/r/button.json` — copies source directly into the consumer's repo |
 
 **Headless-first.** All interactive components wrap [@base-ui/react](https://base-ui.com/) primitives.
 Base UI handles focus management, keyboard navigation, ARIA, and WAI-ARIA patterns.
 We style on top; we never hand-roll accessibility behaviour.
 
 **Token-driven.** Every visual property is expressed through CSS custom property tokens.
-Components reference *semantic* tokens only — never raw values, never Tailwind palette colours.
+Components reference _semantic_ tokens only — never raw values, never Tailwind palette colours.
 
 **Scope:** everything published sits under `@nswds/ui`. Internal workspace packages use
 `@workspace/<name>`. Never mix the two.
@@ -126,8 +126,8 @@ as CSS custom properties on `:root`:
 /* from @nswds/tokens */
 :root {
   --nsw-blue-50: oklch(…);
-  --nsw-blue-800: oklch(…);   /* NSW brand blue */
-  --nsw-red-600:  oklch(…);   /* NSW brand red (waratah) */
+  --nsw-blue-800: oklch(…); /* NSW brand blue */
+  --nsw-red-600: oklch(…); /* NSW brand red (waratah) */
   --nsw-grey-900: oklch(…);
   /* … full palette: grey, green, teal, blue, purple, red, orange, yellow … */
 }
@@ -143,8 +143,8 @@ semantic role names to the NSW primitive palette:
 
 ```css
 :root {
-  --primary-800: oklch(…);   /* = --nsw-blue-800 */
-  --accent-600:  oklch(…);   /* = --nsw-red-600 */
+  --primary-800: oklch(…); /* = --nsw-blue-800 */
+  --accent-600: oklch(…); /* = --nsw-red-600 */
   /* … */
 }
 ```
@@ -156,14 +156,16 @@ the shadcn/Base UI component system:
 
 ```css
 :root {
-  --primary: oklch(0.488 0.243 264.376);   /* single interactive primary */
+  --primary: oklch(0.488 0.243 264.376); /* single interactive primary */
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --radius: 0.45rem;
   /* … border, ring, muted, accent, destructive, sidebar, chart … */
 }
 
-.dark { /* same names, different values */ }
+.dark {
+  /* same names, different values */
+}
 ```
 
 The `.dark` class is toggled by `next-themes` or Storybook's `addon-themes`.
@@ -174,10 +176,10 @@ Two `@theme` blocks make all the above available as Tailwind utility classes:
 
 ```css
 /* From @nswds/tokens — makes fill-nsw-blue-800, bg-nsw-red-600, etc. work */
-@import "@nswds/tokens/tailwind/colors/global/oklch.css";
+@import '@nswds/tokens/tailwind/colors/global/oklch.css';
 
 /* From @nswds/tokens — makes fill-primary-800, bg-accent-600, etc. work */
-@import "@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css";
+@import '@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css';
 
 /* Inline in globals.css — makes bg-primary, text-foreground, rounded-lg, etc. work */
 @theme inline {
@@ -191,16 +193,16 @@ Two `@theme` blocks make all the above available as Tailwind utility classes:
 
 ```tsx
 // CORRECT — shadcn semantic token (layer 3)
-"bg-primary text-primary-foreground hover:bg-primary/80"
+'bg-primary text-primary-foreground hover:bg-primary/80'
 
 // CORRECT — NSW primitive utility (layer 1, for brand-specific things like the logo)
-"fill-nsw-blue-800 dark:fill-white"
+'fill-nsw-blue-800 dark:fill-white'
 
 // WRONG — raw Tailwind palette
-"bg-blue-600 text-white"
+'bg-blue-600 text-white'
 
 // WRONG — hardcoded value
-"bg-[#0055a4]"
+'bg-[#0055a4]'
 ```
 
 ### Adding a new theme / brand
@@ -274,6 +276,7 @@ export { <Name>, <name>Variants }
 ```
 
 **Layering rules:**
+
 - **Primitive** — wraps a single Base UI element; no layout, no composition.
 - **Component** — may combine multiple primitives; still self-contained.
 - **Pattern** — a composed UI pattern (e.g. `SearchBar`); documented separately from primitives.
@@ -287,7 +290,7 @@ management unless Base UI explicitly provides an escape hatch for it. Check the
 Add to `packages/ui/src/index.ts`:
 
 ```ts
-export * from "./components/<name>.js"
+export * from './components/<name>.js'
 ```
 
 tsup auto-discovers new `.ts`/`.tsx` files in `src/` (excluding `.stories.tsx`), so the
@@ -303,7 +306,12 @@ Add an entry to `packages/ui/registry.json`:
   "type": "registry:ui",
   "title": "<Human Name>",
   "description": "One sentence.",
-  "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
+  "dependencies": [
+    "@base-ui/react",
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
   "files": [
     {
       "path": "src/components/<name>.tsx",
@@ -339,6 +347,7 @@ packages/ui/src/components/<name>.stories.tsx
 ```
 
 **Minimum required stories** (follow `button.stories.tsx` as the canonical example):
+
 - `Default` — with a `play()` test proving the component mounts and is interactive.
 - `Variants` — one story rendering all meaningful variant combinations.
 - A `CssCheck` story asserting a computed style property — this proves globals.css loaded.
@@ -352,22 +361,22 @@ Stories live in `packages/ui/src/` but are **excluded from the tsup build** (see
 
 Run from the **repo root** unless noted.
 
-| What | Command |
-|---|---|
-| Install deps | `npm install` |
-| Dev all apps | `npm run dev` |
-| Storybook only | `npm run dev -w @workspace/storybook` → http://localhost:6006 |
-| Web sandbox only | `npm run dev -w web` → http://localhost:3000 |
-| Build everything | `npm run build` |
-| Build UI package only | `npm run build -w @nswds/ui` |
-| Build JS only | `npm run build:js -w @nswds/ui` |
-| Build CSS only | `npm run build:css -w @nswds/ui` |
-| Lint all | `npm run lint` |
-| Format all | `npm run format` |
-| Type check all | `npm run typecheck` |
-| Build registry JSON | `npm run registry:build` |
-| Validate registry.json | `npm run registry:validate` |
-| Run Storybook tests | `npm run test -w @workspace/storybook` |
+| What                   | Command                                                       |
+| ---------------------- | ------------------------------------------------------------- |
+| Install deps           | `npm install`                                                 |
+| Dev all apps           | `npm run dev`                                                 |
+| Storybook only         | `npm run dev -w @workspace/storybook` → http://localhost:6006 |
+| Web sandbox only       | `npm run dev -w web` → http://localhost:3000                  |
+| Build everything       | `npm run build`                                               |
+| Build UI package only  | `npm run build -w @nswds/ui`                                  |
+| Build JS only          | `npm run build:js -w @nswds/ui`                               |
+| Build CSS only         | `npm run build:css -w @nswds/ui`                              |
+| Lint all               | `npm run lint`                                                |
+| Format all             | `npm run format`                                              |
+| Type check all         | `npm run typecheck`                                           |
+| Build registry JSON    | `npm run registry:build`                                      |
+| Validate registry.json | `npm run registry:validate`                                   |
+| Run Storybook tests    | `npm run test -w @workspace/storybook`                        |
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
 
@@ -379,12 +388,12 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 
 Conventional Commits drive the release. Allowed types (from `git-conventional-commits.yaml`):
 
-| Commit type | Release |
-|---|---|
-| `feat:` | minor |
-| `fix:`, `perf:`, `revert:` | patch |
-| `BREAKING CHANGE` footer | major |
-| `docs:`, `style:`, `test:`, `build:`, `ops:`, `chore:`, `merge:`, `refactor:` | none |
+| Commit type                                                                   | Release |
+| ----------------------------------------------------------------------------- | ------- |
+| `feat:`                                                                       | minor   |
+| `fix:`, `perf:`, `revert:`                                                    | patch   |
+| `BREAKING CHANGE` footer                                                      | major   |
+| `docs:`, `style:`, `test:`, `build:`, `ops:`, `chore:`, `merge:`, `refactor:` | none    |
 
 Use `npm run commit` (runs `scripts/git-commit.sh`) for interactive commit message building.
 
@@ -421,15 +430,15 @@ only if the repo is made public.
 
 ### What is automated vs. manual
 
-| Action | Where |
-|---|---|
-| Version bump, changelog, git tag | Automated (CI semantic-release) |
-| npm publish | Automated (CI, OIDC — after bootstrap) |
-| GitHub release notes | Automated (CI) |
-| Registry JSON build | Automated (CI, only on new release) |
-| Registry deployment | Vercel Git integration — deploys only on release commits (`ignoreCommand` in `apps/registry/vercel.json`) |
-| First npm publish (bootstrap) | Manual, once |
-| npm Trusted Publisher setup | Manual, once |
+| Action                           | Where                                                                                                     |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Version bump, changelog, git tag | Automated (CI semantic-release)                                                                           |
+| npm publish                      | Automated (CI, OIDC — after bootstrap)                                                                    |
+| GitHub release notes             | Automated (CI)                                                                                            |
+| Registry JSON build              | Automated (CI, only on new release)                                                                       |
+| Registry deployment              | Vercel Git integration — deploys only on release commits (`ignoreCommand` in `apps/registry/vercel.json`) |
+| First npm publish (bootstrap)    | Manual, once                                                                                              |
+| npm Trusted Publisher setup      | Manual, once                                                                                              |
 
 ---
 
@@ -439,11 +448,11 @@ Three separate Vercel projects, each linked to `github.com/digitalnsw/nswds-ui`.
 detects npm from `package-lock.json` and runs `npm install` from the git root regardless of
 which project's Root Directory is set.
 
-| Vercel project | Root Directory | URL purpose |
-|---|---|---|
-| `nswds-ui-web` | `apps/web` | Dev sandbox / design docs site |
-| `nswds-ui-storybook` | `apps/storybook` | Component catalogue |
-| `nswds-ui-registry` | `apps/registry` | shadcn registry JSON endpoint |
+| Vercel project       | Root Directory   | URL purpose                    |
+| -------------------- | ---------------- | ------------------------------ |
+| `nswds-ui-web`       | `apps/web`       | Dev sandbox / design docs site |
+| `nswds-ui-storybook` | `apps/storybook` | Component catalogue            |
+| `nswds-ui-registry`  | `apps/registry`  | shadcn registry JSON endpoint  |
 
 ### Per-project settings
 
@@ -452,6 +461,7 @@ Root Directory. Do not put a repo-root `vercel.json` (it would conflict with the
 project which also uses the repo root for npm install).
 
 **`apps/web`** — `apps/web/vercel.json`
+
 ```
 Framework:        Next.js (auto-detected from apps/web/next.config.mjs)
 Root Directory:   apps/web
@@ -460,17 +470,20 @@ Output Directory: .next  (auto)
 ```
 
 **`apps/storybook`** — `apps/storybook/vercel.json`
+
 ```
 Framework:        None
 Root Directory:   apps/storybook
 Build Command:    npm run build -w @nswds/ui && npm run build  (runs storybook build)
 Output Directory: storybook-static
 ```
+
 Storybook resolves `@nswds/ui` directly from source via the tsconfig paths in
 `apps/storybook/tsconfig.json`; the `@nswds/ui` pre-build in the Build Command
 matches the current `vercel.json`.
 
 **`apps/registry`** — `apps/registry/vercel.json`
+
 ```
 Framework:        None
 Root Directory:   apps/registry
@@ -479,6 +492,7 @@ Build Command:    npm run build -w @nswds/ui
                   && npm run build  (vite build)
 Output Directory: dist
 ```
+
 `registry:build` writes JSON to `apps/registry/public/r/`. Vite copies `public/` into
 `dist/`, so the JSON is served at `<registry-url>/r/<component>.json`.
 
@@ -533,13 +547,13 @@ verifies registry output freshness instead.)
 
 ## 9. TODOs / Known Gaps
 
-| # | Issue | Where |
-|---|---|---|
-| 1 | ~~`fill-nsw-blue-800` / `fill-nsw-red-600` not defined~~ | Fixed — `@nswds/tokens` imported |
-| 2 | ~~Registry not deployed~~ | Fixed — Vercel project `nswds-ui-registry` deploys from `apps/registry` |
-| 3 | ~~`.npmrc` provenance~~ | Reversed — provenance requires a public repo; `provenance=false` with rationale in `.npmrc` |
-| 4 | ~~First npm publish (bootstrap) not yet done~~ | Fixed — v1.2.0 published via OIDC on 2026-05-24 |
-| 5 | ~~`shadcn` listed as runtime dependency~~ | Fixed — moved to `devDependencies` |
-| 6 | ~~`zod` listed as runtime dependency but unused~~ | Fixed — removed (no imports found) |
-| 7 | ~~No primitive token layer~~ | Fixed — `@nswds/tokens` provides the full primitive → semantic hierarchy |
-| 8 | `apps/web` has no content (`page.tsx` returns null) | Expected; it's a dev sandbox |
+| #   | Issue                                                    | Where                                                                                       |
+| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| 1   | ~~`fill-nsw-blue-800` / `fill-nsw-red-600` not defined~~ | Fixed — `@nswds/tokens` imported                                                            |
+| 2   | ~~Registry not deployed~~                                | Fixed — Vercel project `nswds-ui-registry` deploys from `apps/registry`                     |
+| 3   | ~~`.npmrc` provenance~~                                  | Reversed — provenance requires a public repo; `provenance=false` with rationale in `.npmrc` |
+| 4   | ~~First npm publish (bootstrap) not yet done~~           | Fixed — v1.2.0 published via OIDC on 2026-05-24                                             |
+| 5   | ~~`shadcn` listed as runtime dependency~~                | Fixed — moved to `devDependencies`                                                          |
+| 6   | ~~`zod` listed as runtime dependency but unused~~        | Fixed — removed (no imports found)                                                          |
+| 7   | ~~No primitive token layer~~                             | Fixed — `@nswds/tokens` provides the full primitive → semantic hierarchy                    |
+| 8   | `apps/web` has no content (`page.tsx` returns null)      | Expected; it's a dev sandbox                                                                |
