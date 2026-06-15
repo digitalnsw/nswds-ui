@@ -5,9 +5,15 @@ import * as React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-function Input({ className, type, ...props }: React.ComponentProps<'input'>) {
+function Input({
+  className,
+  type,
+  ref,
+  ...props
+}: React.ComponentProps<'input'>) {
   return (
     <InputPrimitive
+      ref={ref}
       type={type}
       data-slot="input"
       data-type={type}

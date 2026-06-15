@@ -1,15 +1,16 @@
 import clsx from 'clsx'
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef, Ref } from 'react'
 
 type LogoProps = ComponentPropsWithoutRef<'svg'> & {
   logoType?: 'default' | 'reversed' | 'mono-white' | 'mono-black'
+  ref?: Ref<SVGSVGElement>
 }
 
-export function Logo({ logoType = 'default', ...props }: LogoProps) {
+export function Logo({ logoType = 'default', ref, ...props }: LogoProps) {
   return (
     <>
       <span className="sr-only">NSW Government</span>
-      <svg viewBox="0 0 259 280" aria-hidden="true" {...props}>
+      <svg ref={ref} viewBox="0 0 259 280" aria-hidden="true" {...props}>
         <path
           fillRule="evenodd"
           clipRule="evenodd"

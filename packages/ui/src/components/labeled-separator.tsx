@@ -17,10 +17,12 @@ import { cn } from '../lib/utils.js'
 function LabeledSeparator({
   className,
   children = 'or',
+  ref,
   ...props
 }: React.ComponentProps<'div'> & { children?: React.ReactNode }) {
   return (
     <div
+      ref={ref}
       data-slot="labeled-separator"
       className={cn('flex items-center gap-3', className)}
       {...props}

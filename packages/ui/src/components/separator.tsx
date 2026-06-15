@@ -21,6 +21,7 @@ function Separator({
   orientation = 'horizontal',
   decorative = false,
   role,
+  ref,
   ...props
 }: SeparatorProps) {
   // Base UI's Separator emits `data-orientation="horizontal|vertical"` for
@@ -47,6 +48,7 @@ function Separator({
     // (no `aria-orientation`).
     return (
       <div
+        ref={ref as React.Ref<HTMLDivElement>}
         data-slot="separator"
         data-orientation={orientation}
         role="none"
@@ -58,6 +60,7 @@ function Separator({
 
   return (
     <SeparatorPrimitive
+      ref={ref}
       data-slot="separator"
       orientation={orientation}
       role={role ?? 'separator'}
