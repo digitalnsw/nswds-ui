@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.0.0...@nswds/ui-v3.1.0) (2026-06-15)
+
+### Features
+
+* **ui:** build Field on the Base UI Field primitive ([#30](https://github.com/digitalnsw/nswds-ui/issues/30)) ([1a1ac42](https://github.com/digitalnsw/nswds-ui/commit/1a1ac428a394aadc45bdc6a3ba7fe4bec82adb73))
+
 ## [3.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.2.0...@nswds/ui-v3.0.0) (2026-06-15)
 
 ### ⚠ BREAKING CHANGES
