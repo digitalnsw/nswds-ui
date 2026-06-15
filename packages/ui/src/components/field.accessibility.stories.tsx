@@ -143,7 +143,7 @@ export const ErrorIdentification: Story = {
           why: 'When a form control rejects input, the affected field and the nature of the problem must be identified in text so users can understand what went wrong and correct it.',
           how: 'Inspect the rendered error: FieldError renders inside the Field with role="alert" and visible destructive-token text. The play() function asserts the FieldError element exists, carries role="alert", and contains the error message text.',
           caveat:
-            'FieldError on its own does not set aria-invalid on the input — the input must also receive aria-invalid="true" (and ideally aria-describedby pointing at the error id) for the relationship to be programmatically discoverable.',
+            'Inside a Field, setting `invalid` on the Field sets the control’s aria-invalid and Base UI links the error via aria-describedby automatically (see the Automatic association story). This story shows the equivalent manual wiring, which still works and takes precedence.',
         }),
       },
     },
@@ -200,7 +200,7 @@ export const LabelsOrInstructions: Story = {
           why: 'Form controls that require user input must be paired with a label or instruction so users know what data to enter and in what format.',
           how: 'Each Field shows a FieldLabel as the visible name and a FieldDescription as supplementary instructional text. The play() function asserts each input has an associated label and that descriptive helper text is present in the Field.',
           caveat:
-            'FieldDescription is not automatically linked to the input via aria-describedby — wire it explicitly with describedby on the input when the description should be announced by AT.',
+            'Inside a Field, FieldDescription is automatically linked to the control via aria-describedby (see the Automatic association story). Manual describedby still works and is shown here for an implementation-agnostic example.',
         }),
       },
     },
@@ -347,6 +347,82 @@ export const StatusMessages: Story = {
     if (text.length === 0) {
       throw new Error(
         'WCAG 4.1.3: FieldError rendered but contains no status text to announce.'
+      )
+    }
+  },
+}
+
+// ─── Automatic association (Base UI Field) ────────────────────────────────────
+
+export const AutomaticAssociation: Story = {
+  name: 'Automatic association',
+  parameters: {
+    wcag: ['1.3.1', '3.3.1'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.3.1',
+          why: 'Field wraps the Base UI Field primitive, which wires the label, description, and error to the control automatically — no manual htmlFor / id / aria-describedby. Setting `invalid` on the Field marks the control aria-invalid.',
+          how: 'This story sets NO id, htmlFor, or aria-* in the markup. The play() asserts the input still has an associated label, gets aria-invalid="true" from the Field’s `invalid` prop, and exposes an aria-describedby that resolves to both the FieldDescription and the FieldError text.',
+          caveat:
+            'Manual wiring still works and takes precedence — these relationships are additive, so existing forms that set ids/aria continue to behave exactly as before.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className="w-full max-w-md">
+      <Field invalid>
+        <FieldLabel>Email address</FieldLabel>
+        <Input type="email" defaultValue="not-an-email" />
+        <FieldDescription>
+          We will only use this to contact you.
+        </FieldDescription>
+        <FieldError>Please enter a valid email address.</FieldError>
+      </Field>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const input = canvasElement.querySelector<HTMLInputElement>('input')
+    if (!input) throw new Error('Automatic association: no input rendered.')
+
+    // Label association — Base UI sets htmlFor to the auto-generated control id.
+    if (!input.labels || input.labels.length === 0) {
+      throw new Error(
+        'Automatic association: input has no associated <label> (htmlFor not wired).'
+      )
+    }
+
+    // aria-invalid comes from the Field `invalid` prop, not manual markup.
+    if (input.getAttribute('aria-invalid') !== 'true') {
+      throw new Error(
+        `Automatic association: expected aria-invalid="true" from Field invalid, got "${input.getAttribute('aria-invalid')}".`
+      )
+    }
+
+    // aria-describedby resolves to BOTH the description and the error.
+    const ids = (input.getAttribute('aria-describedby') ?? '')
+      .split(/\s+/)
+      .filter(Boolean)
+    if (ids.length === 0) {
+      throw new Error(
+        'Automatic association: input has no aria-describedby (description/error not wired).'
+      )
+    }
+    const describedText = ids
+      .map(
+        (id) =>
+          canvasElement.querySelector(`#${CSS.escape(id)}`)?.textContent ?? ''
+      )
+      .join(' ')
+    if (!describedText.includes('contact you')) {
+      throw new Error(
+        'Automatic association: aria-describedby does not resolve to the FieldDescription.'
+      )
+    }
+    if (!describedText.includes('valid email')) {
+      throw new Error(
+        'Automatic association: aria-describedby does not resolve to the FieldError.'
       )
     }
   },
