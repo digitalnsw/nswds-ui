@@ -3,7 +3,7 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 import clsx from 'clsx'
-import React, { forwardRef } from 'react'
+import React from 'react'
 
 import { cn } from '../lib/utils.js'
 
@@ -342,7 +342,9 @@ type ButtonProps = ButtonOwnProps &
   Omit<ButtonPrimitive.Props, 'className' | 'disabled'>
 
 type ButtonLinkProps = ButtonOwnProps &
-  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'> & {
+    ref?: React.Ref<HTMLAnchorElement>
+  }
 
 function buttonClasses({
   variant,
@@ -428,27 +430,25 @@ function ButtonContent({
  * Base UI's `render` prop is available for composition (e.g. rendering a
  * framework-specific element while keeping Button behaviour).
  */
-const Button = forwardRef(function Button(
-  {
-    className,
-    variant,
-    color,
-    size,
-    children,
-    block,
-    loading,
-    alignContent = 'center',
-    disabled,
-    leadingVisual,
-    trailingVisual,
-    trailingAction,
-    labelWrap,
-    count,
-    countLabel,
-    ...props
-  }: ButtonProps,
-  ref: React.ForwardedRef<HTMLButtonElement>
-) {
+function Button({
+  className,
+  variant,
+  color,
+  size,
+  children,
+  block,
+  loading,
+  alignContent = 'center',
+  disabled,
+  leadingVisual,
+  trailingVisual,
+  trailingAction,
+  labelWrap,
+  count,
+  countLabel,
+  ref,
+  ...props
+}: ButtonProps) {
   const effectiveDisabled = disabled || loading
 
   if (process.env.NODE_ENV !== 'production') {
@@ -490,7 +490,7 @@ const Button = forwardRef(function Button(
       </ButtonContent>
     </ButtonPrimitive>
   )
-})
+}
 
 /**
  * Button-styled anchor. Renders through `Link`, so it picks up the
@@ -499,27 +499,25 @@ const Button = forwardRef(function Button(
  * `aria-disabled` and a click guard, since anchors have no `disabled`
  * attribute.
  */
-const ButtonLink = forwardRef(function ButtonLink(
-  {
-    className,
-    variant,
-    color,
-    size,
-    children,
-    block,
-    loading,
-    alignContent = 'center',
-    disabled,
-    leadingVisual,
-    trailingVisual,
-    trailingAction,
-    labelWrap,
-    count,
-    countLabel,
-    ...props
-  }: ButtonLinkProps,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
+function ButtonLink({
+  className,
+  variant,
+  color,
+  size,
+  children,
+  block,
+  loading,
+  alignContent = 'center',
+  disabled,
+  leadingVisual,
+  trailingVisual,
+  trailingAction,
+  labelWrap,
+  count,
+  countLabel,
+  ref,
+  ...props
+}: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
 
   if (process.env.NODE_ENV !== 'production') {
@@ -573,7 +571,7 @@ const ButtonLink = forwardRef(function ButtonLink(
       </ButtonContent>
     </Link>
   )
-})
+}
 
 /**
  * Expand the hit area to at least 44×44px on touch devices

@@ -3,7 +3,7 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 import clsx from 'clsx'
-import React, { forwardRef } from 'react'
+import React from 'react'
 
 import { cn } from '../lib/utils.js'
 import { TouchTarget } from './button.js'
@@ -343,12 +343,9 @@ const badgeVariants = cva(styles.base, {
 })
 
 type BadgeProps = VariantProps<typeof badgeVariants> &
-  React.ComponentPropsWithoutRef<'span'>
+  React.ComponentPropsWithoutRef<'span'> & { ref?: React.Ref<HTMLSpanElement> }
 
-const Badge = forwardRef(function Badge(
-  { variant, color, size, className, ...props }: BadgeProps,
-  ref: React.ForwardedRef<HTMLSpanElement>
-) {
+function Badge({ variant, color, size, className, ref, ...props }: BadgeProps) {
   return (
     <span
       {...props}
@@ -357,7 +354,7 @@ const Badge = forwardRef(function Badge(
       ref={ref}
     />
   )
-})
+}
 
 /** Visual/content props shared by `BadgeButton` and `BadgeLink`. */
 type BadgeOwnProps = VariantProps<typeof badgeVariants> & {
@@ -368,7 +365,9 @@ type BadgeOwnProps = VariantProps<typeof badgeVariants> & {
 type BadgeButtonProps = BadgeOwnProps & Omit<ButtonPrimitive.Props, 'className'>
 
 type BadgeLinkProps = BadgeOwnProps &
-  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'>
+  Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'> & {
+    ref?: React.Ref<HTMLAnchorElement>
+  }
 
 function badgeWrapperClasses({ color, className }: BadgeOwnProps) {
   return clsx(
@@ -390,10 +389,15 @@ function badgeWrapperClasses({ color, className }: BadgeOwnProps) {
  * navigation, use `BadgeLink` — the `href` polymorphism that previously
  * lived on this component was removed in v2.
  */
-const BadgeButton = forwardRef(function BadgeButton(
-  { variant, color, size, className, children, ...props }: BadgeButtonProps,
-  ref: React.ForwardedRef<HTMLButtonElement>
-) {
+function BadgeButton({
+  variant,
+  color,
+  size,
+  className,
+  children,
+  ref,
+  ...props
+}: BadgeButtonProps) {
   return (
     <ButtonPrimitive
       data-variant={variant}
@@ -411,13 +415,18 @@ const BadgeButton = forwardRef(function BadgeButton(
       </TouchTarget>
     </ButtonPrimitive>
   )
-})
+}
 
 /** Badge-styled anchor; renders through `Link` (so `LinkProvider` applies). */
-const BadgeLink = forwardRef(function BadgeLink(
-  { variant, color, size, className, children, ...props }: BadgeLinkProps,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
+function BadgeLink({
+  variant,
+  color,
+  size,
+  className,
+  children,
+  ref,
+  ...props
+}: BadgeLinkProps) {
   return (
     <Link
       // Opt out of Link's built-in styling — BadgeLink wraps the inner
@@ -436,7 +445,7 @@ const BadgeLink = forwardRef(function BadgeLink(
       </TouchTarget>
     </Link>
   )
-})
+}
 
 export { Badge, BadgeButton, BadgeLink, badgeVariants }
 export type { BadgeButtonProps, BadgeLinkProps, BadgeProps }

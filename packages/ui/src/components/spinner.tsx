@@ -36,7 +36,9 @@ type SpinnerProps = {
    * already conveys the busy state (e.g. inside a Button with a label).
    */
   label?: string
-} & React.HTMLAttributes<HTMLSpanElement>
+} & React.HTMLAttributes<HTMLSpanElement> & {
+    ref?: React.Ref<HTMLSpanElement>
+  }
 
 function Spinner({
   className,
@@ -44,10 +46,11 @@ function Spinner({
   size = 'md',
   color = 'primary',
   label = 'Loading',
+  ref,
   ...props
 }: SpinnerProps) {
   return (
-    <span role="status" className={className} {...props}>
+    <span ref={ref} role="status" className={className} {...props}>
       <svg
         fill="none"
         viewBox="0 0 100 101"
