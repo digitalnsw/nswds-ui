@@ -82,7 +82,7 @@ export const Disabled: Story = {
     disabled: true,
     onClick: fn(),
   },
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const anchor = canvasElement.querySelector('a')
     if (!anchor) throw new Error('ButtonLink did not render an <a> element.')
 
