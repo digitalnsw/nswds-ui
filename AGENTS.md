@@ -102,7 +102,7 @@ Differences from the tsconfig map worth knowing: the stylesheet is published as
 `@nswds/ui/styles.css` — the in-repo dev specifier `@nswds/ui/globals.css` is a Storybook/Vite
 alias only (see `apps/storybook/.storybook/main.ts`) and is **not** a published subpath. There
 are no `@nswds/ui/hooks/*` or `@nswds/ui/lib/*` exports; `cn` (from `lib/utils`) is re-exported
-from the root barrel, so consumers import it as `import { cn } from "@nswds/ui"`.
+from the root barrel, so consumers import it as `import { cn } from '@nswds/ui'`.
 
 **Files under `packages/ui/src/` themselves use relative imports** (`'../lib/utils.js'`),
 not either alias. Reason: `apps/web` consumes our source via `transpilePackages`, and its
@@ -114,8 +114,8 @@ rule enforces this in `packages/ui/eslint.config.js`.
 
 ## 3. Design Tokens & Theming
 
-Tokens live in `packages/ui/src/styles/globals.css`. There are **four layers**, built on top of
-`@nswds/tokens` (the companion token library):
+Tokens live in `packages/ui/src/styles/theme.css` (imported by the `globals.css` dev entry).
+There are **four layers**, built on top of `@nswds/tokens` (the companion token library):
 
 ### Layer 1 — NSW primitive palette (`@nswds/tokens`)
 
@@ -151,7 +151,7 @@ semantic role names to the NSW primitive palette:
 
 ### Layer 3 — Shadcn semantic tokens
 
-Defined directly in `:root` and `.dark` blocks in globals.css as single-value tokens for
+Defined directly in `:root` and `.dark` blocks in theme.css as single-value tokens for
 the shadcn/Base UI component system:
 
 ```css
@@ -181,7 +181,7 @@ Two `@theme` blocks make all the above available as Tailwind utility classes:
 /* From @nswds/tokens — makes fill-primary-800, bg-accent-600, etc. work */
 @import '@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css';
 
-/* Inline in globals.css — makes bg-primary, text-foreground, rounded-lg, etc. work */
+/* Inline in theme.css — makes bg-primary, text-foreground, rounded-lg, etc. work */
 @theme inline {
   --color-primary: var(--primary);
   --radius-lg: var(--radius);
@@ -246,15 +246,15 @@ packages/ui/src/components/<name>.tsx
 **Pattern (mirrors `button.tsx`):**
 
 ```tsx
-"use client"  // include if the component uses hooks or browser APIs
+'use client' // include if the component uses hooks or browser APIs
 
-import { <Primitive> } from "@base-ui/react/<primitive>"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "../lib/utils.js"  // relative — see §2 "How `@nswds/ui` imports resolve"
+import { <Primitive> } from '@base-ui/react/<primitive>'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '../lib/utils.js' // relative — see §2 "How `@nswds/ui` imports resolve"
 
 const <name>Variants = cva(
   // base classes using ONLY semantic token utilities
-  "...",
+  '...',
   {
     variants: { /* … */ },
     defaultVariants: { /* … */ },
