@@ -15,9 +15,6 @@
     "lint": {
       "dependsOn": ["^lint"]
     },
-    "format": {
-      "dependsOn": ["^format"]
-    },
     "registry:build": {
       "dependsOn": ["@nswds/ui#build"],
       "inputs": ["registry.json", "components.json", "scripts/**", "src/**"],

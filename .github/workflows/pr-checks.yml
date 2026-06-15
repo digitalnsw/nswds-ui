@@ -54,7 +54,7 @@ jobs:
         run: npm run typecheck
 
       - name: Format check
-        run: npx prettier --check .
+        run: npm run format:check
 
       # Every component under packages/ui/src/components must ship on BOTH
       # channels (src/index.ts barrel + registry.json) or be explicitly
