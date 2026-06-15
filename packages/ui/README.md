@@ -8,7 +8,7 @@ Reusable design system components for NSW Government digital products. Accessibl
 npm install @nswds/ui @nswds/tokens
 ```
 
-Requires React 18.3+ or 19. The package is ESM-only and ships compiled JavaScript, TypeScript types, and a precompiled stylesheet — no Tailwind setup is required to use it.
+Requires React 19. The package is ESM-only and ships compiled JavaScript, TypeScript types, and a precompiled stylesheet — no Tailwind setup is required to use it.
 
 ## Usage
 

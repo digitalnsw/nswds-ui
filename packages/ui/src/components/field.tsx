@@ -28,9 +28,14 @@ import { cn } from '../lib/utils.js'
 // the NSW Government digital service standards minimum body-text size.
 // ─────────────────────────────────────────────────────────────────────────────
 
-function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
+function FieldSet({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<'fieldset'>) {
   return (
     <fieldset
+      ref={ref}
       data-slot="field-set"
       className={cn(
         'flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3',
@@ -44,10 +49,12 @@ function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
 function FieldLegend({
   className,
   variant = 'legend',
+  ref,
   ...props
 }: React.ComponentProps<'legend'> & { variant?: 'legend' | 'label' }) {
   return (
     <legend
+      ref={ref}
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
@@ -59,9 +66,10 @@ function FieldLegend({
   )
 }
 
-function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
+function FieldGroup({ className, ref, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
+      ref={ref}
       data-slot="field-group"
       className={cn(
         // `has-[>[data-slot=…]]:gap-3` matches when FieldGroup CONTAINS a
@@ -97,10 +105,12 @@ const fieldVariants = cva(
 function Field({
   className,
   orientation = 'vertical',
+  ref,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof fieldVariants>) {
   return (
     <div
+      ref={ref}
       role="group"
       data-slot="field"
       data-orientation={orientation}
@@ -110,9 +120,14 @@ function Field({
   )
 }
 
-function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
+function FieldContent({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<'div'>) {
   return (
     <div
+      ref={ref}
       data-slot="field-content"
       className={cn(
         'group/field-content flex flex-1 flex-col gap-0.5 leading-snug',
@@ -125,10 +140,12 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
 
 function FieldLabel({
   className,
+  ref,
   ...props
 }: React.ComponentProps<typeof Label>) {
   return (
     <Label
+      ref={ref}
       data-slot="field-label"
       className={cn(
         'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
@@ -140,9 +157,10 @@ function FieldLabel({
   )
 }
 
-function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
+function FieldTitle({ className, ref, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
+      ref={ref}
       data-slot="field-label"
       className={cn(
         'flex w-fit items-center gap-2 text-sm/relaxed font-medium group-data-[disabled=true]/field:opacity-50',
@@ -153,9 +171,14 @@ function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
+function FieldDescription({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<'p'>) {
   return (
     <p
+      ref={ref}
       data-slot="field-description"
       className={cn(
         // `group-data-[orientation=horizontal]/field:` matches the actual
@@ -175,12 +198,14 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
 function FieldSeparator({
   children,
   className,
+  ref,
   ...props
 }: React.ComponentProps<'div'> & {
   children?: React.ReactNode
 }) {
   return (
     <div
+      ref={ref}
       data-slot="field-separator"
       data-content={!!children}
       className={cn(
@@ -206,6 +231,7 @@ function FieldError({
   className,
   children,
   errors,
+  ref,
   ...props
 }: React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>
@@ -243,6 +269,7 @@ function FieldError({
 
   return (
     <div
+      ref={ref}
       role="alert"
       data-slot="field-error"
       className={cn('text-sm/relaxed font-normal text-destructive', className)}

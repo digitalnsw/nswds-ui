@@ -1,7 +1,7 @@
 'use client'
 
 import { cva, type VariantProps } from 'class-variance-authority'
-import React, { createContext, forwardRef, useContext } from 'react'
+import React, { createContext, useContext } from 'react'
 
 import { cn } from '../lib/utils.js'
 
@@ -77,6 +77,7 @@ type LinkProps = Omit<React.ComponentPropsWithoutRef<'a'>, 'href'> &
   VariantProps<typeof linkVariants> & {
     as?: LinkComponent
     href: React.ComponentPropsWithoutRef<'a'>['href'] | object
+    ref?: React.Ref<HTMLAnchorElement>
   }
 
 const LinkComponentContext = createContext<LinkComponent | null>(null)
@@ -122,10 +123,7 @@ const ANCHOR_ONLY_PROPS = [
   'hrefLang',
 ] as const
 
-const Link = forwardRef(function Link(
-  { as, variant, className, ...props }: LinkProps,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
+function Link({ as, variant, className, ref, ...props }: LinkProps) {
   const ContextLink = useContext(LinkComponentContext)
   const component = as ?? ContextLink ?? 'a'
 
@@ -148,7 +146,7 @@ const Link = forwardRef(function Link(
     className: cn(linkVariants({ variant }), className),
     ref,
   })
-})
+}
 
 /**
  * Open-in-new-tab glyph used by `ExternalLink`. Defined inline (rather than
@@ -192,17 +190,15 @@ type ExternalLinkProps = LinkProps & {
  * All `Link` props are forwarded — `variant`, `as`, `className`, etc. —
  * and any of `target`, `rel`, `icon`, or `newTabLabel` can be overridden.
  */
-const ExternalLink = forwardRef(function ExternalLink(
-  {
-    children,
-    icon,
-    newTabLabel = '(opens in a new tab)',
-    target = '_blank',
-    rel = 'noopener noreferrer',
-    ...props
-  }: ExternalLinkProps,
-  ref: React.ForwardedRef<HTMLAnchorElement>
-) {
+function ExternalLink({
+  children,
+  icon,
+  newTabLabel = '(opens in a new tab)',
+  target = '_blank',
+  rel = 'noopener noreferrer',
+  ref,
+  ...props
+}: ExternalLinkProps) {
   const trailingIcon =
     icon === null ? null : (icon ?? <OpenInNewIcon className="ml-0.5" />)
 
@@ -213,7 +209,7 @@ const ExternalLink = forwardRef(function ExternalLink(
       {newTabLabel ? <span className="sr-only"> {newTabLabel}</span> : null}
     </Link>
   )
-})
+}
 
 export { ExternalLink, Link, LinkProvider, linkVariants }
 export type { ExternalLinkProps, LinkComponent, LinkProps }
