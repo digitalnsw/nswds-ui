@@ -1,3 +1,24 @@
+## [3.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.2.0...@nswds/ui-v3.0.0) (2026-06-15)
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** @nswds/ui now requires React 19. peerDependencies no
+longer allow ^18.3 — consumers on React 18 must upgrade.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+* build: regenerate registry output for ref-as-prop components
+
+The registry items embed component source, so the ref-as-prop refactor
+changed the committed JSON. Regenerated via `registry:build` to satisfy the
+PR freshness check.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+
+### Code Refactoring
+
+* **ui:** forward refs as a prop and require React 19 ([#28](https://github.com/digitalnsw/nswds-ui/issues/28)) ([75273c3](https://github.com/digitalnsw/nswds-ui/commit/75273c32a6071bdf61a811afb8b7ca91fccce4fc))
+
 ## [2.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v2.1.1...@nswds/ui-v2.2.0) (2026-06-13)
 
 ### Features
