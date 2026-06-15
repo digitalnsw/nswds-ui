@@ -1,13 +1,37 @@
 'use client'
 
+import { Field as FieldPrimitive } from '@base-ui/react/field'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type * as React from 'react'
-import { useMemo } from 'react'
+import * as React from 'react'
 
 import { Label } from '../components/label.js'
 import { Separator } from '../components/separator.js'
 import { cn } from '../lib/utils.js'
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Base UI Field
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// `Field`, `FieldLabel`, `FieldDescription`, and `FieldError` wrap Base UI's
+// Field primitive (@base-ui/react/field). Base UI owns the accessible wiring:
+// the label is associated with the control, and any description/error ids are
+// added to the control's `aria-describedby` automatically — no manual
+// `htmlFor` / `aria-describedby` / `aria-invalid` plumbing required. Set
+// `invalid` on `Field` (e.g. from react-hook-form) and the control receives
+// `aria-invalid` and the wrapper gets `data-invalid` for free.
+//
+// Base UI's Field parts must live inside a `Field.Root`. To keep the previous
+// behaviour where a label/description/error could also be used standalone
+// (e.g. a group-level FieldDescription directly inside a FieldSet), FieldLabel/
+// FieldDescription/FieldError opt into the Base UI part only when they detect a
+// surrounding `Field` (via `InsideFieldContext`) and otherwise render the plain
+// element they did before. Inside a Field they gain the automatic association;
+// outside one they are unchanged.
+//
+// `FieldSet` / `FieldLegend` stay native `<fieldset>` / `<legend>` (already
+// accessible for grouping); `FieldGroup` / `FieldContent` / `FieldSeparator` /
+// `FieldTitle` remain layout-only primitives.
+//
 // ─────────────────────────────────────────────────────────────────────────────
 // Typography hierarchy (deliberate, do not collapse to a single size)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -27,6 +51,9 @@ import { cn } from '../lib/utils.js'
 // them to text-xs, please raise that as a design decision — 12px is below
 // the NSW Government digital service standards minimum body-text size.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// True for descendants of our <Field> (which renders Base UI's Field.Root).
+const InsideFieldContext = React.createContext(false)
 
 function FieldSet({
   className,
@@ -85,7 +112,10 @@ function FieldGroup({ className, ref, ...props }: React.ComponentProps<'div'>) {
 }
 
 const fieldVariants = cva(
-  'group/field flex w-full gap-2 data-[invalid=true]:text-destructive',
+  // `data-invalid:` (presence) matches the `data-invalid` attribute Base UI's
+  // Field.Root sets when the field is invalid (via the `invalid` prop or native
+  // validation) — replacing the old hand-set `data-[invalid=true]`.
+  'group/field flex w-full gap-2 data-invalid:text-destructive',
   {
     variants: {
       orientation: {
@@ -106,17 +136,25 @@ function Field({
   className,
   orientation = 'vertical',
   ref,
+  children,
   ...props
-}: React.ComponentProps<'div'> & VariantProps<typeof fieldVariants>) {
+}: React.ComponentProps<typeof FieldPrimitive.Root> &
+  VariantProps<typeof fieldVariants>) {
   return (
-    <div
+    <FieldPrimitive.Root
       ref={ref}
+      // Preserve the explicit group role + data-orientation the layout and the
+      // accessibility tests rely on; Base UI's Root renders a bare <div>.
       role="group"
       data-slot="field"
       data-orientation={orientation}
       className={cn(fieldVariants({ orientation }), className)}
       {...props}
-    />
+    >
+      <InsideFieldContext.Provider value={true}>
+        {children}
+      </InsideFieldContext.Provider>
+    </FieldPrimitive.Root>
   )
 }
 
@@ -138,20 +176,43 @@ function FieldContent({
   )
 }
 
+const fieldLabelClassName = cn(
+  'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-disabled/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
+  'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col'
+)
+
 function FieldLabel({
   className,
   ref,
   ...props
 }: React.ComponentProps<typeof Label>) {
+  const insideField = React.useContext(InsideFieldContext)
+
+  // Standalone (no surrounding Field): render the styled Label directly, as
+  // before. Base UI's Field.Label would throw without a Field.Root ancestor.
+  if (!insideField) {
+    return (
+      <Label
+        ref={ref}
+        data-slot="field-label"
+        className={cn(fieldLabelClassName, className)}
+        {...props}
+      />
+    )
+  }
+
   return (
-    <Label
-      ref={ref}
+    <FieldPrimitive.Label
+      // Base UI's Field.Label types its ref as HTMLElement (it can render a
+      // non-label); here it always renders our <Label>, so the ref is an
+      // HTMLLabelElement at runtime.
+      ref={ref as React.Ref<HTMLElement>}
+      // Render through our styled Label so FieldLabel keeps the Label
+      // primitive's typography + data-slot, while Base UI supplies the
+      // automatic `htmlFor` association with the field control.
+      render={<Label />}
       data-slot="field-label"
-      className={cn(
-        'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
-        'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
-        className
-      )}
+      className={cn(fieldLabelClassName, className)}
       {...props}
     />
   )
@@ -163,7 +224,7 @@ function FieldTitle({ className, ref, ...props }: React.ComponentProps<'div'>) {
       ref={ref}
       data-slot="field-label"
       className={cn(
-        'flex w-fit items-center gap-2 text-sm/relaxed font-medium group-data-[disabled=true]/field:opacity-50',
+        'flex w-fit items-center gap-2 text-sm/relaxed font-medium group-data-disabled/field:opacity-50',
         className
       )}
       {...props}
@@ -171,25 +232,40 @@ function FieldTitle({ className, ref, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+const fieldDescriptionClassName = cn(
+  // `group-data-[orientation=horizontal]/field:` matches the
+  // `data-orientation="horizontal"` attribute Field emits.
+  'text-start text-sm/relaxed leading-normal font-normal text-muted-foreground group-data-[orientation=horizontal]/field:text-balance [[data-variant=legend]+&]:-mt-1.5',
+  'last:mt-0 nth-last-2:-mt-1',
+  '[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary'
+)
+
 function FieldDescription({
   className,
   ref,
   ...props
 }: React.ComponentProps<'p'>) {
+  const insideField = React.useContext(InsideFieldContext)
+
+  // Standalone (e.g. a group-level description inside a FieldSet): a plain
+  // <p>, as before. Inside a Field, Base UI links it to the control via
+  // aria-describedby.
+  if (!insideField) {
+    return (
+      <p
+        ref={ref}
+        data-slot="field-description"
+        className={cn(fieldDescriptionClassName, className)}
+        {...props}
+      />
+    )
+  }
+
   return (
-    <p
+    <FieldPrimitive.Description
       ref={ref}
       data-slot="field-description"
-      className={cn(
-        // `group-data-[orientation=horizontal]/field:` matches the actual
-        // `data-orientation="horizontal"` attribute Field emits. The previous
-        // `group-has-data-horizontal/field:` targeted a non-existent
-        // `[data-horizontal]` attribute and never fired.
-        'text-start text-sm/relaxed leading-normal font-normal text-muted-foreground group-data-[orientation=horizontal]/field:text-balance [[data-variant=legend]+&]:-mt-1.5',
-        'last:mt-0 nth-last-2:-mt-1',
-        '[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
-        className
-      )}
+      className={cn(fieldDescriptionClassName, className)}
       {...props}
     />
   )
@@ -236,7 +312,9 @@ function FieldError({
 }: React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>
 }) {
-  const content = useMemo(() => {
+  const insideField = React.useContext(InsideFieldContext)
+
+  const content = React.useMemo(() => {
     if (children) {
       return children
     }
@@ -249,7 +327,7 @@ function FieldError({
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
 
-    if (uniqueErrors?.length == 1) {
+    if (uniqueErrors?.length === 1) {
       return uniqueErrors[0]?.message
     }
 
@@ -267,16 +345,42 @@ function FieldError({
     return null
   }
 
+  const errorClassName = cn(
+    'text-sm/relaxed font-normal text-destructive',
+    className
+  )
+
+  // Standalone: a plain alert region, as before. Inside a Field, Base UI links
+  // it to the control via aria-describedby.
+  if (!insideField) {
+    return (
+      <div
+        ref={ref}
+        role="alert"
+        data-slot="field-error"
+        className={errorClassName}
+        {...props}
+      >
+        {content}
+      </div>
+    )
+  }
+
   return (
-    <div
+    <FieldPrimitive.Error
       ref={ref}
+      // `match` lets the `errors` array / external library drive visibility
+      // instead of the control's native ValidityState. We only render this when
+      // there IS content, so force it visible; Base UI then adds its id to the
+      // control's `aria-describedby`.
+      match
       role="alert"
       data-slot="field-error"
-      className={cn('text-sm/relaxed font-normal text-destructive', className)}
+      className={errorClassName}
       {...props}
     >
       {content}
-    </div>
+    </FieldPrimitive.Error>
   )
 }
 
