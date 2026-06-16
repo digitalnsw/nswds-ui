@@ -1,3 +1,9 @@
+## [3.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.1.0...@nswds/ui-v3.2.0) (2026-06-16)
+
+### Features
+
+* **registry:** centralize configuration for registry location ([#32](https://github.com/digitalnsw/nswds-ui/issues/32)) ([a28327a](https://github.com/digitalnsw/nswds-ui/commit/a28327a454a6993e8b3ffa6a22c476189f35f183))
+
 ## [3.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.0.0...@nswds/ui-v3.1.0) (2026-06-15)
 
 ### Features
