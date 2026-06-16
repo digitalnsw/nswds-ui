@@ -1,7 +1,7 @@
 # Installing NSWDS components from the registry
 
 The `@nswds/ui` components are distributed through a [shadcn](https://ui.shadcn.com/) registry
-served at **https://ui.digital.nsw.gov.au/registry**. This guide covers installing them into
+served at **https://nswds-ui-registry.vercel.app**. This guide covers installing them into
 _your own_ project with the `shadcn` CLI.
 
 > Prefer the npm package? If you don't need the source copied into your repo, you can instead
@@ -32,20 +32,20 @@ Add a `registries` entry to your project's **`components.json`** so the CLI know
   "$schema": "https://ui.shadcn.com/schema.json",
   // ...your existing config...
   "registries": {
-    "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json",
+    "@nswds": "https://nswds-ui-registry.vercel.app/r/{name}.json",
   },
 }
 ```
 
 The `{name}` placeholder is required — the CLI substitutes the component name into it. With this
-in place, `@nswds/button` resolves to `https://ui.digital.nsw.gov.au/registry/r/button.json`.
+in place, `@nswds/button` resolves to `https://nswds-ui-registry.vercel.app/r/button.json`.
 
 The registry is public, so no token or auth headers are needed.
 
-> The registry base above is the production default. Internally it is configured through the
-> `REGISTRY_LOCATION` environment variable (see `.env.example`); if the registry is ever moved,
-> that one variable updates the site metadata, the generated registry JSON, and the release
-> drift audit together. Consumers should use whatever base the maintainers publish.
+> The registry base above is maintained in one place. Maintainers set `REGISTRY_LOCATION` in
+> `.env` and run `npm run registry:sync`, which propagates it to `registry.config.json` (the
+> committed source of truth), the generated registry JSON, these docs, the web app's `/registry`
+> proxy, and the release drift audit together. Consumers should use whatever base is published here.
 
 ---
 
@@ -83,7 +83,7 @@ npx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 | `@nswds/theme`             | Semantic token CSS variables (installed automatically as a dependency of every component) |
 
 > Without the namespace configured, the same installs work with the full URL, e.g.
-> `npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json`.
+> `npx shadcn@latest add https://nswds-ui-registry.vercel.app/r/button.json`.
 
 The CLI writes the component source into your project (per your `components.json` aliases) and
 installs each component's runtime dependencies (`@base-ui/react`, `class-variance-authority`,

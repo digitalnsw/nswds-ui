@@ -19,6 +19,7 @@
     "pr:title": "scripts/pull-request.sh",
     "release": "semantic-release",
     "registry:build": "turbo registry:build",
+    "registry:sync": "node scripts/sync-registry-location.mjs && turbo registry:build",
     "registry:validate": "turbo registry:validate",
     "typecheck": "turbo typecheck",
     "prepare": "husky"

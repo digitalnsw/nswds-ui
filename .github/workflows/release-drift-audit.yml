@@ -32,10 +32,13 @@ jobs:
 
       - name: Compare release channels
         env:
-          # Deployed location of the shadcn registry. Override via a repository
-          # variable when the registry moves; the default is the production host.
-          REGISTRY_LOCATION: ${{ vars.REGISTRY_LOCATION || 'https://ui.digital.nsw.gov.au/registry' }}
+          # Optional override; otherwise the committed source of truth is used.
+          REGISTRY_LOCATION_OVERRIDE: ${{ vars.REGISTRY_LOCATION }}
         run: |
+          # Single source of truth for the registry URL: registry.config.json
+          # (updated from .env via `npm run registry:sync`).
+          REGISTRY_LOCATION="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location' registry.config.json)}"
+
           tag_version="$(git tag --list '@nswds/ui-v*' --sort=-v:refname | head -n 1)"
           tag_version="${tag_version#@nswds/ui-v}"
 
@@ -78,11 +81,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - name: Checkout
+        uses: actions/checkout@v6
       - name: Create or update the release-failure issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REGISTRY_LOCATION: ${{ vars.REGISTRY_LOCATION || 'https://ui.digital.nsw.gov.au/registry' }}
+          REGISTRY_LOCATION_OVERRIDE: ${{ vars.REGISTRY_LOCATION }}
         run: |
+          # Single source of truth for the registry URL: registry.config.json.
+          REGISTRY_LOCATION="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location' registry.config.json)}"
+
           gh label create release-failure \
             --repo "$GITHUB_REPOSITORY" \
             --color B60205 \

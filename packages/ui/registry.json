@@ -166,9 +166,7 @@
       "title": "Card",
       "description": "A content container with header, content, footer, action, and description slots.",
       "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/card.tsx",
@@ -188,9 +186,7 @@
       "title": "Description List",
       "description": "A responsive description list primitive for term and detail pairs.",
       "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/description-list.tsx",
@@ -234,9 +230,7 @@
       "title": "Input",
       "description": "A text input built on the Base UI input primitive with NSW form styling.",
       "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/input.tsx",
@@ -256,9 +250,7 @@
       "title": "Label",
       "description": "A form label with disabled-state styling.",
       "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/label.tsx",
@@ -301,9 +293,7 @@
       "title": "Separator",
       "description": "A semantic or decorative divider built on the Base UI separator primitive.",
       "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/separator.tsx",
@@ -431,9 +421,7 @@
       "title": "Link",
       "description": "A link primitive with a provider for app router link components.",
       "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/link.tsx",
@@ -453,9 +441,7 @@
       "title": "Logo",
       "description": "NSW Government logo component.",
       "dependencies": ["clsx"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/logo.tsx",
@@ -470,9 +456,7 @@
       "title": "Spinner",
       "description": "An inline loading spinner with semantic colour and size variants.",
       "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json"
-      ],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
       "files": [
         {
           "path": "src/components/spinner.tsx",

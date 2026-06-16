@@ -116,9 +116,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/spinner.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/spinner.json"
       ],
       "files": [
         {
@@ -145,9 +145,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json"
       ],
       "files": [
         {
@@ -172,7 +172,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -197,7 +197,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -223,9 +223,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/label.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/label.json",
+        "https://nswds-ui-registry.vercel.app/r/separator.json"
       ],
       "files": [
         {
@@ -251,7 +251,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -276,7 +276,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -301,8 +301,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/separator.json"
       ],
       "files": [
         {
@@ -328,7 +328,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -462,7 +462,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -486,7 +486,7 @@
         "clsx"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {
@@ -506,7 +506,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
       ],
       "files": [
         {

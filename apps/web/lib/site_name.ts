@@ -5,7 +5,7 @@ export const siteDescription =
 
 export const siteKeywords = ['NSW Government']
 
-export const registryLocation =
-  process.env.REGISTRY_LOCATION ?? 'https://nswds-ui-registry.vercel.app'
-
-export const siteURL = new URL(registryLocation).origin
+// The web app's own canonical URL (used for metadata / OpenGraph). This is the
+// docs site's domain — distinct from REGISTRY_LOCATION, which is where the
+// shadcn registry is deployed (see next.config.mjs).
+export const siteURL = 'https://ui.digital.nsw.gov.au'
