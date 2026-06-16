@@ -42,6 +42,11 @@ in place, `@nswds/button` resolves to `https://ui.digital.nsw.gov.au/registry/r/
 
 The registry is public, so no token or auth headers are needed.
 
+> The registry base above is the production default. Internally it is configured through the
+> `REGISTRY_LOCATION` environment variable (see `.env.example`); if the registry is ever moved,
+> that one variable updates the site metadata, the generated registry JSON, and the release
+> drift audit together. Consumers should use whatever base the maintainers publish.
+
 ---
 
 ## 3. Install components

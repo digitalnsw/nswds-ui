@@ -114,9 +114,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/spinner.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/spinner.json"
       ],
       "files": [
         {
@@ -143,9 +143,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/link.json"
       ],
       "files": [
         {
@@ -167,7 +167,7 @@
       "description": "A content container with header, content, footer, action, and description slots.",
       "dependencies": ["clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -189,7 +189,7 @@
       "description": "A responsive description list primitive for term and detail pairs.",
       "dependencies": ["clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -211,9 +211,9 @@
       "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
       "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/label.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/label.json",
+        "{{REGISTRY_LOCATION}}/r/separator.json"
       ],
       "files": [
         {
@@ -235,7 +235,7 @@
       "description": "A text input built on the Base UI input primitive with NSW form styling.",
       "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -257,7 +257,7 @@
       "description": "A form label with disabled-state styling.",
       "dependencies": ["clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -279,8 +279,8 @@
       "description": "A horizontal divider broken by a centred label, such as an \"or\" rule between sign-in methods.",
       "dependencies": ["clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/separator.json"
       ],
       "files": [
         {
@@ -302,7 +302,7 @@
       "description": "A semantic or decorative divider built on the Base UI separator primitive.",
       "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -432,7 +432,7 @@
       "description": "A link primitive with a provider for app router link components.",
       "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -454,7 +454,7 @@
       "description": "NSW Government logo component.",
       "dependencies": ["clsx"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {
@@ -471,7 +471,7 @@
       "description": "An inline loading spinner with semantic colour and size variants.",
       "dependencies": ["clsx", "tailwind-merge"],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "{{REGISTRY_LOCATION}}/r/theme.json"
       ],
       "files": [
         {

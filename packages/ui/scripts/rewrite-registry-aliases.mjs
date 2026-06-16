@@ -17,6 +17,18 @@ import { join, posix } from 'node:path'
 
 const [outputDir = '../../apps/registry/public/r'] = process.argv.slice(2)
 
+// Registry source (registry.json) carries cross-item `registryDependencies` as
+// `{{REGISTRY_LOCATION}}/r/<name>.json` tokens rather than a hardcoded host, so
+// the deployed location lives in one place: the REGISTRY_LOCATION env var. We
+// expand the token here, after `shadcn build` has copied it into the output.
+// The default matches the production deployment, so an unset env (local dev and
+// the CI freshness check) reproduces the committed JSON byte-for-byte.
+const REGISTRY_LOCATION_TOKEN = '{{REGISTRY_LOCATION}}'
+const DEFAULT_REGISTRY_LOCATION = 'https://ui.digital.nsw.gov.au/registry'
+const registryLocation = (
+  process.env.REGISTRY_LOCATION ?? DEFAULT_REGISTRY_LOCATION
+).replace(/\/+$/, '')
+
 // Stamp every item (and a version.json endpoint) with the @nswds/ui version
 // the registry was built from, so consumers can correlate the two
 // distribution channels. Deterministic — read from package.json, no
@@ -92,9 +104,14 @@ const jsonFiles = readdirSync(outputDir).filter((file) =>
 
 for (const file of jsonFiles) {
   const filePath = join(outputDir, file)
-  const item = JSON.parse(readFileSync(filePath, 'utf8'))
+  const raw = readFileSync(filePath, 'utf8')
 
-  let changed = false
+  // Expand the registry-location token wherever it appears (registryDependencies
+  // and any other field) before parsing.
+  const expanded = raw.split(REGISTRY_LOCATION_TOKEN).join(registryLocation)
+  const item = JSON.parse(expanded)
+
+  let changed = expanded !== raw
 
   if (item.meta?.nswdsVersion !== packageVersion) {
     item.meta = { ...item.meta, nswdsVersion: packageVersion }

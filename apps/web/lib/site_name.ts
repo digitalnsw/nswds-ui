@@ -5,4 +5,7 @@ export const siteDescription =
 
 export const siteKeywords = ['NSW Government']
 
-export const siteURL = 'https://ui.digital.nsw.gov.au'
+export const registryLocation =
+  process.env.REGISTRY_LOCATION ?? 'https://nswds-ui-registry.vercel.app'
+
+export const siteURL = new URL(registryLocation).origin

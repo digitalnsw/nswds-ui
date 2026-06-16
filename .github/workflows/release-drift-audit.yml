@@ -31,6 +31,10 @@ jobs:
           fetch-depth: 0
 
       - name: Compare release channels
+        env:
+          # Deployed location of the shadcn registry. Override via a repository
+          # variable when the registry moves; the default is the production host.
+          REGISTRY_LOCATION: ${{ vars.REGISTRY_LOCATION || 'https://ui.digital.nsw.gov.au/registry' }}
         run: |
           tag_version="$(git tag --list '@nswds/ui-v*' --sort=-v:refname | head -n 1)"
           tag_version="${tag_version#@nswds/ui-v}"
@@ -39,7 +43,7 @@ jobs:
 
           registry_version="UNREACHABLE"
           for attempt in 1 2 3; do
-            fetched="$(curl -sf --max-time 20 https://ui.digital.nsw.gov.au/registry/r/version.json | jq -r '.version' 2>/dev/null || true)"
+            fetched="$(curl -sf --max-time 20 "${REGISTRY_LOCATION%/}/r/version.json" | jq -r '.version' 2>/dev/null || true)"
             if [ -n "$fetched" ]; then
               registry_version="$fetched"
               break
@@ -77,6 +81,7 @@ jobs:
       - name: Create or update the release-failure issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_LOCATION: ${{ vars.REGISTRY_LOCATION || 'https://ui.digital.nsw.gov.au/registry' }}
         run: |
           gh label create release-failure \
             --repo "$GITHUB_REPOSITORY" \
@@ -87,7 +92,7 @@ jobs:
           body="The weekly release drift audit found the release channels out of sync (git tag ↔ npm ↔ deployed registry).
 
           - Run: ${run_url}
-          - Compare \`git tag --list '@nswds/ui-v*'\`, \`npm view @nswds/ui version\`, and https://ui.digital.nsw.gov.au/registry/r/version.json
+          - Compare \`git tag --list '@nswds/ui-v*'\`, \`npm view @nswds/ui version\`, and ${REGISTRY_LOCATION%/}/r/version.json
 
           _Filed automatically by release-drift-audit.yml._"
           existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[0].number // empty')"
