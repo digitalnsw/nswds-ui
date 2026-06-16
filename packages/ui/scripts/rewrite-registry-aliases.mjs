@@ -13,9 +13,25 @@
 // '@nswds/ui/' self-import survives.
 
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
-import { join, posix } from 'node:path'
+import { join, posix, resolve } from 'node:path'
 
 const [outputDir = '../../apps/registry/public/r'] = process.argv.slice(2)
+
+// Registry source (registry.json) carries cross-item `registryDependencies` as
+// `{{REGISTRY_LOCATION}}/r/<name>.json` tokens rather than a hardcoded host. The
+// deployed location lives in ONE place — registry.config.json at the repo root,
+// the committed source of truth (updated from .env via `npm run registry:sync`).
+// Read it here, NOT from an env var, so the CI freshness check reproduces the
+// committed JSON byte-for-byte regardless of environment. We expand the token
+// after `shadcn build` has copied it into the output.
+const REGISTRY_LOCATION_TOKEN = '{{REGISTRY_LOCATION}}'
+const registryConfig = JSON.parse(
+  readFileSync(
+    resolve(import.meta.dirname, '../../../registry.config.json'),
+    'utf8'
+  )
+)
+const registryLocation = registryConfig.location.replace(/\/+$/, '')
 
 // Stamp every item (and a version.json endpoint) with the @nswds/ui version
 // the registry was built from, so consumers can correlate the two
@@ -92,9 +108,14 @@ const jsonFiles = readdirSync(outputDir).filter((file) =>
 
 for (const file of jsonFiles) {
   const filePath = join(outputDir, file)
-  const item = JSON.parse(readFileSync(filePath, 'utf8'))
+  const raw = readFileSync(filePath, 'utf8')
 
-  let changed = false
+  // Expand the registry-location token wherever it appears (registryDependencies
+  // and any other field) before parsing.
+  const expanded = raw.split(REGISTRY_LOCATION_TOKEN).join(registryLocation)
+  const item = JSON.parse(expanded)
+
+  let changed = expanded !== raw
 
   if (item.meta?.nswdsVersion !== packageVersion) {
     item.meta = { ...item.meta, nswdsVersion: packageVersion }

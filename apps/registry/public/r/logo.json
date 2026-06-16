@@ -7,7 +7,7 @@
     "clsx"
   ],
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+    "https://nswds-ui-registry.vercel.app/r/theme.json"
   ],
   "files": [
     {

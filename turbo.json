@@ -1,7 +1,8 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV"],
+  "globalEnv": ["NODE_ENV", "REGISTRY_LOCATION"],
+  "globalDependencies": [".env", "registry.config.json"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
