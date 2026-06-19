@@ -14,7 +14,7 @@ fi
 source "$BRANCH_CONFIG_SCRIPT"
 
 usage() {
-  echo "Usage: ./create-branch.sh [{branch-name}] [--no-push]"
+  echo "Usage: scripts/create-branch.sh [{branch-name}] [--no-push]"
   echo "  Run with no branch name to be prompted interactively."
 }
 
@@ -108,48 +108,61 @@ prompt_for_branch() {
 }
 
 push_to_remote="true"
+no_push_flag="false"
+branch_name=""
+branch_name_set="false"
 
-# Interactive mode: no branch name supplied.
-if [[ $# -lt 1 ]]; then
-  branch_name="$(prompt_for_branch)"
-  echo "📋 Proposed branch name: $branch_name"
-
-  push_answer=""
-  while true; do
-    if ! read -r -p "Push the branch to remote after creating? (y/n): " push_answer; then
-      push_answer="n"
-    fi
-    case "${push_answer:-}" in
-      [Yy]) push_to_remote="true"; break ;;
-      [Nn]) push_to_remote="false"; break ;;
-      *) echo "Please answer y or n." ;;
-    esac
-  done
-
-  create_branch "$branch_name" "$push_to_remote"
-  exit 0
-fi
-
-# Non-interactive mode: branch name passed as an argument.
-branch_name="$1"
-shift
-if [[ $# -gt 0 ]]; then
+# Parse args order-independently so the branch name is optional and --no-push
+# works on its own (e.g. `scripts/create-branch.sh --no-push` enters interactive
+# mode and creates the branch locally only).
+while [[ $# -gt 0 ]]; do
   case "$1" in
     --no-push)
       push_to_remote="false"
+      no_push_flag="true"
       shift
       ;;
-    *)
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --*)
       echo "❌ Unknown option: $1"
       usage
       exit 1
       ;;
+    *)
+      if [[ "$branch_name_set" == "true" ]]; then
+        echo "❌ Too many arguments."
+        usage
+        exit 1
+      fi
+      branch_name="$1"
+      branch_name_set="true"
+      shift
+      ;;
   esac
-fi
-if [[ $# -gt 0 ]]; then
-  echo "❌ Too many arguments."
-  usage
-  exit 1
+done
+
+# Interactive mode: no branch name supplied.
+if [[ "$branch_name_set" == "false" ]]; then
+  branch_name="$(prompt_for_branch)"
+  echo "📋 Proposed branch name: $branch_name"
+
+  # Only ask about pushing when the caller hasn't already decided via --no-push.
+  if [[ "$no_push_flag" == "false" ]]; then
+    push_answer=""
+    while true; do
+      if ! read -r -p "Push the branch to remote after creating? (y/n): " push_answer; then
+        push_answer="n"
+      fi
+      case "${push_answer:-}" in
+        [Yy]) push_to_remote="true"; break ;;
+        [Nn]) push_to_remote="false"; break ;;
+        *) echo "Please answer y or n." ;;
+      esac
+    done
+  fi
 fi
 
 create_branch "$branch_name" "$push_to_remote"

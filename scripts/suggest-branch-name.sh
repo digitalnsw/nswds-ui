@@ -96,17 +96,17 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
   USE_OPENAI_API="false"
 fi
 
-OPENAI_MODEL="${OPENAI_MODEL:-gpt-5.5}"
+# Shared OpenAI model default + family detection (single source of truth).
+OPENAI_CONFIG_SCRIPT="${SCRIPT_DIR}/openai-config.sh"
+if [[ ! -f "$OPENAI_CONFIG_SCRIPT" ]]; then
+  printf "❌ OpenAI config not found: %s\n" "$OPENAI_CONFIG_SCRIPT" >&2
+  exit 1
+fi
+# shellcheck source=./openai-config.sh
+source "$OPENAI_CONFIG_SCRIPT"
 
-# Newer reasoning-style models (gpt-5*, o1/o3/o4*) differ from the gpt-4 family:
-# they use max_completion_tokens instead of max_tokens, reject a custom
-# temperature, and spend output tokens on hidden reasoning, so they need a far
-# larger token budget to actually emit a branch name.
-OPENAI_MODEL_FAMILY="legacy"
-case "$OPENAI_MODEL" in
-  gpt-5*|o1*|o3*|o4*) OPENAI_MODEL_FAMILY="reasoning" ;;
-esac
-
+# Reasoning models spend output tokens on hidden reasoning, so they need a far
+# larger budget than the gpt-4 family to actually emit a branch name.
 if [[ "$OPENAI_MODEL_FAMILY" == "reasoning" ]]; then
   OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-2000}"
 else
@@ -773,14 +773,14 @@ ${issue_requirement}
 ${validation_error}
 
 Valid examples:
-- feature/update-callout-defaults
-- docs/issue/ABC-123/update-component-guides
+- feature/revise-callout-defaults
+- docs/issue/ABC-123/revise-component-guides
 - chore/ticket/ENG-77/refresh-kitchen-sink-emails
 
 Invalid examples:
-- feature/subfolder/component/update-callout-defaults
-- feature/update callout defaults
-- Branch name: feature/update-callout-defaults
+- feature/subfolder/component/revise-callout-defaults
+- feature/revise callout defaults
+- Branch name: feature/revise-callout-defaults
 
 Change scope summary:
 ${change_scope_summary}

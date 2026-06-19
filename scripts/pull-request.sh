@@ -26,8 +26,16 @@ fi
 CONVENTIONAL_COMMIT_REGEX="$("$CONVENTIONAL_CONFIG_SCRIPT" regex)"
 CONVENTIONAL_COMMIT_TYPES_CSV="$("$CONVENTIONAL_CONFIG_SCRIPT" csv)"
 
-# Set model and endpoint. Override the model via the OPENAI_MODEL env var.
-MODEL="${OPENAI_MODEL:-gpt-4o}"
+# Shared OpenAI model default + family detection (single source of truth).
+# Override the model via the OPENAI_MODEL env var.
+OPENAI_CONFIG_SCRIPT="${SCRIPT_DIR}/openai-config.sh"
+if [[ ! -f "$OPENAI_CONFIG_SCRIPT" ]]; then
+  echo "❌ OpenAI config not found: ${OPENAI_CONFIG_SCRIPT}"
+  exit 1
+fi
+# shellcheck source=./openai-config.sh
+source "$OPENAI_CONFIG_SCRIPT"
+MODEL="$OPENAI_MODEL"
 ENDPOINT="https://api.openai.com/v1/chat/completions"
 
 # Use --fail-with-body if available; fall back to --fail for BSD/macOS curl.
@@ -68,12 +76,21 @@ messages=$(jq -n \
   ]'
 )
 
+# Build the request body. Reasoning models (gpt-5*, o1/o3/o4*) reject a custom
+# temperature, so only include it when the model supports it.
+payload=$(jq -n \
+  --arg model "$MODEL" \
+  --argjson messages "$messages" \
+  --arg supports_temp "$OPENAI_SUPPORTS_TEMPERATURE" \
+  '{ model: $model, messages: $messages }
+   + (if $supports_temp == "true" then { temperature: 0.4 } else {} end)')
+
 # Call OpenAI API
 set +e
 response=$(curl -sS "$CURL_FAIL_FLAG" "$ENDPOINT" \
   -H "Authorization: Bearer $OPENAI_API_KEY" \
   -H "Content-Type: application/json" \
-  -d "{\"model\": \"$MODEL\", \"messages\": $messages, \"temperature\": 0.4}"
+  -d "$payload"
 )
 curl_status=$?
 set -e
@@ -137,7 +154,7 @@ echo "$title"
 echo ""
 
 # Optionally prompt to confirm and create PR
-read -p "📝 Use this title to create the PR? [y/N]: " confirm
+read -r -p "📝 Use this title to create the PR? [y/N]: " confirm
 if [[ $confirm =~ ^[Yy]$ ]]; then
   gh pr create --title "$title" --body "" --head "$branch"
 else

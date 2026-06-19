@@ -14,8 +14,13 @@
    of preset's bundled hex; preset's bridges then resolve to these oklch values. */
 /* Primitive palette + status ramps: --nsw-blue-800, --danger-600, --success-500, … */
 @import '@nswds/tokens/css/colors/global/oklch.css';
-/* Semantic role tokens: --danger-solid/-surface/-text/-border, --background-*, --text-*, … */
+/* Semantic role tokens (LIGHT): --danger-solid/-surface/-text/-border, --background-*,
+   --surface-*, --text-*, --border-*, --action-*. */
 @import '@nswds/tokens/css/colors/semantic/oklch.css';
+/* Semantic role tokens (DARK): same names, dark values, scoped `[data-theme=dark], .dark`
+   (the .dark scope was added in @nswds/tokens 4.1.0). This makes the role tokens below
+   flip automatically under our `.dark` class — no hand-maintained dark overrides needed. */
+@import '@nswds/tokens/css/colors/semantic/oklch.dark.css';
 /* Masterbrand theme: --primary-* → --nsw-blue-*, --accent-* → --nsw-red-* (preset excludes themes) */
 @import '@nswds/tokens/css/colors/themes/masterbrand/oklch.css';
 /* Masterbrand theme utilities: fill-primary-800, text-accent-600, … */
@@ -96,37 +101,44 @@
 }
 
 :root {
-  /* --white comes from @nswds/tokens v4 global palette (oklch(1 0 0)); not redefined here. */
-  --background: var(--white);
-  --foreground: var(--grey-800);
-  --card: var(--white);
-  --card-foreground: var(--grey-800);
-  --popover: var(--white);
-  --popover-foreground: var(--grey-800);
-  --primary: var(--primary-800);
-  --primary-foreground: var(--primary-50);
-  --secondary: var(--grey-100);
-  --secondary-foreground: var(--grey-800);
-  --muted: var(--grey-100);
-  --muted-foreground: var(--grey-550);
-  --accent: var(--grey-100);
-  --accent-foreground: var(--grey-800);
-  --destructive: var(--danger-500);
-  --border: var(--grey-250);
-  --input: var(--grey-250);
-  --ring: var(--grey-450);
-  /* Form input tokens — Input references ONLY these, so brand themes and
-     dark mode restyle it by remapping tokens (no dark: variants in the
-     component). Values mirror the pre-token rendering exactly. */
-  --input-border: var(--grey-600);
-  --input-foreground: var(--grey-800);
-  --input-placeholder: var(--grey-500);
-  --input-surface: var(--background);
-  --input-surface-hover: var(--grey-100);
-  --input-ring: var(--grey-600);
-  --input-invalid-border: var(--danger-600);
-  --input-invalid-surface-hover: var(--danger-50);
-  --input-invalid-ring: var(--danger-600);
+  /* shadcn semantic tokens mapped onto @nswds/tokens v4 role tokens. Role tokens are
+     mode-aware (light from the semantic LIGHT import; dark from the .dark-scoped DARK
+     import above), so these flip automatically under `.dark` — there is no longer a
+     hand-maintained `.dark` override block. */
+  /* Page canvas uses --surface-default (pure white in light) rather than v4's off-white
+     --background-default: components' soft/text colours are tuned for a white canvas and
+     the off-white tips some below WCAG AA 4.5:1. Still mode-aware (dark = role dark value). */
+  --background: var(--surface-default);
+  --foreground: var(--text-default);
+  --card: var(--surface-raised);
+  --card-foreground: var(--text-default);
+  --popover: var(--surface-raised);
+  --popover-foreground: var(--text-default);
+  /* Brand primary uses the v4 action role: light = --primary-800; dark = an accessible
+     lighter blue. Foreground inverts with it (white on dark blue / dark on light blue). */
+  --primary: var(--action-default);
+  --primary-foreground: var(--text-inverse);
+  --secondary: var(--surface-sunken);
+  --secondary-foreground: var(--text-default);
+  --muted: var(--background-subtle);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--background-subtle);
+  --accent-foreground: var(--text-default);
+  --destructive: var(--danger-solid);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--border-strong);
+  /* Form input tokens — Input references ONLY these; the role tokens make them mode-aware. */
+  --input-border: var(--border-strong);
+  --input-foreground: var(--text-default);
+  --input-placeholder: var(--text-subtle);
+  --input-surface: var(--surface-default);
+  --input-surface-hover: var(--surface-sunken);
+  --input-ring: var(--border-strong);
+  --input-invalid-border: var(--danger-border);
+  --input-invalid-surface-hover: var(--danger-surface);
+  --input-invalid-ring: var(--danger-solid);
+  /* Data-viz: brand primary ramp (mode-agnostic; not a role token). */
   --chart-1: var(--primary-450);
   --chart-2: var(--primary-550);
   --chart-3: var(--primary-600);
@@ -134,62 +146,19 @@
   --chart-5: var(--primary-700);
   /* shadcn base radius — sourced from the v4 token (8px), not hardcoded. */
   --radius: var(--radius-md);
-  --sidebar: var(--grey-50);
-  --sidebar-foreground: var(--grey-800);
-  --sidebar-primary: var(--primary-600);
-  --sidebar-primary-foreground: var(--primary-50);
-  --sidebar-accent: var(--grey-100);
-  --sidebar-accent-foreground: var(--grey-800);
-  --sidebar-border: var(--grey-250);
-  --sidebar-ring: var(--grey-450);
+  --sidebar: var(--background-subtle);
+  --sidebar-foreground: var(--text-default);
+  --sidebar-primary: var(--action-default);
+  --sidebar-primary-foreground: var(--text-inverse);
+  --sidebar-accent: var(--background-subtle);
+  --sidebar-accent-foreground: var(--text-default);
+  --sidebar-border: var(--border-default);
+  --sidebar-ring: var(--border-strong);
 }
 
-.dark {
-  --background: var(--grey-950);
-  --foreground: var(--grey-50);
-  --card: var(--grey-850);
-  --card-foreground: var(--grey-50);
-  --popover: var(--grey-850);
-  --popover-foreground: var(--grey-50);
-  --primary: var(--primary-700);
-  --primary-foreground: var(--primary-50);
-  --secondary: var(--grey-800);
-  --secondary-foreground: var(--grey-50);
-  --muted: var(--grey-800);
-  --muted-foreground: var(--grey-450);
-  --accent: var(--grey-800);
-  --accent-foreground: var(--grey-50);
-  --destructive: var(--danger-350);
-  --border: var(--grey-800);
-  --input: var(--grey-750);
-  --ring: var(--grey-550);
-  --input-border: var(--grey-100);
-  --input-foreground: var(--grey-100);
-  --input-placeholder: var(--grey-300);
-  --input-surface: color-mix(in oklab, var(--input) 30%, transparent);
-  --input-surface-hover: color-mix(in oklab, var(--input) 50%, transparent);
-  --input-ring: var(--grey-100);
-  --input-invalid-border: var(--danger-200);
-  --input-invalid-surface-hover: color-mix(
-    in oklab,
-    var(--danger-900) 30%,
-    transparent
-  );
-  --input-invalid-ring: var(--danger-200);
-  --chart-1: var(--primary-450);
-  --chart-2: var(--primary-550);
-  --chart-3: var(--primary-600);
-  --chart-4: var(--primary-650);
-  --chart-5: var(--primary-700);
-  --sidebar: var(--grey-850);
-  --sidebar-foreground: var(--grey-50);
-  --sidebar-primary: var(--primary-550);
-  --sidebar-primary-foreground: var(--primary-50);
-  --sidebar-accent: var(--grey-800);
-  --sidebar-accent-foreground: var(--grey-50);
-  --sidebar-border: var(--grey-800);
-  --sidebar-ring: var(--grey-550);
-}
+/* No `.dark` override block: every shadcn token above maps to a v4 role token whose
+   dark value is supplied by the .dark-scoped semantic dark import. Brand `dark:` utilities
+   inside components still work via the `@custom-variant dark` rule above. */
 
 @layer base {
   * {
