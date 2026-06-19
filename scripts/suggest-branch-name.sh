@@ -96,8 +96,22 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
   USE_OPENAI_API="false"
 fi
 
-OPENAI_MODEL="${OPENAI_MODEL:-gpt-4o-mini}"
-OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-140}"
+# Shared OpenAI model default + family detection (single source of truth).
+OPENAI_CONFIG_SCRIPT="${SCRIPT_DIR}/openai-config.sh"
+if [[ ! -f "$OPENAI_CONFIG_SCRIPT" ]]; then
+  printf "❌ OpenAI config not found: %s\n" "$OPENAI_CONFIG_SCRIPT" >&2
+  exit 1
+fi
+# shellcheck source=./openai-config.sh
+source "$OPENAI_CONFIG_SCRIPT"
+
+# Reasoning models spend output tokens on hidden reasoning, so they need a far
+# larger budget than the gpt-4 family to actually emit a branch name.
+if [[ "$OPENAI_MODEL_FAMILY" == "reasoning" ]]; then
+  OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-2000}"
+else
+  OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-140}"
+fi
 if [[ "$USE_OPENAI_API" == "true" ]] && ! [[ "$OPENAI_MAX_OUTPUT_TOKENS" =~ ^[1-9][0-9]*$ ]]; then
   printf "❌ OPENAI_MAX_OUTPUT_TOKENS must be a positive integer.\n" >&2
   exit 1
@@ -751,21 +765,22 @@ Output requirements:
   feat->feature, fix->bugfix, refactor->refactor, perf->refactor, style->style, test->test, build->build, ops->chore, docs->docs, chore->chore, merge->chore, revert->hotfix
 - CRITICAL: Branch names must be either <type>/<slug> or <type>/(issue|ticket)/<id>/<slug>. Do not include any additional "/" segments.
 - Keep the slug concise, lowercase, and hyphenated ([a-z0-9-] only).
-- If the change set spans many files/directories, use a broader slug (for example large-multi-area-updates) instead of naming one component.
+- Describe what the change actually DOES, inferred from the diff: name the dominant action or theme (e.g. bump-dependency-locks, migrate-button-variants, fix-callout-spacing), not the folder layout.
+- Even when many files change, pick the most specific theme that covers them. Do NOT fall back to generic placeholders like "multi-area-updates", "update-code", or anything ending in "-updates"; those are reserved for the deterministic fallback only.
+- Avoid filler words: no "update", "updates", "changes", "misc", "various", or "multi-area" unless the diff genuinely has no identifiable theme.
 - Prefer a branch type aligned with this default hint: ${preferred_branch_type}
-- Safe valid fallback example for this change set: ${preferred_fallback_branch}
 ${issue_requirement}
 ${validation_error}
 
 Valid examples:
-- feature/update-callout-defaults
-- docs/issue/ABC-123/update-component-guides
+- feature/revise-callout-defaults
+- docs/issue/ABC-123/revise-component-guides
 - chore/ticket/ENG-77/refresh-kitchen-sink-emails
 
 Invalid examples:
-- feature/subfolder/component/update-callout-defaults
-- feature/update callout defaults
-- Branch name: feature/update-callout-defaults
+- feature/subfolder/component/revise-callout-defaults
+- feature/revise callout defaults
+- Branch name: feature/revise-callout-defaults
 
 Change scope summary:
 ${change_scope_summary}
@@ -796,25 +811,47 @@ if [[ "$USE_OPENAI_API" == "true" ]]; then
   while [[ $attempt -le $max_attempts ]]; do
     prompt_text="$(build_prompt "$validation_error")"
 
-    payload="$(jq -n \
-      --arg model "$OPENAI_MODEL" \
-      --arg prompt "$prompt_text" \
-      --argjson max_tokens "$OPENAI_MAX_OUTPUT_TOKENS" \
-      '{
-        model: $model,
-        messages: [
-          {
-            role: "system",
-            content: "You are strict about output format and only output a valid branch name."
-          },
-          {
-            role: "user",
-            content: $prompt
-          }
-        ],
-        temperature: 0.2,
-        max_tokens: $max_tokens
-      }')"
+    if [[ "$OPENAI_MODEL_FAMILY" == "reasoning" ]]; then
+      # Reasoning models: max_completion_tokens, default temperature only.
+      payload="$(jq -n \
+        --arg model "$OPENAI_MODEL" \
+        --arg prompt "$prompt_text" \
+        --argjson max_tokens "$OPENAI_MAX_OUTPUT_TOKENS" \
+        '{
+          model: $model,
+          messages: [
+            {
+              role: "system",
+              content: "You are strict about output format and only output a valid branch name."
+            },
+            {
+              role: "user",
+              content: $prompt
+            }
+          ],
+          max_completion_tokens: $max_tokens
+        }')"
+    else
+      payload="$(jq -n \
+        --arg model "$OPENAI_MODEL" \
+        --arg prompt "$prompt_text" \
+        --argjson max_tokens "$OPENAI_MAX_OUTPUT_TOKENS" \
+        '{
+          model: $model,
+          messages: [
+            {
+              role: "system",
+              content: "You are strict about output format and only output a valid branch name."
+            },
+            {
+              role: "user",
+              content: $prompt
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: $max_tokens
+        }')"
+    fi
 
     set +e
     response="$(curl -sS "$CURL_FAIL_FLAG" https://api.openai.com/v1/chat/completions \

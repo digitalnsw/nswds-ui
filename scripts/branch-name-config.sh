@@ -1,7 +1,7 @@
 # Source this file from other scripts to share branch naming rules.
 
-BRANCH_TYPES_REGEX='feature|bugfix|hotfix|release|docs|build|test|refactor|style|chore'
-BRANCH_TYPES_CSV='feature, bugfix, hotfix, release, docs, build, test, refactor, style, chore'
+BRANCH_TYPES_REGEX='feature|bugfix|hotfix|release|docs|build|test|refactor|style|chore|export'
+BRANCH_TYPES_CSV='feature, bugfix, hotfix, release, docs, build, test, refactor, style, chore, export'
 STANDARD_BRANCH_REGEX="(${BRANCH_TYPES_REGEX})(/(issue|ticket)/[A-Za-z0-9_-]+)?/[a-z0-9-]+"
 ALERT_AUTOFIX_REGEX='alert-autofix-.+'
 DEPENDABOT_REGEX='dependabot/.+'
