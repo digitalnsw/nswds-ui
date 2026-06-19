@@ -27,9 +27,22 @@ if [[ -z "${OPENAI_API_KEY:-}" ]]; then
   exit 1
 fi
 
-# OpenAI model + output token limit (tunable)
-OPENAI_MODEL="${OPENAI_MODEL:-gpt-4o-mini}"
-OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-250}"
+# Shared OpenAI model default + family detection (single source of truth).
+OPENAI_CONFIG_SCRIPT="${SCRIPT_DIR}/openai-config.sh"
+if [[ ! -f "$OPENAI_CONFIG_SCRIPT" ]]; then
+  printf "❌ OpenAI config not found: %s\n" "$OPENAI_CONFIG_SCRIPT"
+  exit 1
+fi
+# shellcheck source=./openai-config.sh
+source "$OPENAI_CONFIG_SCRIPT"
+
+# Reasoning models spend output tokens on hidden reasoning, so they need a
+# larger budget than the gpt-4 family to actually emit the commit message.
+if [[ "$OPENAI_MODEL_FAMILY" == "reasoning" ]]; then
+  OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-2000}"
+else
+  OPENAI_MAX_OUTPUT_TOKENS="${OPENAI_MAX_OUTPUT_TOKENS:-250}"
+fi
 OPENAI_DIFF_MAX_LINES="${OPENAI_DIFF_MAX_LINES:-1500}"
 OPENAI_DIFF_MAX_BYTES="${OPENAI_DIFF_MAX_BYTES:-120000}"
 
@@ -248,7 +261,7 @@ while [[ $attempt -le $max_attempts ]]; do
   PAYLOAD_FILE="$(new_tmp_file)"
   generate_prompt >"$PROMPT_FILE"
 
-  jq -n --rawfile prompt "$PROMPT_FILE" --arg model "$OPENAI_MODEL" --argjson max_output_tokens "${OPENAI_MAX_OUTPUT_TOKENS}" '{
+  jq -n --rawfile prompt "$PROMPT_FILE" --arg model "$OPENAI_MODEL" --argjson max_output_tokens "${OPENAI_MAX_OUTPUT_TOKENS}" --arg supports_temp "$OPENAI_SUPPORTS_TEMPERATURE" '{
     model: $model,
     input: [
       {
@@ -259,9 +272,8 @@ while [[ $attempt -le $max_attempts ]]; do
       },
       { role: "user", content: [ { type: "input_text", text: $prompt } ] }
     ],
-    temperature: 0.4,
     max_output_tokens: $max_output_tokens
-  }' >"$PAYLOAD_FILE"
+  } + (if $supports_temp == "true" then { temperature: 0.4 } else {} end)' >"$PAYLOAD_FILE"
 
   set +e
   RESPONSE="$(curl -sS "$CURL_FAIL_FLAG" https://api.openai.com/v1/responses \
