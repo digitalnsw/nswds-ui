@@ -74,6 +74,30 @@ jobs:
           fi
           echo "✔ All three release channels agree on ${tag_version}"
 
+  resolve-on-success:
+    name: Close release-failure issue
+    needs: audit
+    if: success()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Close any open release-failure issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          open_issues="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[].number')"
+          if [ -z "$open_issues" ]; then
+            echo "No open release-failure issue — nothing to close."
+            exit 0
+          fi
+          run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          for number in $open_issues; do
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" \
+              --body "✔ Release channels are back in sync (git tag ↔ npm ↔ deployed registry) as of ${run_url}. Closing automatically."
+            gh issue close "$number" --repo "$GITHUB_REPOSITORY" --reason completed
+            echo "Closed issue #$number"
+          done
+
   alert-on-failure:
     name: File release-failure issue
     needs: audit

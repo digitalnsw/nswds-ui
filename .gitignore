@@ -48,3 +48,4 @@ CLAUDE.md
 fixtures/consumer/node_modules/
 fixtures/consumer/dist/
 fixtures/consumer/package-lock.json
+snyk-analysis.json
