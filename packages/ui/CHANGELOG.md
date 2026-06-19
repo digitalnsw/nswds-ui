@@ -1,3 +1,9 @@
+## [3.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.2.0...@nswds/ui-v3.3.0) (2026-06-19)
+
+### Features
+
+* **workflow:** enhance release audit and integrate Snyk ([#33](https://github.com/digitalnsw/nswds-ui/issues/33)) ([648f58c](https://github.com/digitalnsw/nswds-ui/commit/648f58cef6ae59b060d004ff1115ab5f8326cdbc))
+
 ## [3.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.1.0...@nswds/ui-v3.2.0) (2026-06-16)
 
 ### Features
