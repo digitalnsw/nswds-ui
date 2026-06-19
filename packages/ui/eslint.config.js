@@ -38,4 +38,22 @@ export default [
       ],
     },
   },
+  {
+    // Single source of truth: components must reference @nswds/tokens tokens, never
+    // hardcode colour values. The token layers (colour, radius, space, type, motion)
+    // are wired into Tailwind via theme.css, so every visual property has a token-backed
+    // utility — there's no reason to inline a raw colour. See AGENTS.md §3 / §8.
+    files: ['src/components/**/*.tsx'],
+    ignores: ['src/components/**/*.stories.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/#[0-9a-fA-F]{3,8}\\b|\\boklch\\(|\\brgba?\\(|\\bhsla?\\(/]',
+          message:
+            'No hardcoded colour values in components — reference a semantic token instead (e.g. bg-primary, text-foreground, var(--color-danger-600)). See AGENTS.md §3.',
+        },
+      ],
+    },
+  },
 ]

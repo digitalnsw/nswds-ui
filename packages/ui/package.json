@@ -45,14 +45,14 @@
     "check:drift": "node scripts/check-component-drift.mjs",
     "check:icons": "node scripts/generate-icons.mjs check",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./postcss.config",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
     "registry:build": "npm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r",
     "registry:validate": "shadcn registry validate registry.json --cwd .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
-    "@nswds/tokens": "^3.4.0",
+    "@nswds/tokens": "^4.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.6.0"

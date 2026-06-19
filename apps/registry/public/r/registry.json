@@ -11,7 +11,7 @@
       "dependencies": [
         "@nswds/tokens"
       ],
-      "docs": "Add the @nswds/tokens layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/global/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/semantic/oklch.css\";\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
+      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes.\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
       "cssVars": {
         "theme": {
           "font-heading": "var(--font-sans)"
@@ -41,7 +41,7 @@
           "chart-3": "var(--primary-600)",
           "chart-4": "var(--primary-650)",
           "chart-5": "var(--primary-700)",
-          "radius": "0.45rem",
+          "radius": "var(--radius-md)",
           "sidebar": "var(--grey-50)",
           "sidebar-foreground": "var(--grey-800)",
           "sidebar-primary": "var(--primary-600)",

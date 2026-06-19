@@ -2,18 +2,33 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 
-/* NSW primitive palette: --nsw-blue-800, --nsw-red-600, etc. */
+/* ── Tailwind utility bridges + bundled token values ──
+   preset.css wires every non-theme token category into Tailwind @theme — colours
+   (global + semantic), radius, space, typography, motion, shadow, border, z-index —
+   and also bundles the raw colour values as HEX. Its @theme colour bridges reference
+   the raw custom properties (e.g. --color-danger-600: var(--danger-600)). */
+@import '@nswds/tokens/tailwind/preset.css';
+
+/* ── Raw NSW colour VALUES (oklch) ──
+   Re-asserted AFTER preset so the palette stays oklch (the project standard) instead
+   of preset's bundled hex; preset's bridges then resolve to these oklch values. */
+/* Primitive palette + status ramps: --nsw-blue-800, --danger-600, --success-500, … */
 @import '@nswds/tokens/css/colors/global/oklch.css';
-/* NSW semantic utility tokens: --success-*, --danger-*, --info-*, --warning-* */
+/* Semantic role tokens: --danger-solid/-surface/-text/-border, --background-*, --text-*, … */
 @import '@nswds/tokens/css/colors/semantic/oklch.css';
-/* Masterbrand theme: --primary-* → --nsw-blue-*, --accent-* → --nsw-red-* */
+/* Masterbrand theme: --primary-* → --nsw-blue-*, --accent-* → --nsw-red-* (preset excludes themes) */
 @import '@nswds/tokens/css/colors/themes/masterbrand/oklch.css';
-/* Tailwind bridge: makes fill-nsw-blue-800, text-nsw-red-600, etc. work */
-@import '@nswds/tokens/tailwind/colors/global/oklch.css';
-/* Tailwind bridge: makes fill-primary-800, text-accent-600, etc. work */
+/* Masterbrand theme utilities: fill-primary-800, text-accent-600, … */
 @import '@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css';
-/* Tailwind bridge: makes bg-danger-600, text-success-500, etc. work */
-@import '@nswds/tokens/tailwind/colors/semantic/oklch.css';
+/* Raw motion VALUES on :root (--duration-*, --easing-*, --transition-*, + its
+   prefers-reduced-motion overrides). preset only exposes these via @theme, which
+   Tailwind tree-shakes when no utility references them — so the motion bridge below
+   (var(--easing-standard)) needs the raw layer to resolve. */
+@import '@nswds/tokens/css/motion/global.css';
+/* Raw typography VALUES on :root (--font-size-*, --font-weight-*, --line-height-*),
+   so the type-scale bridge below resolves even though Tailwind tree-shakes the
+   unreferenced @theme keys. */
+@import '@nswds/tokens/css/typography/global.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -50,19 +65,38 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Radius scale comes from @nswds/tokens v4 via preset.css:
+     --radius-none/sm(4px)/md(8px)/lg(16px)/pill. No longer hand-derived here. */
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
 }
 
+/* Motion: route Tailwind's default transition timing through the v4 motion tokens.
+   Values equal Tailwind's defaults (--duration-fast = 150ms,
+   --easing-standard = cubic-bezier(0.4,0,0.2,1)), so nothing changes visually — but
+   every `transition-*` utility now follows @nswds/tokens (incl. its prefers-reduced-motion
+   overrides) instead of Tailwind's hardcoded defaults. */
+@theme {
+  --default-transition-duration: var(--duration-fast);
+  --default-transition-timing-function: var(--easing-standard);
+}
+
+/* Type scale: route Tailwind's font-size keys through the v4 type tokens. Values are
+   identical to Tailwind's defaults (--font-size-14 = 0.875rem = text-sm, etc.), so this
+   is visually neutral — it just makes the scale follow @nswds/tokens. Line-heights stay
+   on Tailwind/explicit utilities; font-weights already come from v4 via preset.css. */
+@theme {
+  --text-xs: var(--font-size-12);
+  --text-sm: var(--font-size-14);
+  --text-base: var(--font-size-16);
+  --text-lg: var(--font-size-18);
+  --text-xl: var(--font-size-20);
+  --text-2xl: var(--font-size-24);
+  --text-3xl: var(--font-size-30);
+}
+
 :root {
-  --white: oklch(1 0 0);
+  /* --white comes from @nswds/tokens v4 global palette (oklch(1 0 0)); not redefined here. */
   --background: var(--white);
   --foreground: var(--grey-800);
   --card: var(--white);
@@ -98,7 +132,8 @@
   --chart-3: var(--primary-600);
   --chart-4: var(--primary-650);
   --chart-5: var(--primary-700);
-  --radius: 0.45rem;
+  /* shadcn base radius — sourced from the v4 token (8px), not hardcoded. */
+  --radius: var(--radius-md);
   --sidebar: var(--grey-50);
   --sidebar-foreground: var(--grey-800);
   --sidebar-primary: var(--primary-600);
