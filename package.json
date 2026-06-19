@@ -25,8 +25,8 @@
     "registry:validate": "turbo registry:validate",
     "typecheck": "turbo typecheck",
     "prepare": "husky",
-    "snyk:check": "snyk test --all-projects --exclude=fixtures,.next --json-file-output=snyk-analysis.json || true",
-    "snyk:monitor": "snyk monitor --all-projects --exclude=fixtures,.next"
+    "snyk:check": "bash -lc 'npm exec --yes --package snyk@latest -- snyk test --all-projects --exclude=fixtures,.next --json-file-output=snyk-analysis.json; code=$?; if [ $code -eq 0 ] || [ $code -eq 1 ]; then exit 0; fi; exit $code'",
+    "snyk:monitor": "npm exec --yes --package snyk@latest -- snyk monitor --all-projects --exclude=fixtures,.next"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
