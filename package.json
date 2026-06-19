@@ -10,8 +10,10 @@
   "scripts": {
     "branch:create": "scripts/create-branch.sh",
     "branch:suggest": "scripts/suggest-branch-name.sh",
+    "branch:suggest:create": "scripts/suggest-branch-name.sh --create",
     "build": "turbo build",
     "commit": "scripts/git-commit.sh",
+    "pr": "scripts/pull-request.sh",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write .",
@@ -22,7 +24,9 @@
     "registry:sync": "node scripts/sync-registry-location.mjs && turbo registry:build",
     "registry:validate": "turbo registry:validate",
     "typecheck": "turbo typecheck",
-    "prepare": "husky"
+    "prepare": "husky",
+    "snyk:check": "snyk test --all-projects --exclude=fixtures,.next --json-file-output=snyk-analysis.json || true",
+    "snyk:monitor": "snyk monitor --all-projects --exclude=fixtures,.next"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
@@ -41,7 +45,7 @@
   },
   "packageManager": "npm@11.5.1",
   "engines": {
-    "node": ">=20",
+    "node": "^22.14.0 || >=24.10.0",
     "npm": ">=11.5.1"
   }
 }
