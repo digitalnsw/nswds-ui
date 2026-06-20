@@ -1,3 +1,9 @@
+## [3.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.3.0...@nswds/ui-v3.4.0) (2026-06-20)
+
+### Features
+
+* **workflow:** validate PR titles with commitlint and harden commit-type sync ([#35](https://github.com/digitalnsw/nswds-ui/issues/35)) ([b1f4c41](https://github.com/digitalnsw/nswds-ui/commit/b1f4c41880db50a6493a8930f062b28f2aeac968)), closes [#34](https://github.com/digitalnsw/nswds-ui/issues/34)
+
 ## [3.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.2.0...@nswds/ui-v3.3.0) (2026-06-19)
 
 ### Features
