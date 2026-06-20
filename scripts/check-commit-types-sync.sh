@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # Fail if the commit type list in commit-types.js (the source of truth) diverges
-# from git-conventional-commits.yaml (the CI/offline fallback mirror). Both feed
-# the commit tooling, so they must agree. commitlint.config.mjs imports
-# commit-types.js directly, so it can't drift and isn't re-checked here.
+# from git-conventional-commits.yaml. The YAML is the live config for the
+# downstream git-conventional-commits CLI (and the shell tooling's offline
+# fallback), so its type list must match the source of truth. commitlint.config.mjs
+# imports commit-types.js directly, so it can't drift and isn't re-checked here.
 # Intended for CI, runnable locally.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
