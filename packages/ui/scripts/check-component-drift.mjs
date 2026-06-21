@@ -38,9 +38,23 @@ const patterns = sourceNames('src/patterns')
 
 const indexSource = readFileSync('src/index.ts', 'utf8')
 const registry = JSON.parse(readFileSync('registry.json', 'utf8'))
-const registryFiles = new Set(
-  registry.items.flatMap((item) => (item.files ?? []).map((file) => file.path))
-)
+
+// Map each registered file path to the set of item `type`s it appears under (a
+// file can be shared by several items, e.g. src/lib/utils.ts). This lets the
+// guard verify not just that a file is registered, but that it is registered
+// under the INTENDED item type — components as `registry:ui`, patterns as
+// `registry:block`.
+const itemTypesByFile = new Map()
+for (const item of registry.items) {
+  for (const file of item.files ?? []) {
+    const types = itemTypesByFile.get(file.path) ?? new Set()
+    types.add(item.type)
+    itemTypesByFile.set(file.path, types)
+  }
+}
+const registryFiles = new Set(itemTypesByFile.keys())
+const registeredAs = (path, type) =>
+  itemTypesByFile.get(path)?.has(type) ?? false
 
 const problems = []
 
@@ -56,18 +70,18 @@ for (const component of components) {
     )
   }
 
-  if (!registryFiles.has(`src/components/${component}.tsx`)) {
+  if (!registeredAs(`src/components/${component}.tsx`, 'registry:ui')) {
     problems.push(
-      `src/components/${component}.tsx is not registered in registry.json`
+      `src/components/${component}.tsx is not registered in registry.json as a registry:ui item`
     )
   }
 }
 
 // Patterns: registry-only — registered as a block, never in the npm barrel.
 for (const pattern of patterns) {
-  if (!registryFiles.has(`src/patterns/${pattern}.tsx`)) {
+  if (!registeredAs(`src/patterns/${pattern}.tsx`, 'registry:block')) {
     problems.push(
-      `src/patterns/${pattern}.tsx is not registered in registry.json as a block`
+      `src/patterns/${pattern}.tsx is not registered in registry.json as a registry:block item`
     )
   }
 
