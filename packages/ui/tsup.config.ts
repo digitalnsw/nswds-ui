@@ -20,6 +20,12 @@ function collectEntries(dir: string): Record<string, string> {
         const stat = statSync(path)
 
         if (stat.isDirectory()) {
+          // src/patterns/ holds registry-only worked examples (e.g. the form
+          // patterns). They ship through the shadcn registry as blocks, never
+          // in the npm tarball, so they are excluded from the bundle here.
+          if (path === join(srcDir, 'patterns')) {
+            return []
+          }
           return Object.entries(collectEntries(path))
         }
 

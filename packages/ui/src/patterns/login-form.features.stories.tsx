@@ -11,28 +11,28 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { IconKey, IconLogin, IconMail } from '../icons/index.js'
-import { Button } from './button.js'
+import { Button } from '../components/button.js'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from './card.js'
+} from '../components/card.js'
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from './field.js'
-import { Input } from './input.js'
-import { LabeledSeparator } from './labeled-separator.js'
-import { Link } from './link.js'
+} from '../components/field.js'
+import { Input } from '../components/input.js'
+import { LabeledSeparator } from '../components/labeled-separator.js'
+import { Link } from '../components/link.js'
+import { Separator } from '../components/separator.js'
+import { docsTemplate } from '../components/story-helpers.js'
+import { IconKey, IconLogin, IconMail } from '../icons/index.js'
 import { LoginForm } from './login-form.js'
-import { Separator } from './separator.js'
-import { docsTemplate } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 

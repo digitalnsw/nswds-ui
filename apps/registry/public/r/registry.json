@@ -478,6 +478,74 @@
           "target": "lib/utils.ts"
         }
       ]
+    },
+    {
+      "name": "login-form",
+      "type": "registry:block",
+      "title": "Login Form",
+      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/card.json",
+        "https://nswds-ui-registry.vercel.app/r/field.json",
+        "https://nswds-ui-registry.vercel.app/r/input.json",
+        "https://nswds-ui-registry.vercel.app/r/labeled-separator.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/separator.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/login-form.tsx",
+          "type": "registry:component",
+          "target": "components/login-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sign-up-form",
+      "type": "registry:block",
+      "title": "Sign-up Form",
+      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/card.json",
+        "https://nswds-ui-registry.vercel.app/r/field.json",
+        "https://nswds-ui-registry.vercel.app/r/input.json",
+        "https://nswds-ui-registry.vercel.app/r/labeled-separator.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/sign-up-form.tsx",
+          "type": "registry:component",
+          "target": "components/sign-up-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "forgot-password-form",
+      "type": "registry:block",
+      "title": "Forgot Password Form",
+      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/card.json",
+        "https://nswds-ui-registry.vercel.app/r/field.json",
+        "https://nswds-ui-registry.vercel.app/r/input.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/forgot-password-form.tsx",
+          "type": "registry:component",
+          "target": "components/forgot-password-form.tsx"
+        }
+      ]
     }
   ],
   "meta": {
