@@ -1,3 +1,9 @@
+## [3.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.4.0...@nswds/ui-v3.5.0) (2026-06-21)
+
+### Features
+
+* **ui:** ship form patterns as registry-only blocks ([#36](https://github.com/digitalnsw/nswds-ui/issues/36)) ([32b9944](https://github.com/digitalnsw/nswds-ui/commit/32b994468588f41fa9ab459fdae399a278182e72))
+
 ## [3.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.3.0...@nswds/ui-v3.4.0) (2026-06-20)
 
 ### Features
