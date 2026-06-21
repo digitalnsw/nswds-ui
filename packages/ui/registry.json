@@ -427,6 +427,74 @@
           "target": "lib/utils.ts"
         }
       ]
+    },
+    {
+      "name": "login-form",
+      "type": "registry:block",
+      "title": "Login Form",
+      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/card.json",
+        "{{REGISTRY_LOCATION}}/r/field.json",
+        "{{REGISTRY_LOCATION}}/r/input.json",
+        "{{REGISTRY_LOCATION}}/r/labeled-separator.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/separator.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/login-form.tsx",
+          "type": "registry:component",
+          "target": "components/login-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sign-up-form",
+      "type": "registry:block",
+      "title": "Sign-up Form",
+      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/card.json",
+        "{{REGISTRY_LOCATION}}/r/field.json",
+        "{{REGISTRY_LOCATION}}/r/input.json",
+        "{{REGISTRY_LOCATION}}/r/labeled-separator.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/sign-up-form.tsx",
+          "type": "registry:component",
+          "target": "components/sign-up-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "forgot-password-form",
+      "type": "registry:block",
+      "title": "Forgot Password Form",
+      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/card.json",
+        "{{REGISTRY_LOCATION}}/r/field.json",
+        "{{REGISTRY_LOCATION}}/r/input.json",
+        "{{REGISTRY_LOCATION}}/r/link.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/forgot-password-form.tsx",
+          "type": "registry:component",
+          "target": "components/forgot-password-form.tsx"
+        }
+      ]
     }
   ]
 }

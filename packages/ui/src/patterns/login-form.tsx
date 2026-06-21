@@ -20,7 +20,9 @@ import { Input } from '../components/input.js'
 import { LabeledSeparator } from '../components/labeled-separator.js'
 import { Link } from '../components/link.js'
 import { Separator } from '../components/separator.js'
-import { IconKey, IconLogin, IconMail } from '../icons/index.js'
+import { IconKey } from '../icons/key.js'
+import { IconLogin } from '../icons/login.js'
+import { IconMail } from '../icons/mail.js'
 import { cn } from '../lib/utils.js'
 
 export function LoginForm({

@@ -21,7 +21,8 @@ import {
 import { Input } from '../components/input.js'
 import { LabeledSeparator } from '../components/labeled-separator.js'
 import { Link } from '../components/link.js'
-import { IconLogin, IconPersonAdd } from '../icons/index.js'
+import { IconLogin } from '../icons/login.js'
+import { IconPersonAdd } from '../icons/person-add.js'
 import { cn } from '../lib/utils.js'
 
 /**

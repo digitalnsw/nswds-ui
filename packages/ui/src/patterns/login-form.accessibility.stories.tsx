@@ -18,24 +18,24 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Button } from './button.js'
+import { Button } from '../components/button.js'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from './card.js'
+} from '../components/card.js'
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from './field.js'
-import { Input } from './input.js'
+} from '../components/field.js'
+import { Input } from '../components/input.js'
+import { wcagStoryMeta } from '../components/story-helpers.js'
 import { LoginForm } from './login-form.js'
-import { wcagStoryMeta } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
