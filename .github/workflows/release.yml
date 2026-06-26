@@ -108,7 +108,13 @@ jobs:
         run: |
           expected="${{ steps.after_release.outputs.tag }}"
           expected="${expected#@nswds/ui-v}"
-          location="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location' registry.config.json)}"
+          # `// empty` -> null/absent .location becomes empty (not the literal
+          # "null"); 2>/dev/null swallows a missing/invalid registry.config.json.
+          location="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location // empty' registry.config.json 2>/dev/null)}"
+          if [ -z "$location" ] || [ "$location" = "null" ]; then
+            echo "::error::Could not resolve the registry URL — set the REGISTRY_LOCATION repo variable or ensure registry.config.json has a non-null .location. (Not polling: this is a config error, not a deploy failure.)"
+            exit 1
+          fi
           url="${location%/}/r/version.json"
           echo "Verifying ${url} reports ${expected}…"
           # ~10 min budget: Vercel queues the build on the pushed commit, then
