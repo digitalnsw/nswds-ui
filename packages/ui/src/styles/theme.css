@@ -134,7 +134,7 @@
   /* `--text-muted`, not `--text-subtle`: text-subtle (#888f92, the same in both
      modes) is only 3.29:1 on the white input surface — below the 4.5:1 WCAG AA
      floor for text. text-muted is also a role token (auto-flips, brand-agnostic)
-     and clears AA in both modes (7.5:1 light / 12.5:1 dark). */
+     and clears WCAG AA contrast (>= 4.5:1) in both modes. */
   --input-placeholder: var(--text-muted);
   --input-surface: var(--surface-default);
   --input-surface-hover: var(--surface-sunken);
