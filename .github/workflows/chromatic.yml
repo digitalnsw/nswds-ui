@@ -7,7 +7,12 @@ name: Chromatic
 # SETUP (one-time, requires a Chromatic account):
 #   1. Create a project at https://www.chromatic.com for this repo.
 #   2. Add the project token as the CHROMATIC_PROJECT_TOKEN repo secret.
-# Until the secret exists, the job no-ops with a notice instead of failing.
+#   3. Mark "Visual regression" as a required status check in branch protection.
+# If the secret is missing in a trusted context (push to main, same-repo PR)
+# the job FAILS rather than silently passing — a missing visual-regression gate
+# is exactly the green-but-unverified state a design system can't afford. Fork
+# PRs (where secrets are unavailable by design) skip with a warning instead, so
+# external contributors aren't blocked.
 
 on:
   push:
@@ -34,9 +39,14 @@ jobs:
         run: |
           if [ -n "${{ secrets.CHROMATIC_PROJECT_TOKEN }}" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::CHROMATIC_PROJECT_TOKEN secret not set — skipping visual regression. See .github/workflows/chromatic.yml for setup."
+          elif [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            # Secrets are unavailable to fork PRs by design — don't block
+            # external contributors, but surface that the gate did not run.
+            echo "::warning::CHROMATIC_PROJECT_TOKEN is unavailable on fork PRs — visual regression was skipped. A maintainer must run it (e.g. push the branch to this repo, or re-run after merge) before the change is considered visually reviewed."
             echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::CHROMATIC_PROJECT_TOKEN is not configured. Visual regression is a required gate for this design system — add the secret (see this file's header). Failing rather than silently passing."
+            exit 1
           fi
 
       - name: Checkout

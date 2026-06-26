@@ -92,17 +92,38 @@ jobs:
           echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} never appeared on npm — the publish failed or was skipped. Check the Release step log; consumers are still receiving the previous version."
           exit 1
 
-      - name: Build shadcn registry
+      # The shadcn registry is the second distribution channel and must track
+      # npm. Vercel (nswds-ui-registry) deploys it from the version-bump commit
+      # semantic-release just pushed — gated by apps/registry/vercel.json's
+      # ignoreCommand. That deploy is async, so poll the LIVE version.json until
+      # it reports the new version. This catches a failed/stuck registry deploy
+      # within minutes instead of up to a week later via the weekly drift audit
+      # (release-drift-audit.yml), and replaces the build-and-upload-artifact
+      # step that previously ran here but was never consumed.
+      - name: Verify the registry deploy reached production
         if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
-        run: npm run registry:build
-
-      - name: Upload shadcn registry artifact
-        if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
-        uses: actions/upload-artifact@v4
-        with:
-          name: shadcn-registry-${{ github.sha }}
-          path: apps/registry/public/r
-          if-no-files-found: error
+        env:
+          # Optional override; otherwise the committed source of truth is used.
+          REGISTRY_LOCATION_OVERRIDE: ${{ vars.REGISTRY_LOCATION }}
+        run: |
+          expected="${{ steps.after_release.outputs.tag }}"
+          expected="${expected#@nswds/ui-v}"
+          location="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location' registry.config.json)}"
+          url="${location%/}/r/version.json"
+          echo "Verifying ${url} reports ${expected}…"
+          # ~10 min budget: Vercel queues the build on the pushed commit, then
+          # runs build + registry:build + vite build before the deploy is live.
+          for attempt in $(seq 1 20); do
+            deployed="$(curl -sf --max-time 20 "$url" | jq -r '.version' 2>/dev/null || true)"
+            if [ "$deployed" = "$expected" ]; then
+              echo "✔ registry deploy is live at ${expected}"
+              exit 0
+            fi
+            echo "Attempt ${attempt}/20: registry reports '${deployed:-nothing}', want ${expected}; retrying in 30s…"
+            sleep 30
+          done
+          echo "::error::The registry at ${location} did not report ${expected} after ~10 minutes — the Vercel deploy likely failed or is stuck. npm has the new version but registry consumers are stranded on the previous one. Check the nswds-ui-registry deployment."
+          exit 1
 
   # Release failures are easy to miss: they happen post-merge where nobody is
   # watching, and semantic-release has already pushed the version tag so the
