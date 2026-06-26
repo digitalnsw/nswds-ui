@@ -397,6 +397,14 @@ Conventional Commits drive the release. Allowed types (from `git-conventional-co
 
 Use `npm run commit` (runs `scripts/git-commit.sh`) for interactive commit message building.
 
+**Visual/token changes must ship a release.** Anything under `packages/ui/src/styles/**`
+(theme tokens, the `globals.css`/`package.css` entries) changes what every consumer renders,
+so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/retuned token, and a
+`BREAKING CHANGE` footer for a token removal or a value change that alters rendered output. A
+`style:`/`refactor:`/`chore:` change to these files ships to nobody (no release). The
+`visual-change-release-guard` job in `pr-checks.yml` enforces this: a PR touching
+`src/styles/**` with a non-releasable title type fails until retitled.
+
 ### What happens on push to `main`
 
 `.github/workflows/release.yml` runs automatically:

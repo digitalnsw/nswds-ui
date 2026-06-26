@@ -119,3 +119,48 @@ jobs:
       # `a11y.test: 'error'`) any violation fails the test.
       - name: Storybook tests (Vitest browser + axe a11y)
         run: npm run test -w @workspace/storybook
+
+  # Token/theme CSS under packages/ui/src/styles/ changes what EVERY consumer
+  # renders, but a `chore:`/`style:`/`refactor:` PR triggers no release, so the
+  # visual change would ship to nobody. Require such PRs to carry a releasable
+  # type so the change actually reaches consumers. (Assumes squash-merge using
+  # the PR title — the repo's convention, enforced by the PR-title commitlint
+  # check; the title drives semantic-release's analysis on main.)
+  visual-change-release-guard:
+    name: Token/style change triggers a release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Require a releasable type when token/theme CSS changes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          changed="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only \
+            | grep '^packages/ui/src/styles/' || true)"
+          if [ -z "$changed" ]; then
+            echo "No token/theme CSS changed under packages/ui/src/styles/ — guard not applicable."
+            exit 0
+          fi
+          echo "Token/theme CSS changed by this PR:"
+          echo "$changed"
+
+          # Conventional type from the PR title (e.g. "feat(ui): …" -> feat).
+          type="$(printf '%s' "$PR_TITLE" | sed -nE 's/^([a-z]+)(\([^)]*\))?!?:.*/\1/p')"
+          breaking=false
+          printf '%s' "$PR_TITLE" | grep -qE '^[a-z]+(\([^)]*\))?!:' && breaking=true
+          printf '%s\n' "$PR_BODY" | grep -qE '(^|[[:space:]])BREAKING CHANGE:' && breaking=true
+
+          if printf '%s' "$type" | grep -qE '^(feat|fix|perf|revert)$' \
+            || [ "$breaking" = true ]; then
+            echo "✔ PR type '${type:-?}' (breaking=${breaking}) triggers a release — the visual change will reach consumers."
+            exit 0
+          fi
+
+          echo "::error::This PR changes token/theme CSS under packages/ui/src/styles/ but its title type ('${type:-unknown}') does not trigger a release, so the visual change would ship to nobody. Use feat:/fix:/perf: (or add a BREAKING CHANGE footer for a token removal or value change that alters rendered output). See AGENTS.md §6 on versioning visual/token changes."
+          exit 1
