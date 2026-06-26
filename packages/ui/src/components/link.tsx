@@ -73,10 +73,33 @@ const linkVariants = cva('', {
 
 type LinkComponent = React.ElementType
 
+/**
+ * Object form of a link target, mirroring the `UrlObject` accepted by framework
+ * link components such as next/link. Used for `Link`'s `href` when a custom
+ * element/component is supplied via `as` / `LinkProvider`; a plain anchor still
+ * takes a string.
+ *
+ * Fields are optional, matching next/link. Typing the *shape* — rather than the
+ * previous bare `object` — rejects unrelated values like arrays and functions
+ * (both carry a numeric `length`, which is incompatible with `length?: never`).
+ */
+type LinkUrlObject = {
+  pathname?: string | null
+  query?: string | Record<string, unknown> | null
+  hash?: string | null
+  search?: string | null
+  host?: string | null
+  hostname?: string | null
+  port?: string | number | null
+  protocol?: string | null
+  /** Brand that excludes arrays/functions (which have a numeric `length`). */
+  length?: never
+}
+
 type LinkProps = Omit<React.ComponentPropsWithoutRef<'a'>, 'href'> &
   VariantProps<typeof linkVariants> & {
     as?: LinkComponent
-    href: React.ComponentPropsWithoutRef<'a'>['href'] | object
+    href: React.ComponentPropsWithoutRef<'a'>['href'] | LinkUrlObject
     ref?: React.Ref<HTMLAnchorElement>
   }
 
@@ -212,4 +235,4 @@ function ExternalLink({
 }
 
 export { ExternalLink, Link, LinkProvider, linkVariants }
-export type { ExternalLinkProps, LinkComponent, LinkProps }
+export type { ExternalLinkProps, LinkComponent, LinkProps, LinkUrlObject }

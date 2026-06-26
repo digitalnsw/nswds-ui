@@ -423,6 +423,26 @@ function ButtonContent({
 }
 
 /**
+ * Dev-only guard shared by `Button` and `ButtonLink`: an icon-only button
+ * (`size="icon"`) renders no visible text, so it must carry an explicit
+ * accessible name. Warns in development when one is missing; a no-op in
+ * production. A falsy `aria-label` (including `""`) counts as missing.
+ */
+function warnIfIconButtonUnlabelled(
+  size: VariantProps<typeof buttonVariants>['size'],
+  props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown }
+) {
+  if (process.env.NODE_ENV === 'production') {
+    return
+  }
+  if (size === 'icon' && !props['aria-label'] && !props['aria-labelledby']) {
+    console.warn(
+      '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
+    )
+  }
+}
+
+/**
  * Action button on the Base UI button primitive. For button-styled
  * navigation, use `ButtonLink` — the `href` polymorphism that previously
  * lived on this component was removed in v2.
@@ -451,14 +471,7 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
 
-  if (process.env.NODE_ENV !== 'production') {
-    const rest = props as Record<string, unknown>
-    if (size === 'icon' && !rest['aria-label'] && !rest['aria-labelledby']) {
-      console.warn(
-        '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
-      )
-    }
-  }
+  warnIfIconButtonUnlabelled(size, props)
 
   return (
     <ButtonPrimitive
@@ -520,14 +533,7 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
 
-  if (process.env.NODE_ENV !== 'production') {
-    const rest = props as Record<string, unknown>
-    if (size === 'icon' && !rest['aria-label'] && !rest['aria-labelledby']) {
-      console.warn(
-        '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
-      )
-    }
-  }
+  warnIfIconButtonUnlabelled(size, props)
 
   return (
     <Link

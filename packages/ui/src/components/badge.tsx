@@ -369,7 +369,10 @@ type BadgeLinkProps = BadgeOwnProps &
     ref?: React.Ref<HTMLAnchorElement>
   }
 
-function badgeWrapperClasses({ color, className }: BadgeOwnProps) {
+function badgeWrapperClasses({
+  color,
+  className,
+}: Pick<BadgeOwnProps, 'color' | 'className'>) {
   return clsx(
     className,
     focusOutline[(color ?? undefined) as keyof typeof focusOutline],
@@ -403,7 +406,7 @@ function BadgeButton({
       data-variant={variant}
       {...props}
       className={clsx(
-        badgeWrapperClasses({ color, className, children }),
+        badgeWrapperClasses({ color, className }),
         'cursor-pointer'
       )}
       ref={ref}
@@ -435,7 +438,7 @@ function BadgeLink({
       variant="unstyled"
       data-variant={variant}
       {...props}
-      className={badgeWrapperClasses({ color, className, children })}
+      className={badgeWrapperClasses({ color, className })}
       ref={ref}
     >
       <TouchTarget>
