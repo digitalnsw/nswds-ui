@@ -11,10 +11,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "culori": "^4.0.2"
+    "@nswds/tokens": "^4.1.0"
   },
   "devDependencies": {
-    "@types/culori": "^4.0.1",
     "@workspace/typescript-config": "*",
     "typescript": "^5.9.3"
   }

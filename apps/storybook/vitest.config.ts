@@ -31,8 +31,6 @@ export default defineConfig({
       '@storybook/react-vite',
       '@storybook/addon-a11y',
       'msw-storybook-addon',
-      // `culori` is pulled in by @workspace/theme-tools' palette helpers.
-      'culori',
     ],
   },
   test: {

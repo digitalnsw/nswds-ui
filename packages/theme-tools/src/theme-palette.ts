@@ -1,4 +1,4 @@
-import { colorThemes, colors } from './color-palette.js'
+import { FALLBACK_SWATCH, colorThemes, colors } from './color-palette.js'
 
 export type ThemeCategory = 'brand' | 'aboriginal'
 
@@ -78,12 +78,12 @@ export function getHueLabel(category: ThemeCategory, hue: string): string {
 
 /** Swatch hex for a primary option — uses the -800 step (NSW 01 anchor). */
 export function getPrimarySwatch(category: ThemeCategory, hue: string): string {
-  return colorThemes[category]?.[hue]?.colors[3]?.hex ?? '#000000'
+  return colorThemes[category]?.[hue]?.colors[3]?.hex ?? FALLBACK_SWATCH
 }
 
 /** Swatch hex for an accent option — uses the -600 step (NSW 02 anchor). */
 export function getAccentSwatch(category: ThemeCategory, hue: string): string {
-  return colorThemes[category]?.[hue]?.colors[2]?.hex ?? '#000000'
+  return colorThemes[category]?.[hue]?.colors[2]?.hex ?? FALLBACK_SWATCH
 }
 
 /**
