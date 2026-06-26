@@ -49,8 +49,18 @@ function Spinner({
   ref,
   ...props
 }: SpinnerProps) {
+  // An empty label suppresses the live region entirely: a `role="status"`
+  // element with no text content is an empty, redundant live region (e.g. when
+  // the Spinner sits inside a Button whose own `aria-busy` conveys the state).
+  // A consumer-supplied `role` in `...props` still wins, as before.
+  const labelled = label !== ''
   return (
-    <span ref={ref} role="status" className={className} {...props}>
+    <span
+      ref={ref}
+      role={labelled ? 'status' : undefined}
+      className={className}
+      {...props}
+    >
       <svg
         fill="none"
         viewBox="0 0 100 101"
@@ -71,7 +81,7 @@ function Spinner({
           fill="currentFill"
         />
       </svg>
-      {label ? <span className="sr-only">{label}</span> : null}
+      {labelled ? <span className="sr-only">{label}</span> : null}
     </span>
   )
 }
