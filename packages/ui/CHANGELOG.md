@@ -1,3 +1,9 @@
+## [3.5.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.0...@nswds/ui-v3.5.1) (2026-06-26)
+
+### Bug Fixes
+
+* **ui:** meet WCAG AA contrast for input placeholders ([#38](https://github.com/digitalnsw/nswds-ui/issues/38)) ([8d7cb35](https://github.com/digitalnsw/nswds-ui/commit/8d7cb356b1ca1993c9adc8b7b1923c7286836d89)), closes [#888f92](https://github.com/digitalnsw/nswds-ui/issues/888f92)
+
 ## [3.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.4.0...@nswds/ui-v3.5.0) (2026-06-21)
 
 ### Features
