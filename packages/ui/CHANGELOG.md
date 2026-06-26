@@ -1,3 +1,9 @@
+## [3.5.5](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.4...@nswds/ui-v3.5.5) (2026-06-26)
+
+### Bug Fixes
+
+* **ui:** make @nswds/tokens a build-time devDependency and fix the README ([#46](https://github.com/digitalnsw/nswds-ui/issues/46)) ([e072bd0](https://github.com/digitalnsw/nswds-ui/commit/e072bd0415d90c40c3026499829b8adcf8225779))
+
 ## [3.5.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.3...@nswds/ui-v3.5.4) (2026-06-26)
 
 ### Bug Fixes
