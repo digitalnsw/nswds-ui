@@ -21,7 +21,7 @@ function Input({
         // No `outline-none` here: it sets `--tw-outline-style: none` globally
         // on the element, which then suppresses the focus outline below
         // (which reads `outline-style: var(--tw-outline-style)`).
-        'h-12 w-full min-w-0 rounded-sm px-4 py-2 text-base transition-colors',
+        'h-12 w-full min-w-0 rounded-sm px-4 py-2 text-base transition-colors motion-reduce:transition-none',
         // Every colour routes through the --input-* semantic tokens (layer 3,
         // theme.css / the registry theme item). Dark mode and brand themes
         // restyle the input by remapping tokens — no dark: variants here.

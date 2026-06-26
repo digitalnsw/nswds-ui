@@ -99,7 +99,7 @@ const focusOutline = {
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-center rounded-sm font-normal border forced-colors:outline transition-all h-fit shrink-0',
+    'relative isolate inline-flex items-center rounded-sm font-normal border forced-colors:outline transition-all motion-reduce:transition-none h-fit shrink-0',
     // Icon
     '*:data-[slot=icon]:size-4 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center sm:*:data-[slot=icon]:size-3',
   ],
