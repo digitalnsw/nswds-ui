@@ -104,7 +104,12 @@ const buildHue = (category: Category, hue: string): HueScale => {
 
   const colors = Object.keys(meta).map((step): ColorEntry => {
     const token = `${group}-${step}`
-    const name = anchorName(category, hue, Number(step), meta[step]?.$description)
+    const name = anchorName(
+      category,
+      hue,
+      Number(step),
+      meta[step]?.$description
+    )
     return {
       token,
       oklch: oklchByToken[token]!,
