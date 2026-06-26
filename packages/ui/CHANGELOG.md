@@ -1,3 +1,9 @@
+## [3.5.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.3...@nswds/ui-v3.5.4) (2026-06-26)
+
+### Bug Fixes
+
+* **ui:** harden form-pattern accessibility (divider, duplicate ids, stories) ([#41](https://github.com/digitalnsw/nswds-ui/issues/41)) ([5fa9396](https://github.com/digitalnsw/nswds-ui/commit/5fa93965b6b46c98b2694dc938c1af33d8555fb1))
+
 ## [3.5.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.2...@nswds/ui-v3.5.3) (2026-06-26)
 
 ### Bug Fixes
