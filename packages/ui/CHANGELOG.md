@@ -1,3 +1,9 @@
+## [3.5.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.2...@nswds/ui-v3.5.3) (2026-06-26)
+
+### Bug Fixes
+
+* **ui:** honor prefers-reduced-motion on button/badge/input/link transitions ([#40](https://github.com/digitalnsw/nswds-ui/issues/40)) ([3cf59ce](https://github.com/digitalnsw/nswds-ui/commit/3cf59cebea62b4d4d53907da98f1aaaf01de7c3e))
+
 ## [3.5.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.1...@nswds/ui-v3.5.2) (2026-06-26)
 
 ### Bug Fixes
