@@ -5,10 +5,12 @@ Reusable design system components for NSW Government digital products. Accessibl
 ## Installation
 
 ```bash
-npm install @nswds/ui @nswds/tokens
+npm install @nswds/ui
 ```
 
-Requires React 19. The package is ESM-only and ships compiled JavaScript, TypeScript types, and a precompiled stylesheet — no Tailwind setup is required to use it.
+Requires React 19. The package is ESM-only and ships compiled JavaScript, TypeScript types, and a precompiled stylesheet — no Tailwind setup, and no separate `@nswds/tokens` install, is required. `@nswds/ui/styles.css` already has the token values inlined; `@nswds/tokens` is a build-time dependency only.
+
+> The **registry** channel is different: because it copies editable source (which references the raw token CSS) rather than the precompiled stylesheet, it _does_ install `@nswds/tokens`. See the [registry installation guide](https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md).
 
 ## Usage
 
