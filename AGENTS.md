@@ -403,7 +403,7 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
 `BREAKING CHANGE` footer for a token removal or a value change that alters rendered output. A
 `style:`/`refactor:`/`chore:` change to these files ships to nobody (no release). The
 `visual-change-release-guard` job in `pr-checks.yml` enforces this: a PR touching
-`src/styles/**` with a non-releasable title type fails until retitled.
+`packages/ui/src/styles/**` with a non-releasable title type fails until retitled.
 
 ### What happens on push to `main`
 

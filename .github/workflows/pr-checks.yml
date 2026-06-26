@@ -141,8 +141,15 @@ jobs:
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          changed="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only \
-            | grep '^packages/ui/src/styles/' || true)"
+          # Check `gh`'s exit status explicitly (a bare `files=$(...)` does NOT
+          # reliably trip `set -e`). A gh failure (auth/rate-limit/transient)
+          # must fail the step — fail CLOSED — not be swallowed by the grep's
+          # `|| true` below and silently pass the guard.
+          if ! files="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" --name-only)"; then
+            echo "::error::Could not fetch the PR diff (gh pr diff failed — auth, rate limit, or transient error). The token/style release guard cannot evaluate the change; re-run this check."
+            exit 1
+          fi
+          changed="$(printf '%s\n' "$files" | grep '^packages/ui/src/styles/' || true)"
           if [ -z "$changed" ]; then
             echo "No token/theme CSS changed under packages/ui/src/styles/ — guard not applicable."
             exit 0
