@@ -51,7 +51,7 @@
           "sidebar-ring": "var(--border-strong)",
           "input-border": "var(--border-strong)",
           "input-foreground": "var(--text-default)",
-          "input-placeholder": "var(--text-subtle)",
+          "input-placeholder": "var(--text-muted)",
           "input-surface": "var(--surface-default)",
           "input-surface-hover": "var(--surface-sunken)",
           "input-ring": "var(--border-strong)",

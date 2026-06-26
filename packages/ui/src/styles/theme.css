@@ -131,7 +131,11 @@
   /* Form input tokens — Input references ONLY these; the role tokens make them mode-aware. */
   --input-border: var(--border-strong);
   --input-foreground: var(--text-default);
-  --input-placeholder: var(--text-subtle);
+  /* `--text-muted`, not `--text-subtle`: text-subtle (#888f92, the same in both
+     modes) is only 3.29:1 on the white input surface — below the 4.5:1 WCAG AA
+     floor for text. text-muted is also a role token (auto-flips, brand-agnostic)
+     and clears WCAG AA contrast (>= 4.5:1) in both modes. */
+  --input-placeholder: var(--text-muted);
   --input-surface: var(--surface-default);
   --input-surface-hover: var(--surface-sunken);
   --input-ring: var(--border-strong);
