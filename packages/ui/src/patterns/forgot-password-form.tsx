@@ -49,10 +49,11 @@ export function ForgotPasswordForm({
         <CardContent>
           <form>
             <FieldGroup>
+              {/* No htmlFor/id wiring: the Field associates the label with the
+               * control automatically (Base UI generates the id per instance). */}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <FieldLabel>Email</FieldLabel>
                 <Input
-                  id="email"
                   type="email"
                   autoComplete="email"
                   placeholder="m@example.com"

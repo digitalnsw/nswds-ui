@@ -88,10 +88,13 @@ export function SignUpForm({
                 <FieldLegend className="text-base">
                   Register with email and password
                 </FieldLegend>
+                {/* No htmlFor/id/aria-describedby wiring: each Field associates
+                 * its label and description with the control automatically (Base
+                 * UI generates ids per instance), so the password requirements
+                 * below are linked via aria-describedby without manual plumbing. */}
                 <Field>
-                  <FieldLabel htmlFor="name">Full name</FieldLabel>
+                  <FieldLabel>Full name</FieldLabel>
                   <Input
-                    id="name"
                     type="text"
                     autoComplete="name"
                     placeholder="Jane Citizen"
@@ -99,9 +102,8 @@ export function SignUpForm({
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
+                  <FieldLabel>Email</FieldLabel>
                   <Input
-                    id="email"
                     type="email"
                     autoComplete="email"
                     placeholder="m@example.com"
@@ -109,28 +111,15 @@ export function SignUpForm({
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="new-password"
-                    aria-describedby="password-requirements"
-                    required
-                  />
-                  <FieldDescription id="password-requirements">
+                  <FieldLabel>Password</FieldLabel>
+                  <Input type="password" autoComplete="new-password" required />
+                  <FieldDescription>
                     Use at least 8 characters, including a number and a symbol.
                   </FieldDescription>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="confirm-password">
-                    Confirm password
-                  </FieldLabel>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                  />
+                  <FieldLabel>Confirm password</FieldLabel>
+                  <Input type="password" autoComplete="new-password" required />
                 </Field>
               </FieldSet>
               <Field>

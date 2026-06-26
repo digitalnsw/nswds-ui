@@ -54,14 +54,16 @@ type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getInputById(
+// The form no longer hardcodes ids (Field auto-associates and scopes ids per
+// instance), so locate the inputs by their stable `type` instead.
+function getInputByType(
   canvasElement: HTMLElement,
-  id: string
+  type: string
 ): HTMLInputElement {
   const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[id="${id}"]`
+    `input[type="${type}"]`
   )
-  if (!input) throw new Error(`Could not find input #${id} in canvas.`)
+  if (!input) throw new Error(`Could not find input[type="${type}"] in canvas.`)
   return input
 }
 
@@ -78,7 +80,7 @@ export const LabelAssociation: Story = {
           why: 'Both the email and password inputs must be programmatically associated with a visible <label> so screen readers can announce the purpose of each field as the user moves through the form.',
           how: 'Run the canvas with VoiceOver or NVDA and Tab through each input — each should announce "Email, edit text" and "Password, secure edit text". The play() function asserts both inputs expose at least one entry in their .labels collection.',
           caveat:
-            'LoginForm hardcodes the input ids (#email, #password). If you instantiate LoginForm twice on the same page, the duplicate ids break label association — extend the pattern to scope ids per instance before doing so.',
+            'The inputs carry no hardcoded ids — each Field associates its label with the control via Base UI, generating ids per instance, so two LoginForms on one page do not collide. The play() locates inputs by type rather than id for the same reason.',
         }),
       },
     },
@@ -89,17 +91,17 @@ export const LabelAssociation: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = getInputById(canvasElement, 'email')
+    const email = getInputByType(canvasElement, 'email')
     if (!email.labels || email.labels.length < 1) {
       throw new Error(
-        'WCAG 1.3.1: #email has no associated <label> via htmlFor/labels.'
+        'WCAG 1.3.1: the email input has no associated <label> via htmlFor/labels.'
       )
     }
 
-    const password = getInputById(canvasElement, 'password')
+    const password = getInputByType(canvasElement, 'password')
     if (!password.labels || password.labels.length < 1) {
       throw new Error(
-        'WCAG 1.3.1: #password has no associated <label> via htmlFor/labels.'
+        'WCAG 1.3.1: the password input has no associated <label> via htmlFor/labels.'
       )
     }
   },
@@ -129,8 +131,8 @@ export const FocusOrder: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = getInputById(canvasElement, 'email')
-    const password = getInputById(canvasElement, 'password')
+    const email = getInputByType(canvasElement, 'email')
+    const password = getInputByType(canvasElement, 'password')
     const forgot = canvasElement.querySelector<HTMLAnchorElement>('a[href="#"]')
     if (!forgot) {
       throw new Error('WCAG 2.4.3: could not find Forgot password link.')
@@ -266,7 +268,7 @@ export const ErrorIdentification: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const password = getInputById(canvasElement, 'a11y-err-password')
+    const password = getInputByType(canvasElement, 'password')
 
     if (password.getAttribute('aria-invalid') !== 'true') {
       throw new Error(
@@ -327,16 +329,18 @@ export const LabelsAndInstructions: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = getInputById(canvasElement, 'email')
+    const email = getInputByType(canvasElement, 'email')
     const emailLabel = email.labels?.[0]?.textContent?.trim() ?? ''
     if (emailLabel.length === 0) {
-      throw new Error('WCAG 3.3.2: #email has no visible label text.')
+      throw new Error('WCAG 3.3.2: the email input has no visible label text.')
     }
 
-    const password = getInputById(canvasElement, 'password')
+    const password = getInputByType(canvasElement, 'password')
     const passwordLabel = password.labels?.[0]?.textContent?.trim() ?? ''
     if (passwordLabel.length === 0) {
-      throw new Error('WCAG 3.3.2: #password has no visible label text.')
+      throw new Error(
+        'WCAG 3.3.2: the password input has no visible label text.'
+      )
     }
 
     // The Forgot password? link must live in the same field group as the
@@ -384,19 +388,19 @@ export const NameRoleValue: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = getInputById(canvasElement, 'email')
+    const email = getInputByType(canvasElement, 'email')
     const emailName = email.labels?.[0]?.textContent?.trim() ?? ''
     if (emailName.length === 0) {
       throw new Error(
-        'WCAG 4.1.2: #email has no accessible name (label text is empty).'
+        'WCAG 4.1.2: the email input has no accessible name (label text is empty).'
       )
     }
 
-    const password = getInputById(canvasElement, 'password')
+    const password = getInputByType(canvasElement, 'password')
     const passwordName = password.labels?.[0]?.textContent?.trim() ?? ''
     if (passwordName.length === 0) {
       throw new Error(
-        'WCAG 4.1.2: #password has no accessible name (label text is empty).'
+        'WCAG 4.1.2: the password input has no accessible name (label text is empty).'
       )
     }
 

@@ -87,19 +87,21 @@ export const Default: Story = {
   },
   play: async ({ canvasElement }) => {
     // Each input must be present and programmatically labelled (WCAG 1.3.1).
-    const requiredInputs: Array<[string, string]> = [
-      ['#name', 'name'],
-      ['#email', 'email'],
-      ['#password', 'password'],
-      ['#confirm-password', 'confirm password'],
-    ]
-    for (const [selector, label] of requiredInputs) {
-      const input = canvasElement.querySelector<HTMLInputElement>(selector)
-      if (!input) {
-        throw new Error(`SignUpForm: expected a ${label} input (${selector}).`)
-      }
+    // The form sets no ids (Field auto-associates and scopes ids per instance),
+    // so assert against all inputs rather than fixed id selectors.
+    const inputs = Array.from(
+      canvasElement.querySelectorAll<HTMLInputElement>('input')
+    )
+    if (inputs.length < 4) {
+      throw new Error(
+        `SignUpForm: expected name, email, password, and confirm-password inputs, found ${inputs.length}.`
+      )
+    }
+    for (const input of inputs) {
       if (!input.labels || input.labels.length < 1) {
-        throw new Error(`SignUpForm: the ${label} input has no <label>.`)
+        throw new Error(
+          `SignUpForm: an input (type="${input.type}", autocomplete="${input.autocomplete}") has no <label>.`
+        )
       }
     }
 
@@ -125,7 +127,7 @@ export const Default: Story = {
 
     // The requirements hint must be associated with the password input.
     const describedBy = password?.getAttribute('aria-describedby')
-    if (!describedBy || !canvasElement.querySelector(`#${describedBy}`)) {
+    if (!describedBy || !canvasElement.querySelector(`[id="${describedBy}"]`)) {
       throw new Error(
         'SignUpForm: password input is missing an aria-describedby hint.'
       )
