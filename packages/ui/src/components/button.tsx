@@ -13,7 +13,7 @@ import { Spinner } from '../components/spinner.js'
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all',
+    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all motion-reduce:transition-none',
     // Focus — deliberately `focus:` (paints on pointer clicks too), unlike
     // Link/Input which use `focus-visible:`. Buttons give click feedback with
     // the ring; links only ring for keyboard/AT focus. Do not "unify" this.
