@@ -59,19 +59,18 @@ export function LoginForm({
                 </Button>
               </Field>
               <LabeledSeparator>or sign in with email</LabeledSeparator>
-              {/* 2 — Email + password */}
+              {/* 2 — Email + password.
+               * No htmlFor/id wiring: each control sits in a Field, which
+               * associates the label (and any description/error) with the input
+               * automatically via Base UI, generating ids per instance — so two
+               * LoginForms on one page don't collide. */}
               <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
+                <FieldLabel>Email</FieldLabel>
+                <Input type="email" placeholder="m@example.com" required />
               </Field>
               <Field className="relative [&>a]:w-auto">
-                <FieldLabel htmlFor="password">Password</FieldLabel>
-                <Input id="password" type="password" required />
+                <FieldLabel>Password</FieldLabel>
+                <Input type="password" required />
                 {/*
                  * Placed AFTER the input in DOM (rather than next to the
                  * label) so keyboard tab order is email → password → forgot,
@@ -103,7 +102,7 @@ export function LoginForm({
                   above.
                 </FieldDescription>
               </Field>
-              <Separator className="bg-grey-200" />
+              <Separator />
               <Field>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <Link href="#">Sign up</Link>
