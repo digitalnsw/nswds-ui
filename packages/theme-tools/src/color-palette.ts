@@ -3,8 +3,9 @@ import { colorTokens, jsonTokens } from '@nswds/tokens'
 // The colour palettes consumed by the Storybook theme picker are derived
 // entirely from `@nswds/tokens` — the single source of truth. Nothing in this
 // file hardcodes a colour value:
-//   • `jsonTokens.global.{oklch,hex}` — canonical CSS strings, keyed by token
-//     (e.g. `nsw-green-50`). Used for the `--color-*` overrides and swatches.
+//   • `jsonTokens.global.{oklch,hex}` — canonical CSS strings, keyed by group
+//     then token (e.g. `oklch['nsw-green']['nsw-green-50']`). Used for the
+//     `--color-*` overrides and swatches.
 //   • `colorTokens.global.oklch[group][step].$description` — carries the
 //     bespoke palette names (e.g. "Galah Pink") used for picker labels.
 
