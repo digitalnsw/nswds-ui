@@ -1,3 +1,9 @@
+## [3.5.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.1...@nswds/ui-v3.5.2) (2026-06-26)
+
+### Bug Fixes
+
+* **ui:** tighten Link href type, spinner role, and dedupe button warning ([#39](https://github.com/digitalnsw/nswds-ui/issues/39)) ([b125d42](https://github.com/digitalnsw/nswds-ui/commit/b125d42f92bce4966bc898d555a134f129d22b5a))
+
 ## [3.5.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.0...@nswds/ui-v3.5.1) (2026-06-26)
 
 ### Bug Fixes
