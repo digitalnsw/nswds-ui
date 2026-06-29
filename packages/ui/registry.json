@@ -139,26 +139,6 @@
       ]
     },
     {
-      "name": "description-list",
-      "type": "registry:ui",
-      "title": "Description List",
-      "description": "A responsive description list primitive for term and detail pairs.",
-      "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
-      "files": [
-        {
-          "path": "src/components/description-list.tsx",
-          "type": "registry:ui",
-          "target": "components/description-list.tsx"
-        },
-        {
-          "path": "src/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "lib/utils.ts"
-        }
-      ]
-    },
-    {
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
@@ -420,6 +400,204 @@
           "path": "src/components/spinner.tsx",
           "type": "registry:ui",
           "target": "components/spinner.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "aspect-ratio",
+      "type": "registry:ui",
+      "title": "Aspect Ratio",
+      "description": "Constrains its content to a given width-to-height ratio.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/aspect-ratio.tsx",
+          "type": "registry:ui",
+          "target": "components/aspect-ratio.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "An expandable section built on the Base UI collapsible primitive.",
+      "dependencies": ["@base-ui/react"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/collapsible.tsx",
+          "type": "registry:ui",
+          "target": "components/collapsible.tsx"
+        }
+      ]
+    },
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "title": "Drawer",
+      "description": "An edge-anchored panel that slides in from any side, built on Vaul.",
+      "dependencies": ["vaul", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/drawer.tsx",
+          "type": "registry:ui",
+          "target": "components/drawer.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "hover-card",
+      "type": "registry:ui",
+      "title": "Hover Card",
+      "description": "A rich preview surface shown on hover or focus, built on the Base UI preview-card primitive.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/hover-card.tsx",
+          "type": "registry:ui",
+          "target": "components/hover-card.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "popover",
+      "type": "registry:ui",
+      "title": "Popover",
+      "description": "A floating panel anchored to a trigger, built on the Base UI popover primitive.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/popover.tsx",
+          "type": "registry:ui",
+          "target": "components/popover.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "resizable",
+      "type": "registry:ui",
+      "title": "Resizable",
+      "description": "Resizable panel groups with draggable handles, built on react-resizable-panels.",
+      "dependencies": ["react-resizable-panels", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/resizable.tsx",
+          "type": "registry:ui",
+          "target": "components/resizable.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "Scroll Area",
+      "description": "A custom scrollable region with styled scrollbars, built on the Base UI scroll-area primitive.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "components/scroll-area.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "An edge-anchored dialog that slides in from any side, built on the Base UI dialog primitive.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/sheet.tsx",
+          "type": "registry:ui",
+          "target": "components/sheet.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "title": "Sonner",
+      "description": "A toast notification surface wired to next-themes, with NSWDS status icons.",
+      "dependencies": ["sonner", "next-themes"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/spinner.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/sonner.tsx",
+          "type": "registry:ui",
+          "target": "components/sonner.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "A small label shown on hover or focus, built on the Base UI tooltip primitive.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/tooltip.tsx",
+          "type": "registry:ui",
+          "target": "components/tooltip.tsx"
         },
         {
           "path": "src/lib/utils.ts",

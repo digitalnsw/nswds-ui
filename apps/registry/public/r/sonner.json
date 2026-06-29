@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sonner",
+  "title": "Sonner",
+  "description": "A toast notification surface wired to next-themes, with NSWDS status icons.",
+  "dependencies": [
+    "sonner",
+    "next-themes"
+  ],
+  "registryDependencies": [
+    "https://nswds-ui-registry.vercel.app/r/theme.json",
+    "https://nswds-ui-registry.vercel.app/r/spinner.json",
+    "https://nswds-ui-registry.vercel.app/r/icons.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/sonner.tsx",
+      "content": "'use client'\n\nimport { useTheme } from 'next-themes'\nimport * as React from 'react'\nimport { Toaster as Sonner, type ToasterProps } from 'sonner'\n\nimport { Spinner } from '@/components/spinner'\nimport {\n  IconCheckCircle,\n  IconError,\n  IconInfo,\n  IconWarning,\n} from '@/icons/index'\n\nconst Toaster = ({ ...props }: ToasterProps) => {\n  const { theme = 'system' } = useTheme()\n\n  return (\n    <Sonner\n      theme={theme as ToasterProps['theme']}\n      className=\"toaster group\"\n      icons={{\n        success: <IconCheckCircle className=\"size-4\" />,\n        info: <IconInfo className=\"size-4\" />,\n        warning: <IconWarning className=\"size-4\" />,\n        error: <IconError className=\"size-4\" />,\n        loading: <Spinner size=\"sm\" color=\"current\" label=\"\" />,\n      }}\n      style={\n        {\n          '--normal-bg': 'var(--popover)',\n          '--normal-text': 'var(--popover-foreground)',\n          '--normal-border': 'var(--border)',\n          '--border-radius': 'var(--radius)',\n        } as React.CSSProperties\n      }\n      toastOptions={{\n        classNames: {\n          toast: 'cn-toast',\n        },\n      }}\n      {...props}\n    />\n  )\n}\n\nexport { Toaster }\n",
+      "type": "registry:ui",
+      "target": "components/sonner.tsx"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "3.5.5"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "collapsible",
+  "title": "Collapsible",
+  "description": "An expandable section built on the Base UI collapsible primitive.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "registryDependencies": [
+    "https://nswds-ui-registry.vercel.app/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/collapsible.tsx",
+      "content": "'use client'\n\nimport { Collapsible as CollapsiblePrimitive } from '@base-ui/react/collapsible'\n\nfunction Collapsible({ ...props }: CollapsiblePrimitive.Root.Props) {\n  return <CollapsiblePrimitive.Root data-slot=\"collapsible\" {...props} />\n}\n\nfunction CollapsibleTrigger({ ...props }: CollapsiblePrimitive.Trigger.Props) {\n  return (\n    <CollapsiblePrimitive.Trigger data-slot=\"collapsible-trigger\" {...props} />\n  )\n}\n\nfunction CollapsibleContent({ ...props }: CollapsiblePrimitive.Panel.Props) {\n  return (\n    <CollapsiblePrimitive.Panel data-slot=\"collapsible-content\" {...props} />\n  )\n}\n\nexport { Collapsible, CollapsibleContent, CollapsibleTrigger }\n",
+      "type": "registry:ui",
+      "target": "components/collapsible.tsx"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "3.5.5"
+  }
+}

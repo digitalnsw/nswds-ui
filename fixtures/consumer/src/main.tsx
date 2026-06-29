@@ -26,9 +26,6 @@ import type {
   CardHeaderProps,
   CardProps,
   CardTitleProps,
-  DescriptionDetailsProps,
-  DescriptionListProps,
-  DescriptionTermProps,
   ExternalLinkProps,
   FieldContentProps,
   FieldDescriptionProps,
@@ -51,6 +48,7 @@ import type {
   SpinnerProps,
 } from '@nswds/ui'
 import {
+  AspectRatio,
   Badge,
   BadgeButton,
   BadgeLink,
@@ -63,9 +61,19 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  DescriptionDetails,
-  DescriptionList,
-  DescriptionTerm,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerPortal,
+  DrawerTitle,
+  DrawerTrigger,
   ExternalLink,
   Field,
   FieldContent,
@@ -77,14 +85,41 @@ import {
   FieldSeparator,
   FieldSet,
   FieldTitle,
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
   Input,
   Label,
   LabeledSeparator,
   Link,
   LinkProvider,
   Logo,
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+  ScrollArea,
+  ScrollBar,
   Separator,
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
   Spinner,
+  Toaster,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
   TouchTarget,
   badgeVariants,
   buttonVariants,
@@ -111,9 +146,6 @@ type PublicPropTypes = [
   CardFooterProps,
   CardHeaderProps,
   CardTitleProps,
-  DescriptionListProps,
-  DescriptionTermProps,
-  DescriptionDetailsProps,
   ExternalLinkProps,
   FieldProps,
   FieldSetProps,
@@ -194,12 +226,6 @@ function App() {
         <CardFooter>Footer</CardFooter>
       </Card>
 
-      {/* Description list */}
-      <DescriptionList>
-        <DescriptionTerm>Agency</DescriptionTerm>
-        <DescriptionDetails>NSW Government</DescriptionDetails>
-      </DescriptionList>
-
       {/* Form field composition */}
       <FieldSet>
         <FieldLegend>Contact</FieldLegend>
@@ -240,6 +266,96 @@ function App() {
       </Button>
       <Spinner aria-label="Loading fixture" />
       <Logo logoType="default" />
+
+      {/* Aspect ratio */}
+      <AspectRatio ratio={16 / 9}>
+        <div className="bg-muted" />
+      </AspectRatio>
+
+      {/* Collapsible */}
+      <Collapsible>
+        <CollapsibleTrigger>Toggle details</CollapsibleTrigger>
+        <CollapsibleContent>Collapsible content</CollapsibleContent>
+      </Collapsible>
+
+      {/* Popover */}
+      <Popover>
+        <PopoverTrigger>Open popover</PopoverTrigger>
+        <PopoverContent>
+          <PopoverHeader>
+            <PopoverTitle>Popover title</PopoverTitle>
+            <PopoverDescription>Popover description</PopoverDescription>
+          </PopoverHeader>
+        </PopoverContent>
+      </Popover>
+
+      {/* Hover card */}
+      <HoverCard>
+        <HoverCardTrigger>Hover me</HoverCardTrigger>
+        <HoverCardContent>Hover card content</HoverCardContent>
+      </HoverCard>
+
+      {/* Tooltip */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>Hover me</TooltipTrigger>
+          <TooltipContent>Tooltip label</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Sheet */}
+      <Sheet>
+        <SheetTrigger>Open sheet</SheetTrigger>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Sheet title</SheetTitle>
+            <SheetDescription>Sheet description</SheetDescription>
+          </SheetHeader>
+          <SheetFooter>
+            <SheetClose>Close</SheetClose>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
+      {/* Drawer — DrawerContent renders its own Portal + Overlay, so it is
+          composed directly (no outer portal). */}
+      <Drawer>
+        <DrawerTrigger>Open drawer</DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Drawer title</DrawerTitle>
+            <DrawerDescription>Drawer description</DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <DrawerClose>Close</DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* DrawerPortal + DrawerOverlay are exported for manual composition;
+          exercised standalone here so the type contract still covers them. */}
+      <Drawer>
+        <DrawerTrigger>Open (manual portal)</DrawerTrigger>
+        <DrawerPortal>
+          <DrawerOverlay />
+        </DrawerPortal>
+      </Drawer>
+
+      {/* Resizable */}
+      <ResizablePanelGroup orientation="horizontal">
+        <ResizablePanel>One</ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel>Two</ResizablePanel>
+      </ResizablePanelGroup>
+
+      {/* Scroll area — ScrollBar is a standalone export */}
+      <ScrollArea>
+        <p>Scrollable content</p>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      {/* Sonner toaster */}
+      <Toaster />
     </main>
   )
 }
