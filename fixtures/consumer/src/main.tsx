@@ -317,20 +317,27 @@ function App() {
         </SheetContent>
       </Sheet>
 
-      {/* Drawer — exercises the Portal/Overlay/Close sub-exports too */}
+      {/* Drawer — DrawerContent renders its own Portal + Overlay, so it is
+          composed directly (no outer portal). */}
       <Drawer>
         <DrawerTrigger>Open drawer</DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>Drawer title</DrawerTitle>
+            <DrawerDescription>Drawer description</DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <DrawerClose>Close</DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+      {/* DrawerPortal + DrawerOverlay are exported for manual composition;
+          exercised standalone here so the type contract still covers them. */}
+      <Drawer>
+        <DrawerTrigger>Open (manual portal)</DrawerTrigger>
         <DrawerPortal>
           <DrawerOverlay />
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Drawer title</DrawerTitle>
-              <DrawerDescription>Drawer description</DrawerDescription>
-            </DrawerHeader>
-            <DrawerFooter>
-              <DrawerClose>Close</DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
         </DrawerPortal>
       </Drawer>
 
