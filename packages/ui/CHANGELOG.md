@@ -1,3 +1,22 @@
+## [4.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.5...@nswds/ui-v4.0.0) (2026-06-29)
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** the DescriptionList component has been removed from the
+public API. Consumers importing { DescriptionList } from '@nswds/ui' must
+migrate off it.
+
+* fix(ui): correct Drawer composition in consumer fixture
+
+DrawerContent already renders its own DrawerPortal + DrawerOverlay, so
+wrapping it in another portal double-portals. Compose DrawerContent
+directly and exercise the standalone DrawerPortal/DrawerOverlay exports
+in a separate, valid composition so the type contract still covers them.
+
+### Features
+
+* **ui:** add ten functional components with minimal NSW styling ([#47](https://github.com/digitalnsw/nswds-ui/issues/47)) ([d3d7b23](https://github.com/digitalnsw/nswds-ui/commit/d3d7b23ea07479d65550ecaf978206692f55863c))
+
 ## [3.5.5](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.4...@nswds/ui-v3.5.5) (2026-06-26)
 
 ### Bug Fixes
