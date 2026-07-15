@@ -45,7 +45,7 @@ create_branch() {
 # Build a branch name by prompting the user, deriving the type menu directly
 # from the shared branch-name-config.sh so it always stays in sync.
 prompt_for_branch() {
-  # `BRANCH_TYPES_REGEX` is a pipe-delimited list, e.g. "feature|bugfix|...".
+  # `BRANCH_TYPES_REGEX` is a pipe-delimited list, e.g. "feat|fix|...".
   local -a types=()
   IFS='|' read -r -a types <<< "$BRANCH_TYPES_REGEX"
 
@@ -94,13 +94,13 @@ prompt_for_branch() {
   # 3) Prompt for the short description (the part after the final "/").
   local description=""
   while true; do
-    if ! read -r -p "Enter the branch description (lowercase, e.g. add-login-form): " description; then
+    if ! read -r -p "Enter the branch description (lowercase, e.g. add-login-form or v1.2.0): " description; then
       description=""
     fi
-    if [[ "$description" =~ ^[a-z0-9-]+$ ]]; then
+    if [[ "$description" =~ ^[a-z0-9]+([.-][a-z0-9]+)*$ ]]; then
       break
     fi
-    echo "Description may only contain lowercase letters, numbers and hyphens." >&2
+    echo "Description may only contain lowercase letters, numbers, hyphens and dots, with no leading, trailing, or consecutive separators." >&2
   done
 
   # Emit the assembled branch name on stdout for the caller to capture.
