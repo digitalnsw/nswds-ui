@@ -19,8 +19,21 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    env:
+      # main is ruleset-protected: semantic-release pushes the version-bump
+      # commit over SSH as a deploy key that's a bypass actor on the ruleset
+      # (GITHUB_TOKEN can't push once required status checks are enforced).
+      # Mirrors nswds-devops reusable-release.yml.
+      HAS_DEPLOY_KEY: ${{ secrets.RELEASE_DEPLOY_KEY != '' }}
     steps:
+      - name: Checkout (deploy key)
+        if: ${{ env.HAS_DEPLOY_KEY == 'true' }}
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
       - name: Checkout
+        if: ${{ env.HAS_DEPLOY_KEY != 'true' }}
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
