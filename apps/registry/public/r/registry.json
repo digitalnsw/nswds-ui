@@ -430,6 +430,58 @@
       ]
     },
     {
+      "name": "masthead",
+      "type": "registry:ui",
+      "title": "Masthead",
+      "description": "The \"A NSW Government website\" strip shown above the site header, with WCAG 2.2 AAA colour variants and fluid/contained width presets.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/masthead.tsx",
+          "type": "registry:ui",
+          "target": "components/masthead.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "skip-link",
+      "type": "registry:ui",
+      "title": "Skip Link",
+      "description": "Focus-revealed bypass links (SkipLink + SkipLinks landmark) that let keyboard and screen-reader users jump past repeated blocks, with the same AAA colour variants as the Masthead.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/skip-link.tsx",
+          "type": "registry:ui",
+          "target": "components/skip-link.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "spinner",
       "type": "registry:ui",
       "title": "Spinner",
