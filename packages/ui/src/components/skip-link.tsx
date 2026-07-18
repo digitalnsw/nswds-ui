@@ -138,9 +138,14 @@ type SkipLinksProps = React.ComponentPropsWithoutRef<'nav'> &
  * element in the body (before the `Masthead`). Successor to the legacy
  * `.nsw-skip` nav.
  *
- * With no children it renders the legacy default pair — "Skip to navigation"
- * (`#nav`) and "Skip to content" (`#content`) — themed by `color`. Compose
- * your own `SkipLink` children for different targets or extra links:
+ * When the `children` prop is omitted it renders the legacy default pair —
+ * "Skip to navigation" (`#nav`) and "Skip to content" (`#content`) — themed
+ * by `color`. Any provided children (including an explicitly empty list from
+ * a `.map()` or a false conditional) render exactly as given, per normal
+ * React semantics — the defaults are never injected alongside or instead of
+ * explicit content, since their `#nav`/`#content` targets may not exist on a
+ * page that opted into custom links. Compose your own `SkipLink` children
+ * for different targets or extra links:
  *
  * ```tsx
  * <SkipLinks>
@@ -153,7 +158,19 @@ type SkipLinksProps = React.ComponentPropsWithoutRef<'nav'> &
 function SkipLinks({
   className,
   color,
-  children,
+  // Destructuring default: applies only when the prop is `undefined`
+  // (omitted), never for explicit null/false/[] children. `color` is
+  // initialised earlier in the pattern, so it is in scope here.
+  children = (
+    <>
+      <SkipLink color={color} href="#nav">
+        Skip to navigation
+      </SkipLink>
+      <SkipLink color={color} href="#content">
+        Skip to content
+      </SkipLink>
+    </>
+  ),
   ref,
   ...props
 }: SkipLinksProps) {
@@ -165,16 +182,7 @@ function SkipLinks({
       className={cn('fixed inset-x-0 top-0 z-50 w-full', className)}
       ref={ref}
     >
-      {children ?? (
-        <>
-          <SkipLink color={color} href="#nav">
-            Skip to navigation
-          </SkipLink>
-          <SkipLink color={color} href="#content">
-            Skip to content
-          </SkipLink>
-        </>
-      )}
+      {children}
     </nav>
   )
 }

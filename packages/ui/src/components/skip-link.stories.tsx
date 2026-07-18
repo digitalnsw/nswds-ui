@@ -232,6 +232,21 @@ export const Variants: Story = {
 
 export const CustomLinks: Story = {
   name: 'Custom Links',
+  play: async ({ canvasElement }) => {
+    // Explicit children render exactly as given — the default #nav/#content
+    // pair must not be injected alongside composed links.
+    const links = [
+      ...getSkipLinks(canvasElement).querySelectorAll<HTMLAnchorElement>(
+        '[data-slot="skip-link"]'
+      ),
+    ]
+    const hrefs = links.map((link) => link.getAttribute('href'))
+    if (hrefs.join() !== '#main-navigation,#main-content,#search') {
+      throw new Error(
+        `Expected exactly the three composed skip links, found [${hrefs.join(', ')}].`
+      )
+    }
+  },
   render: (args) => (
     <div className="min-h-48">
       <SkipLinks {...args}>
