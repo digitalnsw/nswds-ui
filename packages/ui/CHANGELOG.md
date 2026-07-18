@@ -1,3 +1,9 @@
+## [4.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.0.0...@nswds/ui-v4.1.0) (2026-07-18)
+
+### Features
+
+* **ui:** add Masthead and SkipLink components ([#56](https://github.com/digitalnsw/nswds-ui/issues/56)) ([087100e](https://github.com/digitalnsw/nswds-ui/commit/087100ed9946c74b76683de33c1f542e6913bba1)), closes [#nav](https://github.com/digitalnsw/nswds-ui/issues/nav) [#content](https://github.com/digitalnsw/nswds-ui/issues/content)
+
 ## [4.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v3.5.5...@nswds/ui-v4.0.0) (2026-06-29)
 
 ### ⚠ BREAKING CHANGES
