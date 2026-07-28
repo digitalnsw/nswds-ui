@@ -29,9 +29,9 @@ const meta = {
     className: { table: { disable: true, category: 'Advanced' } },
   },
   render: (args) => (
-    <div className="w-full max-w-sm">
+    <div className='w-full max-w-sm'>
       <AspectRatio {...args}>
-        <div className="flex size-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
+        <div className='flex size-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground'>
           {args.ratio.toFixed(2)}
         </div>
       </AspectRatio>
@@ -47,9 +47,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const root = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="aspect-ratio"]'
-    )
+    const root = canvasElement.querySelector<HTMLElement>('[data-slot="aspect-ratio"]')
     if (!root) throw new Error('Could not find [data-slot="aspect-ratio"].')
     const ratio = getComputedStyle(root).aspectRatio
     if (!ratio || ratio === 'auto') {
@@ -67,11 +65,11 @@ export const Variants: Story = {
       ['1 / 1', 1],
     ]
     return (
-      <div className="flex w-full max-w-3xl flex-wrap gap-6">
+      <div className='flex w-full max-w-3xl flex-wrap gap-6'>
         {ratios.map(([label, ratio]) => (
-          <div key={label} className="w-56">
+          <div key={label} className='w-56'>
             <AspectRatio ratio={ratio}>
-              <div className="flex size-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground">
+              <div className='flex size-full items-center justify-center rounded-md bg-muted text-sm text-muted-foreground'>
                 {label}
               </div>
             </AspectRatio>
@@ -87,14 +85,12 @@ export const CssCheck: Story = {
   play: async ({ canvasElement }) => {
     // Proves globals.css is loaded: the inner fill resolves the semantic
     // --muted token to a real, non-transparent colour.
-    const fill = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="aspect-ratio"] > div'
-    )
+    const fill = canvasElement.querySelector<HTMLElement>('[data-slot="aspect-ratio"] > div')
     if (!fill) throw new Error('AspectRatio fill element not found.')
     const bg = getComputedStyle(fill).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected the --muted token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected the --muted token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
   },

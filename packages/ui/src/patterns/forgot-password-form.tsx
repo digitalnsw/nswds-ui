@@ -3,19 +3,8 @@
 import type * as React from 'react'
 
 import { Button } from '../components/button.js'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/card.js'
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from '../components/field.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
+import { Field, FieldDescription, FieldGroup, FieldLabel } from '../components/field.js'
 import { Input } from '../components/input.js'
 import { Link } from '../components/link.js'
 import { cn } from '../lib/utils.js'
@@ -32,18 +21,15 @@ import { cn } from '../lib/utils.js'
  * email, send the reset link, and (for account-enumeration safety) show the
  * same confirmation whether or not the address is registered.
  */
-export function ForgotPasswordForm({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function ForgotPasswordForm({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className="w-full">
+      <Card className='w-full'>
         <CardHeader>
           <CardTitle>Forgot your password?</CardTitle>
           <CardDescription>
-            Enter the email address for your account and we&apos;ll send you a
-            link to reset your password.
+            Enter the email address for your account and we&apos;ll send you a link to reset your
+            password.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -53,19 +39,14 @@ export function ForgotPasswordForm({
                * control automatically (Base UI generates the id per instance). */}
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="m@example.com"
-                  required
-                />
+                <Input type='email' autoComplete='email' placeholder='m@example.com' required />
               </Field>
               <Field>
-                <Button type="submit">Send reset link</Button>
+                <Button type='submit'>Send reset link</Button>
               </Field>
               <Field>
-                <FieldDescription className="text-center">
-                  Remembered your password? <Link href="#">Back to login</Link>
+                <FieldDescription className='text-center'>
+                  Remembered your password? <Link href='#'>Back to login</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

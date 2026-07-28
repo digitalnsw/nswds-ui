@@ -25,54 +25,50 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Logo</h1>
-            <p className="text-base text-muted-foreground">
-              The NSW Government waratah lockup. Use it as the primary brand
-              mark on agency websites, applications, and digital products.
-              Choose the variant that gives the strongest contrast against the
-              surface behind the mark.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Logo</h1>
+            <p className='text-base text-muted-foreground'>
+              The NSW Government waratah lockup. Use it as the primary brand mark on agency
+              websites, applications, and digital products. Choose the variant that gives the
+              strongest contrast against the surface behind the mark.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <Logo className="h-16 w-auto" />
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <Logo className='h-16 w-auto' />
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Variants</h2>
-            <div className="flex flex-wrap items-center gap-6">
-              <div className="rounded-sm border border-border bg-background p-6">
-                <Logo logoType="default" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-muted-foreground">default</p>
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Variants</h2>
+            <div className='flex flex-wrap items-center gap-6'>
+              <div className='rounded-sm border border-border bg-background p-6'>
+                <Logo logoType='default' className='h-16 w-auto' />
+                <p className='mt-3 text-xs text-muted-foreground'>default</p>
               </div>
-              <div className="rounded-sm border border-border bg-background p-6">
-                <Logo logoType="mono-black" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-muted-foreground">mono-black</p>
+              <div className='rounded-sm border border-border bg-background p-6'>
+                <Logo logoType='mono-black' className='h-16 w-auto' />
+                <p className='mt-3 text-xs text-muted-foreground'>mono-black</p>
               </div>
-              <div className="rounded-sm border border-grey-700 bg-grey-900 p-6">
-                <Logo logoType="reversed" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-grey-200">reversed</p>
+              <div className='rounded-sm border border-grey-700 bg-grey-900 p-6'>
+                <Logo logoType='reversed' className='h-16 w-auto' />
+                <p className='mt-3 text-xs text-grey-200'>reversed</p>
               </div>
-              <div className="rounded-sm border border-grey-700 bg-grey-900 p-6">
-                <Logo logoType="mono-white" className="h-16 w-auto" />
-                <p className="mt-3 text-xs text-grey-200">mono-white</p>
+              <div className='rounded-sm border border-grey-700 bg-grey-900 p-6'>
+                <Logo logoType='mono-white' className='h-16 w-auto' />
+                <p className='mt-3 text-xs text-grey-200'>mono-white</p>
               </div>
             </div>
           </section>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold tracking-normal">
-              Accessible name
-            </h2>
-            <p className="text-base text-muted-foreground">
-              The Logo renders a visually hidden &quot;NSW Government&quot;
-              label immediately before the SVG so screen readers announce the
-              mark by name. The SVG itself is decorative (
-              <code>aria-hidden=&quot;true&quot;</code>) so assistive tech is
-              not read the path data.
+          <section className='space-y-3'>
+            <h2 className='text-2xl font-bold tracking-normal'>Accessible name</h2>
+            <p className='text-base text-muted-foreground'>
+              The Logo renders a visually hidden &quot;NSW Government&quot; label immediately before
+              the SVG so screen readers announce the mark by name. The SVG itself is decorative (
+              <code>aria-hidden=&quot;true&quot;</code>) so assistive tech is not read the path
+              data.
             </p>
           </section>
         </div>
@@ -134,16 +130,14 @@ export const Default: Story = {
     if (svg.getAttribute('aria-hidden') !== 'true') {
       throw new Error(
         `Expected the Logo svg to have aria-hidden="true", received "${svg.getAttribute(
-          'aria-hidden'
-        )}".`
+          'aria-hidden',
+        )}".`,
       )
     }
 
     const srOnly = getSrOnlyName(canvasElement)
     if (srOnly.textContent !== 'NSW Government') {
-      throw new Error(
-        `Expected sr-only text "NSW Government", received "${srOnly.textContent}".`
-      )
+      throw new Error(`Expected sr-only text "NSW Government", received "${srOnly.textContent}".`)
     }
   },
 }
@@ -158,8 +152,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => {
-    const onDarkSurface =
-      args.logoType === 'reversed' || args.logoType === 'mono-white'
+    const onDarkSurface = args.logoType === 'reversed' || args.logoType === 'mono-white'
     const containerClasses = onDarkSurface
       ? 'w-full max-w-xl rounded-sm border border-grey-700 bg-grey-900 p-6'
       : 'w-full max-w-xl rounded-sm border border-border bg-background p-6'

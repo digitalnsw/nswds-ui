@@ -31,7 +31,7 @@ function Separator({
   // explicit axis sizing.
   const sharedClassName = cn(
     'shrink-0 bg-border data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:w-px data-[orientation=vertical]:self-stretch',
-    className
+    className,
   )
 
   // A consumer passing `role="none"` / `"presentation"` is asking for a
@@ -39,8 +39,7 @@ function Separator({
   // Otherwise Base UI would still emit `aria-orientation` (which it sets from
   // the orientation prop regardless of role), recreating the axe
   // `aria-allowed-attr` violation that `decorative` exists to avoid.
-  const isPresentational =
-    decorative || role === 'none' || role === 'presentation'
+  const isPresentational = decorative || role === 'none' || role === 'presentation'
 
   if (isPresentational) {
     // Render a plain <div> for presentational separators. Bypass the
@@ -49,9 +48,9 @@ function Separator({
     return (
       <div
         ref={ref as React.Ref<HTMLDivElement>}
-        data-slot="separator"
+        data-slot='separator'
         data-orientation={orientation}
-        role="none"
+        role='none'
         className={sharedClassName}
         {...(props as React.HTMLAttributes<HTMLDivElement>)}
       />
@@ -61,7 +60,7 @@ function Separator({
   return (
     <SeparatorPrimitive
       ref={ref}
-      data-slot="separator"
+      data-slot='separator'
       orientation={orientation}
       role={role ?? 'separator'}
       className={sharedClassName}

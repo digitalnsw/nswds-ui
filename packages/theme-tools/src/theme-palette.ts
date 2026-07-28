@@ -5,8 +5,7 @@ export type ThemeCategory = 'brand' | 'aboriginal'
 export type ThemeVars = Record<string, string>
 
 const STEPS = [
-  50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800,
-  850, 900, 950,
+  50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 750, 800, 850, 900, 950,
 ] as const
 
 const GREY_KEY = 'grey'
@@ -49,10 +48,7 @@ export function getColorHues(category: ThemeCategory): readonly string[] {
 }
 
 /** Hues valid as an accent for the given primary — excludes grey and the primary itself. */
-export function getAccentHues(
-  category: ThemeCategory,
-  primaryHue: string
-): string[] {
+export function getAccentHues(category: ThemeCategory, primaryHue: string): string[] {
   return getColorHues(category).filter((h) => h !== primaryHue)
 }
 
@@ -91,10 +87,7 @@ export function getAccentSwatch(category: ThemeCategory, hue: string): string {
  * Returns the requested hue if valid, otherwise the first available hue,
  * otherwise the default.
  */
-export function resolvePrimaryHue(
-  category: ThemeCategory,
-  requested: string | undefined
-): string {
+export function resolvePrimaryHue(category: ThemeCategory, requested: string | undefined): string {
   const hues = getColorHues(category)
   if (requested && hues.includes(requested)) return requested
   return hues[0] ?? DEFAULT_THEME.primaryHue
@@ -104,7 +97,7 @@ export function resolvePrimaryHue(
 export function resolveAccentHue(
   category: ThemeCategory,
   primaryHue: string,
-  requested: string | undefined
+  requested: string | undefined,
 ): string {
   const hues = getAccentHues(category, primaryHue)
   if (requested && hues.includes(requested)) return requested
@@ -120,7 +113,7 @@ function writeScale(
   vars: ThemeVars,
   slot: 'primary' | 'accent' | 'grey',
   category: ThemeCategory,
-  hue: string
+  hue: string,
 ) {
   const scale = colors[category]?.[hue]?.colors
   if (!scale) return
@@ -143,7 +136,7 @@ function writeScale(
 export function buildThemeVars(
   category: ThemeCategory,
   primaryHue: string,
-  accentHue: string
+  accentHue: string,
 ): ThemeVars {
   const vars: ThemeVars = {}
   writeScale(vars, 'primary', category, primaryHue)

@@ -41,24 +41,14 @@ type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getInputById(
-  canvasElement: HTMLElement,
-  id: string
-): HTMLInputElement {
-  const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[id="${id}"]`
-  )
+function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement {
+  const input = canvasElement.querySelector<HTMLInputElement>(`input[id="${id}"]`)
   if (!input) throw new Error(`Could not find input #${id} in canvas.`)
   return input
 }
 
-function getLabelFor(
-  canvasElement: HTMLElement,
-  htmlFor: string
-): HTMLLabelElement {
-  const label = canvasElement.querySelector<HTMLLabelElement>(
-    `label[for="${htmlFor}"]`
-  )
+function getLabelFor(canvasElement: HTMLElement, htmlFor: string): HTMLLabelElement {
+  const label = canvasElement.querySelector<HTMLLabelElement>(`label[for="${htmlFor}"]`)
   if (!label) {
     throw new Error(`Could not find <label for="${htmlFor}"> in canvas.`)
   }
@@ -84,13 +74,13 @@ export const InfoAndRelationships: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <Label htmlFor="a11y-relationships-email">Email address</Label>
+    <div className='grid w-full max-w-md gap-1.5'>
+      <Label htmlFor='a11y-relationships-email'>Email address</Label>
       <input
-        id="a11y-relationships-email"
-        type="email"
-        placeholder="you@example.com"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='a11y-relationships-email'
+        type='email'
+        placeholder='you@example.com'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),
@@ -98,9 +88,7 @@ export const InfoAndRelationships: Story = {
     const input = getInputById(canvasElement, 'a11y-relationships-email')
 
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'WCAG 1.3.1: input has no associated <label> via htmlFor/labels.'
-      )
+      throw new Error('WCAG 1.3.1: input has no associated <label> via htmlFor/labels.')
     }
 
     const label = input.labels[0]
@@ -110,14 +98,14 @@ export const InfoAndRelationships: Story = {
 
     if (label.getAttribute('data-slot') !== 'label') {
       throw new Error(
-        `WCAG 1.3.1: associated label is not the @nswds/ui Label component (data-slot="${label.getAttribute('data-slot')}").`
+        `WCAG 1.3.1: associated label is not the @nswds/ui Label component (data-slot="${label.getAttribute('data-slot')}").`,
       )
     }
 
     const text = label.textContent?.trim() ?? ''
     if (text.length === 0) {
       throw new Error(
-        'WCAG 1.3.1: associated <label> has empty text — relationship exists but conveys no information.'
+        'WCAG 1.3.1: associated <label> has empty text — relationship exists but conveys no information.',
       )
     }
   },
@@ -142,13 +130,13 @@ export const LabelInName: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <Label htmlFor="a11y-label-in-name-input">Search NSW services</Label>
+    <div className='grid w-full max-w-md gap-1.5'>
+      <Label htmlFor='a11y-label-in-name-input'>Search NSW services</Label>
       <input
-        id="a11y-label-in-name-input"
-        type="search"
-        placeholder="e.g. driver licence"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='a11y-label-in-name-input'
+        type='search'
+        placeholder='e.g. driver licence'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),
@@ -159,7 +147,7 @@ export const LabelInName: Story = {
     const labelText = input.labels?.[0]?.textContent?.trim() ?? ''
     if (!labelText.includes(visibleLabel)) {
       throw new Error(
-        `WCAG 2.5.3: accessible name "${labelText}" does not contain visible label "${visibleLabel}".`
+        `WCAG 2.5.3: accessible name "${labelText}" does not contain visible label "${visibleLabel}".`,
       )
     }
   },
@@ -184,20 +172,17 @@ export const LabelsOrInstructions: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <Label htmlFor="a11y-instructions-phone">Mobile phone number</Label>
+    <div className='grid w-full max-w-md gap-1.5'>
+      <Label htmlFor='a11y-instructions-phone'>Mobile phone number</Label>
       <input
-        id="a11y-instructions-phone"
-        type="tel"
-        autoComplete="tel"
-        placeholder="0400 000 000"
-        aria-describedby="a11y-instructions-phone-hint"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='a11y-instructions-phone'
+        type='tel'
+        autoComplete='tel'
+        placeholder='0400 000 000'
+        aria-describedby='a11y-instructions-phone-hint'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
-      <p
-        id="a11y-instructions-phone-hint"
-        className="text-xs text-muted-foreground"
-      >
+      <p id='a11y-instructions-phone-hint' className='text-xs text-muted-foreground'>
         Enter an Australian mobile number starting with 04.
       </p>
     </div>
@@ -206,22 +191,20 @@ export const LabelsOrInstructions: Story = {
     const input = getInputById(canvasElement, 'a11y-instructions-phone')
 
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: input has no visible <label> — labels or instructions missing.'
-      )
+      throw new Error('WCAG 3.3.2: input has no visible <label> — labels or instructions missing.')
     }
 
     const describedBy = input.getAttribute('aria-describedby')
     if (!describedBy) {
       throw new Error(
-        'WCAG 3.3.2: input has no aria-describedby linking to its format instructions.'
+        'WCAG 3.3.2: input has no aria-describedby linking to its format instructions.',
       )
     }
 
     const hint = canvasElement.querySelector(`[id="${describedBy}"]`)
     if (!hint || (hint.textContent?.trim() ?? '').length === 0) {
       throw new Error(
-        `WCAG 3.3.2: aria-describedby="${describedBy}" but the referenced element is missing or empty.`
+        `WCAG 3.3.2: aria-describedby="${describedBy}" but the referenced element is missing or empty.`,
       )
     }
   },
@@ -246,15 +229,15 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <Label htmlFor="a11y-name-role-value-input">Postcode</Label>
+    <div className='grid w-full max-w-md gap-1.5'>
+      <Label htmlFor='a11y-name-role-value-input'>Postcode</Label>
       <input
-        id="a11y-name-role-value-input"
-        type="text"
-        inputMode="numeric"
-        autoComplete="postal-code"
-        placeholder="2000"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='a11y-name-role-value-input'
+        type='text'
+        inputMode='numeric'
+        autoComplete='postal-code'
+        placeholder='2000'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),
@@ -264,25 +247,21 @@ export const NameRoleValue: Story = {
 
     const labelText = label.textContent?.trim() ?? ''
     if (labelText.length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: associated label has empty text — input has no accessible name.'
-      )
+      throw new Error('WCAG 4.1.2: associated label has empty text — input has no accessible name.')
     }
 
     const accessibleName =
-      input.labels?.[0]?.textContent?.trim() ??
-      input.getAttribute('aria-label') ??
-      ''
+      input.labels?.[0]?.textContent?.trim() ?? input.getAttribute('aria-label') ?? ''
 
     if (accessibleName !== labelText) {
       throw new Error(
-        `WCAG 4.1.2: input accessible name "${accessibleName}" does not match label text "${labelText}".`
+        `WCAG 4.1.2: input accessible name "${accessibleName}" does not match label text "${labelText}".`,
       )
     }
 
     if (input.tagName !== 'INPUT') {
       throw new Error(
-        `WCAG 4.1.2: expected native <input> element, got <${input.tagName.toLowerCase()}>.`
+        `WCAG 4.1.2: expected native <input> element, got <${input.tagName.toLowerCase()}>.`,
       )
     }
   },

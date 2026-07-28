@@ -42,14 +42,11 @@ type Story = StoryObj<typeof meta>
 function getAnchor(canvasElement: HTMLElement, accessibleName: string) {
   const anchor = Array.from(canvasElement.querySelectorAll('a')).find(
     (el) =>
-      el.textContent?.trim() === accessibleName ||
-      el.getAttribute('aria-label') === accessibleName
+      el.textContent?.trim() === accessibleName || el.getAttribute('aria-label') === accessibleName,
   )
 
   if (!anchor) {
-    throw new Error(
-      `Could not find <a> with accessible name "${accessibleName}".`
-    )
+    throw new Error(`Could not find <a> with accessible name "${accessibleName}".`)
   }
 
   return anchor
@@ -74,27 +71,23 @@ export const Contrast: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
-          On default background
-        </h4>
-        <p className="text-base text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>On default background</h4>
+        <p className='text-base text-foreground'>
           Read more on the{' '}
-          <Link href="/about" variant="primary">
+          <Link href='/about' variant='primary'>
             About NSW Government
           </Link>{' '}
           page.
         </p>
       </section>
 
-      <section className="space-y-2 rounded-sm border border-border bg-muted p-4">
-        <h4 className="text-sm font-semibold text-foreground">
-          On muted surface
-        </h4>
-        <p className="text-base text-foreground">
+      <section className='space-y-2 rounded-sm border border-border bg-muted p-4'>
+        <h4 className='text-sm font-semibold text-foreground'>On muted surface</h4>
+        <p className='text-base text-foreground'>
           Read more on the{' '}
-          <Link href="/about" variant="primary">
+          <Link href='/about' variant='primary'>
             About NSW Government
           </Link>{' '}
           page.
@@ -121,14 +114,14 @@ export const FocusVisible: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <Link href="/tab-me" variant="primary">
+    <div className='space-y-4'>
+      <Link href='/tab-me' variant='primary'>
         Tab here to see real focus
       </Link>
       <Link
-        href="/forced-focus"
-        variant="primary"
-        className="outline outline-2 outline-offset-2 outline-primary-800"
+        href='/forced-focus'
+        variant='primary'
+        className='outline outline-2 outline-offset-2 outline-primary-800'
       >
         Forced focus (rendered at rest)
       </Link>
@@ -153,13 +146,13 @@ export const Keyboard: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <Link href="#keyboard-target" variant="primary">
+    <div className='space-y-4'>
+      <Link href='#keyboard-target' variant='primary'>
         Press me with Enter
       </Link>
-      <p className="text-sm text-muted-foreground">
-        Tab to focus, then press Enter to activate. Space does not activate
-        links — it scrolls the page.
+      <p className='text-sm text-muted-foreground'>
+        Tab to focus, then press Enter to activate. Space does not activate links — it scrolls the
+        page.
       </p>
     </div>
   ),
@@ -167,9 +160,7 @@ export const Keyboard: Story = {
     const anchor = getAnchor(canvasElement, 'Press me with Enter')
 
     if (anchor.tabIndex < 0) {
-      throw new Error(
-        `Link is not keyboard reachable: tabIndex=${anchor.tabIndex}.`
-      )
+      throw new Error(`Link is not keyboard reachable: tabIndex=${anchor.tabIndex}.`)
     }
 
     anchor.focus()
@@ -194,7 +185,7 @@ export const Keyboard: Story = {
 
     if (activations < 1) {
       throw new Error(
-        `Expected Enter to activate the link at least once, observed ${activations} activations.`
+        `Expected Enter to activate the link at least once, observed ${activations} activations.`,
       )
     }
   },
@@ -217,27 +208,27 @@ export const LabelInName: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Text link (accessible name = visible label)
         </h4>
-        <Link href="/about" variant="primary">
+        <Link href='/about' variant='primary'>
           About NSW Government
         </Link>
       </section>
 
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Icon-only link (accessible name supplied via aria-label)
         </h4>
         <Link
-          href="https://www.nsw.gov.au"
-          aria-label="NSW Government home"
-          variant="primary"
-          className="inline-flex"
+          href='https://www.nsw.gov.au'
+          aria-label='NSW Government home'
+          variant='primary'
+          className='inline-flex'
         >
-          <IconOpenInNew data-slot="icon" aria-hidden="true" />
+          <IconOpenInNew data-slot='icon' aria-hidden='true' />
         </Link>
       </section>
     </div>
@@ -245,13 +236,8 @@ export const LabelInName: Story = {
   play: async ({ canvasElement }) => {
     const textLink = getAnchor(canvasElement, 'About NSW Government')
     const explicitLabel = textLink.getAttribute('aria-label')
-    if (
-      explicitLabel &&
-      !explicitLabel.toLowerCase().includes('about nsw government')
-    ) {
-      throw new Error(
-        'aria-label on the text link does not contain the visible label.'
-      )
+    if (explicitLabel && !explicitLabel.toLowerCase().includes('about nsw government')) {
+      throw new Error('aria-label on the text link does not contain the visible label.')
     }
 
     const iconLink = getAnchor(canvasElement, 'NSW Government home')
@@ -279,17 +265,17 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="flex flex-wrap gap-4">
-      <Link href="/about" variant="primary">
+    <div className='flex flex-wrap gap-4'>
+      <Link href='/about' variant='primary'>
         About NSW Government
       </Link>
       <Link
-        href="https://www.nsw.gov.au"
-        aria-label="NSW Government home"
-        variant="primary"
-        className="inline-flex"
+        href='https://www.nsw.gov.au'
+        aria-label='NSW Government home'
+        variant='primary'
+        className='inline-flex'
       >
-        <IconOpenInNew data-slot="icon" aria-hidden="true" />
+        <IconOpenInNew data-slot='icon' aria-hidden='true' />
       </Link>
     </div>
   ),
@@ -297,9 +283,7 @@ export const NameRoleValue: Story = {
     const textLink = getAnchor(canvasElement, 'About NSW Government')
 
     if (textLink.tagName !== 'A') {
-      throw new Error(
-        `Text link should render as <a>, got <${textLink.tagName.toLowerCase()}>.`
-      )
+      throw new Error(`Text link should render as <a>, got <${textLink.tagName.toLowerCase()}>.`)
     }
 
     const textAccessibleName =
@@ -312,7 +296,7 @@ export const NameRoleValue: Story = {
     const iconLabel = iconLink.getAttribute('aria-label')
     if (!iconLabel || iconLabel.trim().length === 0) {
       throw new Error(
-        'Icon-only link is missing an aria-label — accessible name cannot be determined.'
+        'Icon-only link is missing an aria-label — accessible name cannot be determined.',
       )
     }
   },

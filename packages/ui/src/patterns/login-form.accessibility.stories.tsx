@@ -19,20 +19,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Button } from '../components/button.js'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/card.js'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '../components/field.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '../components/field.js'
 import { Input } from '../components/input.js'
 import { wcagStoryMeta } from '../components/story-helpers.js'
 import { LoginForm } from './login-form.js'
@@ -56,13 +44,8 @@ type Story = StoryObj<typeof meta>
 
 // The form no longer hardcodes ids (Field auto-associates and scopes ids per
 // instance), so locate the inputs by their stable `type` instead.
-function getInputByType(
-  canvasElement: HTMLElement,
-  type: string
-): HTMLInputElement {
-  const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[type="${type}"]`
-  )
+function getInputByType(canvasElement: HTMLElement, type: string): HTMLInputElement {
+  const input = canvasElement.querySelector<HTMLInputElement>(`input[type="${type}"]`)
   if (!input) throw new Error(`Could not find input[type="${type}"] in canvas.`)
   return input
 }
@@ -86,22 +69,20 @@ export const LabelAssociation: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LoginForm />
     </div>
   ),
   play: async ({ canvasElement }) => {
     const email = getInputByType(canvasElement, 'email')
     if (!email.labels || email.labels.length < 1) {
-      throw new Error(
-        'WCAG 1.3.1: the email input has no associated <label> via htmlFor/labels.'
-      )
+      throw new Error('WCAG 1.3.1: the email input has no associated <label> via htmlFor/labels.')
     }
 
     const password = getInputByType(canvasElement, 'password')
     if (!password.labels || password.labels.length < 1) {
       throw new Error(
-        'WCAG 1.3.1: the password input has no associated <label> via htmlFor/labels.'
+        'WCAG 1.3.1: the password input has no associated <label> via htmlFor/labels.',
       )
     }
   },
@@ -126,7 +107,7 @@ export const FocusOrder: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LoginForm />
     </div>
   ),
@@ -137,27 +118,25 @@ export const FocusOrder: Story = {
     if (!forgot) {
       throw new Error('WCAG 2.4.3: could not find Forgot password link.')
     }
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('WCAG 2.4.3: could not find submit button.')
     }
-    const ssoButton = Array.from(
-      canvasElement.querySelectorAll<HTMLButtonElement>('button')
-    ).find((btn) => btn.textContent?.toLowerCase().includes('single sign-on'))
+    const ssoButton = Array.from(canvasElement.querySelectorAll<HTMLButtonElement>('button')).find(
+      (btn) => btn.textContent?.toLowerCase().includes('single sign-on'),
+    )
     if (!ssoButton) {
       throw new Error('WCAG 2.4.3: could not find "single sign-on" button.')
     }
     const magicLinkButton = Array.from(
-      canvasElement.querySelectorAll<HTMLButtonElement>('button')
+      canvasElement.querySelectorAll<HTMLButtonElement>('button'),
     ).find((btn) => btn.textContent?.includes('magic link'))
     if (!magicLinkButton) {
       throw new Error('WCAG 2.4.3: could not find "magic link" button.')
     }
-    const signUp = Array.from(
-      canvasElement.querySelectorAll<HTMLAnchorElement>('a')
-    ).find((a) => a.textContent?.trim() === 'Sign up')
+    const signUp = Array.from(canvasElement.querySelectorAll<HTMLAnchorElement>('a')).find(
+      (a) => a.textContent?.trim() === 'Sign up',
+    )
     if (!signUp) {
       throw new Error('WCAG 2.4.3: could not find Sign up link.')
     }
@@ -166,25 +145,17 @@ export const FocusOrder: Story = {
     // browser uses to resolve Tab traversal when no explicit tabIndex is set.
     const focusables = Array.from(
       canvasElement.querySelectorAll<HTMLElement>(
-        'input, button, a[href], [tabindex]:not([tabindex="-1"])'
-      )
+        'input, button, a[href], [tabindex]:not([tabindex="-1"])',
+      ),
     ).filter((el) => !el.hasAttribute('disabled'))
 
-    const expectedOrder = [
-      ssoButton,
-      email,
-      password,
-      forgot,
-      submit,
-      magicLinkButton,
-      signUp,
-    ]
+    const expectedOrder = [ssoButton, email, password, forgot, submit, magicLinkButton, signUp]
     for (let i = 0; i < expectedOrder.length; i++) {
       const expected = expectedOrder[i]
       const actual = focusables[i]
       if (actual !== expected) {
         throw new Error(
-          `WCAG 2.4.3: expected tab position ${i} to be ${expected?.tagName.toLowerCase()} "${expected?.textContent?.trim() || (expected as HTMLInputElement)?.id}", got ${actual?.tagName.toLowerCase()} "${actual?.textContent?.trim() || (actual as HTMLInputElement)?.id}".`
+          `WCAG 2.4.3: expected tab position ${i} to be ${expected?.tagName.toLowerCase()} "${expected?.textContent?.trim() || (expected as HTMLInputElement)?.id}", got ${actual?.tagName.toLowerCase()} "${actual?.textContent?.trim() || (actual as HTMLInputElement)?.id}".`,
         )
       }
     }
@@ -210,55 +181,46 @@ export const ErrorIdentification: Story = {
     },
   },
   render: () => (
-    <div className="flex w-full max-w-md flex-col gap-6">
+    <div className='flex w-full max-w-md flex-col gap-6'>
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
-          </CardDescription>
+          <CardDescription>Enter your email below to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="a11y-err-email">Email</FieldLabel>
-                <Input
-                  id="a11y-err-email"
-                  type="email"
-                  defaultValue="m@example.com"
-                  required
-                />
+                <FieldLabel htmlFor='a11y-err-email'>Email</FieldLabel>
+                <Input id='a11y-err-email' type='email' defaultValue='m@example.com' required />
               </Field>
               <Field>
-                <div className="flex items-center">
-                  <FieldLabel htmlFor="a11y-err-password">Password</FieldLabel>
+                <div className='flex items-center'>
+                  <FieldLabel htmlFor='a11y-err-password'>Password</FieldLabel>
                   <a
-                    href="#"
-                    className="ms-auto inline-block text-sm underline-offset-4 hover:underline"
+                    href='#'
+                    className='ms-auto inline-block text-sm underline-offset-4 hover:underline'
                   >
                     Forgot your password?
                   </a>
                 </div>
                 <Input
-                  id="a11y-err-password"
-                  type="password"
-                  defaultValue="wrong"
-                  aria-invalid="true"
-                  aria-describedby="a11y-err-password-error"
+                  id='a11y-err-password'
+                  type='password'
+                  defaultValue='wrong'
+                  aria-invalid='true'
+                  aria-describedby='a11y-err-password-error'
                   required
                 />
-                <FieldError id="a11y-err-password-error">
-                  Incorrect password
-                </FieldError>
+                <FieldError id='a11y-err-password-error'>Incorrect password</FieldError>
               </Field>
               <Field>
-                <Button type="submit">Login</Button>
-                <Button variant="outline" type="button">
+                <Button type='submit'>Login</Button>
+                <Button variant='outline' type='button'>
                   Login with Google
                 </Button>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                <FieldDescription className='text-center'>
+                  Don&apos;t have an account? <a href='#'>Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -271,36 +233,30 @@ export const ErrorIdentification: Story = {
     const password = getInputByType(canvasElement, 'password')
 
     if (password.getAttribute('aria-invalid') !== 'true') {
-      throw new Error(
-        'WCAG 3.3.1: aria-invalid="true" is missing on the password input.'
-      )
+      throw new Error('WCAG 3.3.1: aria-invalid="true" is missing on the password input.')
     }
 
     const describedBy = password.getAttribute('aria-describedby')
     if (!describedBy) {
-      throw new Error(
-        'WCAG 3.3.1: aria-describedby is missing on the password input.'
-      )
+      throw new Error('WCAG 3.3.1: aria-describedby is missing on the password input.')
     }
 
     const errEl = canvasElement.querySelector(`[id="${describedBy}"]`)
     if (!errEl) {
       throw new Error(
-        `WCAG 3.3.1: aria-describedby="${describedBy}" but no element with that id exists.`
+        `WCAG 3.3.1: aria-describedby="${describedBy}" but no element with that id exists.`,
       )
     }
 
     if (errEl.getAttribute('role') !== 'alert') {
       throw new Error(
-        'WCAG 3.3.1: FieldError should expose role="alert" so the message is announced when it appears.'
+        'WCAG 3.3.1: FieldError should expose role="alert" so the message is announced when it appears.',
       )
     }
 
     const text = errEl.textContent?.trim() ?? ''
     if (text.length === 0) {
-      throw new Error(
-        'WCAG 3.3.1: FieldError exists but has empty text content.'
-      )
+      throw new Error('WCAG 3.3.1: FieldError exists but has empty text content.')
     }
   },
 }
@@ -324,7 +280,7 @@ export const LabelsAndInstructions: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LoginForm />
     </div>
   ),
@@ -338,9 +294,7 @@ export const LabelsAndInstructions: Story = {
     const password = getInputByType(canvasElement, 'password')
     const passwordLabel = password.labels?.[0]?.textContent?.trim() ?? ''
     if (passwordLabel.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: the password input has no visible label text.'
-      )
+      throw new Error('WCAG 3.3.2: the password input has no visible label text.')
     }
 
     // The Forgot password? link must live in the same field group as the
@@ -349,16 +303,13 @@ export const LabelsAndInstructions: Story = {
     const passwordField = password.closest('[data-slot="field"]')
     if (!passwordField) {
       throw new Error(
-        'WCAG 3.3.2: password input is not wrapped in a Field — companion instructions cannot be located relative to it.'
+        'WCAG 3.3.2: password input is not wrapped in a Field — companion instructions cannot be located relative to it.',
       )
     }
     const forgotLink = passwordField.querySelector<HTMLAnchorElement>('a')
-    if (
-      !forgotLink ||
-      !forgotLink.textContent?.toLowerCase().includes('forgot')
-    ) {
+    if (!forgotLink || !forgotLink.textContent?.toLowerCase().includes('forgot')) {
       throw new Error(
-        'WCAG 3.3.2: the "Forgot password?" link must be inside the same field as the password input.'
+        'WCAG 3.3.2: the "Forgot password?" link must be inside the same field as the password input.',
       )
     }
   },
@@ -383,7 +334,7 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LoginForm />
     </div>
   ),
@@ -391,33 +342,25 @@ export const NameRoleValue: Story = {
     const email = getInputByType(canvasElement, 'email')
     const emailName = email.labels?.[0]?.textContent?.trim() ?? ''
     if (emailName.length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: the email input has no accessible name (label text is empty).'
-      )
+      throw new Error('WCAG 4.1.2: the email input has no accessible name (label text is empty).')
     }
 
     const password = getInputByType(canvasElement, 'password')
     const passwordName = password.labels?.[0]?.textContent?.trim() ?? ''
     if (passwordName.length === 0) {
       throw new Error(
-        'WCAG 4.1.2: the password input has no accessible name (label text is empty).'
+        'WCAG 4.1.2: the password input has no accessible name (label text is empty).',
       )
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('WCAG 4.1.2: submit button not found.')
     }
-    const submitName = (
-      submit.getAttribute('aria-label') ??
-      submit.textContent ??
-      ''
-    ).trim()
+    const submitName = (submit.getAttribute('aria-label') ?? submit.textContent ?? '').trim()
     if (submitName !== 'Login') {
       throw new Error(
-        `WCAG 4.1.2: expected submit button accessible name "Login", got "${submitName}".`
+        `WCAG 4.1.2: expected submit button accessible name "Login", got "${submitName}".`,
       )
     }
   },

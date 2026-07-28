@@ -25,23 +25,9 @@ import { Button, buttonVariants } from './button.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const variants = [
-  'solid',
-  'soft',
-  'surface',
-  'outline',
-  'ghost',
-  'link',
-] as const
+const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
 const sizes = ['sm', 'default', 'lg', 'icon'] as const
-const themeColors = [
-  'white',
-  'grey',
-  'primary',
-  'secondary',
-  'tertiary',
-  'accent',
-] as const
+const themeColors = ['white', 'grey', 'primary', 'secondary', 'tertiary', 'accent'] as const
 const semanticColors = ['danger', 'success', 'warning'] as const
 const colors = [...themeColors, ...semanticColors] as const
 
@@ -50,8 +36,7 @@ type ColorKey = (typeof colors)[number]
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 
-const forcedFocusClasses =
-  'outline outline-2 outline-offset-2 outline-(--btn-bg)'
+const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
 // Matrix cells stretch buttons so columns read uniformly — except the link
 // variant, which hugs its label (its hover halo wraps the text like an
@@ -88,8 +73,7 @@ const docsTemplate = ({
   why: string
   how: string
   caveat: string
-}) =>
-  `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
 function needsGreySurface(color: ColorKey): boolean {
   return lowContrastSet.has(color)
@@ -119,17 +103,13 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div
-      className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
-    >
-      {children}
-    </div>
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>{children}</div>
   )
 }
 
 function getButton(canvasElement: HTMLElement, name: string) {
   const button = Array.from(canvasElement.querySelectorAll('button')).find(
-    (el) => el.textContent === name || el.getAttribute('aria-label') === name
+    (el) => el.textContent === name || el.getAttribute('aria-label') === name,
   )
 
   if (!button) throw new Error(`Could not find button named "${name}".`)
@@ -141,25 +121,20 @@ function getButton(canvasElement: HTMLElement, name: string) {
 
 function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
   return (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
-          <span
-            key={`theme-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`theme-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {rowColors.map((color) => (
-        <ThemeSurface key={`theme-row-${color}`} color={color} className="p-3">
-          <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
+        <ThemeSurface key={`theme-row-${color}`} color={color} className='p-3'>
+          <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`${color}-${variant}`}
@@ -220,25 +195,19 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
   const lowCols = lowContrast.length
 
   return (
-    <div className="w-full max-w-7xl space-y-4">
+    <div className='w-full max-w-7xl space-y-4'>
       {standardCols > 0 && (
-        <section className="overflow-x-auto">
-          <div
-            className="space-y-2"
-            style={{ minWidth: `${16 + standardCols * 10}rem` }}
-          >
+        <section className='overflow-x-auto'>
+          <div className='space-y-2' style={{ minWidth: `${16 + standardCols * 10}rem` }}>
             <div
-              className="grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground"
+              className='grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'
               style={{
                 gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
               }}
             >
               <span>Variant</span>
               {standard.map((color) => (
-                <span
-                  key={`variant-standard-header-${color}`}
-                  className="text-center"
-                >
+                <span key={`variant-standard-header-${color}`} className='text-center'>
                   {color}
                 </span>
               ))}
@@ -247,14 +216,12 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
             {variants.map((variant) => (
               <div
                 key={`variant-standard-row-${variant}`}
-                className="grid items-center gap-2 rounded-sm border border-border bg-background p-3"
+                className='grid items-center gap-2 rounded-sm border border-border bg-background p-3'
                 style={{
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
-                <span className="text-sm font-semibold text-foreground capitalize">
-                  {variant}
-                </span>
+                <span className='text-sm font-semibold text-foreground capitalize'>{variant}</span>
                 {standard.map((color) => (
                   <Button
                     key={`variant-standard-${variant}-${color}`}
@@ -272,24 +239,18 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
       )}
 
       {lowCols > 0 && (
-        <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
-          <div className="overflow-x-auto">
-            <div
-              className="space-y-2"
-              style={{ minWidth: `${16 + lowCols * 18}rem` }}
-            >
+        <section className='rounded-sm border border-grey-700 bg-grey-800 p-3'>
+          <div className='overflow-x-auto'>
+            <div className='space-y-2' style={{ minWidth: `${16 + lowCols * 18}rem` }}>
               <div
-                className="grid items-center gap-2 px-3 text-xs font-semibold text-grey-200"
+                className='grid items-center gap-2 px-3 text-xs font-semibold text-grey-200'
                 style={{
                   gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                 }}
               >
                 <span>Variant</span>
                 {lowContrast.map((color) => (
-                  <span
-                    key={`variant-low-header-${color}`}
-                    className="text-center"
-                  >
+                  <span key={`variant-low-header-${color}`} className='text-center'>
                     {color}
                   </span>
                 ))}
@@ -298,14 +259,12 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
               {variants.map((variant) => (
                 <div
                   key={`variant-low-row-${variant}`}
-                  className="grid items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3"
+                  className='grid items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3'
                   style={{
                     gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className="text-sm font-semibold text-grey-100 capitalize">
-                    {variant}
-                  </span>
+                  <span className='text-sm font-semibold text-grey-100 capitalize'>{variant}</span>
                   {lowContrast.map((color) => (
                     <Button
                       key={`variant-low-${variant}-${color}`}
@@ -380,23 +339,23 @@ export const Sizes: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-5xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-5xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {sizes.map((size) => (
-          <span key={`size-header-${size}`} className="text-center capitalize">
+          <span key={`size-header-${size}`} className='text-center capitalize'>
             {size}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface key={`sizes-${color}`} color={color} className="p-3">
-          <div className="space-y-1.5">
+        <ThemeSurface key={`sizes-${color}`} color={color} className='p-3'>
+          <div className='space-y-1.5'>
             {variants.map((variant, i) => (
               <div
                 key={`sizes-${color}-${variant}`}
-                className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2"
+                className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2'
               >
                 <span
                   className={
@@ -414,13 +373,9 @@ export const Sizes: Story = {
                     color={color}
                     size={size}
                     aria-label={size === 'icon' ? 'Next' : undefined}
-                    className={
-                      size === 'icon'
-                        ? 'justify-self-center'
-                        : cellClasses(variant)
-                    }
+                    className={size === 'icon' ? 'justify-self-center' : cellClasses(variant)}
                   >
-                    {size === 'icon' ? <IconAdd data-slot="icon" /> : 'Next'}
+                    {size === 'icon' ? <IconAdd data-slot='icon' /> : 'Next'}
                   </Button>
                 ))}
               </div>
@@ -452,25 +407,20 @@ export const WithIcon: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
-          <span
-            key={`icon-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`icon-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface key={`icon-row-${color}`} color={color} className="p-3">
-          <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
+        <ThemeSurface key={`icon-row-${color}`} color={color} className='p-3'>
+          <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`icon-${color}-${variant}`}
@@ -479,7 +429,7 @@ export const WithIcon: Story = {
                 className={cellClasses(variant)}
               >
                 Next
-                <IconEast data-slot="icon" />
+                <IconEast data-slot='icon' />
               </Button>
             ))}
           </div>
@@ -507,7 +457,7 @@ export const InteractionStates: Story = {
     },
   },
   render: () => (
-    <div className="force-state-grid w-full max-w-7xl space-y-3">
+    <div className='force-state-grid w-full max-w-7xl space-y-3'>
       {/*
         Mirror the :hover / :active rules from buttonVariants onto [data-hover] /
         [data-active] so the rows below can paint their state without real
@@ -533,26 +483,21 @@ export const InteractionStates: Story = {
         }
       `}</style>
 
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
-          <span
-            key={`states-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`states-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface key={`states-${color}`} color={color} className="p-3">
-          <div className="space-y-1.5">
+        <ThemeSurface key={`states-${color}`} color={color} className='p-3'>
+          <div className='space-y-1.5'>
             {/* Default / resting */}
-            <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
-              <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-                {color}
-              </span>
+            <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
+              <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
               {variants.map((variant) => (
                 <Button
                   key={`default-${color}-${variant}`}
@@ -566,17 +511,14 @@ export const InteractionStates: Story = {
             </div>
 
             {/* Hover */}
-            <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Hover</span>
               {variants.map((variant) => (
                 <button
                   key={`hover-${color}-${variant}`}
                   data-variant={variant}
-                  data-hover=""
-                  className={cn(
-                    buttonVariants({ variant, color }),
-                    cellClasses(variant)
-                  )}
+                  data-hover=''
+                  className={cn(buttonVariants({ variant, color }), cellClasses(variant))}
                 >
                   Next
                 </button>
@@ -584,17 +526,14 @@ export const InteractionStates: Story = {
             </div>
 
             {/* Active / pressed */}
-            <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Active</span>
               {variants.map((variant) => (
                 <button
                   key={`active-${color}-${variant}`}
                   data-variant={variant}
-                  data-active=""
-                  className={cn(
-                    buttonVariants({ variant, color }),
-                    cellClasses(variant)
-                  )}
+                  data-active=''
+                  className={cn(buttonVariants({ variant, color }), cellClasses(variant))}
                 >
                   Next
                 </button>
@@ -602,7 +541,7 @@ export const InteractionStates: Story = {
             </div>
 
             {/* Focused */}
-            <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Focused</span>
               {variants.map((variant) => (
                 <button
@@ -611,7 +550,7 @@ export const InteractionStates: Story = {
                   className={cn(
                     buttonVariants({ variant, color }),
                     forcedFocusClasses,
-                    cellClasses(variant)
+                    cellClasses(variant),
                   )}
                 >
                   Next
@@ -641,29 +580,20 @@ export const States: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
-          <span
-            key={`disabled-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`disabled-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface
-          key={`disabled-row-${color}`}
-          color={color}
-          className="p-3"
-        >
-          <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
+        <ThemeSurface key={`disabled-row-${color}`} color={color} className='p-3'>
+          <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`disabled-${color}-${variant}`}
@@ -698,29 +628,20 @@ export const Focused: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
-          <span
-            key={`focused-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`focused-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface
-          key={`focused-row-${color}`}
-          color={color}
-          className="p-3"
-        >
-          <div className="grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
+        <ThemeSurface key={`focused-row-${color}`} color={color} className='p-3'>
+          <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <button
                 key={`focused-${color}-${variant}`}
@@ -728,7 +649,7 @@ export const Focused: Story = {
                 className={cn(
                   buttonVariants({ variant, color }),
                   forcedFocusClasses,
-                  cellClasses(variant)
+                  cellClasses(variant),
                 )}
               >
                 Next

@@ -65,12 +65,7 @@
       "type": "registry:ui",
       "title": "Button",
       "description": "A button component with variants and sizes.",
-      "dependencies": [
-        "@base-ui/react",
-        "class-variance-authority",
-        "clsx",
-        "tailwind-merge"
-      ],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/link.json",
@@ -94,12 +89,7 @@
       "type": "registry:ui",
       "title": "Badge",
       "description": "A badge component with variants, colours, sizes, and interactive button/link variants.",
-      "dependencies": [
-        "@base-ui/react",
-        "class-variance-authority",
-        "clsx",
-        "tailwind-merge"
-      ],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",

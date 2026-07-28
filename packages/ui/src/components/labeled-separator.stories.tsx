@@ -37,7 +37,7 @@ const meta = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LabeledSeparator {...args} />
     </div>
   ),
@@ -56,13 +56,9 @@ export const Default: Story = {
     if (!root) {
       throw new Error('Could not find [data-slot="labeled-separator"].')
     }
-    const label = canvasElement.querySelector(
-      '[data-slot="labeled-separator-content"]'
-    )
+    const label = canvasElement.querySelector('[data-slot="labeled-separator-content"]')
     if (label?.textContent?.trim() !== 'or') {
-      throw new Error(
-        `Expected default label "or", received "${label?.textContent?.trim()}".`
-      )
+      throw new Error(`Expected default label "or", received "${label?.textContent?.trim()}".`)
     }
 
     // Two flanking rules, both decorative (hidden from assistive tech).
@@ -73,7 +69,7 @@ export const Default: Story = {
     rules.forEach((rule) => {
       if (rule.getAttribute('role') !== 'none') {
         throw new Error(
-          `Expected flanking rule to be decorative (role="none"), got role="${rule.getAttribute('role')}".`
+          `Expected flanking rule to be decorative (role="none"), got role="${rule.getAttribute('role')}".`,
         )
       }
     })
@@ -83,7 +79,7 @@ export const Default: Story = {
 export const Variants: Story = {
   name: 'Variants',
   render: () => (
-    <div className="w-full max-w-md space-y-8">
+    <div className='w-full max-w-md space-y-8'>
       {/* Default "or" label */}
       <LabeledSeparator />
       {/* Custom label */}
@@ -98,23 +94,19 @@ export const CssCheck: Story = {
     // Proves globals.css is loaded: the decorative rule resolves the
     // semantic --border token to a real, non-transparent colour, and the
     // flex container lays the children out on a single row.
-    const root = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="labeled-separator"]'
-    )
+    const root = canvasElement.querySelector<HTMLElement>('[data-slot="labeled-separator"]')
     if (!root) throw new Error('LabeledSeparator root not found.')
     const display = getComputedStyle(root).display
     if (display !== 'flex') {
       throw new Error(`Expected display:flex on the root, got "${display}".`)
     }
 
-    const rule = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="separator"]'
-    )
+    const rule = canvasElement.querySelector<HTMLElement>('[data-slot="separator"]')
     if (!rule) throw new Error('Separator rule not found.')
     const bg = getComputedStyle(rule).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected the rule's --border token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected the rule's --border token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
   },

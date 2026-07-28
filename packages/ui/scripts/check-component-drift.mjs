@@ -26,9 +26,7 @@ function sourceNames(dir) {
   return readdirSync(dir)
     .filter(
       (name) =>
-        name.endsWith('.tsx') &&
-        !name.endsWith('.stories.tsx') &&
-        name !== 'story-helpers.tsx'
+        name.endsWith('.tsx') && !name.endsWith('.stories.tsx') && name !== 'story-helpers.tsx',
     )
     .map((name) => name.replace(/\.tsx$/, ''))
 }
@@ -53,8 +51,7 @@ for (const item of registry.items) {
   }
 }
 const registryFiles = new Set(itemTypesByFile.keys())
-const registeredAs = (path, type) =>
-  itemTypesByFile.get(path)?.has(type) ?? false
+const registeredAs = (path, type) => itemTypesByFile.get(path)?.has(type) ?? false
 
 const problems = []
 
@@ -65,14 +62,12 @@ for (const component of components) {
   }
 
   if (!indexSource.includes(`./components/${component}.js`)) {
-    problems.push(
-      `src/components/${component}.tsx is not exported from src/index.ts`
-    )
+    problems.push(`src/components/${component}.tsx is not exported from src/index.ts`)
   }
 
   if (!registeredAs(`src/components/${component}.tsx`, 'registry:ui')) {
     problems.push(
-      `src/components/${component}.tsx is not registered in registry.json as a registry:ui item`
+      `src/components/${component}.tsx is not registered in registry.json as a registry:ui item`,
     )
   }
 }
@@ -81,13 +76,13 @@ for (const component of components) {
 for (const pattern of patterns) {
   if (!registeredAs(`src/patterns/${pattern}.tsx`, 'registry:block')) {
     problems.push(
-      `src/patterns/${pattern}.tsx is not registered in registry.json as a registry:block item`
+      `src/patterns/${pattern}.tsx is not registered in registry.json as a registry:block item`,
     )
   }
 
   if (indexSource.includes(`./patterns/${pattern}.js`)) {
     problems.push(
-      `src/patterns/${pattern}.tsx is a registry-only pattern but exported from src/index.ts — patterns must not ship in the npm tarball`
+      `src/patterns/${pattern}.tsx is a registry-only pattern but exported from src/index.ts — patterns must not ship in the npm tarball`,
     )
   }
 }
@@ -96,12 +91,12 @@ for (const pattern of patterns) {
 for (const component of INTERNAL) {
   if (indexSource.includes(`./components/${component}.js`)) {
     problems.push(
-      `${component} is allowlisted as internal but exported from src/index.ts — remove it from INTERNAL in scripts/check-component-drift.mjs`
+      `${component} is allowlisted as internal but exported from src/index.ts — remove it from INTERNAL in scripts/check-component-drift.mjs`,
     )
   }
   if (registryFiles.has(`src/components/${component}.tsx`)) {
     problems.push(
-      `${component} is allowlisted as internal but registered in registry.json — remove it from INTERNAL in scripts/check-component-drift.mjs`
+      `${component} is allowlisted as internal but registered in registry.json — remove it from INTERNAL in scripts/check-component-drift.mjs`,
     )
   }
 }
@@ -127,11 +122,11 @@ if (problems.length > 0) {
     console.error(`  - ${problem}`)
   }
   console.error(
-    '\nShip components on both channels (src/index.ts + registry.json); register patterns as registry-only blocks; or allowlist with a reason.'
+    '\nShip components on both channels (src/index.ts + registry.json); register patterns as registry-only blocks; or allowlist with a reason.',
   )
   process.exit(1)
 }
 
 console.log(
-  `✔ ${components.length - INTERNAL.size} components on both channels, ${patterns.length} registry-only patterns, ${INTERNAL.size} internal.`
+  `✔ ${components.length - INTERNAL.size} components on both channels, ${patterns.length} registry-only patterns, ${INTERNAL.size} internal.`,
 )

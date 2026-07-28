@@ -18,26 +18,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 import { userEvent } from 'storybook/test'
 
-import {
-  IconAdd,
-  IconClose,
-  IconMoreHoriz,
-  IconSearch,
-} from '../icons/index.js'
+import { IconAdd, IconClose, IconMoreHoriz, IconSearch } from '../icons/index.js'
 import { Button } from './button.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 type VariantKey = 'solid' | 'soft' | 'surface' | 'outline' | 'ghost' | 'link'
 type SizeKey = 'sm' | 'default' | 'lg' | 'icon'
-type ColorKey =
-  | 'white'
-  | 'grey'
-  | 'primary'
-  | 'secondary'
-  | 'tertiary'
-  | 'accent'
-  | 'danger'
+type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
@@ -52,8 +40,7 @@ const themeColors: readonly ColorKey[] = [
   'danger',
 ]
 
-const forcedFocusClasses =
-  'outline outline-2 outline-offset-2 outline-(--btn-bg)'
+const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
 // ─── WCAG criteria map ────────────────────────────────────────────────────────
 
@@ -150,8 +137,7 @@ const docsTemplate = ({
   why: string
   how: string
   caveat: string
-}) =>
-  `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
 function wcagStoryMeta({
   criteria,
@@ -202,17 +188,13 @@ function ThemeSurface({
   className?: string
 }) {
   return (
-    <div
-      className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
-    >
-      {children}
-    </div>
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>{children}</div>
   )
 }
 
 function getButton(canvasElement: HTMLElement, name: string) {
   const button = Array.from(canvasElement.querySelectorAll('button')).find(
-    (el) => el.textContent === name || el.getAttribute('aria-label') === name
+    (el) => el.textContent === name || el.getAttribute('aria-label') === name,
   )
 
   if (!button) throw new Error(`Could not find button named "${name}".`)
@@ -263,38 +245,36 @@ function TargetSizePanel({
 }) {
   return (
     <div className={compact ? 'space-y-3' : 'space-y-4'}>
-      <div className="flex flex-wrap items-start gap-5">
+      <div className='flex flex-wrap items-start gap-5'>
         {sizeVariants.map((item) => (
-          <div key={`${color}-${item.id}`} className="space-y-2">
-            <div className="relative inline-flex items-center justify-center">
+          <div key={`${color}-${item.id}`} className='space-y-2'>
+            <div className='relative inline-flex items-center justify-center'>
               <Button
                 variant={item.variant}
                 color={color}
                 size={item.size}
                 aria-label={item.icon ? 'More options' : undefined}
               >
-                {item.icon ? <IconMoreHoriz data-slot="icon" /> : item.label}
+                {item.icon ? <IconMoreHoriz data-slot='icon' /> : item.label}
               </Button>
 
               {/* Visible bounds */}
               <span
-                className="pointer-events-none absolute inset-0 rounded-sm border border-primary-500/70"
-                aria-hidden="true"
+                className='pointer-events-none absolute inset-0 rounded-sm border border-primary-500/70'
+                aria-hidden='true'
               />
 
               {/* Minimum-target boundary */}
               <span
-                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80"
+                className='pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80'
                 style={{
                   width: `max(100%, ${overlaySize})`,
                   height: `max(100%, ${overlaySize})`,
                 }}
-                aria-hidden="true"
+                aria-hidden='true'
               />
             </div>
-            <p className={`text-xs ${bodyClasses(color)}`}>
-              {item.id.replaceAll('-', ' ')}
-            </p>
+            <p className={`text-xs ${bodyClasses(color)}`}>{item.id.replaceAll('-', ' ')}</p>
           </div>
         ))}
       </div>
@@ -321,29 +301,27 @@ export const ContrastMinimum: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className='w-full max-w-7xl space-y-3'>
       {themeColors.map((color) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Theme: {color}
-          </h4>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button variant="solid" color={color}>
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <div className='flex flex-wrap items-center gap-3'>
+            <Button variant='solid' color={color}>
               Solid
             </Button>
-            <Button variant="soft" color={color}>
+            <Button variant='soft' color={color}>
               Soft
             </Button>
-            <Button variant="surface" color={color}>
+            <Button variant='surface' color={color}>
               Surface
             </Button>
-            <Button variant="outline" color={color}>
+            <Button variant='outline' color={color}>
               Outline
             </Button>
-            <Button variant="ghost" color={color}>
+            <Button variant='ghost' color={color}>
               Ghost
             </Button>
-            <Button variant="solid" color={color} disabled>
+            <Button variant='solid' color={color} disabled>
               Disabled
             </Button>
           </div>
@@ -370,13 +348,11 @@ export const FocusVisible: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className='w-full max-w-7xl space-y-3'>
       {themeColors.map((color) => (
         <ThemeSurface key={`focus-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Theme: {color}
-          </h4>
-          <div className="flex flex-wrap items-center gap-4">
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <div className='flex flex-wrap items-center gap-4'>
             {(['solid', 'soft', 'outline', 'ghost'] as const).map((variant) => (
               <Button
                 key={`focus-${color}-${variant}`}
@@ -411,9 +387,9 @@ export const Keyboard: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <Button>Press me</Button>
-      <p className="text-sm text-muted-foreground">
+      <p className='text-sm text-muted-foreground'>
         Tab to focus, then press Enter or Space to activate.
       </p>
     </div>
@@ -422,9 +398,7 @@ export const Keyboard: Story = {
     const button = getButton(canvasElement, 'Press me')
 
     if (button.tabIndex < 0) {
-      throw new Error(
-        `Button is not keyboard reachable: tabIndex=${button.tabIndex}.`
-      )
+      throw new Error(`Button is not keyboard reachable: tabIndex=${button.tabIndex}.`)
     }
 
     button.focus()
@@ -448,9 +422,7 @@ export const Keyboard: Story = {
     button.removeEventListener('click', handler)
 
     if (activations < 2) {
-      throw new Error(
-        `Expected at least 2 keyboard activations, observed ${activations}.`
-      )
+      throw new Error(`Expected at least 2 keyboard activations, observed ${activations}.`)
     }
   },
 }
@@ -472,31 +444,31 @@ export const LabelInName: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Text labels (accessible name = visible label)
         </h4>
-        <div className="flex flex-wrap gap-3">
+        <div className='flex flex-wrap gap-3'>
           <Button>Save</Button>
-          <Button variant="outline">Cancel</Button>
-          <Button variant="link">Learn more</Button>
+          <Button variant='outline'>Cancel</Button>
+          <Button variant='link'>Learn more</Button>
         </div>
       </section>
 
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Icon-only (accessible name supplied via aria-label)
         </h4>
-        <div className="flex flex-wrap gap-3">
-          <Button size="icon" variant="ghost" aria-label="More options">
-            <IconMoreHoriz data-slot="icon" />
+        <div className='flex flex-wrap gap-3'>
+          <Button size='icon' variant='ghost' aria-label='More options'>
+            <IconMoreHoriz data-slot='icon' />
           </Button>
-          <Button size="icon" variant="outline" aria-label="Add item">
-            <IconAdd data-slot="icon" />
+          <Button size='icon' variant='outline' aria-label='Add item'>
+            <IconAdd data-slot='icon' />
           </Button>
-          <Button size="icon" variant="solid" aria-label="Search">
-            <IconSearch data-slot="icon" />
+          <Button size='icon' variant='solid' aria-label='Search'>
+            <IconSearch data-slot='icon' />
           </Button>
         </div>
       </section>
@@ -508,9 +480,7 @@ export const LabelInName: Story = {
       save.getAttribute('aria-label') &&
       !save.getAttribute('aria-label')!.toLowerCase().includes('save')
     ) {
-      throw new Error(
-        'aria-label on "Save" button does not contain the visible label text.'
-      )
+      throw new Error('aria-label on "Save" button does not contain the visible label text.')
     }
 
     const iconButton = getButton(canvasElement, 'More options')
@@ -538,16 +508,13 @@ export const TargetSizeMinimum: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-6xl space-y-3">
+    <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`target-size-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Theme: {color}
-          </h4>
-          <TargetSizePanel color={color} overlaySize="1.5rem" />
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <TargetSizePanel color={color} overlaySize='1.5rem' />
           <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
-            Blue solid outline = rendered bounds. Red dashed outline = WCAG
-            2.5.8 minimum (24×24px).
+            Blue solid outline = rendered bounds. Red dashed outline = WCAG 2.5.8 minimum (24×24px).
           </p>
         </ThemeSurface>
       ))}
@@ -572,16 +539,14 @@ export const TapTarget: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-6xl space-y-3">
+    <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`tap-target-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Theme: {color}
-          </h4>
-          <TargetSizePanel color={color} overlaySize="2.75rem" />
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <TargetSizePanel color={color} overlaySize='2.75rem' />
           <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
-            Blue solid outline = visible bounds. Red dashed outline = expanded
-            44×44px touch target geometry applied on coarse-pointer devices.
+            Blue solid outline = visible bounds. Red dashed outline = expanded 44×44px touch target
+            geometry applied on coarse-pointer devices.
           </p>
         </ThemeSurface>
       ))}
@@ -606,13 +571,13 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="flex flex-wrap gap-3">
+    <div className='flex flex-wrap gap-3'>
       <Button>Submit</Button>
-      <Button variant="outline" disabled>
+      <Button variant='outline' disabled>
         Disabled
       </Button>
-      <Button size="icon" variant="ghost" aria-label="Close">
-        <IconClose data-slot="icon" />
+      <Button size='icon' variant='ghost' aria-label='Close'>
+        <IconClose data-slot='icon' />
       </Button>
     </div>
   ),
@@ -620,21 +585,18 @@ export const NameRoleValue: Story = {
     const submit = getButton(canvasElement, 'Submit')
     if (submit.tagName !== 'BUTTON') {
       throw new Error(
-        `Submit button should render as <button>, got <${submit.tagName.toLowerCase()}>.`
+        `Submit button should render as <button>, got <${submit.tagName.toLowerCase()}>.`,
       )
     }
 
-    const accessibleName =
-      submit.getAttribute('aria-label') || submit.textContent?.trim() || ''
+    const accessibleName = submit.getAttribute('aria-label') || submit.textContent?.trim() || ''
     if (accessibleName.length === 0) {
       throw new Error('Submit button has no accessible name.')
     }
 
     const disabled = getButton(canvasElement, 'Disabled')
     if (!disabled.hasAttribute('disabled')) {
-      throw new Error(
-        'Disabled button does not expose the disabled state to assistive tech.'
-      )
+      throw new Error('Disabled button does not expose the disabled state to assistive tech.')
     }
 
     const icon = getButton(canvasElement, 'Close')

@@ -3,13 +3,7 @@
 import type * as React from 'react'
 
 import { Button } from '../components/button.js'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/card.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
 import {
   Field,
   FieldDescription,
@@ -44,18 +38,13 @@ import { cn } from '../lib/utils.js'
  *  - Terms acceptance is communicated inline at the point of action rather
  *    than via a pre-checked checkbox.
  */
-export function SignUpForm({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
+export function SignUpForm({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className="w-full">
+      <Card className='w-full'>
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
-          <CardDescription>
-            Enter your details below to create a new account.
-          </CardDescription>
+          <CardDescription>Enter your details below to create a new account.</CardDescription>
         </CardHeader>
         <CardContent>
           <form>
@@ -68,10 +57,10 @@ export function SignUpForm({
                */}
               <Field>
                 <FieldDescription>
-                  Use your NSW Government Microsoft Entra ID account to sign up
-                  with a single click — no separate password required.
+                  Use your NSW Government Microsoft Entra ID account to sign up with a single click
+                  — no separate password required.
                 </FieldDescription>
-                <Button type="button">
+                <Button type='button'>
                   <IconLogin />
                   Create account with Microsoft Entra ID
                 </Button>
@@ -85,57 +74,44 @@ export function SignUpForm({
                * for assistive tech, not just one field.
                */}
               <FieldSet>
-                <FieldLegend className="text-base">
-                  Register with email and password
-                </FieldLegend>
+                <FieldLegend className='text-base'>Register with email and password</FieldLegend>
                 {/* No htmlFor/id/aria-describedby wiring: each Field associates
                  * its label and description with the control automatically (Base
                  * UI generates ids per instance), so the password requirements
                  * below are linked via aria-describedby without manual plumbing. */}
                 <Field>
                   <FieldLabel>Full name</FieldLabel>
-                  <Input
-                    type="text"
-                    autoComplete="name"
-                    placeholder="Jane Citizen"
-                    required
-                  />
+                  <Input type='text' autoComplete='name' placeholder='Jane Citizen' required />
                 </Field>
                 <Field>
                   <FieldLabel>Email</FieldLabel>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="m@example.com"
-                    required
-                  />
+                  <Input type='email' autoComplete='email' placeholder='m@example.com' required />
                 </Field>
                 <Field>
                   <FieldLabel>Password</FieldLabel>
-                  <Input type="password" autoComplete="new-password" required />
+                  <Input type='password' autoComplete='new-password' required />
                   <FieldDescription>
                     Use at least 8 characters, including a number and a symbol.
                   </FieldDescription>
                 </Field>
                 <Field>
                   <FieldLabel>Confirm password</FieldLabel>
-                  <Input type="password" autoComplete="new-password" required />
+                  <Input type='password' autoComplete='new-password' required />
                 </Field>
               </FieldSet>
               <Field>
-                <Button type="submit">
+                <Button type='submit'>
                   <IconPersonAdd />
                   Create account
                 </Button>
-                <FieldDescription className="text-center">
-                  By creating an account you agree to our{' '}
-                  <Link href="#">Terms of Service</Link> and{' '}
-                  <Link href="#">Privacy Policy</Link>.
+                <FieldDescription className='text-center'>
+                  By creating an account you agree to our <Link href='#'>Terms of Service</Link> and{' '}
+                  <Link href='#'>Privacy Policy</Link>.
                 </FieldDescription>
               </Field>
               <Field>
-                <FieldDescription className="text-center">
-                  Already have an account? <Link href="#">Login</Link>
+                <FieldDescription className='text-center'>
+                  Already have an account? <Link href='#'>Login</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>

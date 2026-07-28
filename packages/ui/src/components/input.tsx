@@ -5,17 +5,12 @@ import * as React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-function Input({
-  className,
-  type,
-  ref,
-  ...props
-}: React.ComponentProps<'input'>) {
+function Input({ className, type, ref, ...props }: React.ComponentProps<'input'>) {
   return (
     <InputPrimitive
       ref={ref}
       type={type}
-      data-slot="input"
+      data-slot='input'
       data-type={type}
       className={cn(
         // No `outline-none` here: it sets `--tw-outline-style: none` globally
@@ -41,7 +36,7 @@ function Input({
         'disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50',
         // Invalid — 2px danger border, danger hover surface (Figma error variants)
         'aria-invalid:border-2 aria-invalid:border-(--input-invalid-border) aria-invalid:hover:bg-(--input-invalid-surface-hover) aria-invalid:focus-visible:outline-(--input-invalid-ring)',
-        className
+        className,
       )}
       {...props}
     />

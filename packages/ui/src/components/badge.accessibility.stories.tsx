@@ -19,12 +19,7 @@ import { userEvent } from 'storybook/test'
 import { IconClose, IconMoreHoriz } from '../icons/index.js'
 
 import { Badge, BadgeButton, BadgeLink } from './badge.js'
-import {
-  ThemeSurface,
-  bodyClasses,
-  titleClasses,
-  wcagStoryMeta,
-} from './story-helpers.js'
+import { ThemeSurface, bodyClasses, titleClasses, wcagStoryMeta } from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -44,8 +39,7 @@ const colors = [
 type ColorKey = (typeof colors)[number]
 type SizeKey = 'sm' | 'default' | 'lg'
 
-const forcedFocusClasses =
-  'outline outline-2 outline-offset-2 outline-primary-800'
+const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-primary-800'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -67,13 +61,9 @@ type Story = StoryObj<typeof meta>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getBadgeButton(canvasElement: HTMLElement, label: string) {
-  const candidates = Array.from(
-    canvasElement.querySelectorAll<HTMLElement>('button, a')
-  )
+  const candidates = Array.from(canvasElement.querySelectorAll<HTMLElement>('button, a'))
   const match = candidates.find(
-    (el) =>
-      el.textContent?.trim() === label ||
-      el.getAttribute('aria-label') === label
+    (el) => el.textContent?.trim() === label || el.getAttribute('aria-label') === label,
   )
 
   if (!match) {
@@ -106,38 +96,36 @@ function TargetSizePanel({
   overlaySize: string
 }) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-start gap-5">
+    <div className='space-y-4'>
+      <div className='flex flex-wrap items-start gap-5'>
         {sizePresets.map((item) => (
-          <div key={`${color}-${item.id}`} className="space-y-2">
-            <div className="relative inline-flex items-center justify-center">
+          <div key={`${color}-${item.id}`} className='space-y-2'>
+            <div className='relative inline-flex items-center justify-center'>
               <BadgeButton
                 color={color}
                 size={item.size}
                 aria-label={item.icon ? 'More options' : undefined}
               >
-                {item.icon ? <IconMoreHoriz data-slot="icon" /> : item.label}
+                {item.icon ? <IconMoreHoriz data-slot='icon' /> : item.label}
               </BadgeButton>
 
               {/* Visible bounds */}
               <span
-                className="pointer-events-none absolute inset-0 rounded-sm border border-primary-500/70"
-                aria-hidden="true"
+                className='pointer-events-none absolute inset-0 rounded-sm border border-primary-500/70'
+                aria-hidden='true'
               />
 
               {/* Minimum-target boundary */}
               <span
-                className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80"
+                className='pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-sm border-2 border-dashed border-red-400/80'
                 style={{
                   width: `max(100%, ${overlaySize})`,
                   height: `max(100%, ${overlaySize})`,
                 }}
-                aria-hidden="true"
+                aria-hidden='true'
               />
             </div>
-            <p className={`text-xs ${bodyClasses(color)}`}>
-              {item.id.replaceAll('-', ' ')}
-            </p>
+            <p className={`text-xs ${bodyClasses(color)}`}>{item.id.replaceAll('-', ' ')}</p>
           </div>
         ))}
       </div>
@@ -164,19 +152,13 @@ export const Contrast: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className='w-full max-w-7xl space-y-3'>
       {colors.map((color: ColorKey) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Colour: {color}
-          </h4>
-          <div className="flex flex-wrap items-center gap-3">
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Colour: {color}</h4>
+          <div className='flex flex-wrap items-center gap-3'>
             {variants.map((variant) => (
-              <Badge
-                key={`contrast-${color}-${variant}`}
-                variant={variant}
-                color={color}
-              >
+              <Badge key={`contrast-${color}-${variant}`} variant={variant} color={color}>
                 {variant}
               </Badge>
             ))}
@@ -204,28 +186,28 @@ export const UseOfColour: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Status communicated by label + colour (not colour alone)
         </h4>
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge color="accent">Live</Badge>
-          <Badge color="secondary">Beta</Badge>
-          <Badge color="grey">Deprecated</Badge>
-          <Badge color="tertiary">Updated</Badge>
-          <Badge color="primary">New</Badge>
+        <div className='flex flex-wrap items-center gap-3'>
+          <Badge color='accent'>Live</Badge>
+          <Badge color='secondary'>Beta</Badge>
+          <Badge color='grey'>Deprecated</Badge>
+          <Badge color='tertiary'>Updated</Badge>
+          <Badge color='primary'>New</Badge>
         </div>
       </section>
 
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Count badges — the number is the label
         </h4>
-        <div className="flex flex-wrap items-center gap-3">
-          <Badge color="primary">3</Badge>
-          <Badge color="accent">12</Badge>
-          <Badge color="grey">99+</Badge>
+        <div className='flex flex-wrap items-center gap-3'>
+          <Badge color='primary'>3</Badge>
+          <Badge color='accent'>12</Badge>
+          <Badge color='grey'>99+</Badge>
         </div>
       </section>
     </div>
@@ -249,13 +231,11 @@ export const FocusVisible: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
+    <div className='w-full max-w-7xl space-y-3'>
       {colors.map((color: ColorKey) => (
         <ThemeSurface key={`focus-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Colour: {color}
-          </h4>
-          <div className="flex flex-wrap items-center gap-4">
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Colour: {color}</h4>
+          <div className='flex flex-wrap items-center gap-4'>
             {variants.map((variant) => (
               <BadgeButton
                 key={`focus-${color}-${variant}`}
@@ -290,9 +270,9 @@ export const Keyboard: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       <BadgeButton>Press me</BadgeButton>
-      <p className="text-sm text-muted-foreground">
+      <p className='text-sm text-muted-foreground'>
         Tab to focus, then press Enter or Space to activate.
       </p>
     </div>
@@ -301,9 +281,7 @@ export const Keyboard: Story = {
     const badge = getBadgeButton(canvasElement, 'Press me')
 
     if (badge.tabIndex < 0) {
-      throw new Error(
-        `BadgeButton is not keyboard reachable: tabIndex=${badge.tabIndex}.`
-      )
+      throw new Error(`BadgeButton is not keyboard reachable: tabIndex=${badge.tabIndex}.`)
     }
 
     badge.focus()
@@ -327,9 +305,7 @@ export const Keyboard: Story = {
     badge.removeEventListener('click', handler)
 
     if (activations < 2) {
-      throw new Error(
-        `Expected at least 2 keyboard activations, observed ${activations}.`
-      )
+      throw new Error(`Expected at least 2 keyboard activations, observed ${activations}.`)
     }
   },
 }
@@ -351,28 +327,28 @@ export const LabelInName: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Text labels (accessible name = visible label)
         </h4>
-        <div className="flex flex-wrap gap-3">
-          <BadgeButton color="primary">New</BadgeButton>
-          <BadgeButton color="accent">Live</BadgeButton>
-          <BadgeButton color="grey">Archived</BadgeButton>
+        <div className='flex flex-wrap gap-3'>
+          <BadgeButton color='primary'>New</BadgeButton>
+          <BadgeButton color='accent'>Live</BadgeButton>
+          <BadgeButton color='grey'>Archived</BadgeButton>
         </div>
       </section>
 
-      <section className="space-y-2">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-2'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Icon-only (accessible name supplied via aria-label)
         </h4>
-        <div className="flex flex-wrap gap-3">
-          <BadgeButton color="primary" aria-label="More options">
-            <IconMoreHoriz data-slot="icon" />
+        <div className='flex flex-wrap gap-3'>
+          <BadgeButton color='primary' aria-label='More options'>
+            <IconMoreHoriz data-slot='icon' />
           </BadgeButton>
-          <BadgeButton color="accent" aria-label="Dismiss notification">
-            <IconClose data-slot="icon" />
+          <BadgeButton color='accent' aria-label='Dismiss notification'>
+            <IconClose data-slot='icon' />
           </BadgeButton>
         </div>
       </section>
@@ -384,9 +360,7 @@ export const LabelInName: Story = {
       live.getAttribute('aria-label') &&
       !live.getAttribute('aria-label')!.toLowerCase().includes('live')
     ) {
-      throw new Error(
-        'aria-label on "Live" BadgeButton does not contain the visible label text.'
-      )
+      throw new Error('aria-label on "Live" BadgeButton does not contain the visible label text.')
     }
 
     const iconBadge = getBadgeButton(canvasElement, 'More options')
@@ -414,16 +388,13 @@ export const TargetSizeMinimum: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-6xl space-y-3">
+    <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`target-size-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
-            Colour: {color}
-          </h4>
-          <TargetSizePanel color={color} overlaySize="1.5rem" />
+          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Colour: {color}</h4>
+          <TargetSizePanel color={color} overlaySize='1.5rem' />
           <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
-            Blue solid outline = rendered bounds. Red dashed outline = WCAG
-            2.5.8 minimum (24×24px).
+            Blue solid outline = rendered bounds. Red dashed outline = WCAG 2.5.8 minimum (24×24px).
           </p>
         </ThemeSurface>
       ))}
@@ -448,34 +419,33 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="flex flex-wrap items-center gap-3">
-      <BadgeButton color="primary">Activate</BadgeButton>
-      <BadgeLink color="accent" href="#">
+    <div className='flex flex-wrap items-center gap-3'>
+      <BadgeButton color='primary'>Activate</BadgeButton>
+      <BadgeLink color='accent' href='#'>
         Go to link
       </BadgeLink>
-      <BadgeButton color="grey" aria-label="More options">
-        <IconMoreHoriz data-slot="icon" />
+      <BadgeButton color='grey' aria-label='More options'>
+        <IconMoreHoriz data-slot='icon' />
       </BadgeButton>
-      <Badge color="primary">Static badge</Badge>
+      <Badge color='primary'>Static badge</Badge>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const button = getBadgeButton(canvasElement, 'Activate')
     if (button.tagName !== 'BUTTON') {
       throw new Error(
-        `Text BadgeButton should render as <button>, got <${button.tagName.toLowerCase()}>.`
+        `Text BadgeButton should render as <button>, got <${button.tagName.toLowerCase()}>.`,
       )
     }
 
     const link = getBadgeButton(canvasElement, 'Go to link')
     if (link.tagName !== 'A') {
       throw new Error(
-        `href-bearing BadgeButton should render as <a>, got <${link.tagName.toLowerCase()}>.`
+        `href-bearing BadgeButton should render as <a>, got <${link.tagName.toLowerCase()}>.`,
       )
     }
 
-    const accessibleName =
-      button.getAttribute('aria-label') || button.textContent?.trim() || ''
+    const accessibleName = button.getAttribute('aria-label') || button.textContent?.trim() || ''
     if (accessibleName.length === 0) {
       throw new Error('BadgeButton has no accessible name.')
     }

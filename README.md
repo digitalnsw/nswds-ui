@@ -26,7 +26,7 @@ export function Toolbar() {
   return (
     <>
       <Button leadingVisual={IconSearch}>Search</Button>
-      <ButtonLink href="/docs" variant="outline">
+      <ButtonLink href='/docs' variant='outline'>
         Documentation
       </ButtonLink>
     </>

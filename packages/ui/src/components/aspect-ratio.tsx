@@ -9,7 +9,7 @@ function AspectRatio({
 }: React.ComponentProps<'div'> & { ratio: number }) {
   return (
     <div
-      data-slot="aspect-ratio"
+      data-slot='aspect-ratio'
       style={
         {
           '--ratio': ratio,

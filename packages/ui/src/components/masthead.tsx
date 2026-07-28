@@ -51,7 +51,7 @@ const mastheadContainerVariants = cva(
     defaultVariants: {
       container: 'fluid',
     },
-  }
+  },
 )
 
 type MastheadProps = React.ComponentPropsWithoutRef<'div'> &
@@ -89,18 +89,15 @@ function Masthead({
 }: MastheadProps) {
   return (
     <div
-      id="nsw-masthead"
-      data-slot="masthead"
+      id='nsw-masthead'
+      data-slot='masthead'
       {...props}
       className={cn(mastheadVariants({ color }), className)}
       ref={ref}
     >
       <div
-        data-slot="masthead-container"
-        className={cn(
-          mastheadContainerVariants({ container }),
-          containerClassName
-        )}
+        data-slot='masthead-container'
+        className={cn(mastheadContainerVariants({ container }), containerClassName)}
       >
         {children ?? 'A NSW Government website'}
       </div>

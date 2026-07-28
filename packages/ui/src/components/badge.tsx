@@ -369,22 +369,15 @@ type BadgeLinkProps = BadgeOwnProps &
     ref?: React.Ref<HTMLAnchorElement>
   }
 
-function badgeWrapperClasses({
-  color,
-  className,
-}: Pick<BadgeOwnProps, 'color' | 'className'>) {
-  return clsx(
-    className,
-    focusOutline[(color ?? undefined) as keyof typeof focusOutline],
-    [
-      // Base
-      'group relative inline-flex rounded-sm',
-      // Focus
-      'focus:outline-1 focus:outline-offset-1 focus:outline-(--focus-outline)',
-      // Disabled
-      'disabled:pointer-events-none disabled:opacity-50',
-    ]
-  )
+function badgeWrapperClasses({ color, className }: Pick<BadgeOwnProps, 'color' | 'className'>) {
+  return clsx(className, focusOutline[(color ?? undefined) as keyof typeof focusOutline], [
+    // Base
+    'group relative inline-flex rounded-sm',
+    // Focus
+    'focus:outline-1 focus:outline-offset-1 focus:outline-(--focus-outline)',
+    // Disabled
+    'disabled:pointer-events-none disabled:opacity-50',
+  ])
 }
 
 /**
@@ -405,10 +398,7 @@ function BadgeButton({
     <ButtonPrimitive
       data-variant={variant}
       {...props}
-      className={clsx(
-        badgeWrapperClasses({ color, className }),
-        'cursor-pointer'
-      )}
+      className={clsx(badgeWrapperClasses({ color, className }), 'cursor-pointer')}
       ref={ref}
     >
       <TouchTarget>
@@ -421,21 +411,13 @@ function BadgeButton({
 }
 
 /** Badge-styled anchor; renders through `Link` (so `LinkProvider` applies). */
-function BadgeLink({
-  variant,
-  color,
-  size,
-  className,
-  children,
-  ref,
-  ...props
-}: BadgeLinkProps) {
+function BadgeLink({ variant, color, size, className, children, ref, ...props }: BadgeLinkProps) {
   return (
     <Link
       // Opt out of Link's built-in styling — BadgeLink wraps the inner
       // Badge with its own focus ring / hit target and doesn't want Link's
       // underline, halo, or icon defaults composing on top.
-      variant="unstyled"
+      variant='unstyled'
       data-variant={variant}
       {...props}
       className={badgeWrapperClasses({ color, className })}

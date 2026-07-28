@@ -12,22 +12,10 @@ import { fn } from 'storybook/test'
 
 import { cn } from '../lib/utils.js'
 
-import {
-  IconAdd,
-  IconArrowForward,
-  IconExpandMore,
-  IconSearch,
-} from '../icons/index.js'
+import { IconAdd, IconArrowForward, IconExpandMore, IconSearch } from '../icons/index.js'
 import { Button, ButtonLink } from './button.js'
 
-const variants = [
-  'solid',
-  'soft',
-  'surface',
-  'outline',
-  'ghost',
-  'link',
-] as const
+const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
 const sizes = ['sm', 'default', 'lg', 'icon'] as const
 const colors = [
   'white',
@@ -52,15 +40,14 @@ const semanticColors = ['danger', 'success', 'warning'] as const
 // The variant treatments shown in each colour row of the colour matrix.
 const matrixVariants = ['solid', 'soft', 'surface', 'outline'] as const
 
-const variantDocs: ReadonlyArray<readonly [(typeof variants)[number], string]> =
-  [
-    ['solid', 'High emphasis — the single primary action on a screen.'],
-    ['soft', 'Medium emphasis — a tinted fill with no border.'],
-    ['surface', 'Medium emphasis — a subtle fill with a visible border.'],
-    ['outline', 'Low emphasis — border only, transparent background.'],
-    ['ghost', 'Low emphasis — no border or fill until hovered.'],
-    ['link', 'Minimal — renders as inline underlined text.'],
-  ]
+const variantDocs: ReadonlyArray<readonly [(typeof variants)[number], string]> = [
+  ['solid', 'High emphasis — the single primary action on a screen.'],
+  ['soft', 'Medium emphasis — a tinted fill with no border.'],
+  ['surface', 'Medium emphasis — a subtle fill with a visible border.'],
+  ['outline', 'Low emphasis — border only, transparent background.'],
+  ['ghost', 'Low emphasis — no border or fill until hovered.'],
+  ['link', 'Minimal — renders as inline underlined text.'],
+]
 
 // ─── Docs page building blocks ──────────────────────────────────────────────
 
@@ -74,13 +61,11 @@ function Section({
   children: React.ReactNode
 }) {
   return (
-    <section className="space-y-5">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+    <section className='space-y-5'>
+      <div className='space-y-2'>
+        <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
         {description ? (
-          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {description}
-          </p>
+          <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>{description}</p>
         ) : null}
       </div>
       {children}
@@ -104,7 +89,7 @@ function Preview({
       className={cn(
         'rounded-xl border p-8',
         dark ? 'border-transparent bg-primary' : 'border-border bg-muted/40',
-        className
+        className,
       )}
     >
       {children}
@@ -112,19 +97,11 @@ function Preview({
   )
 }
 
-function Cell({
-  label,
-  children,
-}: {
-  label: string
-  children: React.ReactNode
-}) {
+function Cell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <div className="flex min-h-12 items-center">{children}</div>
-      <span className="text-xs font-medium tracking-wide text-muted-foreground">
-        {label}
-      </span>
+    <div className='flex flex-col items-center gap-3'>
+      <div className='flex min-h-12 items-center'>{children}</div>
+      <span className='text-xs font-medium tracking-wide text-muted-foreground'>{label}</span>
     </div>
   )
 }
@@ -132,19 +109,13 @@ function Cell({
 // One row of the colour matrix: a colour name followed by that colour rendered
 // across the key variant treatments, so the difference between brand and
 // semantic colours is legible at a glance.
-function ColorRow({
-  color,
-  dark = false,
-}: {
-  color: (typeof colors)[number]
-  dark?: boolean
-}) {
+function ColorRow({ color, dark = false }: { color: (typeof colors)[number]; dark?: boolean }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 py-1">
+    <div className='flex flex-wrap items-center gap-3 py-1'>
       <span
         className={cn(
           'w-20 shrink-0 text-sm font-semibold',
-          dark ? 'text-primary-foreground' : 'text-foreground'
+          dark ? 'text-primary-foreground' : 'text-foreground',
         )}
       >
         {color}
@@ -177,37 +148,36 @@ const meta = {
         // variant text colour *inside docs only* — it renders correctly in real
         // apps and in the story canvas. The `[&_code]` styles restore the inline
         // code chips that `sb-unstyled` would otherwise reset.
-        <div className="sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground">
+        <div className='sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground'>
           {/* Intro */}
-          <section className="space-y-4">
-            <h1 className="text-5xl font-bold tracking-tight">Button</h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
+          <section className='space-y-4'>
+            <h1 className='text-5xl font-bold tracking-tight'>Button</h1>
+            <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>
               Buttons let people take actions and make choices. Pair a{' '}
-              <strong className="font-semibold text-foreground">variant</strong>{' '}
-              (how much emphasis it carries) with a{' '}
-              <strong className="font-semibold text-foreground">colour</strong>{' '}
-              (which role it plays) — use one high-emphasis button for the
-              primary action and quieter treatments for everything else.
+              <strong className='font-semibold text-foreground'>variant</strong> (how much emphasis
+              it carries) with a <strong className='font-semibold text-foreground'>colour</strong>{' '}
+              (which role it plays) — use one high-emphasis button for the primary action and
+              quieter treatments for everything else.
             </p>
           </section>
 
           {/* Default */}
           <Section
-            title="Default"
-            description="A solid, primary-coloured button — the out-of-the-box configuration."
+            title='Default'
+            description='A solid, primary-coloured button — the out-of-the-box configuration.'
           >
-            <Preview className="flex items-center">
+            <Preview className='flex items-center'>
               <Button>Continue</Button>
             </Preview>
           </Section>
 
           {/* Variants */}
           <Section
-            title="Variants"
-            description="The variant sets the visual weight. Step down the emphasis as actions become more secondary."
+            title='Variants'
+            description='The variant sets the visual weight. Step down the emphasis as actions become more secondary.'
           >
             <Preview>
-              <div className="flex flex-wrap items-center gap-8">
+              <div className='flex flex-wrap items-center gap-8'>
                 {variants.map((variant) => (
                   <Cell key={variant} label={variant}>
                     <Button variant={variant}>
@@ -217,11 +187,11 @@ const meta = {
                 ))}
               </div>
             </Preview>
-            <dl className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+            <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
               {variantDocs.map(([name, desc]) => (
-                <div key={name} className="flex gap-3 text-sm">
-                  <dt className="w-16 shrink-0 font-semibold">{name}</dt>
-                  <dd className="text-muted-foreground">{desc}</dd>
+                <div key={name} className='flex gap-3 text-sm'>
+                  <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
+                  <dd className='text-muted-foreground'>{desc}</dd>
                 </div>
               ))}
             </dl>
@@ -229,26 +199,22 @@ const meta = {
 
           {/* Sizes */}
           <Section
-            title="Sizes"
-            description="Four presets. Use icon for square, icon-only buttons (always supply an aria-label)."
+            title='Sizes'
+            description='Four presets. Use icon for square, icon-only buttons (always supply an aria-label).'
           >
             <Preview>
-              <div className="flex flex-wrap items-end gap-8">
-                <Cell label="sm">
-                  <Button size="sm">Button</Button>
+              <div className='flex flex-wrap items-end gap-8'>
+                <Cell label='sm'>
+                  <Button size='sm'>Button</Button>
                 </Cell>
-                <Cell label="default">
-                  <Button size="default">Button</Button>
+                <Cell label='default'>
+                  <Button size='default'>Button</Button>
                 </Cell>
-                <Cell label="lg">
-                  <Button size="lg">Button</Button>
+                <Cell label='lg'>
+                  <Button size='lg'>Button</Button>
                 </Cell>
-                <Cell label="icon">
-                  <Button
-                    size="icon"
-                    aria-label="Add"
-                    leadingVisual={IconAdd}
-                  />
+                <Cell label='icon'>
+                  <Button size='icon' aria-label='Add' leadingVisual={IconAdd} />
                 </Cell>
               </div>
             </Preview>
@@ -256,57 +222,54 @@ const meta = {
 
           {/* Colours */}
           <Section
-            title="Colours"
-            description="The colour prop maps to a semantic token — it does not hard-code a hue. Colours fall into three roles, each shown below across the main variants."
+            title='Colours'
+            description='The colour prop maps to a semantic token — it does not hard-code a hue. Colours fall into three roles, each shown below across the main variants.'
           >
-            <div className="space-y-10">
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold">Brand colours</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    Drawn from the active masterbrand theme and the toolbar
-                    Primary / Accent pickers. Use <code>primary</code> for the
-                    main action; <code>tertiary</code> and <code>accent</code>{' '}
-                    for supporting actions; <code>grey</code> for neutral,
+            <div className='space-y-10'>
+              <div className='space-y-4'>
+                <div className='space-y-1'>
+                  <h3 className='text-lg font-semibold'>Brand colours</h3>
+                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                    Drawn from the active masterbrand theme and the toolbar Primary / Accent
+                    pickers. Use <code>primary</code> for the main action; <code>tertiary</code> and{' '}
+                    <code>accent</code> for supporting actions; <code>grey</code> for neutral,
                     low-emphasis actions.
                   </p>
                 </div>
-                <Preview className="space-y-3">
+                <Preview className='space-y-3'>
                   {brandColors.map((color) => (
                     <ColorRow key={color} color={color} />
                   ))}
                 </Preview>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold">On dark surfaces</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    Theme colours designed to sit on coloured or dark
-                    backgrounds — their lighter treatments do not read on white.
-                    Use <code>white</code> for a high-contrast action and{' '}
-                    <code>secondary</code> for a softer one. Shown here on a
-                    primary background.
+              <div className='space-y-4'>
+                <div className='space-y-1'>
+                  <h3 className='text-lg font-semibold'>On dark surfaces</h3>
+                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                    Theme colours designed to sit on coloured or dark backgrounds — their lighter
+                    treatments do not read on white. Use <code>white</code> for a high-contrast
+                    action and <code>secondary</code> for a softer one. Shown here on a primary
+                    background.
                   </p>
                 </div>
-                <Preview dark className="space-y-3">
+                <Preview dark className='space-y-3'>
                   {onDarkColors.map((color) => (
                     <ColorRow key={color} color={color} dark />
                   ))}
                 </Preview>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold">Semantic colours</h3>
-                  <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                    Fixed meanings that stay constant across themes. Reserve{' '}
-                    <code>danger</code> for destructive actions, and use{' '}
-                    <code>success</code> / <code>warning</code> sparingly for
-                    status-driven actions.
+              <div className='space-y-4'>
+                <div className='space-y-1'>
+                  <h3 className='text-lg font-semibold'>Semantic colours</h3>
+                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                    Fixed meanings that stay constant across themes. Reserve <code>danger</code> for
+                    destructive actions, and use <code>success</code> / <code>warning</code>{' '}
+                    sparingly for status-driven actions.
                   </p>
                 </div>
-                <Preview className="space-y-3">
+                <Preview className='space-y-3'>
                   {semanticColors.map((color) => (
                     <ColorRow key={color} color={color} />
                   ))}
@@ -317,23 +280,19 @@ const meta = {
 
           {/* With icons */}
           <Section
-            title="With icons"
-            description="Add a leadingVisual or trailingVisual to reinforce meaning. Keep icons to a single, recognisable glyph."
+            title='With icons'
+            description='Add a leadingVisual or trailingVisual to reinforce meaning. Keep icons to a single, recognisable glyph.'
           >
             <Preview>
-              <div className="flex flex-wrap items-center gap-8">
-                <Cell label="leadingVisual">
+              <div className='flex flex-wrap items-center gap-8'>
+                <Cell label='leadingVisual'>
                   <Button leadingVisual={IconAdd}>Add item</Button>
                 </Cell>
-                <Cell label="trailingVisual">
+                <Cell label='trailingVisual'>
                   <Button trailingVisual={IconArrowForward}>Next</Button>
                 </Cell>
-                <Cell label="icon only">
-                  <Button
-                    aria-label="Search"
-                    leadingVisual={IconSearch}
-                    size="icon"
-                  />
+                <Cell label='icon only'>
+                  <Button aria-label='Search' leadingVisual={IconSearch} size='icon' />
                 </Cell>
               </div>
             </Preview>
@@ -341,18 +300,18 @@ const meta = {
 
           {/* States */}
           <Section
-            title="States"
-            description="Loading shows a spinner and blocks interaction; disabled removes the button from the tab order and dims it."
+            title='States'
+            description='Loading shows a spinner and blocks interaction; disabled removes the button from the tab order and dims it.'
           >
             <Preview>
-              <div className="flex flex-wrap items-center gap-8">
-                <Cell label="default">
+              <div className='flex flex-wrap items-center gap-8'>
+                <Cell label='default'>
                   <Button>Save</Button>
                 </Cell>
-                <Cell label="loading">
+                <Cell label='loading'>
                   <Button loading>Save</Button>
                 </Cell>
-                <Cell label="disabled">
+                <Cell label='disabled'>
                   <Button disabled>Save</Button>
                 </Cell>
               </div>
@@ -361,34 +320,22 @@ const meta = {
 
           {/* As a link */}
           <Section
-            title="As a link"
+            title='As a link'
             description="ButtonLink renders an anchor element with the button's full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
           >
-            <Preview className="flex flex-wrap items-center gap-8">
-              <Cell label="solid">
-                <ButtonLink
-                  href="#"
-                  variant="solid"
-                  trailingVisual={IconArrowForward}
-                >
+            <Preview className='flex flex-wrap items-center gap-8'>
+              <Cell label='solid'>
+                <ButtonLink href='#' variant='solid' trailingVisual={IconArrowForward}>
                   View documentation
                 </ButtonLink>
               </Cell>
-              <Cell label="outline">
-                <ButtonLink
-                  href="#"
-                  variant="outline"
-                  trailingVisual={IconArrowForward}
-                >
+              <Cell label='outline'>
+                <ButtonLink href='#' variant='outline' trailingVisual={IconArrowForward}>
                   View documentation
                 </ButtonLink>
               </Cell>
-              <Cell label="link">
-                <ButtonLink
-                  href="#"
-                  variant="link"
-                  trailingVisual={IconArrowForward}
-                >
+              <Cell label='link'>
+                <ButtonLink href='#' variant='link' trailingVisual={IconArrowForward}>
                   View documentation
                 </ButtonLink>
               </Cell>
@@ -517,8 +464,7 @@ const meta = {
     },
     'aria-disabled': {
       control: 'boolean',
-      description:
-        'Marks the button as disabled without removing it from the tab order.',
+      description: 'Marks the button as disabled without removing it from the tab order.',
       table: { category: 'Accessibility' },
     },
     className: {
@@ -535,7 +481,7 @@ type Story = StoryObj<typeof meta>
 
 function getButton(canvasElement: HTMLElement, name: string) {
   const button = Array.from(canvasElement.querySelectorAll('button')).find(
-    (el) => el.textContent === name || el.getAttribute('aria-label') === name
+    (el) => el.textContent === name || el.getAttribute('aria-label') === name,
   )
 
   if (!button) throw new Error(`Could not find button named "${name}".`)
@@ -543,17 +489,11 @@ function getButton(canvasElement: HTMLElement, name: string) {
   return button
 }
 
-function expectAttribute(
-  element: Element,
-  name: string,
-  expectedValue: string
-) {
+function expectAttribute(element: Element, name: string, expectedValue: string) {
   const receivedValue = element.getAttribute(name)
 
   if (receivedValue !== expectedValue) {
-    throw new Error(
-      `Expected ${name}="${expectedValue}", received "${receivedValue}".`
-    )
+    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
   }
 }
 
@@ -580,7 +520,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
       <Button {...args}>{args.children}</Button>
     </div>
   ),

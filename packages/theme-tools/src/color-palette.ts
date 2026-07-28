@@ -28,28 +28,8 @@ export type ColorPalette = Record<Category, Record<string, HueScale>>
 // Hues to surface per category. `grey` is included so `buildThemeVars` can
 // always write a grey ramp, even though the picker never offers it as a hue.
 const CATEGORY_HUES: Record<Category, readonly string[]> = {
-  brand: [
-    'green',
-    'teal',
-    'blue',
-    'purple',
-    'fuchsia',
-    'red',
-    'orange',
-    'yellow',
-    'brown',
-    'grey',
-  ],
-  aboriginal: [
-    'red',
-    'orange',
-    'brown',
-    'yellow',
-    'green',
-    'blue',
-    'purple',
-    'grey',
-  ],
+  brand: ['green', 'teal', 'blue', 'purple', 'fuchsia', 'red', 'orange', 'yellow', 'brown', 'grey'],
+  aboriginal: ['red', 'orange', 'brown', 'yellow', 'green', 'blue', 'purple', 'grey'],
 }
 
 // The four steps that anchor each ramp — they carry a display name and are the
@@ -62,16 +42,13 @@ const ANCHOR_NAME_SUFFIX: Record<number, string> = {
   800: '01',
 }
 
-const capitalise = (value: string) =>
-  value.charAt(0).toUpperCase() + value.slice(1)
+const capitalise = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
 const tokenGroup = (category: Category, hue: string) =>
   category === 'aboriginal' ? `nsw-aboriginal-${hue}` : `nsw-${hue}`
 
 const hueLabel = (category: Category, hue: string) =>
-  category === 'aboriginal'
-    ? `NSW Aboriginal ${capitalise(hue)}`
-    : `NSW ${capitalise(hue)}`
+  category === 'aboriginal' ? `NSW Aboriginal ${capitalise(hue)}` : `NSW ${capitalise(hue)}`
 
 /** Pull the bespoke palette name out of a token's `$description`. */
 const bespokeName = (description: unknown): string | undefined => {
@@ -84,32 +61,22 @@ const anchorName = (
   category: Category,
   hue: string,
   step: number,
-  description: unknown
+  description: unknown,
 ): string | undefined => {
   const suffix = ANCHOR_NAME_SUFFIX[step]
   if (!suffix) return undefined
-  return category === 'aboriginal'
-    ? bespokeName(description)
-    : `NSW ${capitalise(hue)} ${suffix}`
+  return category === 'aboriginal' ? bespokeName(description) : `NSW ${capitalise(hue)} ${suffix}`
 }
 
 const buildHue = (category: Category, hue: string): HueScale => {
   const group = tokenGroup(category, hue)
   const oklchByToken = jsonTokens.global.oklch[group] as Record<string, string>
   const hexByToken = jsonTokens.global.hex[group] as Record<string, string>
-  const meta = colorTokens.global.oklch[group] as Record<
-    string,
-    { $description?: string }
-  >
+  const meta = colorTokens.global.oklch[group] as Record<string, { $description?: string }>
 
   const colors = Object.keys(meta).map((step): ColorEntry => {
     const token = `${group}-${step}`
-    const name = anchorName(
-      category,
-      hue,
-      Number(step),
-      meta[step]?.$description
-    )
+    const name = anchorName(category, hue, Number(step), meta[step]?.$description)
     return {
       token,
       oklch: oklchByToken[token]!,
@@ -122,9 +89,7 @@ const buildHue = (category: Category, hue: string): HueScale => {
 }
 
 const buildCategory = (category: Category): Record<string, HueScale> =>
-  Object.fromEntries(
-    CATEGORY_HUES[category].map((hue) => [hue, buildHue(category, hue)])
-  )
+  Object.fromEntries(CATEGORY_HUES[category].map((hue) => [hue, buildHue(category, hue)]))
 
 /** Full 19-step ramps for every hue, keyed by category. */
 export const colors: ColorPalette = {
@@ -141,12 +106,8 @@ const toAnchors = (scale: HueScale): HueScale => ({
   }),
 })
 
-const reduceCategory = (
-  category: Record<string, HueScale>
-): Record<string, HueScale> =>
-  Object.fromEntries(
-    Object.entries(category).map(([hue, scale]) => [hue, toAnchors(scale)])
-  )
+const reduceCategory = (category: Record<string, HueScale>): Record<string, HueScale> =>
+  Object.fromEntries(Object.entries(category).map(([hue, scale]) => [hue, toAnchors(scale)]))
 
 /** Four-anchor view of `colors`, used for swatches and picker labels. */
 export const colorThemes: ColorPalette = {

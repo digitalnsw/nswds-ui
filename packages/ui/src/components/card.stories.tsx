@@ -33,41 +33,36 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Card</h1>
-            <p className="text-base text-muted-foreground">
-              Card is a generic content container that groups related
-              information into a bordered, rounded surface. It composes from
-              header, title, description, action, content, and footer parts so
-              consumers can assemble any layout without ad-hoc wrappers.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Card</h1>
+            <p className='text-base text-muted-foreground'>
+              Card is a generic content container that groups related information into a bordered,
+              rounded surface. It composes from header, title, description, action, content, and
+              footer parts so consumers can assemble any layout without ad-hoc wrappers.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <Card className="max-w-md">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <Card className='max-w-md'>
               <CardHeader>
                 <CardTitle>Notifications</CardTitle>
                 <CardDescription>You have 3 unread messages.</CardDescription>
               </CardHeader>
-              <CardContent>
-                Manage how you receive emails and in-app alerts.
-              </CardContent>
+              <CardContent>Manage how you receive emails and in-app alerts.</CardContent>
               <CardFooter>Updated just now.</CardFooter>
             </Card>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Sizes</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Sizes</h2>
+            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               {sizes.map((size) => (
                 <Card key={size} size={size}>
                   <CardHeader>
                     <CardTitle>Size: {size}</CardTitle>
-                    <CardDescription>
-                      Padding and gap scale with the size token.
-                    </CardDescription>
+                    <CardDescription>Padding and gap scale with the size token.</CardDescription>
                   </CardHeader>
                   <CardContent>Card body content.</CardContent>
                 </Card>
@@ -98,14 +93,12 @@ const meta = {
     },
   },
   render: (args) => (
-    <Card {...args} className="max-w-md">
+    <Card {...args} className='max-w-md'>
       <CardHeader>
         <CardTitle>Notifications</CardTitle>
         <CardDescription>You have 3 unread messages.</CardDescription>
       </CardHeader>
-      <CardContent>
-        Manage how you receive emails and in-app alerts.
-      </CardContent>
+      <CardContent>Manage how you receive emails and in-app alerts.</CardContent>
       <CardFooter>Updated just now.</CardFooter>
     </Card>
   ),
@@ -123,16 +116,10 @@ function getCard(canvasElement: HTMLElement) {
   return card
 }
 
-function expectAttribute(
-  element: Element,
-  name: string,
-  expectedValue: string
-) {
+function expectAttribute(element: Element, name: string, expectedValue: string) {
   const receivedValue = element.getAttribute(name)
   if (receivedValue !== expectedValue) {
-    throw new Error(
-      `Expected ${name}="${expectedValue}", received "${receivedValue}".`
-    )
+    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
   }
 }
 
@@ -158,22 +145,18 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
       <Card {...args}>
         <CardHeader>
           <CardTitle>Project status</CardTitle>
-          <CardDescription>
-            Quarterly summary across active workstreams.
-          </CardDescription>
+          <CardDescription>Quarterly summary across active workstreams.</CardDescription>
           <CardAction>
-            <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
+            <button className='text-xs font-medium text-primary underline-offset-4 hover:underline'>
               View all
             </button>
           </CardAction>
         </CardHeader>
-        <CardContent>
-          12 tasks in review, 4 blocked, and 28 completed this sprint.
-        </CardContent>
+        <CardContent>12 tasks in review, 4 blocked, and 28 completed this sprint.</CardContent>
         <CardFooter>Last sync 5 minutes ago.</CardFooter>
       </Card>
     </div>

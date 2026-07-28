@@ -23,35 +23,33 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">SignUpForm</h1>
-            <p className="text-base text-muted-foreground">
-              SignUpForm is a composed pattern that demonstrates how to assemble
-              Card, Field, Input, and Button primitives into an account-creation
-              form. It pairs with LoginForm&apos;s &ldquo;Sign up&rdquo; link.
-              Copy the source, wire the fields to your own registration handler,
-              and adapt the copy and terms links to your service.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>SignUpForm</h1>
+            <p className='text-base text-muted-foreground'>
+              SignUpForm is a composed pattern that demonstrates how to assemble Card, Field, Input,
+              and Button primitives into an account-creation form. It pairs with LoginForm&apos;s
+              &ldquo;Sign up&rdquo; link. Copy the source, wire the fields to your own registration
+              handler, and adapt the copy and terms links to your service.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <div className="w-full max-w-md">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <div className='w-full max-w-md'>
               <SignUpForm />
             </div>
           </section>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold tracking-normal">
+          <section className='space-y-3'>
+            <h2 className='text-2xl font-bold tracking-normal'>
               Password manager &amp; accessibility
             </h2>
-            <p className="text-base text-muted-foreground">
-              The password field uses{' '}
-              <code>autoComplete=&quot;new-password&quot;</code> so password
-              managers offer a generated password, and the requirements hint is
-              linked to the input via <code>aria-describedby</code> so it is
-              announced to screen readers. Keep both when adapting the source.
+            <p className='text-base text-muted-foreground'>
+              The password field uses <code>autoComplete=&quot;new-password&quot;</code> so password
+              managers offer a generated password, and the requirements hint is linked to the input
+              via <code>aria-describedby</code> so it is announced to screen readers. Keep both when
+              adapting the source.
             </p>
           </section>
         </div>
@@ -89,18 +87,16 @@ export const Default: Story = {
     // Each input must be present and programmatically labelled (WCAG 1.3.1).
     // The form sets no ids (Field auto-associates and scopes ids per instance),
     // so assert against all inputs rather than fixed id selectors.
-    const inputs = Array.from(
-      canvasElement.querySelectorAll<HTMLInputElement>('input')
-    )
+    const inputs = Array.from(canvasElement.querySelectorAll<HTMLInputElement>('input'))
     if (inputs.length < 4) {
       throw new Error(
-        `SignUpForm: expected name, email, password, and confirm-password inputs, found ${inputs.length}.`
+        `SignUpForm: expected name, email, password, and confirm-password inputs, found ${inputs.length}.`,
       )
     }
     for (const input of inputs) {
       if (!input.labels || input.labels.length < 1) {
         throw new Error(
-          `SignUpForm: an input (type="${input.type}", autocomplete="${input.autocomplete}") has no <label>.`
+          `SignUpForm: an input (type="${input.type}", autocomplete="${input.autocomplete}") has no <label>.`,
         )
       }
     }
@@ -109,33 +105,23 @@ export const Default: Story = {
     // legend names the set for assistive tech.
     const legend = canvasElement.querySelector('legend')
     if (!legend || !legend.textContent?.toLowerCase().includes('register')) {
-      throw new Error(
-        'SignUpForm: expected a <legend> naming the email/password field set.'
-      )
+      throw new Error('SignUpForm: expected a <legend> naming the email/password field set.')
     }
 
     // Sign-up best practice: the password field opts into the
     // new-password autofill hint so managers offer a generated password.
-    const password = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="password"]'
-    )
+    const password = canvasElement.querySelector<HTMLInputElement>('input[type="password"]')
     if (password?.getAttribute('autocomplete') !== 'new-password') {
-      throw new Error(
-        'SignUpForm: the password input must set autoComplete="new-password".'
-      )
+      throw new Error('SignUpForm: the password input must set autoComplete="new-password".')
     }
 
     // The requirements hint must be associated with the password input.
     const describedBy = password?.getAttribute('aria-describedby')
     if (!describedBy || !canvasElement.querySelector(`[id="${describedBy}"]`)) {
-      throw new Error(
-        'SignUpForm: password input is missing an aria-describedby hint.'
-      )
+      throw new Error('SignUpForm: password input is missing an aria-describedby hint.')
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('SignUpForm: expected a <button type="submit">.')
     }
@@ -151,7 +137,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
       <SignUpForm {...args} />
     </div>
   ),

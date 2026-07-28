@@ -48,14 +48,12 @@ export const LabelAssociation: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <ForgotPasswordForm />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="email"]'
-    )
+    const email = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
     if (!email) {
       throw new Error('WCAG 1.3.1: could not find the email input.')
     }
@@ -87,33 +85,27 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <ForgotPasswordForm />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const email = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="email"]'
-    )
+    const email = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
     if (!email) {
       throw new Error('WCAG 4.1.2: could not find the email input.')
     }
     if ((email.labels?.[0]?.textContent ?? '').trim().length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: the email input has no accessible name (label text is empty).'
-      )
+      throw new Error('WCAG 4.1.2: the email input has no accessible name (label text is empty).')
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('WCAG 4.1.2: could not find the submit button.')
     }
     const submitName = submit.textContent?.trim() ?? ''
     if (!submitName.includes('Send reset link')) {
       throw new Error(
-        `WCAG 4.1.2: submit button accessible name should contain "Send reset link", got "${submitName}".`
+        `WCAG 4.1.2: submit button accessible name should contain "Send reset link", got "${submitName}".`,
       )
     }
   },

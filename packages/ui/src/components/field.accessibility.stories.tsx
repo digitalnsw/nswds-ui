@@ -20,14 +20,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from './field.js'
+import { Field, FieldDescription, FieldError, FieldLabel, FieldLegend, FieldSet } from './field.js'
 import { Input } from './input.js'
 import { wcagStoryMeta } from './story-helpers.js'
 
@@ -50,13 +43,8 @@ type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getInputById(
-  canvasElement: HTMLElement,
-  id: string
-): HTMLInputElement {
-  const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[id="${id}"]`
-  )
+function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement {
+  const input = canvasElement.querySelector<HTMLInputElement>(`input[id="${id}"]`)
   if (!input) throw new Error(`Could not find input #${id} in canvas.`)
   return input
 }
@@ -80,21 +68,17 @@ export const InfoAndRelationships: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md space-y-6">
+    <div className='w-full max-w-md space-y-6'>
       <Field>
-        <FieldLabel htmlFor="a11y-info-email">Email address</FieldLabel>
-        <Input
-          id="a11y-info-email"
-          type="email"
-          placeholder="you@example.com"
-        />
+        <FieldLabel htmlFor='a11y-info-email'>Email address</FieldLabel>
+        <Input id='a11y-info-email' type='email' placeholder='you@example.com' />
       </Field>
 
       <FieldSet>
         <FieldLegend>Contact details</FieldLegend>
         <Field>
-          <FieldLabel htmlFor="a11y-info-tel">Phone number</FieldLabel>
-          <Input id="a11y-info-tel" type="tel" placeholder="0400 000 000" />
+          <FieldLabel htmlFor='a11y-info-tel'>Phone number</FieldLabel>
+          <Input id='a11y-info-tel' type='tel' placeholder='0400 000 000' />
         </Field>
       </FieldSet>
     </div>
@@ -102,29 +86,21 @@ export const InfoAndRelationships: Story = {
   play: async ({ canvasElement }) => {
     const email = getInputById(canvasElement, 'a11y-info-email')
     if (!email.labels || email.labels.length === 0) {
-      throw new Error(
-        'WCAG 1.3.1: input #a11y-info-email has no associated <label>.'
-      )
+      throw new Error('WCAG 1.3.1: input #a11y-info-email has no associated <label>.')
     }
     const labelText = email.labels[0]?.textContent?.trim() ?? ''
     if (labelText.length === 0) {
-      throw new Error(
-        'WCAG 1.3.1: associated <label> for #a11y-info-email has empty text.'
-      )
+      throw new Error('WCAG 1.3.1: associated <label> for #a11y-info-email has empty text.')
     }
 
-    const fieldset = canvasElement.querySelector<HTMLFieldSetElement>(
-      '[data-slot="field-set"]'
-    )
+    const fieldset = canvasElement.querySelector<HTMLFieldSetElement>('[data-slot="field-set"]')
     if (!fieldset) {
-      throw new Error(
-        'WCAG 1.3.1: expected a <fieldset> wrapping the grouped fields.'
-      )
+      throw new Error('WCAG 1.3.1: expected a <fieldset> wrapping the grouped fields.')
     }
     const legend = fieldset.querySelector('[data-slot="field-legend"]')
     if (!legend) {
       throw new Error(
-        'WCAG 1.3.1: FieldSet is missing a FieldLegend — the group has no programmatic name.'
+        'WCAG 1.3.1: FieldSet is missing a FieldLegend — the group has no programmatic name.',
       )
     }
   },
@@ -149,18 +125,18 @@ export const ErrorIdentification: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
-      <Field data-invalid="true">
-        <FieldLabel htmlFor="a11y-error-email">Email address</FieldLabel>
+    <div className='w-full max-w-md'>
+      <Field data-invalid='true'>
+        <FieldLabel htmlFor='a11y-error-email'>Email address</FieldLabel>
         <Input
-          id="a11y-error-email"
-          type="email"
-          defaultValue="not-an-email"
-          aria-invalid="true"
-          aria-describedby="a11y-error-message"
+          id='a11y-error-email'
+          type='email'
+          defaultValue='not-an-email'
+          aria-invalid='true'
+          aria-describedby='a11y-error-message'
         />
         <FieldError
-          id="a11y-error-message"
+          id='a11y-error-message'
           errors={[{ message: 'Please enter a valid email address.' }]}
         />
       </Field>
@@ -169,20 +145,16 @@ export const ErrorIdentification: Story = {
   play: async ({ canvasElement }) => {
     const error = canvasElement.querySelector('[data-slot="field-error"]')
     if (!error) {
-      throw new Error(
-        'WCAG 3.3.1: FieldError element is missing from the canvas.'
-      )
+      throw new Error('WCAG 3.3.1: FieldError element is missing from the canvas.')
     }
     if (error.getAttribute('role') !== 'alert') {
       throw new Error(
-        `WCAG 3.3.1: FieldError expected role="alert", got "${error.getAttribute('role')}".`
+        `WCAG 3.3.1: FieldError expected role="alert", got "${error.getAttribute('role')}".`,
       )
     }
     const text = error.textContent?.trim() ?? ''
     if (text.length === 0) {
-      throw new Error(
-        'WCAG 3.3.1: FieldError rendered but contains no message text.'
-      )
+      throw new Error('WCAG 3.3.1: FieldError rendered but contains no message text.')
     }
   },
 }
@@ -206,17 +178,17 @@ export const LabelsOrInstructions: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md space-y-6">
+    <div className='w-full max-w-md space-y-6'>
       <Field>
-        <FieldLabel htmlFor="a11y-labels-postcode">Postcode</FieldLabel>
+        <FieldLabel htmlFor='a11y-labels-postcode'>Postcode</FieldLabel>
         <Input
-          id="a11y-labels-postcode"
-          inputMode="numeric"
+          id='a11y-labels-postcode'
+          inputMode='numeric'
           maxLength={4}
-          placeholder="2000"
-          aria-describedby="a11y-labels-postcode-help"
+          placeholder='2000'
+          aria-describedby='a11y-labels-postcode-help'
         />
-        <FieldDescription id="a11y-labels-postcode-help">
+        <FieldDescription id='a11y-labels-postcode-help'>
           Enter a 4-digit Australian postcode.
         </FieldDescription>
       </Field>
@@ -225,24 +197,16 @@ export const LabelsOrInstructions: Story = {
   play: async ({ canvasElement }) => {
     const input = getInputById(canvasElement, 'a11y-labels-postcode')
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: input #a11y-labels-postcode has no associated <label>.'
-      )
+      throw new Error('WCAG 3.3.2: input #a11y-labels-postcode has no associated <label>.')
     }
 
-    const description = canvasElement.querySelector(
-      '[data-slot="field-description"]'
-    )
+    const description = canvasElement.querySelector('[data-slot="field-description"]')
     if (!description) {
-      throw new Error(
-        'WCAG 3.3.2: Field is missing a FieldDescription for instructional text.'
-      )
+      throw new Error('WCAG 3.3.2: Field is missing a FieldDescription for instructional text.')
     }
     const text = description.textContent?.trim() ?? ''
     if (text.length === 0) {
-      throw new Error(
-        'WCAG 3.3.2: FieldDescription rendered but contains no instructional text.'
-      )
+      throw new Error('WCAG 3.3.2: FieldDescription rendered but contains no instructional text.')
     }
   },
 }
@@ -266,10 +230,10 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <Field>
-        <FieldLabel htmlFor="a11y-nrv-email">Email address</FieldLabel>
-        <Input id="a11y-nrv-email" type="email" placeholder="you@example.com" />
+        <FieldLabel htmlFor='a11y-nrv-email'>Email address</FieldLabel>
+        <Input id='a11y-nrv-email' type='email' placeholder='you@example.com' />
       </Field>
     </div>
   ),
@@ -280,21 +244,17 @@ export const NameRoleValue: Story = {
     }
     if (field.getAttribute('role') !== 'group') {
       throw new Error(
-        `WCAG 4.1.2: Field expected role="group", got "${field.getAttribute('role')}".`
+        `WCAG 4.1.2: Field expected role="group", got "${field.getAttribute('role')}".`,
       )
     }
 
     const input = getInputById(canvasElement, 'a11y-nrv-email')
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: input has no associated <label> — accessible name is missing.'
-      )
+      throw new Error('WCAG 4.1.2: input has no associated <label> — accessible name is missing.')
     }
     const name = input.labels[0]?.textContent?.trim() ?? ''
     if (name.length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: associated label has empty text — accessible name is empty.'
-      )
+      throw new Error('WCAG 4.1.2: associated label has empty text — accessible name is empty.')
     }
   },
 }
@@ -318,14 +278,14 @@ export const StatusMessages: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
-      <Field data-invalid="true">
-        <FieldLabel htmlFor="a11y-status-email">Email address</FieldLabel>
+    <div className='w-full max-w-md'>
+      <Field data-invalid='true'>
+        <FieldLabel htmlFor='a11y-status-email'>Email address</FieldLabel>
         <Input
-          id="a11y-status-email"
-          type="email"
-          defaultValue="not-an-email"
-          aria-invalid="true"
+          id='a11y-status-email'
+          type='email'
+          defaultValue='not-an-email'
+          aria-invalid='true'
         />
         <FieldError>Please enter a valid email address.</FieldError>
       </Field>
@@ -334,20 +294,16 @@ export const StatusMessages: Story = {
   play: async ({ canvasElement }) => {
     const error = canvasElement.querySelector('[data-slot="field-error"]')
     if (!error) {
-      throw new Error(
-        'WCAG 4.1.3: FieldError element is missing from the canvas.'
-      )
+      throw new Error('WCAG 4.1.3: FieldError element is missing from the canvas.')
     }
     if (error.getAttribute('role') !== 'alert') {
       throw new Error(
-        `WCAG 4.1.3: FieldError expected role="alert" so AT announces it as a status message, got "${error.getAttribute('role')}".`
+        `WCAG 4.1.3: FieldError expected role="alert" so AT announces it as a status message, got "${error.getAttribute('role')}".`,
       )
     }
     const text = error.textContent?.trim() ?? ''
     if (text.length === 0) {
-      throw new Error(
-        'WCAG 4.1.3: FieldError rendered but contains no status text to announce.'
-      )
+      throw new Error('WCAG 4.1.3: FieldError rendered but contains no status text to announce.')
     }
   },
 }
@@ -371,13 +327,11 @@ export const AutomaticAssociation: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <Field invalid>
         <FieldLabel>Email address</FieldLabel>
-        <Input type="email" defaultValue="not-an-email" />
-        <FieldDescription>
-          We will only use this to contact you.
-        </FieldDescription>
+        <Input type='email' defaultValue='not-an-email' />
+        <FieldDescription>We will only use this to contact you.</FieldDescription>
         <FieldError>Please enter a valid email address.</FieldError>
       </Field>
     </div>
@@ -388,42 +342,33 @@ export const AutomaticAssociation: Story = {
 
     // Label association — Base UI sets htmlFor to the auto-generated control id.
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'Automatic association: input has no associated <label> (htmlFor not wired).'
-      )
+      throw new Error('Automatic association: input has no associated <label> (htmlFor not wired).')
     }
 
     // aria-invalid comes from the Field `invalid` prop, not manual markup.
     if (input.getAttribute('aria-invalid') !== 'true') {
       throw new Error(
-        `Automatic association: expected aria-invalid="true" from Field invalid, got "${input.getAttribute('aria-invalid')}".`
+        `Automatic association: expected aria-invalid="true" from Field invalid, got "${input.getAttribute('aria-invalid')}".`,
       )
     }
 
     // aria-describedby resolves to BOTH the description and the error.
-    const ids = (input.getAttribute('aria-describedby') ?? '')
-      .split(/\s+/)
-      .filter(Boolean)
+    const ids = (input.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean)
     if (ids.length === 0) {
       throw new Error(
-        'Automatic association: input has no aria-describedby (description/error not wired).'
+        'Automatic association: input has no aria-describedby (description/error not wired).',
       )
     }
     const describedText = ids
-      .map(
-        (id) =>
-          canvasElement.querySelector(`#${CSS.escape(id)}`)?.textContent ?? ''
-      )
+      .map((id) => canvasElement.querySelector(`#${CSS.escape(id)}`)?.textContent ?? '')
       .join(' ')
     if (!describedText.includes('contact you')) {
       throw new Error(
-        'Automatic association: aria-describedby does not resolve to the FieldDescription.'
+        'Automatic association: aria-describedby does not resolve to the FieldDescription.',
       )
     }
     if (!describedText.includes('valid email')) {
-      throw new Error(
-        'Automatic association: aria-describedby does not resolve to the FieldError.'
-      )
+      throw new Error('Automatic association: aria-describedby does not resolve to the FieldError.')
     }
   },
 }

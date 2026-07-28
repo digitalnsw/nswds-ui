@@ -26,10 +26,7 @@ const [outputDir = '../../apps/registry/public/r'] = process.argv.slice(2)
 // after `shadcn build` has copied it into the output.
 const REGISTRY_LOCATION_TOKEN = '{{REGISTRY_LOCATION}}'
 const registryConfig = JSON.parse(
-  readFileSync(
-    resolve(import.meta.dirname, '../../../registry.config.json'),
-    'utf8'
-  )
+  readFileSync(resolve(import.meta.dirname, '../../../registry.config.json'), 'utf8'),
 )
 const registryLocation = registryConfig.location.replace(/\/+$/, '')
 
@@ -37,16 +34,13 @@ const registryLocation = registryConfig.location.replace(/\/+$/, '')
 // the registry was built from, so consumers can correlate the two
 // distribution channels. Deterministic — read from package.json, no
 // timestamps — so the CI freshness check still byte-compares.
-const { version: packageVersion } = JSON.parse(
-  readFileSync('package.json', 'utf8')
-)
+const { version: packageVersion } = JSON.parse(readFileSync('package.json', 'utf8'))
 
 const SOURCE_EXTENSIONS = /\.(tsx|ts|jsx|js)$/
 
 // Matches static imports/exports (`from '...'`), side-effect imports
 // (`import '...'`), and dynamic imports (`import('...')`).
-const IMPORT_SPECIFIER_RE =
-  /(\bfrom\s+|\bimport\s+|\bimport\s*\(\s*)(['"])([^'"]+)\2/g
+const IMPORT_SPECIFIER_RE = /(\bfrom\s+|\bimport\s+|\bimport\s*\(\s*)(['"])([^'"]+)\2/g
 
 function rewriteSpecifier(specifier, sourcePath) {
   if (!specifier.startsWith('.')) {
@@ -55,13 +49,11 @@ function rewriteSpecifier(specifier, sourcePath) {
 
   // Resolve the relative specifier against the item file's location
   // (e.g. 'src/components/button.tsx' + '../lib/utils.js' → 'src/lib/utils.js').
-  const resolved = posix.normalize(
-    posix.join(posix.dirname(sourcePath), specifier)
-  )
+  const resolved = posix.normalize(posix.join(posix.dirname(sourcePath), specifier))
 
   if (!resolved.startsWith('src/')) {
     throw new Error(
-      `Cannot rewrite import '${specifier}' in ${sourcePath} — resolves outside src/ (${resolved})`
+      `Cannot rewrite import '${specifier}' in ${sourcePath} — resolves outside src/ (${resolved})`,
     )
   }
 
@@ -72,7 +64,7 @@ function rewriteContent(content, sourcePath) {
   return content.replace(
     IMPORT_SPECIFIER_RE,
     (match, keyword, quote, specifier) =>
-      `${keyword}${quote}${rewriteSpecifier(specifier, sourcePath)}${quote}`
+      `${keyword}${quote}${rewriteSpecifier(specifier, sourcePath)}${quote}`,
   )
 }
 
@@ -97,14 +89,12 @@ function assertClean(content, sourcePath, file) {
 
   if (problems.length > 0) {
     throw new Error(
-      `Registry output ${file} (${sourcePath}) is not portable:\n  - ${problems.join('\n  - ')}`
+      `Registry output ${file} (${sourcePath}) is not portable:\n  - ${problems.join('\n  - ')}`,
     )
   }
 }
 
-const jsonFiles = readdirSync(outputDir).filter((file) =>
-  file.endsWith('.json')
-)
+const jsonFiles = readdirSync(outputDir).filter((file) => file.endsWith('.json'))
 
 for (const file of jsonFiles) {
   const filePath = join(outputDir, file)
@@ -150,5 +140,5 @@ for (const file of jsonFiles) {
 
 writeFileSync(
   join(outputDir, 'version.json'),
-  `${JSON.stringify({ name: '@nswds/ui', version: packageVersion }, null, 2)}\n`
+  `${JSON.stringify({ name: '@nswds/ui', version: packageVersion }, null, 2)}\n`,
 )

@@ -26,52 +26,39 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Field</h1>
-            <p className="text-base text-muted-foreground">
-              Field is a composition wrapper that groups a form control with its
-              label, helper description, and error message. It standardises
-              spacing and orientation so every input in a form shares a
-              consistent vertical rhythm and label-to-control relationship.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Field</h1>
+            <p className='text-base text-muted-foreground'>
+              Field is a composition wrapper that groups a form control with its label, helper
+              description, and error message. It standardises spacing and orientation so every input
+              in a form shares a consistent vertical rhythm and label-to-control relationship.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
             <Field>
-              <FieldLabel htmlFor="field-docs-default">Email</FieldLabel>
-              <Input
-                id="field-docs-default"
-                type="email"
-                placeholder="you@example.com"
-              />
-              <FieldDescription>
-                We&apos;ll never share your email.
-              </FieldDescription>
+              <FieldLabel htmlFor='field-docs-default'>Email</FieldLabel>
+              <Input id='field-docs-default' type='email' placeholder='you@example.com' />
+              <FieldDescription>We&apos;ll never share your email.</FieldDescription>
             </Field>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Orientations</h2>
-            <div className="space-y-6">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Orientations</h2>
+            <div className='space-y-6'>
               {orientations.map((orientation) => (
-                <div key={orientation} className="space-y-2">
-                  <p className="text-sm font-medium text-foreground capitalize">
-                    {orientation}
-                  </p>
+                <div key={orientation} className='space-y-2'>
+                  <p className='text-sm font-medium text-foreground capitalize'>{orientation}</p>
                   <Field orientation={orientation}>
-                    <FieldLabel htmlFor={`field-docs-${orientation}`}>
-                      Email
-                    </FieldLabel>
+                    <FieldLabel htmlFor={`field-docs-${orientation}`}>Email</FieldLabel>
                     <Input
                       id={`field-docs-${orientation}`}
-                      type="email"
-                      placeholder="you@example.com"
+                      type='email'
+                      placeholder='you@example.com'
                     />
-                    <FieldDescription>
-                      We&apos;ll never share your email.
-                    </FieldDescription>
+                    <FieldDescription>We&apos;ll never share your email.</FieldDescription>
                   </Field>
                 </div>
               ))}
@@ -92,8 +79,7 @@ const meta = {
     orientation: {
       control: 'inline-radio',
       options: orientations,
-      description:
-        'Layout direction of label, control, and description within the field.',
+      description: 'Layout direction of label, control, and description within the field.',
       table: { category: 'Appearance' },
     },
     children: {
@@ -124,8 +110,8 @@ const meta = {
   },
   render: (args) => (
     <Field {...args}>
-      <FieldLabel htmlFor="field-demo">Email</FieldLabel>
-      <Input id="field-demo" type="email" placeholder="you@example.com" />
+      <FieldLabel htmlFor='field-demo'>Email</FieldLabel>
+      <Input id='field-demo' type='email' placeholder='you@example.com' />
       <FieldDescription>We&apos;ll never share your email.</FieldDescription>
     </Field>
   ),
@@ -149,9 +135,7 @@ export const Default: Story = {
 
     const received = field.getAttribute('data-orientation')
     if (received !== args.orientation) {
-      throw new Error(
-        `Expected data-orientation="${args.orientation}", received "${received}".`
-      )
+      throw new Error(`Expected data-orientation="${args.orientation}", received "${received}".`)
     }
   },
 }
@@ -166,14 +150,10 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
       <Field {...args}>
-        <FieldLabel htmlFor="field-playground">Email</FieldLabel>
-        <Input
-          id="field-playground"
-          type="email"
-          placeholder="you@example.com"
-        />
+        <FieldLabel htmlFor='field-playground'>Email</FieldLabel>
+        <Input id='field-playground' type='email' placeholder='you@example.com' />
         <FieldDescription>We&apos;ll never share your email.</FieldDescription>
       </Field>
     </div>

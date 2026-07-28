@@ -55,7 +55,7 @@ export const LabelAssociation: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <SignUpForm />
     </div>
   ),
@@ -63,29 +63,25 @@ export const LabelAssociation: Story = {
     const inputs = allInputs(canvasElement)
     if (inputs.length < 4) {
       throw new Error(
-        `WCAG 1.3.1: expected the sign-up inputs (name, email, password, confirm password), found ${inputs.length}.`
+        `WCAG 1.3.1: expected the sign-up inputs (name, email, password, confirm password), found ${inputs.length}.`,
       )
     }
     for (const input of inputs) {
       if (!input.labels || input.labels.length < 1) {
         throw new Error(
-          `WCAG 1.3.1: an input (type="${input.type}", autocomplete="${input.autocomplete}") has no associated <label>.`
+          `WCAG 1.3.1: an input (type="${input.type}", autocomplete="${input.autocomplete}") has no associated <label>.`,
         )
       }
     }
 
-    const fieldset = canvasElement.querySelector<HTMLFieldSetElement>(
-      '[data-slot="field-set"]'
-    )
+    const fieldset = canvasElement.querySelector<HTMLFieldSetElement>('[data-slot="field-set"]')
     if (!fieldset) {
-      throw new Error(
-        'WCAG 1.3.1: expected a <fieldset> grouping the registration fields.'
-      )
+      throw new Error('WCAG 1.3.1: expected a <fieldset> grouping the registration fields.')
     }
     const legend = fieldset.querySelector('[data-slot="field-legend"]')
     if (!legend || (legend.textContent ?? '').trim().length === 0) {
       throw new Error(
-        'WCAG 1.3.1: the registration fieldset has no non-empty legend naming the group.'
+        'WCAG 1.3.1: the registration fieldset has no non-empty legend naming the group.',
       )
     }
   },
@@ -110,15 +106,13 @@ export const LabelsAndInstructions: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <SignUpForm />
     </div>
   ),
   play: async ({ canvasElement }) => {
     // First password input is "Password" (the second is "Confirm password").
-    const password = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="password"]'
-    )
+    const password = canvasElement.querySelector<HTMLInputElement>('input[type="password"]')
     if (!password) {
       throw new Error('WCAG 3.3.2: could not find the password input.')
     }
@@ -126,20 +120,17 @@ export const LabelsAndInstructions: Story = {
     const describedBy = password.getAttribute('aria-describedby')
     if (!describedBy) {
       throw new Error(
-        'WCAG 3.3.2: the password input has no aria-describedby — its requirements are not programmatically associated.'
+        'WCAG 3.3.2: the password input has no aria-describedby — its requirements are not programmatically associated.',
       )
     }
     const describedText = describedBy
       .split(/\s+/)
       .filter(Boolean)
-      .map(
-        (id) =>
-          canvasElement.querySelector(`#${CSS.escape(id)}`)?.textContent ?? ''
-      )
+      .map((id) => canvasElement.querySelector(`#${CSS.escape(id)}`)?.textContent ?? '')
       .join(' ')
     if (!/\b8 characters\b/i.test(describedText)) {
       throw new Error(
-        `WCAG 3.3.2: aria-describedby does not resolve to the password requirements (got "${describedText.trim()}").`
+        `WCAG 3.3.2: aria-describedby does not resolve to the password requirements (got "${describedText.trim()}").`,
       )
     }
   },
@@ -164,7 +155,7 @@ export const NameRoleValue: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <SignUpForm />
     </div>
   ),
@@ -173,21 +164,19 @@ export const NameRoleValue: Story = {
       const name = input.labels?.[0]?.textContent?.trim() ?? ''
       if (name.length === 0) {
         throw new Error(
-          `WCAG 4.1.2: an input (type="${input.type}") has no accessible name (label text is empty).`
+          `WCAG 4.1.2: an input (type="${input.type}") has no accessible name (label text is empty).`,
         )
       }
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('WCAG 4.1.2: could not find the submit button.')
     }
     const submitName = submit.textContent?.trim() ?? ''
     if (!submitName.includes('Create account')) {
       throw new Error(
-        `WCAG 4.1.2: submit button accessible name should contain "Create account", got "${submitName}".`
+        `WCAG 4.1.2: submit button accessible name should contain "Create account", got "${submitName}".`,
       )
     }
   },

@@ -174,7 +174,7 @@ export type __AssertPublicPropTypes = PublicPropTypes
 const _classNames: string = cn(
   buttonVariants({ variant: 'solid', color: 'primary', size: 'default' }),
   badgeVariants({ variant: 'soft', color: 'primary', size: 'default' }),
-  linkVariants({ variant: 'primary' })
+  linkVariants({ variant: 'primary' }),
 )
 
 // `href` accepts a string or a url-object shape (LinkUrlObject), not arbitrary
@@ -202,14 +202,14 @@ function App() {
         Search
       </Button>
       <Button leadingVisual={IconAdd}>Add</Button>
-      <ButtonLink href={stringHref} variant="outline" ref={linkRef}>
+      <ButtonLink href={stringHref} variant='outline' ref={linkRef}>
         Documentation
       </ButtonLink>
 
       {/* Badges */}
-      <Badge color="primary">New</Badge>
-      <BadgeButton color="primary">Filter</BadgeButton>
-      <BadgeLink href="/tag/news" color="primary">
+      <Badge color='primary'>New</Badge>
+      <BadgeButton color='primary'>Filter</BadgeButton>
+      <BadgeLink href='/tag/news' color='primary'>
         News
       </BadgeLink>
 
@@ -219,7 +219,7 @@ function App() {
           <CardTitle>Card title</CardTitle>
           <CardDescription>Card description</CardDescription>
           <CardAction>
-            <Button size="sm">Action</Button>
+            <Button size='sm'>Action</Button>
           </CardAction>
         </CardHeader>
         <CardContent>Body content</CardContent>
@@ -232,14 +232,12 @@ function App() {
         <FieldGroup>
           <Field>
             <FieldLabel>Email</FieldLabel>
-            <Input ref={inputRef} type="email" aria-label="Email" />
-            <FieldDescription>
-              We&apos;ll only use this to reply.
-            </FieldDescription>
+            <Input ref={inputRef} type='email' aria-label='Email' />
+            <FieldDescription>We&apos;ll only use this to reply.</FieldDescription>
             <FieldError>Enter a valid email.</FieldError>
           </Field>
           <FieldSeparator />
-          <Field orientation="horizontal">
+          <Field orientation='horizontal'>
             <FieldContent>
               <FieldTitle>Notifications</FieldTitle>
             </FieldContent>
@@ -256,20 +254,20 @@ function App() {
       <LinkProvider component={'a' satisfies LinkComponent}>
         <Link href={objectHref}>Search</Link>
       </LinkProvider>
-      <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>
+      <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
 
       {/* Touch target + spinner + logo */}
-      <Button size="icon" aria-label="Search">
+      <Button size='icon' aria-label='Search'>
         <TouchTarget>
           <IconSearch />
         </TouchTarget>
       </Button>
-      <Spinner aria-label="Loading fixture" />
-      <Logo logoType="default" />
+      <Spinner aria-label='Loading fixture' />
+      <Logo logoType='default' />
 
       {/* Aspect ratio */}
       <AspectRatio ratio={16 / 9}>
-        <div className="bg-muted" />
+        <div className='bg-muted' />
       </AspectRatio>
 
       {/* Collapsible */}
@@ -342,7 +340,7 @@ function App() {
       </Drawer>
 
       {/* Resizable */}
-      <ResizablePanelGroup orientation="horizontal">
+      <ResizablePanelGroup orientation='horizontal'>
         <ResizablePanel>One</ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel>Two</ResizablePanel>
@@ -351,7 +349,7 @@ function App() {
       {/* Scroll area — ScrollBar is a standalone export */}
       <ScrollArea>
         <p>Scrollable content</p>
-        <ScrollBar orientation="horizontal" />
+        <ScrollBar orientation='horizontal' />
       </ScrollArea>
 
       {/* Sonner toaster */}

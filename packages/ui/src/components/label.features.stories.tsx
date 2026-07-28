@@ -49,13 +49,13 @@ export const WithInput: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-sm gap-1.5">
-      <Label htmlFor="label-features-input">Email address</Label>
+    <div className='grid w-full max-w-sm gap-1.5'>
+      <Label htmlFor='label-features-input'>Email address</Label>
       <input
-        id="label-features-input"
-        type="email"
-        placeholder="you@example.com"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='label-features-input'
+        type='email'
+        placeholder='you@example.com'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),
@@ -77,18 +77,18 @@ export const WithRequiredIndicator: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-sm gap-1.5">
-      <Label htmlFor="label-required-input">
+    <div className='grid w-full max-w-sm gap-1.5'>
+      <Label htmlFor='label-required-input'>
         Full name
-        <span aria-hidden="true" className="text-danger-600">
+        <span aria-hidden='true' className='text-danger-600'>
           *
         </span>
       </Label>
       <input
-        id="label-required-input"
-        type="text"
+        id='label-required-input'
+        type='text'
         required
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),
@@ -110,47 +110,45 @@ export const WithCheckboxAndRadio: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-sm gap-4">
-      <div className="grid gap-2">
-        <Label htmlFor="label-features-news">
+    <div className='grid w-full max-w-sm gap-4'>
+      <div className='grid gap-2'>
+        <Label htmlFor='label-features-news'>
           <input
-            id="label-features-news"
-            type="checkbox"
-            className="size-4 rounded-sm border border-input"
+            id='label-features-news'
+            type='checkbox'
+            className='size-4 rounded-sm border border-input'
           />
           Subscribe to the newsletter
         </Label>
-        <Label htmlFor="label-features-terms">
+        <Label htmlFor='label-features-terms'>
           <input
-            id="label-features-terms"
-            type="checkbox"
-            className="size-4 rounded-sm border border-input"
+            id='label-features-terms'
+            type='checkbox'
+            className='size-4 rounded-sm border border-input'
             defaultChecked
           />
           I agree to the terms of service
         </Label>
       </div>
 
-      <fieldset className="grid gap-2">
-        <legend className="text-xs/relaxed font-medium">
-          Preferred contact
-        </legend>
-        <Label htmlFor="label-features-radio-email">
+      <fieldset className='grid gap-2'>
+        <legend className='text-xs/relaxed font-medium'>Preferred contact</legend>
+        <Label htmlFor='label-features-radio-email'>
           <input
-            id="label-features-radio-email"
-            type="radio"
-            name="label-features-contact"
+            id='label-features-radio-email'
+            type='radio'
+            name='label-features-contact'
             defaultChecked
-            className="size-4 border border-input"
+            className='size-4 border border-input'
           />
           Email
         </Label>
-        <Label htmlFor="label-features-radio-sms">
+        <Label htmlFor='label-features-radio-sms'>
           <input
-            id="label-features-radio-sms"
-            type="radio"
-            name="label-features-contact"
-            className="size-4 border border-input"
+            id='label-features-radio-sms'
+            type='radio'
+            name='label-features-contact'
+            className='size-4 border border-input'
           />
           SMS
         </Label>
@@ -175,30 +173,28 @@ export const Disabled: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-sm gap-4">
-      <div className="grid gap-1.5">
+    <div className='grid w-full max-w-sm gap-4'>
+      <div className='grid gap-1.5'>
         <input
-          id="label-features-disabled"
-          type="text"
+          id='label-features-disabled'
+          type='text'
           disabled
-          defaultValue="cannot edit"
-          className="peer h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          defaultValue='cannot edit'
+          className='peer h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50'
         />
-        <Label htmlFor="label-features-disabled">Read-only field</Label>
+        <Label htmlFor='label-features-disabled'>Read-only field</Label>
       </div>
 
       <fieldset
-        data-disabled="true"
-        className="group grid gap-1.5 rounded-sm border border-border p-3"
+        data-disabled='true'
+        className='group grid gap-1.5 rounded-sm border border-border p-3'
       >
-        <Label htmlFor="label-features-group-disabled">
-          Group-disabled label
-        </Label>
+        <Label htmlFor='label-features-group-disabled'>Group-disabled label</Label>
         <input
-          id="label-features-group-disabled"
-          type="text"
+          id='label-features-group-disabled'
+          type='text'
           disabled
-          className="h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          className='h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50'
         />
       </fieldset>
     </div>
@@ -221,14 +217,14 @@ export const Truncated: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-[14rem] gap-1.5">
-      <Label htmlFor="label-features-truncated" className="truncate">
+    <div className='grid w-full max-w-[14rem] gap-1.5'>
+      <Label htmlFor='label-features-truncated' className='truncate'>
         Australian Business Number including the nine-digit identifier
       </Label>
       <input
-        id="label-features-truncated"
-        type="text"
-        className="h-9 rounded-sm border border-input bg-background px-3 text-sm"
+        id='label-features-truncated'
+        type='text'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),

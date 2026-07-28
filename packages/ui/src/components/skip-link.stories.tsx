@@ -23,42 +23,39 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 p-6 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Skip Link</h1>
-            <p className="text-base text-muted-foreground">
-              Skip links let keyboard and screen-reader users bypass repeated
-              blocks (WCAG 2.4.1) and jump straight to the navigation or main
-              content. They are visually hidden above the viewport and slide in
-              on keyboard focus — render SkipLinks as the first element in the
-              body, before the Masthead. Focus moves to the target on
-              activation, and the revealed bar is at least 44px tall (2.5.5
-              Target Size AAA) with a current-colour focus ring (2.4.13 Focus
-              Appearance).
+        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Skip Link</h1>
+            <p className='text-base text-muted-foreground'>
+              Skip links let keyboard and screen-reader users bypass repeated blocks (WCAG 2.4.1)
+              and jump straight to the navigation or main content. They are visually hidden above
+              the viewport and slide in on keyboard focus — render SkipLinks as the first element in
+              the body, before the Masthead. Focus moves to the target on activation, and the
+              revealed bar is at least 44px tall (2.5.5 Target Size AAA) with a current-colour focus
+              ring (2.4.13 Focus Appearance).
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Usage</h2>
-            <p className="text-base text-muted-foreground">
-              With no children, SkipLinks renders the legacy default pair —
-              &ldquo;Skip to navigation&rdquo; (#nav) and &ldquo;Skip to
-              content&rdquo; (#content). Compose SkipLink children for custom
-              targets or extra links. Open the Default story and press{' '}
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Usage</h2>
+            <p className='text-base text-muted-foreground'>
+              With no children, SkipLinks renders the legacy default pair — &ldquo;Skip to
+              navigation&rdquo; (#nav) and &ldquo;Skip to content&rdquo; (#content). Compose
+              SkipLink children for custom targets or extra links. Open the Default story and press{' '}
               <kbd>Tab</kbd> to see the reveal behaviour.
             </p>
-            <p className="text-base text-muted-foreground">
+            <p className='text-base text-muted-foreground'>
               The four colour variants, shown un-hidden for comparison:
             </p>
             {/* sb-unstyled stops the Storybook docs stylesheet re-colouring
                 the anchors inside this example. */}
-            <div className="sb-unstyled space-y-2">
+            <div className='sb-unstyled space-y-2'>
               {(['dark', 'light', 'white', 'grey'] as const).map((color) => (
-                <div key={color} className="relative min-h-11">
+                <div key={color} className='relative min-h-11'>
                   <SkipLink
                     color={color}
-                    href="#content"
-                    className="translate-y-0 border border-border"
+                    href='#content'
+                    className='translate-y-0 border border-border'
                   >
                     Skip to content — {color}
                   </SkipLink>
@@ -95,17 +92,17 @@ const meta = {
   // The links are invisible until focused, so every story renders a page
   // stub with focus instructions and real skip targets.
   render: (args) => (
-    <div className="min-h-48">
+    <div className='min-h-48'>
       <SkipLinks {...args} />
       <Masthead />
-      <div className="space-y-4 p-6">
-        <p className="text-sm text-muted-foreground">
+      <div className='space-y-4 p-6'>
+        <p className='text-sm text-muted-foreground'>
           Click here, then press <kbd>Tab</kbd> to reveal the skip links.
         </p>
-        <nav id="nav" aria-label="Main navigation" className="text-sm">
+        <nav id='nav' aria-label='Main navigation' className='text-sm'>
           Navigation landmark (#nav)
         </nav>
-        <main id="content" className="text-sm">
+        <main id='content' className='text-sm'>
           Main content landmark (#content)
         </main>
       </div>
@@ -120,9 +117,7 @@ type Story = StoryObj<typeof meta>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getSkipLinks(canvasElement: HTMLElement) {
-  const nav = canvasElement.querySelector<HTMLElement>(
-    '[data-slot="skip-links"]'
-  )
+  const nav = canvasElement.querySelector<HTMLElement>('[data-slot="skip-links"]')
   if (!nav) {
     throw new Error('Could not find an element with [data-slot="skip-links"].')
   }
@@ -151,18 +146,12 @@ export const Default: Story = {
     const nav = getSkipLinks(canvasElement)
 
     if (nav.getAttribute('aria-label') !== 'Skip links') {
-      throw new Error(
-        'Expected the skip links nav to be labelled "Skip links".'
-      )
+      throw new Error('Expected the skip links nav to be labelled "Skip links".')
     }
 
-    const links = nav.querySelectorAll<HTMLAnchorElement>(
-      '[data-slot="skip-link"]'
-    )
+    const links = nav.querySelectorAll<HTMLAnchorElement>('[data-slot="skip-link"]')
     if (links.length !== 2) {
-      throw new Error(
-        `Expected the default pair of skip links, found ${links.length}.`
-      )
+      throw new Error(`Expected the default pair of skip links, found ${links.length}.`)
     }
 
     // Hidden until focused: the link's box sits fully above the viewport.
@@ -177,7 +166,7 @@ export const Default: Story = {
       const rect = first.getBoundingClientRect()
       if (rect.top !== 0 || rect.height < 44) {
         throw new Error(
-          `Expected the focused skip link to be revealed at the top of the viewport with a ≥44px target (top: ${rect.top}, height: ${rect.height}).`
+          `Expected the focused skip link to be revealed at the top of the viewport with a ≥44px target (top: ${rect.top}, height: ${rect.height}).`,
         )
       }
     })
@@ -194,9 +183,7 @@ export const Default: Story = {
       await waitFor(() => {
         const target = document.getElementById('nav')
         if (document.activeElement !== target) {
-          throw new Error(
-            'Expected activation to move focus to the #nav target.'
-          )
+          throw new Error('Expected activation to move focus to the #nav target.')
         }
       })
     } finally {
@@ -210,18 +197,14 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: () => (
-    <div className="space-y-4 p-6">
-      <p className="text-sm text-muted-foreground">
-        The bars below are the four colour variants, shown un-hidden for
-        comparison (in real use they are revealed on focus).
+    <div className='space-y-4 p-6'>
+      <p className='text-sm text-muted-foreground'>
+        The bars below are the four colour variants, shown un-hidden for comparison (in real use
+        they are revealed on focus).
       </p>
       {(['dark', 'light', 'white', 'grey'] as const).map((color) => (
-        <div key={color} className="relative min-h-11 overflow-hidden">
-          <SkipLink
-            color={color}
-            href="#content"
-            className="translate-y-0 border border-border"
-          >
+        <div key={color} className='relative min-h-11 overflow-hidden'>
+          <SkipLink color={color} href='#content' className='translate-y-0 border border-border'>
             Skip to content — {color}
           </SkipLink>
         </div>
@@ -236,46 +219,40 @@ export const CustomLinks: Story = {
     // Explicit children render exactly as given — the default #nav/#content
     // pair must not be injected alongside composed links.
     const links = [
-      ...getSkipLinks(canvasElement).querySelectorAll<HTMLAnchorElement>(
-        '[data-slot="skip-link"]'
-      ),
+      ...getSkipLinks(canvasElement).querySelectorAll<HTMLAnchorElement>('[data-slot="skip-link"]'),
     ]
     const hrefs = links.map((link) => link.getAttribute('href'))
     if (hrefs.join() !== '#main-navigation,#main-content,#search') {
       throw new Error(
-        `Expected exactly the three composed skip links, found [${hrefs.join(', ')}].`
+        `Expected exactly the three composed skip links, found [${hrefs.join(', ')}].`,
       )
     }
   },
   render: (args) => (
-    <div className="min-h-48">
+    <div className='min-h-48'>
       <SkipLinks {...args}>
-        <SkipLink color={args.color} href="#main-navigation">
+        <SkipLink color={args.color} href='#main-navigation'>
           Skip to navigation
         </SkipLink>
-        <SkipLink color={args.color} href="#main-content">
+        <SkipLink color={args.color} href='#main-content'>
           Skip to content
         </SkipLink>
-        <SkipLink color={args.color} href="#search">
+        <SkipLink color={args.color} href='#search'>
           Skip to search
         </SkipLink>
       </SkipLinks>
       <Masthead />
-      <div className="space-y-4 p-6">
-        <p className="text-sm text-muted-foreground">
+      <div className='space-y-4 p-6'>
+        <p className='text-sm text-muted-foreground'>
           Click here, then press <kbd>Tab</kbd> to cycle through three links.
         </p>
-        <nav
-          id="main-navigation"
-          aria-label="Main navigation"
-          className="text-sm"
-        >
+        <nav id='main-navigation' aria-label='Main navigation' className='text-sm'>
           Navigation landmark
         </nav>
-        <main id="main-content" className="text-sm">
+        <main id='main-content' className='text-sm'>
           Main content landmark
         </main>
-        <div id="search" className="text-sm">
+        <div id='search' className='text-sm'>
           Search landmark
         </div>
       </div>
@@ -295,13 +272,13 @@ export const CssCheck: Story = {
     const bg = getComputedStyle(link).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected bg-primary-800 to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected bg-primary-800 to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
 
     if (link.getBoundingClientRect().bottom > 0) {
       throw new Error(
-        'Expected the unfocused skip link to be translated above the viewport. Is globals.css loaded?'
+        'Expected the unfocused skip link to be translated above the viewport. Is globals.css loaded?',
       )
     }
   },

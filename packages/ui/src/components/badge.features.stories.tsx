@@ -81,34 +81,22 @@ export const ByVariant: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Colour</span>
         {variants.map((variant) => (
-          <span
-            key={`by-variant-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`by-variant-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color) => (
-        <ThemeSurface
-          key={`by-variant-row-${color}`}
-          color={color}
-          className="p-3"
-        >
-          <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
+        <ThemeSurface key={`by-variant-row-${color}`} color={color} className='p-3'>
+          <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
-              <div
-                key={`by-variant-${color}-${variant}`}
-                className="flex justify-center"
-              >
+              <div key={`by-variant-${color}-${variant}`} className='flex justify-center'>
                 <Badge variant={variant} color={color}>
                   New
                 </Badge>
@@ -143,7 +131,7 @@ export const ByColour: Story = {
     const lowCols = lowContrast.length
 
     return (
-      <div className="w-full max-w-7xl space-y-4">
+      <div className='w-full max-w-7xl space-y-4'>
         {standardCols > 0 && (
           // The matrix overflows horizontally on narrow viewports. axe's
           // `scrollable-region-focusable` rule requires the scrollable
@@ -151,26 +139,20 @@ export const ByColour: Story = {
           // descendants — Badge renders a non-interactive <span>, so we
           // make the section itself focusable and label it for AT.
           <section
-            className="overflow-x-auto"
+            className='overflow-x-auto'
             tabIndex={0}
-            aria-label="Badge variant × colour matrix"
+            aria-label='Badge variant × colour matrix'
           >
-            <div
-              className="space-y-2"
-              style={{ minWidth: `${16 + standardCols * 9}rem` }}
-            >
+            <div className='space-y-2' style={{ minWidth: `${16 + standardCols * 9}rem` }}>
               <div
-                className="grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground"
+                className='grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'
                 style={{
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
                 <span>Variant</span>
                 {standard.map((color) => (
-                  <span
-                    key={`by-colour-standard-header-${color}`}
-                    className="text-center"
-                  >
+                  <span key={`by-colour-standard-header-${color}`} className='text-center'>
                     {color}
                   </span>
                 ))}
@@ -179,18 +161,18 @@ export const ByColour: Story = {
               {variants.map((variant) => (
                 <div
                   key={`by-colour-standard-row-${variant}`}
-                  className="grid items-center gap-2 rounded-sm border border-border bg-background p-3"
+                  className='grid items-center gap-2 rounded-sm border border-border bg-background p-3'
                   style={{
                     gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className="text-sm font-semibold text-foreground capitalize">
+                  <span className='text-sm font-semibold text-foreground capitalize'>
                     {variant}
                   </span>
                   {standard.map((color) => (
                     <div
                       key={`by-colour-standard-${variant}-${color}`}
-                      className="flex justify-center"
+                      className='flex justify-center'
                     >
                       <Badge variant={variant} color={color}>
                         New
@@ -204,29 +186,23 @@ export const ByColour: Story = {
         )}
 
         {lowCols > 0 && (
-          <section className="rounded-sm border border-grey-700 bg-grey-800 p-3">
+          <section className='rounded-sm border border-grey-700 bg-grey-800 p-3'>
             <div
-              className="overflow-x-auto"
+              className='overflow-x-auto'
               tabIndex={0}
-              role="region"
-              aria-label="Low-contrast badge variant × colour matrix"
+              role='region'
+              aria-label='Low-contrast badge variant × colour matrix'
             >
-              <div
-                className="space-y-2"
-                style={{ minWidth: `${16 + lowCols * 16}rem` }}
-              >
+              <div className='space-y-2' style={{ minWidth: `${16 + lowCols * 16}rem` }}>
                 <div
-                  className="grid items-center gap-2 px-3 text-xs font-semibold text-grey-200"
+                  className='grid items-center gap-2 px-3 text-xs font-semibold text-grey-200'
                   style={{
                     gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                   }}
                 >
                   <span>Variant</span>
                   {lowContrast.map((color) => (
-                    <span
-                      key={`by-colour-low-header-${color}`}
-                      className="text-center"
-                    >
+                    <span key={`by-colour-low-header-${color}`} className='text-center'>
                       {color}
                     </span>
                   ))}
@@ -235,18 +211,18 @@ export const ByColour: Story = {
                 {variants.map((variant) => (
                   <div
                     key={`by-colour-low-row-${variant}`}
-                    className="grid items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3"
+                    className='grid items-center gap-2 rounded-sm border border-grey-700/80 bg-grey-800 p-3'
                     style={{
                       gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                     }}
                   >
-                    <span className="text-sm font-semibold text-grey-100 capitalize">
+                    <span className='text-sm font-semibold text-grey-100 capitalize'>
                       {variant}
                     </span>
                     {lowContrast.map((color) => (
                       <div
                         key={`by-colour-low-${variant}-${color}`}
-                        className="flex justify-center"
+                        className='flex justify-center'
                       >
                         <Badge variant={variant} color={color}>
                           New
@@ -282,23 +258,23 @@ export const Sizes: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-5xl space-y-3">
-      <div className="grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-5xl space-y-3'>
+      <div className='grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Colour</span>
         {sizes.map((size) => (
-          <span key={`sizes-header-${size}`} className="text-center capitalize">
+          <span key={`sizes-header-${size}`} className='text-center capitalize'>
             {size}
           </span>
         ))}
       </div>
 
       {colors.map((color: ColorKey) => (
-        <ThemeSurface key={`sizes-${color}`} color={color} className="p-3">
-          <div className="space-y-1.5">
+        <ThemeSurface key={`sizes-${color}`} color={color} className='p-3'>
+          <div className='space-y-1.5'>
             {variants.map((variant, i) => (
               <div
                 key={`sizes-${color}-${variant}`}
-                className="grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2"
+                className='grid grid-cols-[10rem_repeat(3,minmax(0,1fr))] items-center gap-2'
               >
                 <span
                   className={
@@ -310,10 +286,7 @@ export const Sizes: Story = {
                   {i === 0 ? color : variant}
                 </span>
                 {sizes.map((size) => (
-                  <div
-                    key={`sizes-${color}-${variant}-${size}`}
-                    className="flex justify-center"
-                  >
+                  <div key={`sizes-${color}-${variant}-${size}`} className='flex justify-center'>
                     <Badge variant={variant} color={color} size={size}>
                       New
                     </Badge>
@@ -346,7 +319,7 @@ export const States: Story = {
     },
   },
   render: () => (
-    <div className="force-state-grid w-full max-w-7xl space-y-3">
+    <div className='force-state-grid w-full max-w-7xl space-y-3'>
       {/*
         Mirror the :hover / :active rules from badgeVariants onto [data-hover] /
         [data-active] so the rows below can paint their state without real
@@ -362,31 +335,23 @@ export const States: Story = {
         .force-state-grid [data-active][data-variant="surface"] { border-color: var(--badge-bg); }
       `}</style>
 
-      <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+      <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Colour</span>
         {variants.map((variant) => (
-          <span
-            key={`states-header-${variant}`}
-            className="text-center capitalize"
-          >
+          <span key={`states-header-${variant}`} className='text-center capitalize'>
             {variant}
           </span>
         ))}
       </div>
 
       {colors.map((color: ColorKey) => (
-        <ThemeSurface key={`states-${color}`} color={color} className="p-3">
-          <div className="space-y-1.5">
+        <ThemeSurface key={`states-${color}`} color={color} className='p-3'>
+          <div className='space-y-1.5'>
             {/* Default / resting */}
-            <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2">
-              <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-                {color}
-              </span>
+            <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
+              <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
               {variants.map((variant) => (
-                <div
-                  key={`default-${color}-${variant}`}
-                  className="flex justify-center"
-                >
+                <div key={`default-${color}-${variant}`} className='flex justify-center'>
                   <Badge variant={variant} color={color}>
                     New
                   </Badge>
@@ -395,16 +360,13 @@ export const States: Story = {
             </div>
 
             {/* Hover */}
-            <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Hover</span>
               {variants.map((variant) => (
-                <div
-                  key={`hover-${color}-${variant}`}
-                  className="flex justify-center"
-                >
+                <div key={`hover-${color}-${variant}`} className='flex justify-center'>
                   <span
                     data-variant={variant}
-                    data-hover=""
+                    data-hover=''
                     className={cn(badgeVariants({ variant, color }))}
                   >
                     New
@@ -414,16 +376,13 @@ export const States: Story = {
             </div>
 
             {/* Active / pressed */}
-            <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Active</span>
               {variants.map((variant) => (
-                <div
-                  key={`active-${color}-${variant}`}
-                  className="flex justify-center"
-                >
+                <div key={`active-${color}-${variant}`} className='flex justify-center'>
                   <span
                     data-variant={variant}
-                    data-active=""
+                    data-active=''
                     className={cn(badgeVariants({ variant, color }))}
                   >
                     New
@@ -433,13 +392,10 @@ export const States: Story = {
             </div>
 
             {/* Disabled */}
-            <div className="grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2">
+            <div className='grid grid-cols-[10rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
               <span className={`text-xs ${bodyClasses(color)}`}>Disabled</span>
               {variants.map((variant) => (
-                <div
-                  key={`disabled-${color}-${variant}`}
-                  className="flex justify-center"
-                >
+                <div key={`disabled-${color}-${variant}`} className='flex justify-center'>
                   <BadgeButton variant={variant} color={color} disabled>
                     New
                   </BadgeButton>
@@ -471,25 +427,19 @@ export const BadgeButtonShowcase: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-5xl space-y-3">
+    <div className='w-full max-w-5xl space-y-3'>
       {colors.map((color: ColorKey) => (
-        <ThemeSurface key={`bb-${color}`} color={color} className="p-3">
-          <div className="space-y-2">
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>
-              {color}
-            </span>
-            <div className="flex flex-wrap items-center gap-3">
+        <ThemeSurface key={`bb-${color}`} color={color} className='p-3'>
+          <div className='space-y-2'>
+            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <div className='flex flex-wrap items-center gap-3'>
               {variants.map((variant) => (
-                <BadgeButton
-                  key={`bb-${color}-${variant}`}
-                  variant={variant}
-                  color={color}
-                >
+                <BadgeButton key={`bb-${color}-${variant}`} variant={variant} color={color}>
                   New
                 </BadgeButton>
               ))}
-              <BadgeLink color={color} href="#">
-                <IconEast data-slot="icon" />
+              <BadgeLink color={color} href='#'>
+                <IconEast data-slot='icon' />
                 Link badge
               </BadgeLink>
             </div>

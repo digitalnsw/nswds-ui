@@ -9,8 +9,7 @@ import { toast } from 'sonner'
 
 import { Toaster } from './sonner.js'
 
-const triggerClasses =
-  'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
+const triggerClasses = 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
 
 const meta = {
   title: 'Components/Sonner',
@@ -29,8 +28,8 @@ const meta = {
     <div>
       <Toaster {...args} />
       <button
-        type="button"
-        data-slot="sonner-demo-trigger"
+        type='button'
+        data-slot='sonner-demo-trigger'
         className={triggerClasses}
         onClick={() =>
           toast.success('Event created', {
@@ -52,9 +51,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const trigger = canvasElement.querySelector(
-      '[data-slot="sonner-demo-trigger"]'
-    )
+    const trigger = canvasElement.querySelector('[data-slot="sonner-demo-trigger"]')
     if (!trigger) {
       throw new Error('Could not find the demo toast trigger.')
     }
@@ -82,12 +79,12 @@ export const Variants: Story = {
     return (
       <div>
         <Toaster />
-        <div className="flex flex-wrap gap-3">
+        <div className='flex flex-wrap gap-3'>
           {fire.map(([label, onClick]) => (
             <button
               key={label}
-              type="button"
-              className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground"
+              type='button'
+              className='rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground'
               onClick={onClick}
             >
               {label}
@@ -104,14 +101,12 @@ export const CssCheck: Story = {
   play: async ({ canvasElement }) => {
     // Proves globals.css is loaded: the demo trigger resolves the semantic
     // --primary token to a real, non-transparent colour.
-    const trigger = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="sonner-demo-trigger"]'
-    )
+    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="sonner-demo-trigger"]')
     if (!trigger) throw new Error('Sonner demo trigger not found.')
     const bg = getComputedStyle(trigger).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected the --primary token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected the --primary token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
   },

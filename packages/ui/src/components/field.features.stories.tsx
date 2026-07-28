@@ -61,47 +61,31 @@ export const Orientations: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-2xl space-y-8">
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Vertical</p>
-        <Field orientation="vertical">
-          <FieldLabel htmlFor="features-vertical">Email</FieldLabel>
-          <Input
-            id="features-vertical"
-            type="email"
-            placeholder="you@example.com"
-          />
-          <FieldDescription>
-            We&apos;ll never share your email.
-          </FieldDescription>
+    <div className='w-full max-w-2xl space-y-8'>
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Vertical</p>
+        <Field orientation='vertical'>
+          <FieldLabel htmlFor='features-vertical'>Email</FieldLabel>
+          <Input id='features-vertical' type='email' placeholder='you@example.com' />
+          <FieldDescription>We&apos;ll never share your email.</FieldDescription>
         </Field>
       </section>
 
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Horizontal</p>
-        <Field orientation="horizontal">
-          <FieldLabel htmlFor="features-horizontal">Email</FieldLabel>
-          <Input
-            id="features-horizontal"
-            type="email"
-            placeholder="you@example.com"
-          />
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Horizontal</p>
+        <Field orientation='horizontal'>
+          <FieldLabel htmlFor='features-horizontal'>Email</FieldLabel>
+          <Input id='features-horizontal' type='email' placeholder='you@example.com' />
         </Field>
       </section>
 
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Responsive</p>
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Responsive</p>
         <FieldGroup>
-          <Field orientation="responsive">
-            <FieldLabel htmlFor="features-responsive">Email</FieldLabel>
-            <Input
-              id="features-responsive"
-              type="email"
-              placeholder="you@example.com"
-            />
-            <FieldDescription>
-              Wraps to two columns above the @md breakpoint.
-            </FieldDescription>
+          <Field orientation='responsive'>
+            <FieldLabel htmlFor='features-responsive'>Email</FieldLabel>
+            <Input id='features-responsive' type='email' placeholder='you@example.com' />
+            <FieldDescription>Wraps to two columns above the @md breakpoint.</FieldDescription>
           </Field>
         </FieldGroup>
       </section>
@@ -127,14 +111,14 @@ export const WithError: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-2xl space-y-8">
+    <div className='w-full max-w-2xl space-y-8'>
       <Field>
-        <FieldLabel htmlFor="features-error-array">Email</FieldLabel>
+        <FieldLabel htmlFor='features-error-array'>Email</FieldLabel>
         <Input
-          id="features-error-array"
-          type="email"
-          defaultValue="not-an-email"
-          aria-invalid="true"
+          id='features-error-array'
+          type='email'
+          defaultValue='not-an-email'
+          aria-invalid='true'
         />
         <FieldError
           errors={[
@@ -145,12 +129,8 @@ export const WithError: Story = {
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="features-error-children">Postcode</FieldLabel>
-        <Input
-          id="features-error-children"
-          defaultValue="abc"
-          aria-invalid="true"
-        />
+        <FieldLabel htmlFor='features-error-children'>Postcode</FieldLabel>
+        <Input id='features-error-children' defaultValue='abc' aria-invalid='true' />
         <FieldError>Postcode must be 4 digits.</FieldError>
       </Field>
     </div>
@@ -175,31 +155,25 @@ export const FieldSetWithLegend: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-2xl space-y-8">
+    <div className='w-full max-w-2xl space-y-8'>
       <FieldSet>
         <FieldLegend>Personal details</FieldLegend>
         <Field>
-          <FieldLabel htmlFor="features-set-name">Full name</FieldLabel>
-          <Input id="features-set-name" placeholder="Jane Citizen" />
+          <FieldLabel htmlFor='features-set-name'>Full name</FieldLabel>
+          <Input id='features-set-name' placeholder='Jane Citizen' />
         </Field>
         <Field>
-          <FieldLabel htmlFor="features-set-email">Email</FieldLabel>
-          <Input
-            id="features-set-email"
-            type="email"
-            placeholder="you@example.com"
-          />
+          <FieldLabel htmlFor='features-set-email'>Email</FieldLabel>
+          <Input id='features-set-email' type='email' placeholder='you@example.com' />
         </Field>
       </FieldSet>
 
       <FieldSet>
-        <FieldLegend variant="label">Contact preferences</FieldLegend>
-        <FieldDescription>
-          Choose how you would like us to contact you.
-        </FieldDescription>
+        <FieldLegend variant='label'>Contact preferences</FieldLegend>
+        <FieldDescription>Choose how you would like us to contact you.</FieldDescription>
         <Field>
-          <FieldLabel htmlFor="features-set-tel">Phone number</FieldLabel>
-          <Input id="features-set-tel" type="tel" placeholder="0400 000 000" />
+          <FieldLabel htmlFor='features-set-tel'>Phone number</FieldLabel>
+          <Input id='features-set-tel' type='tel' placeholder='0400 000 000' />
         </Field>
       </FieldSet>
     </div>
@@ -224,37 +198,33 @@ export const FieldGroupComposition: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-2xl">
+    <div className='w-full max-w-2xl'>
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="features-group-name">Full name</FieldLabel>
-          <Input id="features-group-name" placeholder="Jane Citizen" />
+          <FieldLabel htmlFor='features-group-name'>Full name</FieldLabel>
+          <Input id='features-group-name' placeholder='Jane Citizen' />
         </Field>
         <Field>
-          <FieldLabel htmlFor="features-group-email">Email</FieldLabel>
-          <Input
-            id="features-group-email"
-            type="email"
-            placeholder="you@example.com"
-          />
+          <FieldLabel htmlFor='features-group-email'>Email</FieldLabel>
+          <Input id='features-group-email' type='email' placeholder='you@example.com' />
         </Field>
 
         <FieldSeparator>Address</FieldSeparator>
 
         <Field>
-          <FieldLabel htmlFor="features-group-street">Street</FieldLabel>
-          <Input id="features-group-street" placeholder="123 George St" />
+          <FieldLabel htmlFor='features-group-street'>Street</FieldLabel>
+          <Input id='features-group-street' placeholder='123 George St' />
         </Field>
         <Field>
-          <FieldLabel htmlFor="features-group-postcode">Postcode</FieldLabel>
-          <Input id="features-group-postcode" placeholder="2000" />
+          <FieldLabel htmlFor='features-group-postcode'>Postcode</FieldLabel>
+          <Input id='features-group-postcode' placeholder='2000' />
         </Field>
 
         <FieldSeparator />
 
         <Field>
-          <FieldLabel htmlFor="features-group-notes">Notes</FieldLabel>
-          <Input id="features-group-notes" placeholder="Optional" />
+          <FieldLabel htmlFor='features-group-notes'>Notes</FieldLabel>
+          <Input id='features-group-notes' placeholder='Optional' />
         </Field>
       </FieldGroup>
     </div>
@@ -279,47 +249,34 @@ export const States: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-2xl space-y-8">
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Default</p>
+    <div className='w-full max-w-2xl space-y-8'>
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Default</p>
         <Field>
-          <FieldLabel htmlFor="features-state-default">Email</FieldLabel>
-          <Input
-            id="features-state-default"
-            type="email"
-            placeholder="you@example.com"
-          />
-          <FieldDescription>
-            We&apos;ll never share your email.
-          </FieldDescription>
+          <FieldLabel htmlFor='features-state-default'>Email</FieldLabel>
+          <Input id='features-state-default' type='email' placeholder='you@example.com' />
+          <FieldDescription>We&apos;ll never share your email.</FieldDescription>
         </Field>
       </section>
 
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Disabled</p>
-        <Field data-disabled="true">
-          <FieldLabel htmlFor="features-state-disabled">Email</FieldLabel>
-          <Input
-            id="features-state-disabled"
-            type="email"
-            placeholder="you@example.com"
-            disabled
-          />
-          <FieldDescription>
-            We&apos;ll never share your email.
-          </FieldDescription>
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Disabled</p>
+        <Field data-disabled='true'>
+          <FieldLabel htmlFor='features-state-disabled'>Email</FieldLabel>
+          <Input id='features-state-disabled' type='email' placeholder='you@example.com' disabled />
+          <FieldDescription>We&apos;ll never share your email.</FieldDescription>
         </Field>
       </section>
 
-      <section className="space-y-2">
-        <p className="text-sm font-semibold text-foreground">Invalid</p>
-        <Field data-invalid="true">
-          <FieldLabel htmlFor="features-state-invalid">Email</FieldLabel>
+      <section className='space-y-2'>
+        <p className='text-sm font-semibold text-foreground'>Invalid</p>
+        <Field data-invalid='true'>
+          <FieldLabel htmlFor='features-state-invalid'>Email</FieldLabel>
           <Input
-            id="features-state-invalid"
-            type="email"
-            defaultValue="not-an-email"
-            aria-invalid="true"
+            id='features-state-invalid'
+            type='email'
+            defaultValue='not-an-email'
+            aria-invalid='true'
           />
           <FieldError>Please enter a valid email address.</FieldError>
         </Field>

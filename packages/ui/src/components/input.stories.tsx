@@ -36,34 +36,29 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Input</h1>
-            <p className="text-base text-muted-foreground">
-              Single-line text inputs accept short, free-form data such as a
-              name, email address, or search query. Always pair an input with a
-              visible label so the field has an accessible name, and use the
-              matching HTML type so browsers can offer the correct keyboard and
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Input</h1>
+            <p className='text-base text-muted-foreground'>
+              Single-line text inputs accept short, free-form data such as a name, email address, or
+              search query. Always pair an input with a visible label so the field has an accessible
+              name, and use the matching HTML type so browsers can offer the correct keyboard and
               validation behaviour.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <Input placeholder="you@example.com" />
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <Input placeholder='you@example.com' />
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">With label</h2>
-            <div className="grid w-full max-w-sm gap-1.5">
-              <label htmlFor="input-docs-email" className="text-sm font-medium">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>With label</h2>
+            <div className='grid w-full max-w-sm gap-1.5'>
+              <label htmlFor='input-docs-email' className='text-sm font-medium'>
                 Email address
               </label>
-              <Input
-                id="input-docs-email"
-                type="email"
-                placeholder="you@example.com"
-              />
+              <Input id='input-docs-email' type='email' placeholder='you@example.com' />
             </div>
           </section>
         </div>
@@ -111,8 +106,7 @@ const meta = {
     },
     readOnly: {
       control: 'boolean',
-      description:
-        'Prevents editing while still allowing focus, selection, and copy.',
+      description: 'Prevents editing while still allowing focus, selection, and copy.',
       table: { category: 'Behavior' },
     },
     required: {
@@ -121,20 +115,17 @@ const meta = {
       table: { category: 'Behavior' },
     },
     onChange: {
-      description:
-        'Change handler fired on every keystroke (logged in the Actions panel).',
+      description: 'Change handler fired on every keystroke (logged in the Actions panel).',
       table: { category: 'Events' },
     },
     'aria-invalid': {
       control: 'boolean',
-      description:
-        'Applies the destructive border and background to indicate validation failure.',
+      description: 'Applies the destructive border and background to indicate validation failure.',
       table: { category: 'Accessibility' },
     },
     'aria-label': {
       control: 'text',
-      description:
-        'Accessible name used when there is no associated visible label element.',
+      description: 'Accessible name used when there is no associated visible label element.',
       table: { category: 'Accessibility' },
     },
     className: {
@@ -153,9 +144,7 @@ type Story = StoryObj<typeof meta>
 
 function getInput(canvasElement: HTMLElement, name: string) {
   const input = Array.from(canvasElement.querySelectorAll('input')).find(
-    (el) =>
-      el.getAttribute('placeholder') === name ||
-      el.getAttribute('aria-label') === name
+    (el) => el.getAttribute('placeholder') === name || el.getAttribute('aria-label') === name,
   )
 
   if (!input) throw new Error(`Could not find input named "${name}".`)
@@ -163,17 +152,11 @@ function getInput(canvasElement: HTMLElement, name: string) {
   return input
 }
 
-function expectAttribute(
-  element: Element,
-  name: string,
-  expectedValue: string
-) {
+function expectAttribute(element: Element, name: string, expectedValue: string) {
   const receivedValue = element.getAttribute(name)
 
   if (receivedValue !== expectedValue) {
-    throw new Error(
-      `Expected ${name}="${expectedValue}", received "${receivedValue}".`
-    )
+    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
   }
 }
 
@@ -201,7 +184,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-xl rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
       <Input {...args} />
     </div>
   ),

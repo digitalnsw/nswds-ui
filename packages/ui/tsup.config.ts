@@ -1,10 +1,4 @@
-import {
-  existsSync,
-  readFileSync,
-  readdirSync,
-  statSync,
-  writeFileSync,
-} from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
 
 import { defineConfig } from 'tsup'
@@ -44,9 +38,7 @@ function collectEntries(dir: string): Record<string, string> {
 
         return [[entryName, path]]
       })
-      .sort(([entryNameA], [entryNameB]) =>
-        (entryNameA ?? '').localeCompare(entryNameB ?? '')
-      )
+      .sort(([entryNameA], [entryNameB]) => (entryNameA ?? '').localeCompare(entryNameB ?? '')),
   )
 }
 
@@ -54,10 +46,7 @@ function restoreUseClientDirectives(entries: Record<string, string>) {
   for (const [entryName, sourcePath] of Object.entries(entries)) {
     const source = readFileSync(sourcePath, 'utf8')
 
-    if (
-      !source.startsWith('"use client"') &&
-      !source.startsWith("'use client'")
-    ) {
+    if (!source.startsWith('"use client"') && !source.startsWith("'use client'")) {
       continue
     }
 
@@ -69,10 +58,7 @@ function restoreUseClientDirectives(entries: Record<string, string>) {
 
     const output = readFileSync(outputPath, 'utf8')
 
-    if (
-      !output.startsWith('"use client"') &&
-      !output.startsWith("'use client'")
-    ) {
+    if (!output.startsWith('"use client"') && !output.startsWith("'use client'")) {
       writeFileSync(outputPath, `"use client"\n${output}`)
     }
   }
@@ -103,21 +89,17 @@ function writeIconDeclarations(entries: Record<string, string>) {
 
     writeFileSync(
       outputPath,
-      `import type { IconProps } from './types.js'\nexport declare function ${match[1]}(props: IconProps): import('react').JSX.Element\n`
+      `import type { IconProps } from './types.js'\nexport declare function ${match[1]}(props: IconProps): import('react').JSX.Element\n`,
     )
   }
 }
 
 const entries = collectEntries(srcDir)
 const iconEntries = Object.fromEntries(
-  Object.entries(entries).filter(([entryName]) =>
-    entryName.startsWith('icons/')
-  )
+  Object.entries(entries).filter(([entryName]) => entryName.startsWith('icons/')),
 )
 const coreEntries = Object.fromEntries(
-  Object.entries(entries).filter(
-    ([entryName]) => !entryName.startsWith('icons/')
-  )
+  Object.entries(entries).filter(([entryName]) => !entryName.startsWith('icons/')),
 )
 
 const shared = {
