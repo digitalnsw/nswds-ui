@@ -60,7 +60,8 @@ jobs:
         if: steps.token.outputs.present == 'true'
         uses: actions/setup-node@v6
         with:
-          node-version: '22.14.0'
+          # .nvmrc — engine-strict=true needs npm >=11.5.1 (see pr-checks.yml).
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Install dependencies

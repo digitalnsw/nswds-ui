@@ -38,10 +38,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      # .nvmrc (not a pinned node-version) so CI runs the same Node as local
+      # dev. With engine-strict=true in .npmrc, npm ci hard-fails unless npm
+      # satisfies the root engines (npm >=11.5.1) — Node 22.14.0 ships npm
+      # 10.9.2, so a 22.x pin here breaks every install.
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22.14.0'
+          node-version-file: '.nvmrc'
           cache: npm
 
       - name: Install dependencies
