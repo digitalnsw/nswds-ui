@@ -59,8 +59,7 @@ const docsTemplate = ({
   why: string
   how: string
   caveat: string
-}) =>
-  `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -80,7 +79,7 @@ export const Types: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-3">
+    <div className='grid w-full max-w-md gap-3'>
       {types.map((type) => (
         <Input key={type} type={type} placeholder={type} aria-label={type} />
       ))}
@@ -104,16 +103,16 @@ export const States: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-3">
-      <Input placeholder="Default" />
+    <div className='grid w-full max-w-md gap-3'>
+      <Input placeholder='Default' />
       <Input
-        placeholder="Focused"
-        className="outline outline-2 outline-offset-2 outline-primary-800"
+        placeholder='Focused'
+        className='outline outline-2 outline-offset-2 outline-primary-800'
       />
-      <Input placeholder="Disabled" disabled />
-      <Input placeholder="Read-only" readOnly defaultValue="Read-only value" />
-      <Input placeholder="Invalid" aria-invalid="true" />
-      <Input placeholder="With value" defaultValue="With a value" />
+      <Input placeholder='Disabled' disabled />
+      <Input placeholder='Read-only' readOnly defaultValue='Read-only value' />
+      <Input placeholder='Invalid' aria-invalid='true' />
+      <Input placeholder='With value' defaultValue='With a value' />
     </div>
   ),
 }

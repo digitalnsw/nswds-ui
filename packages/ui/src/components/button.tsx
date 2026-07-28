@@ -338,8 +338,7 @@ type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
   countLabel?: string
 }
 
-type ButtonProps = ButtonOwnProps &
-  Omit<ButtonPrimitive.Props, 'className' | 'disabled'>
+type ButtonProps = ButtonOwnProps & Omit<ButtonPrimitive.Props, 'className' | 'disabled'>
 
 type ButtonLinkProps = ButtonOwnProps &
   Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className' | 'variant'> & {
@@ -360,9 +359,9 @@ function buttonClasses({
       buttonVariants({ variant, color, size }),
       block && 'w-full',
       alignContent === 'start' && 'justify-start',
-      className
+      className,
     ),
-    effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer'
+    effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
   )
 }
 
@@ -391,33 +390,29 @@ function ButtonContent({
     <TouchTarget>
       {loading && (
         <Spinner
-          data-slot="icon"
+          data-slot='icon'
           role={undefined}
           aria-hidden
-          color="current"
+          color='current'
           // The button's own label + aria-busy convey the busy state; the
           // spinner's default "Loading" announcement would be redundant.
-          label=""
+          label=''
           // `block` overrides Spinner's default `inline` so the svg isn't
           // pushed below centre by the button's line-height; `size-full` fills
           // the icon-sized, self-centred wrapper span.
-          svgClassName="block size-full"
+          svgClassName='block size-full'
         />
       )}
-      {LeadingVisual && <LeadingVisual data-slot="icon" />}
-      {labelWrap === false ? (
-        <span className="whitespace-nowrap">{children}</span>
-      ) : (
-        children
-      )}
+      {LeadingVisual && <LeadingVisual data-slot='icon' />}
+      {labelWrap === false ? <span className='whitespace-nowrap'>{children}</span> : children}
       {count !== undefined && (
-        <span className="rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums opacity-75">
+        <span className='rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums opacity-75'>
           {count}
-          {countLabel ? <span className="sr-only"> {countLabel}</span> : null}
+          {countLabel ? <span className='sr-only'> {countLabel}</span> : null}
         </span>
       )}
-      {TrailingVisual && <TrailingVisual data-slot="icon" />}
-      {TrailingAction && <TrailingAction data-slot="icon" />}
+      {TrailingVisual && <TrailingVisual data-slot='icon' />}
+      {TrailingAction && <TrailingAction data-slot='icon' />}
     </TouchTarget>
   )
 }
@@ -430,14 +425,14 @@ function ButtonContent({
  */
 function warnIfIconButtonUnlabelled(
   size: VariantProps<typeof buttonVariants>['size'],
-  props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown }
+  props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown },
 ) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
   if (size === 'icon' && !props['aria-label'] && !props['aria-labelledby']) {
     console.warn(
-      '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.'
+      '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',
     )
   }
 }
@@ -540,7 +535,7 @@ function ButtonLink({
       // Opt out of Link's built-in styling — ButtonLink supplies its own
       // complete visual treatment (background, border, focus ring, icon
       // sizing) and any Link styling layered on top would conflict.
-      variant="unstyled"
+      variant='unstyled'
       data-variant={variant}
       aria-busy={loading || undefined}
       {...props}
@@ -549,8 +544,7 @@ function ButtonLink({
             'aria-disabled': true,
             'data-disabled': '',
             tabIndex: -1,
-            onClick: (e: React.MouseEvent<HTMLAnchorElement>) =>
-              e.preventDefault(),
+            onClick: (e: React.MouseEvent<HTMLAnchorElement>) => e.preventDefault(),
           }
         : {})}
       className={buttonClasses({
@@ -586,8 +580,8 @@ function TouchTarget({ children }: { children: React.ReactNode }) {
   return (
     <>
       <span
-        className="absolute top-1/2 left-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 rounded-sm bg-transparent [@media(pointer:fine)]:hidden"
-        aria-hidden="true"
+        className='absolute top-1/2 left-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 rounded-sm bg-transparent [@media(pointer:fine)]:hidden'
+        aria-hidden='true'
       />
       {children}
     </>

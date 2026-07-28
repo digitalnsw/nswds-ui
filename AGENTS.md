@@ -306,12 +306,7 @@ Add an entry to `packages/ui/registry.json`:
   "type": "registry:ui",
   "title": "<Human Name>",
   "description": "One sentence.",
-  "dependencies": [
-    "@base-ui/react",
-    "class-variance-authority",
-    "clsx",
-    "tailwind-merge"
-  ],
+  "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
   "files": [
     {
       "path": "src/components/<name>.tsx",

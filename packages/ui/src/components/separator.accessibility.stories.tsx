@@ -35,12 +35,10 @@ type Story = StoryObj<typeof meta>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getSeparatorByTestId(canvasElement: HTMLElement, testId: string) {
-  const el = canvasElement.querySelector(
-    `[data-slot="separator"][data-testid="${testId}"]`
-  )
+  const el = canvasElement.querySelector(`[data-slot="separator"][data-testid="${testId}"]`)
   if (!el) {
     throw new Error(
-      `Could not find an element with [data-slot="separator"][data-testid="${testId}"].`
+      `Could not find an element with [data-slot="separator"][data-testid="${testId}"].`,
     )
   }
   return el
@@ -65,27 +63,25 @@ export const InfoAndRelationships: Story = {
     },
   },
   render: () => (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Semantic (role=&quot;separator&quot;)
         </h4>
-        <p className="text-sm text-foreground">Personal details</p>
-        <Separator data-testid="semantic-separator" />
-        <p className="text-sm text-foreground">Account settings</p>
-        <p className="text-xs text-muted-foreground">
+        <p className='text-sm text-foreground'>Personal details</p>
+        <Separator data-testid='semantic-separator' />
+        <p className='text-sm text-foreground'>Account settings</p>
+        <p className='text-xs text-muted-foreground'>
           Exposed to assistive tech as a region boundary.
         </p>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
-          Decorative (hidden from AT)
-        </h4>
-        <p className="text-sm text-foreground">Marketing section</p>
-        <Separator decorative data-testid="decorative-separator" />
-        <p className="text-sm text-foreground">Featured products</p>
-        <p className="text-xs text-muted-foreground">
+      <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
+        <h4 className='text-sm font-semibold text-foreground'>Decorative (hidden from AT)</h4>
+        <p className='text-sm text-foreground'>Marketing section</p>
+        <Separator decorative data-testid='decorative-separator' />
+        <p className='text-sm text-foreground'>Featured products</p>
+        <p className='text-xs text-muted-foreground'>
           Pass <code>decorative</code> when the divider is purely visual.
         </p>
       </section>
@@ -96,18 +92,15 @@ export const InfoAndRelationships: Story = {
     const semanticRole = semantic.getAttribute('role')
     if (semanticRole !== 'separator') {
       throw new Error(
-        `Expected semantic separator to expose role="separator", received role="${semanticRole}".`
+        `Expected semantic separator to expose role="separator", received role="${semanticRole}".`,
       )
     }
 
-    const decorative = getSeparatorByTestId(
-      canvasElement,
-      'decorative-separator'
-    )
+    const decorative = getSeparatorByTestId(canvasElement, 'decorative-separator')
     const decorativeRole = decorative.getAttribute('role')
     if (decorativeRole === 'separator') {
       throw new Error(
-        'Expected decorative separator NOT to expose role="separator" — it should be hidden from assistive tech (role="none" or aria-hidden).'
+        'Expected decorative separator NOT to expose role="separator" — it should be hidden from assistive tech (role="none" or aria-hidden).',
       )
     }
   },
@@ -130,36 +123,31 @@ export const NonTextContrast: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-4'>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Horizontal on the default background
         </h4>
-        <p className="text-sm text-foreground">Content above the line</p>
+        <p className='text-sm text-foreground'>Content above the line</p>
         <Separator />
-        <p className="text-sm text-foreground">Content below the line</p>
-        <p className="text-xs text-muted-foreground">
-          The horizontal line uses the <code>bg-border</code> token and must
-          measure at least 3:1 against the surrounding background.
+        <p className='text-sm text-foreground'>Content below the line</p>
+        <p className='text-xs text-muted-foreground'>
+          The horizontal line uses the <code>bg-border</code> token and must measure at least 3:1
+          against the surrounding background.
         </p>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-4">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Vertical on the default background
         </h4>
-        <div className="flex h-12 items-stretch gap-3">
-          <span className="flex items-center text-sm text-foreground">
-            Left
-          </span>
-          <Separator orientation="vertical" />
-          <span className="flex items-center text-sm text-foreground">
-            Right
-          </span>
+        <div className='flex h-12 items-stretch gap-3'>
+          <span className='flex items-center text-sm text-foreground'>Left</span>
+          <Separator orientation='vertical' />
+          <span className='flex items-center text-sm text-foreground'>Right</span>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Same token, same minimum 3:1 contrast requirement against the surface
-          behind it.
+        <p className='text-xs text-muted-foreground'>
+          Same token, same minimum 3:1 contrast requirement against the surface behind it.
         </p>
       </section>
     </div>

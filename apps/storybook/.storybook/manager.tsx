@@ -10,12 +10,7 @@ import {
 } from '@workspace/theme-tools'
 import React from 'react'
 import { Select } from 'storybook/internal/components'
-import {
-  addons,
-  types,
-  useGlobals,
-  useStorybookState,
-} from 'storybook/manager-api'
+import { addons, types, useGlobals, useStorybookState } from 'storybook/manager-api'
 
 // Auto-loaded by Storybook's manager bundle (no entry needed in main.ts).
 // Registers a "Theme" panel tab alongside Controls/Actions/A11y so the
@@ -49,22 +44,18 @@ const ToolbarSwatch = ({ hex }: { hex: string }) => (
 
 const CategoryTool = React.memo(function CategoryTool() {
   const [globals, updateGlobals] = useGlobals()
-  const category = (globals.themeCategory ??
-    DEFAULT_THEME.category) as ThemeCategory
-  const primaryHue = resolvePrimaryHue(
-    category,
-    globals.themePrimary as string | undefined
-  )
+  const category = (globals.themeCategory ?? DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(category, globals.themePrimary as string | undefined)
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined
+    globals.themeAccent as string | undefined,
   )
 
   return (
     <Select
-      ariaLabel="Theme category"
-      size="small"
+      ariaLabel='Theme category'
+      size='small'
       defaultOptions={category}
       options={[
         { value: 'brand', title: 'Brand' },
@@ -73,11 +64,7 @@ const CategoryTool = React.memo(function CategoryTool() {
       onSelect={(next) => {
         const nextCategory = next as ThemeCategory
         const nextPrimary = resolvePrimaryHue(nextCategory, primaryHue)
-        const nextAccent = resolveAccentHue(
-          nextCategory,
-          nextPrimary,
-          accentHue
-        )
+        const nextAccent = resolveAccentHue(nextCategory, nextPrimary, accentHue)
         updateGlobals({
           themeCategory: nextCategory,
           themePrimary: nextPrimary,
@@ -92,16 +79,12 @@ const CategoryTool = React.memo(function CategoryTool() {
 
 const PrimaryTool = React.memo(function PrimaryTool() {
   const [globals, updateGlobals] = useGlobals()
-  const category = (globals.themeCategory ??
-    DEFAULT_THEME.category) as ThemeCategory
-  const primaryHue = resolvePrimaryHue(
-    category,
-    globals.themePrimary as string | undefined
-  )
+  const category = (globals.themeCategory ?? DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(category, globals.themePrimary as string | undefined)
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined
+    globals.themeAccent as string | undefined,
   )
 
   const options = getColorHues(category).map((hue) => ({
@@ -112,8 +95,8 @@ const PrimaryTool = React.memo(function PrimaryTool() {
 
   return (
     <Select
-      ariaLabel="Primary colour"
-      size="small"
+      ariaLabel='Primary colour'
+      size='small'
       defaultOptions={primaryHue}
       options={options}
       icon={<ToolbarSwatch hex={getPrimarySwatch(category, primaryHue)} />}
@@ -133,16 +116,12 @@ const PrimaryTool = React.memo(function PrimaryTool() {
 
 const AccentTool = React.memo(function AccentTool() {
   const [globals, updateGlobals] = useGlobals()
-  const category = (globals.themeCategory ??
-    DEFAULT_THEME.category) as ThemeCategory
-  const primaryHue = resolvePrimaryHue(
-    category,
-    globals.themePrimary as string | undefined
-  )
+  const category = (globals.themeCategory ?? DEFAULT_THEME.category) as ThemeCategory
+  const primaryHue = resolvePrimaryHue(category, globals.themePrimary as string | undefined)
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined
+    globals.themeAccent as string | undefined,
   )
 
   const options = getColorHues(category)
@@ -155,8 +134,8 @@ const AccentTool = React.memo(function AccentTool() {
 
   return (
     <Select
-      ariaLabel="Accent colour"
-      size="small"
+      ariaLabel='Accent colour'
+      size='small'
       defaultOptions={accentHue}
       options={options}
       icon={<ToolbarSwatch hex={getAccentSwatch(category, accentHue)} />}
@@ -251,8 +230,7 @@ const styles = {
   },
   shareLabel: { fontSize: 11, color: '#73828c' },
   shareUrl: {
-    fontFamily:
-      'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
     fontSize: 11,
     wordBreak: 'break-all' as const,
     padding: 8,
@@ -278,17 +256,13 @@ function ThemePanel() {
   // Re-render when route/query changes so the share URL stays current.
   useStorybookState()
 
-  const category = (globals.themeCategory ??
-    DEFAULT_THEME.category) as ThemeCategory
+  const category = (globals.themeCategory ?? DEFAULT_THEME.category) as ThemeCategory
 
-  const primaryHue = resolvePrimaryHue(
-    category,
-    globals.themePrimary as string | undefined
-  )
+  const primaryHue = resolvePrimaryHue(category, globals.themePrimary as string | undefined)
   const accentHue = resolveAccentHue(
     category,
     primaryHue,
-    globals.themeAccent as string | undefined
+    globals.themeAccent as string | undefined,
   )
 
   const primaryHues = getColorHues(category)
@@ -330,14 +304,10 @@ function ThemePanel() {
     <div style={styles.root}>
       <section style={styles.section}>
         <h3 style={styles.h3}>Theme Category</h3>
-        <div
-          role="radiogroup"
-          aria-label="Theme Category"
-          style={styles.segmented}
-        >
+        <div role='radiogroup' aria-label='Theme Category' style={styles.segmented}>
           <button
-            type="button"
-            role="radio"
+            type='button'
+            role='radio'
             aria-checked={category === 'brand'}
             onClick={() => setCategory('brand')}
             style={styles.segmentBtn(category === 'brand')}
@@ -345,8 +315,8 @@ function ThemePanel() {
             Brand Colors
           </button>
           <button
-            type="button"
-            role="radio"
+            type='button'
+            role='radio'
             aria-checked={category === 'aboriginal'}
             onClick={() => setCategory('aboriginal')}
             style={styles.segmentBtn(category === 'aboriginal')}
@@ -358,22 +328,19 @@ function ThemePanel() {
 
       <section style={styles.section}>
         <h3 style={styles.h3}>Primary Color</h3>
-        <div role="radiogroup" aria-label="Primary Color" style={styles.grid}>
+        <div role='radiogroup' aria-label='Primary Color' style={styles.grid}>
           {primaryHues.map((hue) => {
             const active = hue === primaryHue
             return (
               <button
                 key={hue}
-                type="button"
-                role="radio"
+                type='button'
+                role='radio'
                 aria-checked={active}
                 onClick={() => setPrimary(hue)}
                 style={styles.optionBtn(active)}
               >
-                <span
-                  aria-hidden
-                  style={styles.swatch(getPrimarySwatch(category, hue))}
-                />
+                <span aria-hidden style={styles.swatch(getPrimarySwatch(category, hue))} />
                 <span>{getHueLabel(category, hue)}</span>
               </button>
             )
@@ -383,22 +350,19 @@ function ThemePanel() {
 
       <section style={styles.section}>
         <h3 style={styles.h3}>Accent Color</h3>
-        <div role="radiogroup" aria-label="Accent Color" style={styles.grid}>
+        <div role='radiogroup' aria-label='Accent Color' style={styles.grid}>
           {accentHues.map((hue) => {
             const active = hue === accentHue
             return (
               <button
                 key={hue}
-                type="button"
-                role="radio"
+                type='button'
+                role='radio'
                 aria-checked={active}
                 onClick={() => setAccent(hue)}
                 style={styles.optionBtn(active)}
               >
-                <span
-                  aria-hidden
-                  style={styles.swatch(getAccentSwatch(category, hue))}
-                />
+                <span aria-hidden style={styles.swatch(getAccentSwatch(category, hue))} />
                 <span>{getHueLabel(category, hue)}</span>
               </button>
             )
@@ -409,11 +373,9 @@ function ThemePanel() {
       <section style={styles.section}>
         <h3 style={styles.h3}>Share Theme</h3>
         <div style={styles.shareBlock}>
-          <span style={styles.shareLabel}>
-            Copy this URL to share your theme selection:
-          </span>
+          <span style={styles.shareLabel}>Copy this URL to share your theme selection:</span>
           <code style={styles.shareUrl}>{shareUrl}</code>
-          <button type="button" onClick={copy} style={styles.copyBtn}>
+          <button type='button' onClick={copy} style={styles.copyBtn}>
             {copied ? 'Copied' : 'Copy URL'}
           </button>
         </div>
@@ -422,13 +384,8 @@ function ThemePanel() {
   )
 }
 
-const matchStoryOrDocs = ({
-  viewMode,
-  tabId,
-}: {
-  viewMode?: string
-  tabId?: string
-}) => !!(viewMode && /^(story|docs)$/.test(viewMode)) && !tabId
+const matchStoryOrDocs = ({ viewMode, tabId }: { viewMode?: string; tabId?: string }) =>
+  !!(viewMode && /^(story|docs)$/.test(viewMode)) && !tabId
 
 addons.register(ADDON_ID, () => {
   addons.add(CATEGORY_TOOL_ID, {

@@ -14,10 +14,9 @@ if (existsSync(rootEnv)) {
 // proxies to it. Single source of truth: registry.config.json (updated via
 // `npm run registry:sync`). A REGISTRY_LOCATION env var overrides at runtime.
 const { location: defaultRegistryLocation } = JSON.parse(
-  readFileSync(resolve(repoRoot, 'registry.config.json'), 'utf8')
+  readFileSync(resolve(repoRoot, 'registry.config.json'), 'utf8'),
 )
-const registryLocation =
-  process.env.REGISTRY_LOCATION ?? defaultRegistryLocation
+const registryLocation = process.env.REGISTRY_LOCATION ?? defaultRegistryLocation
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

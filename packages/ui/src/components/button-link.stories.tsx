@@ -16,14 +16,7 @@ import { IconArrowForward } from '../icons/index.js'
 import { ButtonLink } from './button.js'
 import { LinkProvider } from './link.js'
 
-const variants = [
-  'solid',
-  'soft',
-  'surface',
-  'outline',
-  'ghost',
-  'link',
-] as const
+const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
 
 const meta = {
   title: 'Components/Button/ButtonLink',
@@ -61,7 +54,7 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: (args) => (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className='flex flex-wrap items-center gap-4'>
       {variants.map((variant) => (
         <ButtonLink key={variant} {...args} variant={variant}>
           {variant}
@@ -121,8 +114,7 @@ export const Loading: Story = {
 
     // Spinner is decorative here: hidden from AT with no competing label.
     const spinner = anchor.querySelector('svg')
-    if (!spinner)
-      throw new Error('Loading ButtonLink did not render a spinner.')
+    if (!spinner) throw new Error('Loading ButtonLink did not render a spinner.')
     await expect(anchor.textContent).not.toContain('Loading')
   },
 }
@@ -131,7 +123,7 @@ export const WithLinkProvider: Story = {
   render: (args) => (
     <LinkProvider
       component={(props: React.ComponentPropsWithoutRef<'a'>) => (
-        <a data-framework-link="true" {...props} />
+        <a data-framework-link='true' {...props} />
       )}
     >
       <ButtonLink {...args}>Provider-routed link</ButtonLink>

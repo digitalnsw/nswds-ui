@@ -26,45 +26,43 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">Spinner</h1>
-            <p className="text-base text-muted-foreground">
-              Spinner is a busy-state indicator for in-flight asynchronous work.
-              Use it to communicate that the page or a region is loading
-              content, submitting a form, or otherwise waiting on a response
-              before the result can be shown.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>Spinner</h1>
+            <p className='text-base text-muted-foreground'>
+              Spinner is a busy-state indicator for in-flight asynchronous work. Use it to
+              communicate that the page or a region is loading content, submitting a form, or
+              otherwise waiting on a response before the result can be shown.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <Spinner aria-label="Loading" />
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <Spinner aria-label='Loading' />
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Sizes</h2>
-            <div className="flex flex-wrap items-end gap-6">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Sizes</h2>
+            <div className='flex flex-wrap items-end gap-6'>
               {sizes.map((size) => (
-                <div key={size} className="flex flex-col items-center gap-2">
+                <div key={size} className='flex flex-col items-center gap-2'>
                   <Spinner size={size} aria-label={`Loading (${size})`} />
-                  <span className="text-xs text-muted-foreground">{size}</span>
+                  <span className='text-xs text-muted-foreground'>{size}</span>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Usage</h2>
-            <p className="text-base text-muted-foreground">
-              Always supply an <code>aria-label</code> describing what is
-              loading. The outer element has{' '}
-              <code>role=&quot;status&quot;</code> so assistive tech announces
-              the label politely when the spinner appears.
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Usage</h2>
+            <p className='text-base text-muted-foreground'>
+              Always supply an <code>aria-label</code> describing what is loading. The outer element
+              has <code>role=&quot;status&quot;</code> so assistive tech announces the label
+              politely when the spinner appears.
             </p>
-            <div className="flex items-center gap-3">
-              <Spinner aria-label="Loading results" />
-              <span className="text-sm text-foreground">Loading results…</span>
+            <div className='flex items-center gap-3'>
+              <Spinner aria-label='Loading results' />
+              <span className='text-sm text-foreground'>Loading results…</span>
             </div>
           </section>
         </div>
@@ -130,9 +128,7 @@ export const Default: Story = {
     const receivedLabel = status.getAttribute('aria-label')
 
     if (receivedLabel !== expectedLabel) {
-      throw new Error(
-        `Expected aria-label="${expectedLabel}", received "${receivedLabel}".`
-      )
+      throw new Error(`Expected aria-label="${expectedLabel}", received "${receivedLabel}".`)
     }
   },
 }
@@ -147,7 +143,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="flex w-full max-w-xl items-center justify-center rounded-sm border border-border bg-background p-6">
+    <div className='flex w-full max-w-xl items-center justify-center rounded-sm border border-border bg-background p-6'>
       <Spinner {...args} />
     </div>
   ),

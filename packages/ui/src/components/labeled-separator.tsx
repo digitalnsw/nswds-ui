@@ -23,24 +23,22 @@ function LabeledSeparator({
   return (
     <div
       ref={ref}
-      data-slot="labeled-separator"
+      data-slot='labeled-separator'
       className={cn('flex items-center gap-3', className)}
       {...props}
     >
-      <Separator decorative className="flex-1" />
+      <Separator decorative className='flex-1' />
       <span
-        data-slot="labeled-separator-content"
-        className="shrink-0 text-sm text-muted-foreground"
+        data-slot='labeled-separator-content'
+        className='shrink-0 text-sm text-muted-foreground'
       >
         {children}
       </span>
-      <Separator decorative className="flex-1" />
+      <Separator decorative className='flex-1' />
     </div>
   )
 }
 
 export { LabeledSeparator }
 
-export type LabeledSeparatorProps = React.ComponentProps<
-  typeof LabeledSeparator
->
+export type LabeledSeparatorProps = React.ComponentProps<typeof LabeledSeparator>

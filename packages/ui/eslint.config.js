@@ -49,8 +49,7 @@ export default [
       'no-restricted-syntax': [
         'error',
         {
-          selector:
-            'Literal[value=/#[0-9a-fA-F]{3,8}\\b|\\boklch\\(|\\brgba?\\(|\\bhsla?\\(/]',
+          selector: 'Literal[value=/#[0-9a-fA-F]{3,8}\\b|\\boklch\\(|\\brgba?\\(|\\bhsla?\\(/]',
           message:
             'No hardcoded colour values in components — reference a semantic token instead (e.g. bg-primary, text-foreground, var(--color-danger-600)). See AGENTS.md §3.',
         },

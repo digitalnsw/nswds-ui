@@ -22,7 +22,7 @@ import '@nswds/ui/styles.css'
 import { Button } from '@nswds/ui'
 
 export default function Demo() {
-  return <Button color="primary">NSW button</Button>
+  return <Button color='primary'>NSW button</Button>
 }
 ```
 

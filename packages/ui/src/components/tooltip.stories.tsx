@@ -6,15 +6,9 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './tooltip.js'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip.js'
 
-const triggerClasses =
-  'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
+const triggerClasses = 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
 
 const meta = {
   title: 'Components/Tooltip',
@@ -58,10 +52,10 @@ export const Variants: Story = {
   name: 'Variants',
   render: () => (
     <TooltipProvider>
-      <div className="flex flex-wrap gap-4">
+      <div className='flex flex-wrap gap-4'>
         {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
           <Tooltip key={side}>
-            <TooltipTrigger className="rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground">
+            <TooltipTrigger className='rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground'>
               {side}
             </TooltipTrigger>
             <TooltipContent side={side}>Side: {side}</TooltipContent>
@@ -77,14 +71,12 @@ export const CssCheck: Story = {
   play: async ({ canvasElement }) => {
     // Proves globals.css is loaded: the trigger resolves the semantic
     // --primary token to a real, non-transparent colour.
-    const trigger = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="tooltip-trigger"]'
-    )
+    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="tooltip-trigger"]')
     if (!trigger) throw new Error('Tooltip trigger not found.')
     const bg = getComputedStyle(trigger).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected the --primary token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected the --primary token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
   },

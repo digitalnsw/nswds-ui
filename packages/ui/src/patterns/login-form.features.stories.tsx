@@ -12,20 +12,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Button } from '../components/button.js'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/card.js'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '../components/field.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '../components/field.js'
 import { Input } from '../components/input.js'
 import { LabeledSeparator } from '../components/labeled-separator.js'
 import { Link } from '../components/link.js'
@@ -66,7 +54,7 @@ export const Default: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-md">
+    <div className='w-full max-w-md'>
       <LoginForm />
     </div>
   ),
@@ -87,7 +75,7 @@ export const Wide: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-xl">
+    <div className='w-full max-w-xl'>
       <LoginForm />
     </div>
   ),
@@ -108,8 +96,8 @@ export const LightCardOnDark: Story = {
     },
   },
   render: () => (
-    <div className="flex min-h-[32rem] items-center justify-center bg-grey-900 p-8">
-      <div className="w-full max-w-md">
+    <div className='flex min-h-[32rem] items-center justify-center bg-grey-900 p-8'>
+      <div className='w-full max-w-md'>
         <LoginForm />
       </div>
     </div>
@@ -131,20 +119,18 @@ export const WithError: Story = {
     },
   },
   render: () => (
-    <div className="flex w-full max-w-md flex-col gap-6">
-      <Card className="w-full">
+    <div className='flex w-full max-w-md flex-col gap-6'>
+      <Card className='w-full'>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Choose how you&apos;d like to sign in
-          </CardDescription>
+          <CardDescription>Choose how you&apos;d like to sign in</CardDescription>
         </CardHeader>
         <CardContent>
           <form>
             <FieldGroup>
               {/* 1 — Single sign-on: the recommended first option */}
               <Field>
-                <Button type="button">
+                <Button type='button'>
                   <IconLogin />
                   Continue with single sign-on
                 </Button>
@@ -152,13 +138,8 @@ export const WithError: Story = {
               <LabeledSeparator>or sign in with email</LabeledSeparator>
               {/* 2 — Email + password */}
               <Field>
-                <FieldLabel htmlFor="login-error-email">Email</FieldLabel>
-                <Input
-                  id="login-error-email"
-                  type="email"
-                  defaultValue="m@example.com"
-                  required
-                />
+                <FieldLabel htmlFor='login-error-email'>Email</FieldLabel>
+                <Input id='login-error-email' type='email' defaultValue='m@example.com' required />
               </Field>
               {/*
                * Mirrors the focus-order pattern from login-form.tsx: the
@@ -167,25 +148,23 @@ export const WithError: Story = {
                * forgot → password) and positioned at the top-right via
                * absolute positioning. See WCAG 2.4.3 Focus Order.
                */}
-              <Field className="relative [&>a]:w-auto">
-                <FieldLabel htmlFor="login-error-password">Password</FieldLabel>
+              <Field className='relative [&>a]:w-auto'>
+                <FieldLabel htmlFor='login-error-password'>Password</FieldLabel>
                 <Input
-                  id="login-error-password"
-                  type="password"
-                  defaultValue="wrong"
-                  aria-invalid="true"
-                  aria-describedby="login-error-password-error"
+                  id='login-error-password'
+                  type='password'
+                  defaultValue='wrong'
+                  aria-invalid='true'
+                  aria-describedby='login-error-password-error'
                   required
                 />
-                <Link href="#" className="absolute top-0 right-0 text-sm">
+                <Link href='#' className='absolute top-0 right-0 text-sm'>
                   Forgot your password?
                 </Link>
-                <FieldError id="login-error-password-error">
-                  Incorrect password
-                </FieldError>
+                <FieldError id='login-error-password-error'>Incorrect password</FieldError>
               </Field>
               <Field>
-                <Button type="submit" variant="outline" color="primary">
+                <Button type='submit' variant='outline' color='primary'>
                   <IconKey />
                   Login
                 </Button>
@@ -193,19 +172,18 @@ export const WithError: Story = {
               {/* 3 — Magic link: passwordless, sent to the email entered above */}
               <LabeledSeparator>or</LabeledSeparator>
               <Field>
-                <Button type="button" variant="outline" color="grey">
+                <Button type='button' variant='outline' color='grey'>
                   <IconMail />
                   Email me a magic link instead
                 </Button>
                 <FieldDescription>
-                  We&apos;ll send a password-free sign-in link to the email
-                  above.
+                  We&apos;ll send a password-free sign-in link to the email above.
                 </FieldDescription>
               </Field>
-              <Separator className="bg-grey-200" />
+              <Separator className='bg-grey-200' />
               <Field>
-                <FieldDescription className="text-center">
-                  Don&apos;t have an account? <Link href="#">Sign up</Link>
+                <FieldDescription className='text-center'>
+                  Don&apos;t have an account? <Link href='#'>Sign up</Link>
                 </FieldDescription>
               </Field>
             </FieldGroup>
@@ -231,7 +209,7 @@ export const MobileNarrow: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-xs">
+    <div className='w-full max-w-xs'>
       <LoginForm />
     </div>
   ),

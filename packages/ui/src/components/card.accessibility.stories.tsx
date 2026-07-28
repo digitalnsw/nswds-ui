@@ -31,12 +31,7 @@ import {
   CardHeader,
   CardTitle,
 } from './card.js'
-import {
-  bodyClasses,
-  ThemeSurface,
-  titleClasses,
-  wcagStoryMeta,
-} from './story-helpers.js'
+import { bodyClasses, ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -82,10 +77,10 @@ export const InfoAndRelationships: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-md">
+    <Card className='max-w-md'>
       <CardHeader>
         <CardTitle>
-          <h3 className="font-heading text-sm font-medium">Account settings</h3>
+          <h3 className='font-heading text-sm font-medium'>Account settings</h3>
         </CardTitle>
         <CardDescription>
           Update your email, password, and notification preferences.
@@ -105,7 +100,7 @@ export const InfoAndRelationships: Story = {
     const heading = title.querySelector('h1, h2, h3, h4, h5, h6')
     if (!heading) {
       throw new Error(
-        'CardTitle should contain a heading element (h1–h6) so the card participates in the document outline.'
+        'CardTitle should contain a heading element (h1–h6) so the card participates in the document outline.',
       )
     }
   },
@@ -128,26 +123,23 @@ export const ContrastMinimum: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
+    <div className='space-y-4'>
       {(['primary', 'white'] as const).map((color) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
           <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
             Surrounding surface: {color}
           </h4>
-          <Card className="max-w-md">
+          <Card className='max-w-md'>
             <CardHeader>
               <CardTitle>Payment details</CardTitle>
-              <CardDescription>
-                Manage cards and billing addresses on file.
-              </CardDescription>
+              <CardDescription>Manage cards and billing addresses on file.</CardDescription>
             </CardHeader>
             <CardContent>
               Card text should remain readable regardless of the page surface.
             </CardContent>
           </Card>
           <p className={`mt-3 text-xs ${bodyClasses(color)}`}>
-            Verify card-foreground vs card background, not vs the surrounding
-            surface.
+            Verify card-foreground vs card background, not vs the surrounding surface.
           </p>
         </ThemeSurface>
       ))}
@@ -172,12 +164,10 @@ export const NonTextContrast: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <div className="rounded-sm border border-border bg-background p-6">
-        <p className="mb-3 text-sm font-semibold text-foreground">
-          Default surface
-        </p>
-        <Card className="max-w-md">
+    <div className='space-y-4'>
+      <div className='rounded-sm border border-border bg-background p-6'>
+        <p className='mb-3 text-sm font-semibold text-foreground'>Default surface</p>
+        <Card className='max-w-md'>
           <CardHeader>
             <CardTitle>Boundary visibility</CardTitle>
             <CardDescription>
@@ -188,9 +178,9 @@ export const NonTextContrast: Story = {
         </Card>
       </div>
 
-      <div className="rounded-sm border border-grey-700 bg-grey-800 p-6">
-        <p className="mb-3 text-sm font-semibold text-grey-50">Dark surface</p>
-        <Card className="max-w-md">
+      <div className='rounded-sm border border-grey-700 bg-grey-800 p-6'>
+        <p className='mb-3 text-sm font-semibold text-grey-50'>Dark surface</p>
+        <Card className='max-w-md'>
           <CardHeader>
             <CardTitle>Boundary visibility</CardTitle>
             <CardDescription>
@@ -221,25 +211,25 @@ export const FocusVisible: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-md">
+    <Card className='max-w-md'>
       <CardHeader>
         <CardTitle>Inner focus test</CardTitle>
         <CardDescription>
           Tab into the card and confirm the button focus ring is visible.
         </CardDescription>
         <CardAction>
-          <Button variant="ghost" size="sm">
+          <Button variant='ghost' size='sm'>
             Edit
           </Button>
         </CardAction>
       </CardHeader>
       <CardContent>
-        <Button variant="solid" color="primary">
+        <Button variant='solid' color='primary'>
           Primary action
         </Button>
       </CardContent>
       <CardFooter>
-        <Button variant="link" color="primary">
+        <Button variant='link' color='primary'>
           Learn more
         </Button>
       </CardFooter>

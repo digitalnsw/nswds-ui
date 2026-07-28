@@ -24,15 +24,10 @@ if (existsSync(envPath)) {
 
 const config = JSON.parse(readFileSync(configPath, 'utf8'))
 const oldLocation = config.location.replace(/\/+$/, '')
-const newLocation = (process.env.REGISTRY_LOCATION ?? oldLocation).replace(
-  /\/+$/,
-  ''
-)
+const newLocation = (process.env.REGISTRY_LOCATION ?? oldLocation).replace(/\/+$/, '')
 
 if (newLocation === oldLocation) {
-  console.log(
-    `✔ registry location unchanged (${oldLocation}) — nothing to propagate`
-  )
+  console.log(`✔ registry location unchanged (${oldLocation}) — nothing to propagate`)
   process.exit(0)
 }
 
@@ -62,5 +57,5 @@ writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`)
 console.log(
   `✔ registry location ${oldLocation} → ${newLocation}\n` +
     `  updated registry.config.json + ${touched} doc file(s)\n` +
-    `  regenerating registry JSON…`
+    `  regenerating registry JSON…`,
 )

@@ -24,12 +24,7 @@ export interface StoryDescription {
   caveat: string
 }
 
-export function docsTemplate({
-  what,
-  why,
-  how,
-  caveat,
-}: StoryDescription): string {
+export function docsTemplate({ what, why, how, caveat }: StoryDescription): string {
   return `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 }
 
@@ -65,11 +60,7 @@ export function ThemeSurface({
   className?: string
 }) {
   return (
-    <div
-      className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}
-    >
-      {children}
-    </div>
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>{children}</div>
   )
 }
 

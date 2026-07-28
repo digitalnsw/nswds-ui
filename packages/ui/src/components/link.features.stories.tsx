@@ -47,13 +47,7 @@ function titleClasses(variant: LinkVariant): string {
   return needsDarkSurface(variant) ? 'text-grey-50' : 'text-foreground'
 }
 
-function VariantSurface({
-  variant,
-  children,
-}: {
-  variant: LinkVariant
-  children: ReactNode
-}) {
+function VariantSurface({ variant, children }: { variant: LinkVariant; children: ReactNode }) {
   return <div className={surfaceClasses(variant)}>{children}</div>
 }
 
@@ -80,12 +74,11 @@ type Story = StoryObj<typeof meta>
 // A stand-in for a framework Link (e.g. next/link). Forwards props through to
 // a plain <a> and tags itself with data-framework-link so the WithProvider
 // story can visually distinguish provider-routed links from the default <a>.
-const MockNextLink = forwardRef<
-  HTMLAnchorElement,
-  React.ComponentPropsWithoutRef<'a'>
->(function MockNextLink(props, ref) {
-  return <a ref={ref} data-framework-link="" {...props} />
-})
+const MockNextLink = forwardRef<HTMLAnchorElement, React.ComponentPropsWithoutRef<'a'>>(
+  function MockNextLink(props, ref) {
+    return <a ref={ref} data-framework-link='' {...props} />
+  },
+)
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -105,51 +98,49 @@ export const Variants: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-7xl space-y-3">
-      <div className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground">
+    <div className='w-full max-w-7xl space-y-3'>
+      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
         <span>Variant</span>
-        <span className="text-center">Default</span>
-        <span className="text-center">Hover</span>
-        <span className="text-center">Focus</span>
-        <span className="text-center">Active</span>
+        <span className='text-center'>Default</span>
+        <span className='text-center'>Hover</span>
+        <span className='text-center'>Focus</span>
+        <span className='text-center'>Active</span>
       </div>
 
       {linkVariantList.map((variant) => (
         <VariantSurface key={`variant-row-${variant}`} variant={variant}>
-          <div className="grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2">
-            <span
-              className={`text-sm font-semibold capitalize ${titleClasses(variant)}`}
-            >
+          <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
+            <span className={`text-sm font-semibold capitalize ${titleClasses(variant)}`}>
               {variant}
             </span>
-            <div className="text-center">
+            <div className='text-center'>
               <Link href={`/${variant}/default`} variant={variant}>
                 About NSW Government
               </Link>
             </div>
-            <div className="text-center">
+            <div className='text-center'>
               <Link
                 href={`/${variant}/hover`}
                 variant={variant}
-                className="bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]"
+                className='bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]'
               >
                 About NSW Government
               </Link>
             </div>
-            <div className="text-center">
+            <div className='text-center'>
               <Link
                 href={`/${variant}/focus`}
                 variant={variant}
-                className="outline outline-2 outline-offset-2 outline-(--link-color)"
+                className='outline outline-2 outline-offset-2 outline-(--link-color)'
               >
                 About NSW Government
               </Link>
             </div>
-            <div className="text-center">
+            <div className='text-center'>
               <Link
                 href={`/${variant}/active`}
                 variant={variant}
-                className="bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]"
+                className='bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]'
               >
                 About NSW Government
               </Link>
@@ -177,35 +168,34 @@ export const InParagraph: Story = {
     },
   },
   render: () => (
-    <div className="max-w-2xl space-y-4 text-base/7 text-foreground">
+    <div className='max-w-2xl space-y-4 text-base/7 text-foreground'>
       <p>
         The{' '}
-        <Link href="/about" variant="primary">
+        <Link href='/about' variant='primary'>
           About NSW Government
         </Link>{' '}
-        page explains how the state government is structured, who the ministers
-        are, and how to engage with each agency.
+        page explains how the state government is structured, who the ministers are, and how to
+        engage with each agency.
       </p>
 
       <p>
-        Find your nearest <Link href="/services">service centre</Link> or browse
-        the full <Link href="/a-z">A–Z of services</Link> — both pages are kept
-        up to date by the relevant agency.
+        Find your nearest <Link href='/services'>service centre</Link> or browse the full{' '}
+        <Link href='/a-z'>A–Z of services</Link> — both pages are kept up to date by the relevant
+        agency.
       </p>
 
       <p>
         For more information visit{' '}
-        <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink> or
-        contact Service NSW.
+        <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink> or contact Service
+        NSW.
       </p>
 
-      <p className="rounded-sm bg-primary-800 p-4 text-grey-50">
+      <p className='rounded-sm bg-primary-800 p-4 text-grey-50'>
         Looking for the{' '}
-        <Link href="/contact" variant="white">
+        <Link href='/contact' variant='white'>
           contact directory
         </Link>
-        ? It lists phone, email, and postal details for every NSW Government
-        agency.
+        ? It lists phone, email, and postal details for every NSW Government agency.
       </p>
     </div>
   ),
@@ -226,9 +216,7 @@ export const External: Story = {
       },
     },
   },
-  render: () => (
-    <ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>
-  ),
+  render: () => <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>,
 }
 
 export const AsButton: Story = {
@@ -247,7 +235,7 @@ export const AsButton: Story = {
     },
   },
   render: () => (
-    <Link as="button" href="/contact">
+    <Link as='button' href='/contact'>
       Contact us
     </Link>
   ),
@@ -269,11 +257,11 @@ export const WithProvider: Story = {
     },
   },
   render: () => (
-    <div className="flex flex-col gap-3">
+    <div className='flex flex-col gap-3'>
       <LinkProvider component={MockNextLink}>
-        <Link href="/services">Services (via LinkProvider)</Link>
+        <Link href='/services'>Services (via LinkProvider)</Link>
       </LinkProvider>
-      <Link href="/news">News (default &lt;a&gt;)</Link>
+      <Link href='/news'>News (default &lt;a&gt;)</Link>
     </div>
   ),
 }
@@ -294,45 +282,37 @@ export const States: Story = {
     },
   },
   render: () => (
-    <div className="space-y-3">
-      <div className="flex items-center gap-4">
-        <span className="w-24 text-xs font-semibold text-muted-foreground">
-          Default
-        </span>
-        <Link href="/default-state">About NSW Government</Link>
+    <div className='space-y-3'>
+      <div className='flex items-center gap-4'>
+        <span className='w-24 text-xs font-semibold text-muted-foreground'>Default</span>
+        <Link href='/default-state'>About NSW Government</Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="w-24 text-xs font-semibold text-muted-foreground">
-          Hover
-        </span>
+      <div className='flex items-center gap-4'>
+        <span className='w-24 text-xs font-semibold text-muted-foreground'>Hover</span>
         <Link
-          href="/hover-state"
-          className="bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]"
+          href='/hover-state'
+          className='bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]'
         >
           About NSW Government
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="w-24 text-xs font-semibold text-muted-foreground">
-          Focus
-        </span>
+      <div className='flex items-center gap-4'>
+        <span className='w-24 text-xs font-semibold text-muted-foreground'>Focus</span>
         <Link
-          href="/focus-state"
-          className="outline outline-2 outline-offset-2 outline-(--link-color)"
+          href='/focus-state'
+          className='outline outline-2 outline-offset-2 outline-(--link-color)'
         >
           About NSW Government
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
-        <span className="w-24 text-xs font-semibold text-muted-foreground">
-          Active
-        </span>
+      <div className='flex items-center gap-4'>
+        <span className='w-24 text-xs font-semibold text-muted-foreground'>Active</span>
         <Link
-          href="/active-state"
-          className="bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]"
+          href='/active-state'
+          className='bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]'
         >
           About NSW Government
         </Link>

@@ -27,36 +27,32 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">LoginForm</h1>
-            <p className="text-base text-muted-foreground">
-              LoginForm is a composed pattern that demonstrates how to assemble
-              Card, Field, Input, and Button primitives into a sign-in form. It
-              is intended as a starting point for customisation, not a black-box
-              component — copy the source, adapt the fields, swap the providers,
-              and wire it to your own form handler.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>LoginForm</h1>
+            <p className='text-base text-muted-foreground'>
+              LoginForm is a composed pattern that demonstrates how to assemble Card, Field, Input,
+              and Button primitives into a sign-in form. It is intended as a starting point for
+              customisation, not a black-box component — copy the source, adapt the fields, swap the
+              providers, and wire it to your own form handler.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <div className="w-full max-w-md">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <div className='w-full max-w-md'>
               <LoginForm />
             </div>
           </section>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold tracking-normal">
-              Customising the pattern
-            </h2>
-            <p className="text-base text-muted-foreground">
-              LoginForm exposes only a wrapper <code>className</code> prop on
-              purpose — extending the pattern means copying the component
-              source, not configuring it through props. Treat this file as the
-              reference implementation: add a third-party SSO button, swap the
-              footer link, or wire the form to a server action by editing the
-              copied source directly.
+          <section className='space-y-3'>
+            <h2 className='text-2xl font-bold tracking-normal'>Customising the pattern</h2>
+            <p className='text-base text-muted-foreground'>
+              LoginForm exposes only a wrapper <code>className</code> prop on purpose — extending
+              the pattern means copying the component source, not configuring it through props.
+              Treat this file as the reference implementation: add a third-party SSO button, swap
+              the footer link, or wire the form to a server action by editing the copied source
+              directly.
             </p>
           </section>
         </div>
@@ -91,31 +87,19 @@ export const Default: Story = {
     className: 'w-full max-w-md',
   },
   play: async ({ canvasElement }) => {
-    const emailInput = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="email"]'
-    )
+    const emailInput = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
     if (!emailInput) {
-      throw new Error(
-        'LoginForm: expected at least one <input type="email"> in the canvas.'
-      )
+      throw new Error('LoginForm: expected at least one <input type="email"> in the canvas.')
     }
 
-    const passwordInput = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="password"]'
-    )
+    const passwordInput = canvasElement.querySelector<HTMLInputElement>('input[type="password"]')
     if (!passwordInput) {
-      throw new Error(
-        'LoginForm: expected at least one <input type="password"> in the canvas.'
-      )
+      throw new Error('LoginForm: expected at least one <input type="password"> in the canvas.')
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
-      throw new Error(
-        'LoginForm: expected at least one <button type="submit"> in the canvas.'
-      )
+      throw new Error('LoginForm: expected at least one <button type="submit"> in the canvas.')
     }
   },
 }
@@ -129,7 +113,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
       <LoginForm {...args} />
     </div>
   ),

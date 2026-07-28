@@ -55,16 +55,10 @@ const docsTemplate = ({
   why: string
   how: string
   caveat: string
-}) =>
-  `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
 
-function getInputById(
-  canvasElement: HTMLElement,
-  id: string
-): HTMLInputElement {
-  const input = canvasElement.querySelector<HTMLInputElement>(
-    `input[id="${id}"]`
-  )
+function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement {
+  const input = canvasElement.querySelector<HTMLInputElement>(`input[id="${id}"]`)
   if (!input) throw new Error(`Could not find input #${id} in canvas.`)
   return input
 }
@@ -87,30 +81,23 @@ export const LabelAssociation: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <label
-        htmlFor="a11y-label-email"
-        className="text-sm font-medium text-foreground"
-      >
+    <div className='grid w-full max-w-md gap-1.5'>
+      <label htmlFor='a11y-label-email' className='text-sm font-medium text-foreground'>
         Email address
       </label>
-      <Input id="a11y-label-email" type="email" placeholder="you@example.com" />
+      <Input id='a11y-label-email' type='email' placeholder='you@example.com' />
     </div>
   ),
   play: async ({ canvasElement }) => {
     const input = getInputById(canvasElement, 'a11y-label-email')
 
     if (!input.labels || input.labels.length === 0) {
-      throw new Error(
-        'WCAG 1.3.1: input has no associated <label> via htmlFor/labels.'
-      )
+      throw new Error('WCAG 1.3.1: input has no associated <label> via htmlFor/labels.')
     }
 
     const labelText = input.labels[0]?.textContent?.trim() ?? ''
     if (labelText.length === 0) {
-      throw new Error(
-        'WCAG 4.1.2: associated <label> has empty text — accessible name is missing.'
-      )
+      throw new Error('WCAG 4.1.2: associated <label> has empty text — accessible name is missing.')
     }
   },
 }
@@ -133,50 +120,35 @@ export const InputPurpose: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-3">
-      <div className="grid gap-1.5">
-        <label htmlFor="a11y-purpose-name" className="text-sm font-medium">
+    <div className='grid w-full max-w-md gap-3'>
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-purpose-name' className='text-sm font-medium'>
           Full name
         </label>
-        <Input
-          id="a11y-purpose-name"
-          type="text"
-          autoComplete="name"
-          placeholder="Jane Citizen"
-        />
+        <Input id='a11y-purpose-name' type='text' autoComplete='name' placeholder='Jane Citizen' />
       </div>
-      <div className="grid gap-1.5">
-        <label htmlFor="a11y-purpose-email" className="text-sm font-medium">
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-purpose-email' className='text-sm font-medium'>
           Email address
         </label>
         <Input
-          id="a11y-purpose-email"
-          type="email"
-          autoComplete="email"
-          placeholder="you@example.com"
+          id='a11y-purpose-email'
+          type='email'
+          autoComplete='email'
+          placeholder='you@example.com'
         />
       </div>
-      <div className="grid gap-1.5">
-        <label htmlFor="a11y-purpose-tel" className="text-sm font-medium">
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-purpose-tel' className='text-sm font-medium'>
           Phone number
         </label>
-        <Input
-          id="a11y-purpose-tel"
-          type="tel"
-          autoComplete="tel"
-          placeholder="0400 000 000"
-        />
+        <Input id='a11y-purpose-tel' type='tel' autoComplete='tel' placeholder='0400 000 000' />
       </div>
-      <div className="grid gap-1.5">
-        <label htmlFor="a11y-purpose-postal" className="text-sm font-medium">
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-purpose-postal' className='text-sm font-medium'>
           Postcode
         </label>
-        <Input
-          id="a11y-purpose-postal"
-          type="text"
-          autoComplete="postal-code"
-          placeholder="2000"
-        />
+        <Input id='a11y-purpose-postal' type='text' autoComplete='postal-code' placeholder='2000' />
       </div>
     </div>
   ),
@@ -193,7 +165,7 @@ export const InputPurpose: Story = {
       const actual = input.getAttribute('autocomplete')
       if (actual !== token) {
         throw new Error(
-          `WCAG 1.3.5: #${id} expected autocomplete="${token}", got "${actual ?? 'null'}".`
+          `WCAG 1.3.5: #${id} expected autocomplete="${token}", got "${actual ?? 'null'}".`,
         )
       }
     }
@@ -218,38 +190,32 @@ export const FocusAppearance: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-4">
-      <div className="grid gap-1.5">
-        <label
-          htmlFor="a11y-focus-live"
-          className="text-sm font-medium text-foreground"
-        >
+    <div className='grid w-full max-w-md gap-4'>
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-focus-live' className='text-sm font-medium text-foreground'>
           Tab into me (live focus)
         </label>
-        <Input id="a11y-focus-live" placeholder="Click or tab to focus" />
+        <Input id='a11y-focus-live' placeholder='Click or tab to focus' />
       </div>
 
-      <div className="grid gap-1.5">
-        <label
-          htmlFor="a11y-focus-forced"
-          className="text-sm font-medium text-foreground"
-        >
+      <div className='grid gap-1.5'>
+        <label htmlFor='a11y-focus-forced' className='text-sm font-medium text-foreground'>
           Forced focus (utilities applied directly)
         </label>
         <Input
-          id="a11y-focus-forced"
-          placeholder="Always shows focus indicator"
-          className="outline outline-2 outline-offset-2 outline-primary-800"
+          id='a11y-focus-forced'
+          placeholder='Always shows focus indicator'
+          className='outline outline-2 outline-offset-2 outline-primary-800'
         />
       </div>
 
-      <p className="text-xs text-foreground">
+      <p className='text-xs text-foreground'>
         Indicator:{' '}
-        <code className="rounded bg-muted px-1 py-0.5 text-xs text-foreground">
+        <code className='rounded bg-muted px-1 py-0.5 text-xs text-foreground'>
           outline: 2px solid var(--color-primary-800); outline-offset: 2px
         </code>
-        . NSW blue against white surface ≈ 9:1 contrast — comfortably above the
-        3:1 floor required by 2.4.13 and 1.4.11.
+        . NSW blue against white surface ≈ 9:1 contrast — comfortably above the 3:1 floor required
+        by 2.4.13 and 1.4.11.
       </p>
     </div>
   ),
@@ -258,22 +224,18 @@ export const FocusAppearance: Story = {
     const cs = getComputedStyle(forced)
 
     if (cs.outlineStyle !== 'solid') {
-      throw new Error(
-        `WCAG 2.4.13: outline-style expected "solid", got "${cs.outlineStyle}".`
-      )
+      throw new Error(`WCAG 2.4.13: outline-style expected "solid", got "${cs.outlineStyle}".`)
     }
 
     const width = parseFloat(cs.outlineWidth)
     if (!Number.isFinite(width) || width < 2) {
-      throw new Error(
-        `WCAG 2.4.13: outline-width expected ≥ 2px, got "${cs.outlineWidth}".`
-      )
+      throw new Error(`WCAG 2.4.13: outline-width expected ≥ 2px, got "${cs.outlineWidth}".`)
     }
 
     const offset = parseFloat(cs.outlineOffset)
     if (!Number.isFinite(offset) || offset < 2) {
       throw new Error(
-        `outline-offset expected ≥ 2px (so the ring isn't clipped), got "${cs.outlineOffset}".`
+        `outline-offset expected ≥ 2px (so the ring isn't clipped), got "${cs.outlineOffset}".`,
       )
     }
   },
@@ -297,27 +259,24 @@ export const ErrorIdentification: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-md gap-1.5">
-      <label
-        htmlFor="a11y-error-input"
-        className="text-sm font-medium text-foreground"
-      >
+    <div className='grid w-full max-w-md gap-1.5'>
+      <label htmlFor='a11y-error-input' className='text-sm font-medium text-foreground'>
         Email address
       </label>
       <Input
-        id="a11y-error-input"
-        type="email"
-        defaultValue="not-an-email"
-        aria-invalid="true"
-        aria-describedby="a11y-error-message"
+        id='a11y-error-input'
+        type='email'
+        defaultValue='not-an-email'
+        aria-invalid='true'
+        aria-describedby='a11y-error-message'
       />
       <p
-        id="a11y-error-message"
+        id='a11y-error-message'
         // danger-600 (#b81237) passes AA against white but only ~3:1 against
         // the dark-mode --background. danger-300 is the lightest red that
         // still reads as "error" against the dark surface.
-        className="text-sm text-danger-600 dark:text-danger-300"
-        role="alert"
+        className='text-sm text-danger-600 dark:text-danger-300'
+        role='alert'
       >
         Please enter a valid email address.
       </p>
@@ -338,15 +297,13 @@ export const ErrorIdentification: Story = {
     const errEl = canvasElement.querySelector(`[id="${describedBy}"]`)
     if (!errEl) {
       throw new Error(
-        `WCAG 3.3.1: aria-describedby="${describedBy}" but no element with that id exists.`
+        `WCAG 3.3.1: aria-describedby="${describedBy}" but no element with that id exists.`,
       )
     }
 
     const errText = errEl.textContent?.trim() ?? ''
     if (errText.length === 0) {
-      throw new Error(
-        'WCAG 3.3.1: error message element exists but has empty text.'
-      )
+      throw new Error('WCAG 3.3.1: error message element exists but has empty text.')
     }
   },
 }

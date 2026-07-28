@@ -40,7 +40,7 @@ const skipLinkVariants = cva(
     defaultVariants: {
       color: 'dark',
     },
-  }
+  },
 )
 
 /**
@@ -74,7 +74,7 @@ function focusSkipTarget(event: React.MouseEvent<HTMLAnchorElement>) {
       () => {
         target.removeAttribute('tabindex')
       },
-      { once: true }
+      { once: true },
     )
   }
 
@@ -98,18 +98,10 @@ type SkipLinkProps = React.ComponentPropsWithoutRef<'a'> &
  * same-page fragment jumps — routing framework link components are
  * unnecessary and can interfere with fragment navigation.
  */
-function SkipLink({
-  className,
-  color,
-  href,
-  onClick,
-  children,
-  ref,
-  ...props
-}: SkipLinkProps) {
+function SkipLink({ className, color, href, onClick, children, ref, ...props }: SkipLinkProps) {
   return (
     <a
-      data-slot="skip-link"
+      data-slot='skip-link'
       {...props}
       href={href}
       onClick={(event) => {
@@ -121,7 +113,7 @@ function SkipLink({
       className={cn(skipLinkVariants({ color }), className)}
       ref={ref}
     >
-      <span className="group-focus:outline group-focus:outline-2 group-focus:outline-offset-2 group-focus:outline-current">
+      <span className='group-focus:outline group-focus:outline-2 group-focus:outline-offset-2 group-focus:outline-current'>
         {children}
       </span>
     </a>
@@ -163,10 +155,10 @@ function SkipLinks({
   // initialised earlier in the pattern, so it is in scope here.
   children = (
     <>
-      <SkipLink color={color} href="#nav">
+      <SkipLink color={color} href='#nav'>
         Skip to navigation
       </SkipLink>
-      <SkipLink color={color} href="#content">
+      <SkipLink color={color} href='#content'>
         Skip to content
       </SkipLink>
     </>
@@ -176,8 +168,8 @@ function SkipLinks({
 }: SkipLinksProps) {
   return (
     <nav
-      aria-label="Skip links"
-      data-slot="skip-links"
+      aria-label='Skip links'
+      data-slot='skip-links'
       {...props}
       className={cn('fixed inset-x-0 top-0 z-50 w-full', className)}
       ref={ref}

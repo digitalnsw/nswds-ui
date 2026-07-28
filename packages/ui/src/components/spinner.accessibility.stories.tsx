@@ -67,11 +67,10 @@ export const StatusMessage: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <Spinner aria-label="Loading results" />
-      <p className="text-sm text-muted-foreground">
-        Outer element has role=&quot;status&quot; and aria-label=&quot;Loading
-        results&quot;.
+    <div className='space-y-4'>
+      <Spinner aria-label='Loading results' />
+      <p className='text-sm text-muted-foreground'>
+        Outer element has role=&quot;status&quot; and aria-label=&quot;Loading results&quot;.
       </p>
     </div>
   ),
@@ -79,16 +78,12 @@ export const StatusMessage: Story = {
     const status = getStatus(canvasElement)
 
     if (status.getAttribute('role') !== 'status') {
-      throw new Error(
-        `Expected role="status", received "${status.getAttribute('role')}".`
-      )
+      throw new Error(`Expected role="status", received "${status.getAttribute('role')}".`)
     }
 
     const label = status.getAttribute('aria-label')
     if (!label || label.trim().length === 0) {
-      throw new Error(
-        'Spinner has no accessible name — aria-label is missing or empty.'
-      )
+      throw new Error('Spinner has no accessible name — aria-label is missing or empty.')
     }
   },
 }
@@ -110,26 +105,22 @@ export const NonTextContrast: Story = {
     },
   },
   render: () => (
-    <div className="space-y-4">
-      <div className="rounded-sm border border-border bg-background p-6">
-        <h4 className="mb-3 text-sm font-semibold text-foreground">
-          On default background
-        </h4>
-        <div className="flex flex-wrap items-end gap-6">
-          <Spinner size="md" aria-label="Loading" />
-          <Spinner size="lg" aria-label="Loading" />
-          <Spinner size="xl" aria-label="Loading" />
+    <div className='space-y-4'>
+      <div className='rounded-sm border border-border bg-background p-6'>
+        <h4 className='mb-3 text-sm font-semibold text-foreground'>On default background</h4>
+        <div className='flex flex-wrap items-end gap-6'>
+          <Spinner size='md' aria-label='Loading' />
+          <Spinner size='lg' aria-label='Loading' />
+          <Spinner size='xl' aria-label='Loading' />
         </div>
       </div>
 
-      <ThemeSurface color="secondary">
-        <h4 className="mb-3 text-sm font-semibold text-grey-50">
-          On grey-800 surface
-        </h4>
-        <div className="flex flex-wrap items-end gap-6">
-          <Spinner size="md" aria-label="Loading" />
-          <Spinner size="lg" aria-label="Loading" />
-          <Spinner size="xl" aria-label="Loading" />
+      <ThemeSurface color='secondary'>
+        <h4 className='mb-3 text-sm font-semibold text-grey-50'>On grey-800 surface</h4>
+        <div className='flex flex-wrap items-end gap-6'>
+          <Spinner size='md' aria-label='Loading' />
+          <Spinner size='lg' aria-label='Loading' />
+          <Spinner size='xl' aria-label='Loading' />
         </div>
       </ThemeSurface>
     </div>
@@ -153,31 +144,30 @@ export const UseOfColour: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+    <div className='space-y-6'>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Animation + accessible name (recommended)
         </h4>
-        <div className="flex items-center gap-3">
-          <Spinner aria-label="Loading results" />
-          <span className="text-sm text-muted-foreground">
-            Visible animation + role=&quot;status&quot; +
-            aria-label=&quot;Loading results&quot;.
+        <div className='flex items-center gap-3'>
+          <Spinner aria-label='Loading results' />
+          <span className='text-sm text-muted-foreground'>
+            Visible animation + role=&quot;status&quot; + aria-label=&quot;Loading results&quot;.
           </span>
         </div>
       </section>
 
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
+      <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <h4 className='text-sm font-semibold text-foreground'>
           Pair with visible text for maximum clarity
         </h4>
-        <div className="flex items-center gap-3">
-          <Spinner size="sm" aria-label="Loading results" />
-          <span className="text-sm text-foreground">Loading results…</span>
+        <div className='flex items-center gap-3'>
+          <Spinner size='sm' aria-label='Loading results' />
+          <span className='text-sm text-foreground'>Loading results…</span>
         </div>
-        <p className="text-xs text-muted-foreground">
-          A visible &quot;Loading…&quot; label removes any reliance on the
-          spinner&apos;s colour or motion to convey the state.
+        <p className='text-xs text-muted-foreground'>
+          A visible &quot;Loading…&quot; label removes any reliance on the spinner&apos;s colour or
+          motion to convey the state.
         </p>
       </section>
     </div>
@@ -201,37 +191,29 @@ export const NonTextContent: Story = {
     },
   },
   render: () => (
-    <div className="space-y-6">
-      <section className="space-y-3 rounded-sm border border-border bg-background p-6">
-        <h4 className="text-sm font-semibold text-foreground">
-          Correct — aria-label supplied
-        </h4>
-        <Spinner aria-label="Loading search results" />
-        <p className="text-xs text-muted-foreground">
-          The outer span exposes the accessible name; the SVG remains
-          decorative.
+    <div className='space-y-6'>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <h4 className='text-sm font-semibold text-foreground'>Correct — aria-label supplied</h4>
+        <Spinner aria-label='Loading search results' />
+        <p className='text-xs text-muted-foreground'>
+          The outer span exposes the accessible name; the SVG remains decorative.
         </p>
       </section>
 
-      <section className="border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6">
-        <h4 className="text-sm font-semibold text-foreground">
-          Caveat — no aria-label
-        </h4>
+      <section className='border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6'>
+        <h4 className='text-sm font-semibold text-foreground'>Caveat — no aria-label</h4>
         <span data-no-label-spinner>
           <Spinner />
         </span>
-        <p className="text-xs text-muted-foreground">
-          Without aria-label, the role=&quot;status&quot; element has no
-          accessible name. Screen readers will announce only the live region
-          with no context — always supply a label.
+        <p className='text-xs text-muted-foreground'>
+          Without aria-label, the role=&quot;status&quot; element has no accessible name. Screen
+          readers will announce only the live region with no context — always supply a label.
         </p>
       </section>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const noLabelWrapper = canvasElement.querySelector(
-      '[data-no-label-spinner]'
-    )
+    const noLabelWrapper = canvasElement.querySelector('[data-no-label-spinner]')
 
     if (!noLabelWrapper) {
       throw new Error('Could not find the no-aria-label demonstration wrapper.')
@@ -246,9 +228,7 @@ export const NonTextContent: Story = {
     const label = status.getAttribute('aria-label')
 
     if (label !== null && label.trim().length > 0) {
-      throw new Error(
-        `Expected the unlabelled spinner to have no aria-label, received "${label}".`
-      )
+      throw new Error(`Expected the unlabelled spinner to have no aria-label, received "${label}".`)
     }
   },
 }

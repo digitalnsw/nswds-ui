@@ -53,9 +53,9 @@ export const Default: Story = {
 
 export const Variants: Story = {
   render: (args) => (
-    <div className="space-y-3">
+    <div className='space-y-3'>
       {variants.map((variant) => (
-        <div key={variant} className="flex flex-wrap items-center gap-3">
+        <div key={variant} className='flex flex-wrap items-center gap-3'>
           {colors.map((color) => (
             // On-dark colours (secondary, white) need their designed surface
             // — same convention as the Badge/Button matrix stories.
@@ -75,7 +75,7 @@ export const WithLinkProvider: Story = {
   render: (args) => (
     <LinkProvider
       component={(props: React.ComponentPropsWithoutRef<'a'>) => (
-        <a data-framework-link="true" {...props} />
+        <a data-framework-link='true' {...props} />
       )}
     >
       <BadgeLink {...args}>Provider-routed badge</BadgeLink>

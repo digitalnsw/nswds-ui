@@ -7,11 +7,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './collapsible.js'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible.js'
 
 const triggerClasses =
   'flex w-full items-center justify-between rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground'
@@ -32,10 +28,8 @@ const meta = {
     },
   },
   render: (args) => (
-    <Collapsible {...args} className="w-full max-w-md">
-      <CollapsibleTrigger className={triggerClasses}>
-        Toggle details
-      </CollapsibleTrigger>
+    <Collapsible {...args} className='w-full max-w-md'>
+      <CollapsibleTrigger className={triggerClasses}>Toggle details</CollapsibleTrigger>
       <CollapsibleContent className={panelClasses}>
         Hidden content revealed when the trigger is activated.
       </CollapsibleContent>
@@ -51,9 +45,7 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const trigger = canvasElement.querySelector(
-      '[data-slot="collapsible-trigger"]'
-    )
+    const trigger = canvasElement.querySelector('[data-slot="collapsible-trigger"]')
     if (!trigger) {
       throw new Error('Could not find [data-slot="collapsible-trigger"].')
     }
@@ -63,7 +55,7 @@ export const Default: Story = {
 export const Variants: Story = {
   name: 'Variants',
   render: () => (
-    <div className="flex w-full max-w-md flex-col gap-8">
+    <div className='flex w-full max-w-md flex-col gap-8'>
       {[false, true].map((open) => (
         <Collapsible key={String(open)} defaultOpen={open}>
           <CollapsibleTrigger className={triggerClasses}>
@@ -84,14 +76,12 @@ export const CssCheck: Story = {
   play: async ({ canvasElement }) => {
     // Proves globals.css is loaded: with the panel open, the --muted token
     // resolves to a real, non-transparent colour.
-    const panel = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="collapsible-content"]'
-    )
+    const panel = canvasElement.querySelector<HTMLElement>('[data-slot="collapsible-content"]')
     if (!panel) throw new Error('Open collapsible panel not found.')
     const bg = getComputedStyle(panel).backgroundColor
     if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
       throw new Error(
-        `Expected the --muted token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`
+        `Expected the --muted token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
   },

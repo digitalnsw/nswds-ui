@@ -60,14 +60,12 @@ export const Sizes: Story = {
     },
   },
   render: () => (
-    <div className="grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2">
+    <div className='grid w-full max-w-4xl grid-cols-1 gap-4 md:grid-cols-2'>
       {(['default', 'sm'] as const).map((size) => (
         <Card key={size} size={size}>
           <CardHeader>
             <CardTitle>Size: {size}</CardTitle>
-            <CardDescription>
-              Padding and gap scale with the size token.
-            </CardDescription>
+            <CardDescription>Padding and gap scale with the size token.</CardDescription>
           </CardHeader>
           <CardContent>Card body content sits inside CardContent.</CardContent>
           <CardFooter>Footer row.</CardFooter>
@@ -93,21 +91,17 @@ export const Composition: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-md">
+    <Card className='max-w-md'>
       <CardHeader>
         <CardTitle>Project status</CardTitle>
-        <CardDescription>
-          Quarterly summary across active workstreams.
-        </CardDescription>
+        <CardDescription>Quarterly summary across active workstreams.</CardDescription>
         <CardAction>
-          <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
+          <button className='text-xs font-medium text-primary underline-offset-4 hover:underline'>
             View all
           </button>
         </CardAction>
       </CardHeader>
-      <CardContent>
-        12 tasks in review, 4 blocked, and 28 completed this sprint.
-      </CardContent>
+      <CardContent>12 tasks in review, 4 blocked, and 28 completed this sprint.</CardContent>
       <CardFooter>Last sync 5 minutes ago.</CardFooter>
     </Card>
   ),
@@ -129,21 +123,18 @@ export const WithImage: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-sm">
+    <Card className='max-w-sm'>
       <img
-        src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=60"
-        alt=""
-        className="aspect-video h-auto w-full object-cover"
+        src='https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=60'
+        alt=''
+        className='aspect-video h-auto w-full object-cover'
       />
       <CardHeader>
         <CardTitle>Autumn in the Blue Mountains</CardTitle>
-        <CardDescription>
-          A weekend itinerary with the best walks and lookouts.
-        </CardDescription>
+        <CardDescription>A weekend itinerary with the best walks and lookouts.</CardDescription>
       </CardHeader>
       <CardContent>
-        Includes Govetts Leap, Wentworth Falls, and the Grand Canyon walking
-        track.
+        Includes Govetts Leap, Wentworth Falls, and the Grand Canyon walking track.
       </CardContent>
       <CardFooter>4 min read.</CardFooter>
     </Card>
@@ -166,10 +157,10 @@ export const MinimalCard: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-md">
+    <Card className='max-w-md'>
       <CardContent>
-        Minimal card with just CardContent inside. Useful for list rows or
-        compact summary tiles where a header is overkill.
+        Minimal card with just CardContent inside. Useful for list rows or compact summary tiles
+        where a header is overkill.
       </CardContent>
     </Card>
   ),
@@ -191,11 +182,11 @@ export const CardWithoutDescription: Story = {
     },
   },
   render: () => (
-    <Card className="max-w-md">
+    <Card className='max-w-md'>
       <CardHeader>
         <CardTitle>Single-row header</CardTitle>
         <CardAction>
-          <button className="text-xs font-medium text-primary underline-offset-4 hover:underline">
+          <button className='text-xs font-medium text-primary underline-offset-4 hover:underline'>
             Edit
           </button>
         </CardAction>

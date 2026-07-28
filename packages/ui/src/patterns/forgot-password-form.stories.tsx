@@ -24,37 +24,31 @@ const meta = {
     },
     docs: {
       page: () => (
-        <div className="max-w-3xl space-y-8 text-foreground">
-          <section className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-normal">
-              ForgotPasswordForm
-            </h1>
-            <p className="text-base text-muted-foreground">
-              ForgotPasswordForm is a composed pattern that demonstrates how to
-              assemble Card, Field, Input, and Button primitives into a
-              password-reset request form. It is the destination of the
-              &ldquo;Forgot your password?&rdquo; link in LoginForm. Copy the
-              source, wire the email field to your own reset handler, and adapt
-              the copy to your service.
+        <div className='max-w-3xl space-y-8 text-foreground'>
+          <section className='space-y-3'>
+            <h1 className='text-4xl font-bold tracking-normal'>ForgotPasswordForm</h1>
+            <p className='text-base text-muted-foreground'>
+              ForgotPasswordForm is a composed pattern that demonstrates how to assemble Card,
+              Field, Input, and Button primitives into a password-reset request form. It is the
+              destination of the &ldquo;Forgot your password?&rdquo; link in LoginForm. Copy the
+              source, wire the email field to your own reset handler, and adapt the copy to your
+              service.
             </p>
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold tracking-normal">Default</h2>
-            <div className="w-full max-w-md">
+          <section className='space-y-4'>
+            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
+            <div className='w-full max-w-md'>
               <ForgotPasswordForm />
             </div>
           </section>
 
-          <section className="space-y-3">
-            <h2 className="text-2xl font-bold tracking-normal">
-              Account-enumeration safety
-            </h2>
-            <p className="text-base text-muted-foreground">
-              When wiring the form, show the same confirmation message whether
-              or not the submitted address has an account. Revealing that an
-              email is &ldquo;not found&rdquo; lets an attacker enumerate
-              registered users. The single-field layout keeps this easy to get
+          <section className='space-y-3'>
+            <h2 className='text-2xl font-bold tracking-normal'>Account-enumeration safety</h2>
+            <p className='text-base text-muted-foreground'>
+              When wiring the form, show the same confirmation message whether or not the submitted
+              address has an account. Revealing that an email is &ldquo;not found&rdquo; lets an
+              attacker enumerate registered users. The single-field layout keeps this easy to get
               right.
             </p>
           </section>
@@ -90,39 +84,27 @@ export const Default: Story = {
     className: 'w-full max-w-md',
   },
   play: async ({ canvasElement }) => {
-    const emailInput = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="email"]'
-    )
+    const emailInput = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
     if (!emailInput) {
-      throw new Error(
-        'ForgotPasswordForm: expected an <input type="email"> in the canvas.'
-      )
+      throw new Error('ForgotPasswordForm: expected an <input type="email"> in the canvas.')
     }
 
     // The email field must be programmatically labelled (WCAG 1.3.1).
     if (!emailInput.labels || emailInput.labels.length < 1) {
-      throw new Error(
-        'ForgotPasswordForm: the email input has no associated <label>.'
-      )
+      throw new Error('ForgotPasswordForm: the email input has no associated <label>.')
     }
 
     // Single-field flow: no password input belongs on the reset request step.
-    const passwordInput = canvasElement.querySelector<HTMLInputElement>(
-      'input[type="password"]'
-    )
+    const passwordInput = canvasElement.querySelector<HTMLInputElement>('input[type="password"]')
     if (passwordInput) {
       throw new Error(
-        'ForgotPasswordForm: the reset request step must not contain a password input.'
+        'ForgotPasswordForm: the reset request step must not contain a password input.',
       )
     }
 
-    const submit = canvasElement.querySelector<HTMLButtonElement>(
-      'button[type="submit"]'
-    )
+    const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
-      throw new Error(
-        'ForgotPasswordForm: expected a <button type="submit"> in the canvas.'
-      )
+      throw new Error('ForgotPasswordForm: expected a <button type="submit"> in the canvas.')
     }
   },
 }
@@ -136,7 +118,7 @@ export const Playground: Story = {
     },
   },
   render: (args) => (
-    <div className="w-full max-w-md rounded-sm border border-border bg-background p-6">
+    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
       <ForgotPasswordForm {...args} />
     </div>
   ),

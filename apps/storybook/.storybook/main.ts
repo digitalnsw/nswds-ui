@@ -8,9 +8,7 @@ import { fileURLToPath } from 'url'
 // directory (not the entry point) so that Storybook's preset validator can
 // find `<frameworkDir>/preset.js` — which is what it looks for internally.
 const require = createRequire(import.meta.url)
-const frameworkDir = dirname(
-  require.resolve('@storybook/react-vite/package.json')
-)
+const frameworkDir = dirname(require.resolve('@storybook/react-vite/package.json'))
 
 const config: StorybookConfig = {
   stories: [
@@ -42,10 +40,7 @@ const config: StorybookConfig = {
     config.resolve = config.resolve ?? {}
     config.resolve.alias = {
       ...(config.resolve.alias as Record<string, string> | undefined),
-      '@nswds/ui/globals.css': resolve(
-        here,
-        '../../../packages/ui/src/styles/globals.css'
-      ),
+      '@nswds/ui/globals.css': resolve(here, '../../../packages/ui/src/styles/globals.css'),
     }
 
     return config

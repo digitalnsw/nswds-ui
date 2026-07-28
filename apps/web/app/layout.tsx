@@ -7,12 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 // apps/** live and emits utilities for the sandbox's own classes.
 import '../../../packages/ui/src/styles/globals.css'
 
-import {
-  siteDescription,
-  siteKeywords,
-  siteName,
-  siteURL,
-} from '@/lib/site_name'
+import { siteDescription, siteKeywords, siteName, siteURL } from '@/lib/site_name'
 
 const publicSans = Public_Sans({
   subsets: ['latin'],
@@ -102,8 +97,8 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      data-scroll-behavior="smooth"
+      lang='en'
+      data-scroll-behavior='smooth'
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >

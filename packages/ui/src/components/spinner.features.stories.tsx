@@ -56,12 +56,12 @@ export const Sizes: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-3xl rounded-sm border border-border bg-background p-6">
-      <div className="flex flex-wrap items-end gap-8">
+    <div className='w-full max-w-3xl rounded-sm border border-border bg-background p-6'>
+      <div className='flex flex-wrap items-end gap-8'>
         {sizes.map((size) => (
-          <div key={size} className="flex flex-col items-center gap-2">
+          <div key={size} className='flex flex-col items-center gap-2'>
             <Spinner size={size} aria-label={`Loading (${size})`} />
-            <span className="text-xs text-muted-foreground">{size}</span>
+            <span className='text-xs text-muted-foreground'>{size}</span>
           </div>
         ))}
       </div>
@@ -85,22 +85,22 @@ export const InButton: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-3xl rounded-sm border border-border bg-background p-6">
-      <div className="flex flex-wrap items-center gap-4">
-        <Button size="sm">
-          <Spinner size="xs" aria-label="Saving" />
+    <div className='w-full max-w-3xl rounded-sm border border-border bg-background p-6'>
+      <div className='flex flex-wrap items-center gap-4'>
+        <Button size='sm'>
+          <Spinner size='xs' aria-label='Saving' />
           Saving
         </Button>
         <Button>
-          <Spinner size="sm" aria-label="Saving" />
+          <Spinner size='sm' aria-label='Saving' />
           Saving
         </Button>
-        <Button variant="outline">
-          <Spinner size="sm" aria-label="Refreshing" />
+        <Button variant='outline'>
+          <Spinner size='sm' aria-label='Refreshing' />
           Refreshing
         </Button>
         <Button disabled>
-          <Spinner size="sm" aria-label="Submitting" />
+          <Spinner size='sm' aria-label='Submitting' />
           Submitting
         </Button>
       </div>
@@ -124,9 +124,9 @@ export const InCenter: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-3xl rounded-sm border border-border bg-background p-6">
-      <div className="flex h-48 items-center justify-center rounded-sm border border-dashed border-border bg-muted/30">
-        <Spinner size="lg" aria-label="Loading content" />
+    <div className='w-full max-w-3xl rounded-sm border border-border bg-background p-6'>
+      <div className='flex h-48 items-center justify-center rounded-sm border border-dashed border-border bg-muted/30'>
+        <Spinner size='lg' aria-label='Loading content' />
       </div>
     </div>
   ),
@@ -148,20 +148,18 @@ export const WithText: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-3xl space-y-4 rounded-sm border border-border bg-background p-6">
-      <div className="flex items-center gap-3">
-        <Spinner size="sm" aria-label="Loading" />
-        <span className="text-sm text-foreground">Loading…</span>
+    <div className='w-full max-w-3xl space-y-4 rounded-sm border border-border bg-background p-6'>
+      <div className='flex items-center gap-3'>
+        <Spinner size='sm' aria-label='Loading' />
+        <span className='text-sm text-foreground'>Loading…</span>
       </div>
-      <div className="flex items-center gap-3">
-        <Spinner size="md" aria-label="Loading results" />
-        <span className="text-base text-foreground">Loading results…</span>
+      <div className='flex items-center gap-3'>
+        <Spinner size='md' aria-label='Loading results' />
+        <span className='text-base text-foreground'>Loading results…</span>
       </div>
-      <div className="flex items-center gap-3">
-        <Spinner size="lg" aria-label="Submitting your application" />
-        <span className="text-lg text-foreground">
-          Submitting your application…
-        </span>
+      <div className='flex items-center gap-3'>
+        <Spinner size='lg' aria-label='Submitting your application' />
+        <span className='text-lg text-foreground'>Submitting your application…</span>
       </div>
     </div>
   ),
@@ -183,21 +181,21 @@ export const Colours: Story = {
     },
   },
   render: () => (
-    <div className="w-full max-w-3xl space-y-4">
-      <div className="rounded-sm border border-border bg-background p-6">
-        <div className="flex flex-wrap items-end gap-8">
+    <div className='w-full max-w-3xl space-y-4'>
+      <div className='rounded-sm border border-border bg-background p-6'>
+        <div className='flex flex-wrap items-end gap-8'>
           {(['primary', 'accent'] as const).map((color) => (
-            <div key={color} className="flex flex-col items-center gap-2">
+            <div key={color} className='flex flex-col items-center gap-2'>
               <Spinner color={color} aria-label={`Loading (${color})`} />
-              <span className="text-xs text-muted-foreground">{color}</span>
+              <span className='text-xs text-muted-foreground'>{color}</span>
             </div>
           ))}
         </div>
       </div>
-      <ThemeSurface color="secondary">
-        <div className="flex flex-col items-center gap-2">
-          <Spinner color="white" aria-label="Loading (white)" />
-          <span className="text-xs text-grey-200">white</span>
+      <ThemeSurface color='secondary'>
+        <div className='flex flex-col items-center gap-2'>
+          <Spinner color='white' aria-label='Loading (white)' />
+          <span className='text-xs text-grey-200'>white</span>
         </div>
       </ThemeSurface>
     </div>
@@ -220,16 +218,12 @@ export const ColourOnDark: Story = {
     },
   },
   render: () => (
-    <ThemeSurface color="secondary">
-      <div className="flex flex-wrap items-end gap-8">
+    <ThemeSurface color='secondary'>
+      <div className='flex flex-wrap items-end gap-8'>
         {sizes.map((size) => (
-          <div key={size} className="flex flex-col items-center gap-2">
-            <Spinner
-              size={size}
-              color="white"
-              aria-label={`Loading (${size})`}
-            />
-            <span className="text-xs text-grey-200">{size}</span>
+          <div key={size} className='flex flex-col items-center gap-2'>
+            <Spinner size={size} color='white' aria-label={`Loading (${size})`} />
+            <span className='text-xs text-grey-200'>{size}</span>
           </div>
         ))}
       </div>

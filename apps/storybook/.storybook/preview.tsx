@@ -92,27 +92,25 @@ export default definePreview({
   decorators: [
     (Story, context) => {
       const isDark = context.globals.theme === 'dark'
-      const category = (context.globals.themeCategory ??
-        DEFAULT_THEME.category) as ThemeCategory
+      const category = (context.globals.themeCategory ?? DEFAULT_THEME.category) as ThemeCategory
 
       // Coerce against the active category so a hue that doesn't exist for
       // the current palette can't render — picks always stay in one palette.
       const primaryHue = resolvePrimaryHue(
         category,
-        context.globals.themePrimary as string | undefined
+        context.globals.themePrimary as string | undefined,
       )
       const accentHue = resolveAccentHue(
         category,
         primaryHue,
-        context.globals.themeAccent as string | undefined
+        context.globals.themeAccent as string | undefined,
       )
 
       const language = (context.globals.language as string | undefined) ?? 'en'
       // If the chosen language is RTL and the user hasn't explicitly set
       // direction to something else, default to rtl.
       const requestedDirection = context.globals.direction as string | undefined
-      const direction =
-        requestedDirection ?? (RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr')
+      const direction = requestedDirection ?? (RTL_LANGUAGES.has(language) ? 'rtl' : 'ltr')
 
       if (typeof document !== 'undefined') {
         const root = document.documentElement
@@ -145,17 +143,7 @@ export default definePreview({
           'Getting Started',
           ['Welcome'],
           'Components',
-          [
-            'Button',
-            [
-              'Docs',
-              'Default',
-              'Playground',
-              'Features',
-              'Tests',
-              'Accessibility',
-            ],
-          ],
+          ['Button', ['Docs', 'Default', 'Playground', 'Features', 'Tests', 'Accessibility']],
         ],
       },
     },
