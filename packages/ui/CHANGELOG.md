@@ -1,3 +1,9 @@
+## [4.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.0...@nswds/ui-v4.1.1) (2026-07-29)
+
+### Bug Fixes
+
+* **lint:** fail the apps on warnings so the required lint gate can fail ([fb7bc1a](https://github.com/digitalnsw/nswds-ui/commit/fb7bc1a7daa685b6153d78e318196267426dfb12))
+
 ## [4.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.0.0...@nswds/ui-v4.1.0) (2026-07-18)
 
 ### Features
