@@ -1,0 +1,901 @@
+# Snyk policy — https://docs.snyk.io/scan-fix-and-prevent/prevent/policies/the-.snyk-file
+version: v1.25.0
+
+# ── Canonical base (from nswds-devops: repo-files/.snyk) ─────────────────────────────────────
+# Repo-specific ignores go BELOW this block, under a "# repo-specific
+#
+# This file exists IN ADDITION to the repo root .snyk. Snyk resolves the policy
+# relative to each manifest's directory, so under 
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       package.json
+Project name:      nswds-ui
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Local Snyk policy: found
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/registry/package.json
+Project name:      @workspace/registry
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/storybook/package.json
+Project name:      @workspace/storybook
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested 43 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 59 dependencies for known issues, found 11 issues, 11 vulnerable paths.
+
+
+Issues to fix by upgrading:
+
+  Upgrade next@16.2.6 to next@16.2.11 to fix
+  ✗ Improper Encoding or Escaping of Output (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18230947] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Inefficient Algorithmic Complexity (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18231604] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Allocation of Resources Without Limits or Throttling (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18232299] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Insertion of Sensitive Information Into Sent Data (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233109] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Use of Cache Containing Sensitive Information (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233146] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Allocation of Resources Without Limits or Throttling (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233133] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Server-side Request Forgery (SSRF) (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233136] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Server-side Request Forgery (SSRF) (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233752] in next@16.2.6
+    introduced by next@16.2.6
+
+
+Issues with no direct upgrade or patch:
+  ✗ Cross-site Scripting (XSS) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-16189065] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.10
+  ✗ Directory Traversal [High Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-18313036] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.12
+  ✗ Directory Traversal [High Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-18313038] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.18
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/package.json
+Project name:      web
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Local Snyk policy: found
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/eslint-config/package.json
+Project name:      @workspace/eslint-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 4 dependencies for known issues, found 1 issue, 1 vulnerable path.
+
+
+License issues:
+
+  ✗ MPL-2.0 license (new) [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:nswds:prettier-config:MPL-2.0] in @nswds/prettier-config@1.0.1
+    introduced by @nswds/prettier-config@1.0.1
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/prettier-config/package.json
+Project name:      @workspace/prettier-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 311 dependencies for known issues, found 24 issues, 898 vulnerable paths.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Inefficient Algorithmic Complexity [High Severity][https://security.snyk.io/vuln/SNYK-JS-BRACEEXPANSION-17706650] in brace-expansion@5.0.6
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > minimatch@10.2.5 > brace-expansion@5.0.6 and 197 other path(s)
+  This issue was fixed in versions: 1.1.16, 2.1.2, 5.0.7
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-BRACEEXPANSION-18313044] in brace-expansion@5.0.6
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > minimatch@10.2.5 > brace-expansion@5.0.6 and 197 other path(s)
+  This issue was fixed in versions: 1.1.16, 2.1.2, 5.0.8
+  ✗ Server-side Request Forgery (SSRF) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-IPADDRESS-18343249] in ip-address@10.2.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > make-fetch-happen@15.0.6 > @npmcli/agent@4.0.2 > socks-proxy-agent@8.0.5 > socks@2.8.9 > ip-address@10.2.0 and 60 other path(s)
+  This issue was fixed in versions: 10.2.1
+  ✗ Denial of Service (DoS) [High Severity][https://security.snyk.io/vuln/SNYK-JS-PACOTE-8225084] in pacote@21.5.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > pacote@21.5.0 and 14 other path(s)
+  This issue was fixed in versions: 21.5.1
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSSSELECTORPARSER-16873882] in postcss-selector-parser@7.1.1
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > @npmcli/arborist@9.7.0 > @npmcli/query@5.0.0 > postcss-selector-parser@7.1.1 and 4 other path(s)
+  This issue was fixed in versions: 6.1.3, 7.1.2
+  ✗ Interpretation Conflict [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17342362] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.16
+  ✗ Infinite loop [High Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909068] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.18
+  ✗ Incorrect Type Conversion or Cast [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909104] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.18
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909152] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.19
+  ✗ Uncaught Exception [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909225] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.17
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-18319500] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.21
+  ✗ Improper Certificate Validation [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372609] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.5.0
+  ✗ CRLF Injection [Critical Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372658] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Origin Validation Error [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372667] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.2.0
+  ✗ Use of Cache Containing Sensitive Information [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372697] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.5.0
+  ✗ Time-of-check Time-of-use (TOCTOU) Race Condition [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372752] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372754] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 6.26.0, 7.28.0, 8.5.0
+  ✗ Permissive List of Allowed Inputs [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372758] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Improper Neutralization [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426061] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ HTTP Request Smuggling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426063] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ Interpretation Conflict [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426065] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.29.0, 8.9.0
+  ✗ CRLF Injection [Low Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426067] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ Information Exposure [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426521] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.29.0, 8.9.0
+
+
+License issues:
+
+  ✗ Artistic-2.0 license [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:npm:Artistic-2.0] in npm@11.16.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/semantic-release-config/package.json
+Project name:      @workspace/semantic-release-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 30 dependencies for known issues, found 12 issues, 12 vulnerable paths.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060165] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060167] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060659] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060730] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060804] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065349] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065351] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065353] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065355] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Permissive List of Allowed Inputs [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065357] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ CRLF Injection [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-FORMDATA-17337015] in form-data@4.0.5
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0 > form-data@4.0.5
+  This issue was fixed in versions: 2.5.6, 3.0.5, 4.0.6
+
+
+License issues:
+
+  ✗ MPL-2.0 license [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:nswds:tokens:MPL-2.0] in @nswds/tokens@4.1.0
+    introduced by @nswds/tokens@4.1.0
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/theme-tools/package.json
+Project name:      @workspace/theme-tools
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/typescript-config/package.json
+Project name:      @workspace/typescript-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/ui/package.json
+Project name:      @nswds/ui
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested 42 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/build/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/dev/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/dev/build/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
+Tested 14 projects, 4 contained vulnerable paths. the
+# root policy does NOT cover the workspace sub-projects. nanoid is introduced in
+# apps/web (via next > postcss), and the root file alone left both advisories
+# active here."
+# heading. This file is NOT in .github/sync.yml: the file-sync action
+# overwrites whole files, and several repos carry legitimate per-repo policy
+# (nswds-app's transitive postcss ignores, nswds-ui's Snyk Code exclude,
+# engagement's and nswds-email's enumerated licence lists, dtl-sandbox's
+# path-scoped entries). It is a Mechanism C file — see
+# docs/config-single-source-of-truth.md.
+#
+# NOTE: do not add a '*:lic:*' catch-all. Snyk matches ignore keys as exact
+# issue IDs and does not support globs — the catch-all that four repos carry
+# is dead config (verified: nswds-app has it and `snyk test` still reports
+# all 13 licence findings as active). Licence findings have to be enumerated,
+# as nswds-email and engagement already do.
+
+ignore:
+  # ── nanoid CWE-835 — TWO DIFFERENT BUGS. Do not merge these reasons. ──
+  #
+  # Both advisories name nanoid@3.3.16, both say "upgrade to 5.1.16", and both
+  # are titled "Infinite loop". They are not the same finding and do not have
+  # the same answer. Verified against the published tarballs.
+  #
+  # Neither is fixed by an overrides entry pinning nanoid to ^5.1.16. nanoid
+  # 5's exports map has no `require` condition — it is ESM-only, and postcss
+  # (CJS, declares `nanoid: ^3.3.16`) consumes it via require(). That
+  # resolution only works on Node >=22.12 and was never tested upstream.
+
+  # -894 / CVE-2026-67214 — ALREADY PATCHED. `customAlphabet` and `nanoid` in
+  # the `nanoid/non-secure` entry point hang on a negative size. Fixed in the
+  # 3.x line by 3.3.16, which backports the same one-line change as 5.1.16:
+  #
+  #     -  while (i--) {
+  #     +  while (i-- > 0) {
+  #
+  # 3.3.15..3.3.16 and 5.1.15..5.1.16 are the identical two-line patch in the
+  # identical file. Snyk's `<5.1.16` range simply omits the backport.
+  #
+  # This entry is only correct where nanoid resolves to >=3.3.16. An older
+  # 3.x is genuinely vulnerable and needs a lockfile refresh, not an ignore.
+  # Check with `npm ls nanoid` before landing this block in a repo.
+  SNYK-JS-NANOID-18506894:
+    - '*':
+        reason: >-
+          False positive against nanoid@3.3.16. CVE-2026-67214 is the negative-size
+          infinite loop in nanoid/non-secure, backported to the 3.x line in 3.3.16
+          (`while (i--)` -> `while (i-- > 0)`) — the same patch 5.1.16 carries.
+          Snyk's `<5.1.16` range does not account for the backport.
+        expires: 2026-10-31T00:00:00.000Z
+
+  # -897 / CVE-2026-67213 — NOT FIXED, NOT REACHABLE. A different function:
+  # `customRandom` hangs on a size of 0. It is NOT patched in 3.3.16 —
+  # `customRandom` is byte-identical between 3.3.15 and 3.3.16, and there is
+  # no 3.x release that fixes it. The 5.x line was never affected: the
+  # `if (!size) return ''` guard is present in 5.1.15 as well as 5.1.16, which
+  # is why Snyk names 5.1.16 (the -894 fix) as the remediation for both.
+  #
+  # Accepted on reachability, not on version:
+  #   * `customRandom` is exported only from nanoid's MAIN entry —
+  #     `nanoid/non-secure` exports `{ nanoid, customAlphabet }` and nothing else.
+  #   * postcss reaches nanoid only via `require('nanoid/non-secure')`
+  #     (lib/input.js) and calls `nanoid(6)` with a hardcoded constant.
+  # So the vulnerable function is not importable on the path that introduces
+  # the finding. Re-check this if anything starts importing nanoid's main
+  # entry — that changes the analysis, and the ignore stops being valid.
+  SNYK-JS-NANOID-18506897:
+    - '*':
+        reason: >-
+          Not reachable. CVE-2026-67213 is an infinite loop in `customRandom`, which
+          is exported only from nanoid's main entry. The consumer that introduces
+          nanoid here is postcss, which imports `nanoid/non-secure` — that entry
+          point does not export `customRandom` — and calls `nanoid(6)` with a
+          hardcoded constant, never attacker-controlled input. Not fixed in any
+          3.x release; accepted on reachability.
+        expires: 2026-10-31T00:00:00.000Z
+
+# repo-specific
+#
+# This file exists IN ADDITION to the repo root .snyk. Snyk resolves the policy
+# relative to each manifest's directory, so under 
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       package.json
+Project name:      nswds-ui
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Local Snyk policy: found
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/registry/package.json
+Project name:      @workspace/registry
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/storybook/package.json
+Project name:      @workspace/storybook
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested 43 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 59 dependencies for known issues, found 11 issues, 11 vulnerable paths.
+
+
+Issues to fix by upgrading:
+
+  Upgrade next@16.2.6 to next@16.2.11 to fix
+  ✗ Improper Encoding or Escaping of Output (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18230947] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Inefficient Algorithmic Complexity (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18231604] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Allocation of Resources Without Limits or Throttling (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18232299] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Insertion of Sensitive Information Into Sent Data (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233109] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Use of Cache Containing Sensitive Information (new) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233146] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Allocation of Resources Without Limits or Throttling (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233133] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Server-side Request Forgery (SSRF) (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233136] in next@16.2.6
+    introduced by next@16.2.6
+  ✗ Server-side Request Forgery (SSRF) (new) [High Severity][https://security.snyk.io/vuln/SNYK-JS-NEXT-18233752] in next@16.2.6
+    introduced by next@16.2.6
+
+
+Issues with no direct upgrade or patch:
+  ✗ Cross-site Scripting (XSS) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-16189065] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.10
+  ✗ Directory Traversal [High Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-18313036] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.12
+  ✗ Directory Traversal [High Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSS-18313038] in postcss@8.4.31
+    introduced by next@16.2.6 > postcss@8.4.31
+  This issue was fixed in versions: 8.5.18
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/package.json
+Project name:      web
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Local Snyk policy: found
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/eslint-config/package.json
+Project name:      @workspace/eslint-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 4 dependencies for known issues, found 1 issue, 1 vulnerable path.
+
+
+License issues:
+
+  ✗ MPL-2.0 license (new) [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:nswds:prettier-config:MPL-2.0] in @nswds/prettier-config@1.0.1
+    introduced by @nswds/prettier-config@1.0.1
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/prettier-config/package.json
+Project name:      @workspace/prettier-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 311 dependencies for known issues, found 24 issues, 898 vulnerable paths.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Inefficient Algorithmic Complexity [High Severity][https://security.snyk.io/vuln/SNYK-JS-BRACEEXPANSION-17706650] in brace-expansion@5.0.6
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > minimatch@10.2.5 > brace-expansion@5.0.6 and 197 other path(s)
+  This issue was fixed in versions: 1.1.16, 2.1.2, 5.0.7
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-BRACEEXPANSION-18313044] in brace-expansion@5.0.6
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > minimatch@10.2.5 > brace-expansion@5.0.6 and 197 other path(s)
+  This issue was fixed in versions: 1.1.16, 2.1.2, 5.0.8
+  ✗ Server-side Request Forgery (SSRF) [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-IPADDRESS-18343249] in ip-address@10.2.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > make-fetch-happen@15.0.6 > @npmcli/agent@4.0.2 > socks-proxy-agent@8.0.5 > socks@2.8.9 > ip-address@10.2.0 and 60 other path(s)
+  This issue was fixed in versions: 10.2.1
+  ✗ Denial of Service (DoS) [High Severity][https://security.snyk.io/vuln/SNYK-JS-PACOTE-8225084] in pacote@21.5.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > pacote@21.5.0 and 14 other path(s)
+  This issue was fixed in versions: 21.5.1
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-POSTCSSSELECTORPARSER-16873882] in postcss-selector-parser@7.1.1
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > @npmcli/arborist@9.7.0 > @npmcli/query@5.0.0 > postcss-selector-parser@7.1.1 and 4 other path(s)
+  This issue was fixed in versions: 6.1.3, 7.1.2
+  ✗ Interpretation Conflict [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17342362] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.16
+  ✗ Infinite loop [High Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909068] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.18
+  ✗ Incorrect Type Conversion or Cast [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909104] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.18
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909152] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.19
+  ✗ Uncaught Exception [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-17909225] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.17
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-TAR-18319500] in tar@7.5.15
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0 > tar@7.5.15 and 41 other path(s)
+  This issue was fixed in versions: 7.5.21
+  ✗ Improper Certificate Validation [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372609] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.5.0
+  ✗ CRLF Injection [Critical Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372658] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Origin Validation Error [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372667] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.2.0
+  ✗ Use of Cache Containing Sensitive Information [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372697] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.28.0, 8.5.0
+  ✗ Time-of-check Time-of-use (TOCTOU) Race Condition [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372752] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Allocation of Resources Without Limits or Throttling [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372754] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 6.26.0, 7.28.0, 8.5.0
+  ✗ Permissive List of Allowed Inputs [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-17372758] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.27.0, 7.28.0, 8.5.0
+  ✗ Improper Neutralization [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426061] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ HTTP Request Smuggling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426063] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ Interpretation Conflict [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426065] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.29.0, 8.9.0
+  ✗ CRLF Injection [Low Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426067] in undici@6.26.0
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2 and 26 other path(s)
+  This issue was fixed in versions: 6.28.0, 7.29.0, 8.9.0
+  ✗ Information Exposure [High Severity][https://security.snyk.io/vuln/SNYK-JS-UNDICI-18426521] in undici@7.27.2
+    introduced by @semantic-release/github@12.0.8 > undici@7.27.2
+  This issue was fixed in versions: 7.29.0, 8.9.0
+
+
+License issues:
+
+  ✗ Artistic-2.0 license [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:npm:Artistic-2.0] in npm@11.16.0
+    introduced by @semantic-release/npm@13.1.5 > npm@11.16.0
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/semantic-release-config/package.json
+Project name:      @workspace/semantic-release-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Tested 30 dependencies for known issues, found 12 issues, 12 vulnerable paths.
+
+
+Issues with no direct upgrade or patch:
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060165] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060167] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060659] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Uncontrolled Recursion [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060730] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18060804] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065349] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065351] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Allocation of Resources Without Limits or Throttling [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065353] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 1.18.0
+  ✗ Prototype Pollution [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065355] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ Permissive List of Allowed Inputs [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-AXIOS-18065357] in axios@1.17.0
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0
+  This issue was fixed in versions: 0.33.0, 1.18.0
+  ✗ CRLF Injection [Medium Severity][https://security.snyk.io/vuln/SNYK-JS-FORMDATA-17337015] in form-data@4.0.5
+    introduced by @nswds/tokens@4.1.0 > axios@1.17.0 > form-data@4.0.5
+  This issue was fixed in versions: 2.5.6, 3.0.5, 4.0.6
+
+
+License issues:
+
+  ✗ MPL-2.0 license [Medium Severity][https://au.snyk.io/vuln/snyk:lic:npm:nswds:tokens:MPL-2.0] in @nswds/tokens@4.1.0
+    introduced by @nswds/tokens@4.1.0
+
+
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/theme-tools/package.json
+Project name:      @workspace/theme-tools
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/typescript-config/package.json
+Project name:      @workspace/typescript-config
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       packages/ui/package.json
+Project name:      @nswds/ui
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested 42 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/build/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/dev/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+-------------------------------------------------------
+
+Testing /Users/lauren/Sites/nswds-ui...
+
+Organization:      digitalnsw
+Package manager:   npm
+Target file:       apps/web/.next/dev/build/package.json
+Project name:      package.json
+Open source:       no
+Project path:      /Users/lauren/Sites/nswds-ui
+Licenses:          enabled
+
+✔ Tested /Users/lauren/Sites/nswds-ui for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
+Tested 14 projects, 4 contained vulnerable paths. the
+# root policy does NOT cover the workspace sub-projects. nanoid is introduced in
+# apps/web (via next > postcss), and the root file alone left both advisories
+# active here.
