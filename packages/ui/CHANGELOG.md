@@ -1,3 +1,11 @@
+## [4.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.1...@nswds/ui-v4.1.2) (2026-08-03)
+
+### Bug Fixes
+
+* **deps:** bump nanoid to 3.3.16 for CVE-2026-67214 ([a2877cc](https://github.com/digitalnsw/nswds-ui/commit/a2877cc79fffc763635704b6726befec7ebf6f2a))
+* **security:** path-scope the nanoid ignores and correct the 5.1.16 rationale ([fc30925](https://github.com/digitalnsw/nswds-ui/commit/fc30925a1cd3c87d8f5cf89e06cc4d5885f56006))
+* **security:** repair the corrupted apps/web Snyk policy and repo-qualify paths ([0cb7a71](https://github.com/digitalnsw/nswds-ui/commit/0cb7a71db5f815f44ac7d14e29f1e64ae8b6580b))
+
 ## [4.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.0...@nswds/ui-v4.1.1) (2026-07-29)
 
 ### Bug Fixes
