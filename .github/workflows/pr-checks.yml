@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # .nvmrc (not a pinned node-version) so CI runs the same Node as local
       # dev. With engine-strict=true in .npmrc, npm ci hard-fails unless npm
