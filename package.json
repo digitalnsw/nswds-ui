@@ -37,7 +37,7 @@
     "@workspace/typescript-config": "*",
     "husky": "^9.1.7",
     "prettier": "^3.8.1",
-    "prettier-plugin-tailwindcss": "^0.7.2",
+    "prettier-plugin-tailwindcss": "^0.8.0",
     "semantic-release": "^25.0.3",
     "turbo": "^2.9.18",
     "typescript": "5.9.3",
