@@ -1,3 +1,9 @@
+## [4.1.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.2...@nswds/ui-v4.1.3) (2026-08-04)
+
+### Bug Fixes
+
+* **deps:** update all non-major dependencies ([#70](https://github.com/digitalnsw/nswds-ui/issues/70)) ([1962134](https://github.com/digitalnsw/nswds-ui/commit/19621340e02dd57c59648719a7108c3d8d891ada))
+
 ## [4.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.1...@nswds/ui-v4.1.2) (2026-08-03)
 
 ### Bug Fixes
