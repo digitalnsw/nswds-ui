@@ -10,11 +10,20 @@ import {
   resolvePrimaryHue,
   type ThemeCategory,
 } from '@workspace/theme-tools'
-import { initialize, mswLoader } from 'msw-storybook-addon'
+import addonMsw from 'msw-storybook-addon'
+import { setupWorker } from 'msw/browser'
 
 import { mswHandlers } from './msw-handlers'
 
-initialize({ onUnhandledRequest: 'bypass' })
+// msw-storybook-addon v3 owns the worker lifecycle: instead of a top-level
+// `initialize()`, the addon takes a setup function and starts/stops the
+// worker around each story. Per-story handlers go through `beforeEach({ msw })`
+// (`msw.use(...)`), not the removed `parameters.msw` block.
+const mswSetup = async () => {
+  const worker = setupWorker(...mswHandlers)
+  await worker.start({ onUnhandledRequest: 'bypass' })
+  return worker
+}
 
 // Discovery summary:
 // - Pure component library; no providers, no data fetching, no portals.
@@ -134,8 +143,6 @@ export default definePreview({
     },
   ],
 
-  loaders: [mswLoader],
-
   parameters: {
     options: {
       storySort: {
@@ -175,10 +182,7 @@ export default definePreview({
         },
       },
     },
-    msw: {
-      handlers: mswHandlers,
-    },
   },
 
-  addons: [addonDocs(), addonA11y()],
+  addons: [addonDocs(), addonA11y(), addonMsw(mswSetup)],
 })
