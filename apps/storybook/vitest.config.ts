@@ -43,16 +43,6 @@ export default defineConfig({
         ],
         test: {
           name: 'storybook',
-          // Load story files one at a time. Until MSW was removed, its
-          // `worker.start()` awaited service-worker activation on every file
-          // and throttled startup as a side effect (~100s of setup vs ~25s
-          // without). Nothing replaced that, so all 54 files began loading at
-          // once; on a 2-core CI runner the dev server dropped module
-          // requests and the browser reloaded mid-run, surfacing as
-          // "Cannot connect to the iframe" / "Failed to fetch dynamically
-          // imported module" against a different, random story each time.
-          // Passes locally either way — this only bites under CI's core count.
-          fileParallelism: false,
           browser: {
             enabled: true,
             // Vitest 4 requires a factory, not a string.
