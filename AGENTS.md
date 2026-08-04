@@ -375,6 +375,48 @@ Run from the **repo root** unless noted.
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
 
+### Node version — the engine floor
+
+`.npmrc` sets `engine-strict=true`. That applies to **every installed package**,
+not just the workspace ones: any dependency, however deep, whose `engines` field
+excludes the running Node makes `npm ci` fail outright with `EBADENGINE` — it is
+a hard error, not a warning.
+
+So the effective floor is the strictest `engines` range anywhere in the tree,
+which is **`^22.22.2 || >=24.15.0`** (set by `@nswds/tokens` and by
+`@semantic-release/{changelog,git}`). Use `.nvmrc` (24.16.0) and this never
+comes up. CI already does: `pr-checks.yml` and `chromatic.yml` read `.nvmrc`,
+and `release.yml` pins 24.19.0.
+
+Two rules follow, and they pull in opposite directions:
+
+- **Root `package.json` `engines.node` must track that floor.** It is a promise
+  about what `npm ci` accepts, and `engine-strict` makes a too-wide range a lie
+  that fails at install time. It drifted once already: a transitive bump moved
+  the floor while the root still advertised `^22.14.0 || >=24.10.0`, so Node
+  22.14–22.22.1 and 24.10–24.14 were inside the declared range yet could not
+  install.
+- **`packages/ui` `engines.node` must NOT track it.** That is the _published_
+  package, and none of the packages imposing the floor are runtime dependencies
+  of it — `@nswds/tokens` is a devDependency whose values are inlined into
+  `dist/styles.css` at build time. Consumers never install it, so raising the
+  published floor would cut off consumer Node versions for no reason. The
+  asymmetry with the root is deliberate.
+
+When a dependency bump raises the floor, check it before assuming the root range
+still holds. This lists everything in the lockfile that blocks a given Node
+version — silence means the version is installable:
+
+```bash
+node -e 'const l=require("./package-lock.json"),s=require("semver"),v=process.argv[1];for(const[k,p]of Object.entries(l.packages))if(p.engines?.node&&!p.optional&&!s.satisfies(v,p.engines.node))console.log(k||"(root)","->",p.engines.node)' 22.22.2
+```
+
+Run it against both ends of the root range (`22.22.2` and `24.15.0`). The
+`!p.optional` filter matters: platform-specific optional packages like
+`@img/sharp-win32-ia32` declare ranges that exclude the running Node but are
+never installed on this platform, so without it every run reports false
+positives.
+
 ---
 
 ## 6. Publishing & Releases
@@ -545,6 +587,10 @@ verifies registry output freshness instead.)
   don't add an explicit entry that overrides this.
 - **Never change `exports` in `packages/ui/package.json`** without updating the corresponding
   `tsconfig.json` paths and verifying `registry:build` still passes.
+- **Never widen root `engines.node` past the tree's real floor, and never raise
+  `packages/ui`'s to match it.** With `engine-strict=true` the root range is a promise
+  `npm ci` enforces, while `packages/ui`'s range is a constraint on consumers who never
+  install the packages setting that floor. See §5 "Node version — the engine floor".
 
 ---
 
