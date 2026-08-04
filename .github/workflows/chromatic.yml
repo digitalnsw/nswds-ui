@@ -58,7 +58,7 @@ jobs:
 
       - name: Setup Node.js
         if: steps.token.outputs.present == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           # .nvmrc — engine-strict=true needs npm >=11.5.1 (see pr-checks.yml).
           node-version-file: '.nvmrc'
