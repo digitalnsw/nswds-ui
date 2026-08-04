@@ -43,7 +43,7 @@ jobs:
       # satisfies the root engines (npm >=11.5.1) — Node 22.14.0 ships npm
       # 10.9.2, so a 22.x pin here breaks every install.
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
           cache: npm
