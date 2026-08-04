@@ -30,7 +30,6 @@ export default defineConfig({
       // and causes "Vitest failed to find the current suite" errors).
       '@storybook/react-vite',
       '@storybook/addon-a11y',
-      'msw-storybook-addon',
     ],
   },
   test: {
