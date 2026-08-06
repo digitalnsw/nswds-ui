@@ -39,9 +39,10 @@
     "**/*.css"
   ],
   "scripts": {
-    "build": "npm run build:js && npm run build:css",
+    "build": "npm run build:js && npm run build:css && npm run verify:dist",
     "build:css": "tailwindcss -i ./src/styles/package.css -o ./dist/styles.css --minify",
     "build:js": "tsup",
+    "verify:dist": "node scripts/verify-dist.mjs",
     "check:drift": "node scripts/check-component-drift.mjs",
     "check:icons": "node scripts/generate-icons.mjs check",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./postcss.config",
