@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
 
 import { defineConfig } from 'tsup'
@@ -113,13 +113,34 @@ const shared = {
   },
 } satisfies Parameters<typeof defineConfig>[0]
 
+// Clean ONCE, here, rather than via either config's `clean` option.
+//
+// tsup builds an exported array of configs in PARALLEL (`await Promise.all(...)`
+// over the array — tsup 8.5.1, dist/index.js:1494), and `clean` is not scoped to
+// the config that sets it: the dts task deletes `**/*.d.{ts,mts,cts}` across the
+// whole outDir (dist/index.js:1365-1366). So `clean: true` on the core config
+// raced writeIconDeclarations below — whenever the icons' onSuccess landed
+// before the core dts task's clean, all ~3900 icon declarations were deleted
+// while their .js siblings survived, which is precisely what publint reported
+// (`exports["./icons"].types` missing, the matching `import` fine).
+//
+// It passed locally, where the core dts clean happens ~11s before the icons
+// write, and failed on CI where the ordering flips — the worst kind of failure:
+// green on the machine you develop on, red only sometimes on the machine that
+// gates the merge.
+//
+// tsup loads and evaluates this module before starting any build, so cleaning at
+// module scope is ordered before both configs by construction rather than by
+// luck. Do not reintroduce `clean` on either config.
+rmSync('dist', { recursive: true, force: true })
+
 export default defineConfig([
   {
     ...shared,
     entry: coreEntries,
     dts: true,
     sourcemap: true,
-    clean: true,
+    clean: false,
     async onSuccess() {
       restoreUseClientDirectives(coreEntries)
     },
