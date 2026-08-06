@@ -341,8 +341,13 @@ type FooterNavColumnProps = Omit<React.ComponentPropsWithoutRef<'div'>, 'childre
    * footer sits at the top level of the document outline. Step it down if the
    * surrounding page nests the footer under another heading, so the outline
    * stays in order (WCAG 1.3.1).
+   *
+   * The two bounds are not symmetric. `6` is simply the deepest heading HTML
+   * defines. `1` is excluded on purpose: a site-map column title is never the
+   * page's own title, so an `h1` here would be the very outline error the prop
+   * exists to avoid.
    */
-  headingLevel?: 2 | 3 | 4
+  headingLevel?: 2 | 3 | 4 | 5 | 6
   ref?: React.Ref<HTMLDivElement>
 }
 

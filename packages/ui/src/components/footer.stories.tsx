@@ -14,6 +14,8 @@ import {
   FooterAcknowledgement,
   footerColors,
   FooterLegalLinks,
+  FooterNav,
+  FooterNavColumn,
   FooterSmallPrint,
   FooterSocialLink,
 } from './footer.js'
@@ -452,6 +454,48 @@ export const Composed: Story = {
       <FooterSmallPrint department={department} year={year} />
     </Footer>
   ),
+}
+
+const HEADING_LEVELS = [2, 3, 4, 5, 6] as const
+
+export const HeadingLevels: Story = {
+  name: 'Heading levels',
+  // A site map's column titles have to slot into whatever outline the host page
+  // already has, so FooterNavColumn renders h2–h6. h1 is deliberately not
+  // offered: a column title is never the page's own title.
+  render: () => (
+    <Footer color='grey-200' acknowledgement={false} smallPrint={false}>
+      <FooterNav className='lg:grid-cols-6'>
+        {/* First column omits the prop, so the default is covered too. */}
+        <FooterNavColumn heading='Default' links={[{ name: 'Example link', href: '#example' }]} />
+        {HEADING_LEVELS.map((level) => (
+          <FooterNavColumn
+            key={level}
+            heading={`Level ${level}`}
+            headingLevel={level}
+            links={[{ name: 'Example link', href: '#example' }]}
+          />
+        ))}
+      </FooterNav>
+    </Footer>
+  ),
+  play: async ({ canvasElement }) => {
+    const columns = canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer-nav-column"]')
+    // The defaulted column plus one per level.
+    const expected = ['H2', ...HEADING_LEVELS.map((level) => `H${level}`)]
+    if (columns.length !== expected.length) {
+      throw new Error(`Expected ${expected.length} columns, got ${columns.length}.`)
+    }
+
+    expected.forEach((tag, index) => {
+      const actual = columns[index]!.firstElementChild?.tagName
+      if (actual !== tag) {
+        throw new Error(
+          `Expected column ${index} to render <${tag.toLowerCase()}>, got <${actual?.toLowerCase()}>.`,
+        )
+      }
+    })
+  },
 }
 
 export const CssCheck: Story = {

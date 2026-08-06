@@ -63,8 +63,10 @@ type FooterSitemapProps = Omit<React.ComponentProps<typeof Footer>, 'children'> 
  * the legal link row and the copyright line are all still supplied by `Footer`
  * itself — this block only adds the site map.
  *
- * Headings are `h2` by default. If the footer sits under another heading in
- * your page outline, pass `headingLevel` to keep the outline in order.
+ * Headings are `h2`, which is correct when the footer sits at the top level of
+ * the page outline. If your layout nests it deeper, set `headingLevel` on the
+ * `FooterNavColumn` below to keep the outline in order (WCAG 1.3.1) — this is
+ * a copy-and-adapt block, so you own this file after `shadcn add`.
  */
 export function FooterSitemap({
   columns = columnsSample,
