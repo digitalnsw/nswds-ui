@@ -7,9 +7,9 @@
       "name": "theme",
       "type": "registry:theme",
       "title": "NSWDS Theme",
-      "description": "NSW Government semantic design tokens — maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
+      "description": "NSW Government semantic design tokens \u2014 maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
       "dependencies": ["@nswds/tokens"],
-      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically — toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
+      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically \u2014 toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
       "cssVars": {
         "theme": {
           "font-heading": "var(--font-sans)"
@@ -132,7 +132,7 @@
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
-      "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
+      "description": "Form field layout primitives \u2014 set, group, label, description, error, and separator slots.",
       "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -375,6 +375,31 @@
           "path": "src/components/logo.tsx",
           "type": "registry:ui",
           "target": "components/logo.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer",
+      "type": "registry:ui",
+      "title": "Footer",
+      "description": "End-of-page contentinfo landmark with acknowledgement of Country, legal links, ownership and social channels, themeable across 13 token-based surface colours.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/footer.tsx",
+          "type": "registry:ui",
+          "target": "components/footer.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
         }
       ]
     },
@@ -640,7 +665,7 @@
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
-      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -664,7 +689,7 @@
       "name": "sign-up-form",
       "type": "registry:block",
       "title": "Sign-up Form",
-      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -687,7 +712,7 @@
       "name": "forgot-password-form",
       "type": "registry:block",
       "title": "Forgot Password Form",
-      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -701,6 +726,155 @@
           "path": "src/patterns/forgot-password-form.tsx",
           "type": "registry:component",
           "target": "components/forgot-password-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-simple-centred",
+      "type": "registry:block",
+      "title": "Footer \u2014 Simple Centred",
+      "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/logo.json",
+        "{{REGISTRY_LOCATION}}/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-simple-centred.tsx",
+          "type": "registry:component",
+          "target": "components/footer-simple-centred.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-compact",
+      "type": "registry:block",
+      "title": "Footer \u2014 Compact Bar",
+      "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/logo.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-compact.tsx",
+          "type": "registry:component",
+          "target": "components/footer-compact.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-sitemap",
+      "type": "registry:block",
+      "title": "Footer \u2014 Site Map",
+      "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-sitemap.tsx",
+          "type": "registry:component",
+          "target": "components/footer-sitemap.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-sitemap-brand",
+      "type": "registry:block",
+      "title": "Footer \u2014 Site Map with Brand",
+      "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/logo.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-sitemap-brand.tsx",
+          "type": "registry:component",
+          "target": "components/footer-sitemap-brand.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-newsletter",
+      "type": "registry:block",
+      "title": "Footer \u2014 Newsletter",
+      "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/field.json",
+        "{{REGISTRY_LOCATION}}/r/input.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-newsletter.tsx",
+          "type": "registry:component",
+          "target": "components/footer-newsletter.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-contact",
+      "type": "registry:block",
+      "title": "Footer \u2014 Contact Details",
+      "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-contact.tsx",
+          "type": "registry:component",
+          "target": "components/footer-contact.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-cta",
+      "type": "registry:block",
+      "title": "Footer \u2014 Call to Action",
+      "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-cta.tsx",
+          "type": "registry:component",
+          "target": "components/footer-cta.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-accordion",
+      "type": "registry:block",
+      "title": "Footer \u2014 Collapsible Site Map",
+      "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/footer.json",
+        "{{REGISTRY_LOCATION}}/r/collapsible.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-accordion.tsx",
+          "type": "registry:component",
+          "target": "components/footer-accordion.tsx"
         }
       ]
     }
