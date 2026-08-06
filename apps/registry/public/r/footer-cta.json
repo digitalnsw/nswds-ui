@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footer-cta",
+  "title": "Footer — Call to Action",
+  "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
+  "registryDependencies": [
+    "https://nswds-ui-registry.vercel.app/r/theme.json",
+    "https://nswds-ui-registry.vercel.app/r/footer.json",
+    "https://nswds-ui-registry.vercel.app/r/button.json",
+    "https://nswds-ui-registry.vercel.app/r/icons.json"
+  ],
+  "files": [
+    {
+      "path": "src/patterns/footer-cta.tsx",
+      "content": "import type * as React from 'react'\n\nimport { ButtonLink } from '@/components/button'\nimport { Footer, FooterNav, FooterNavColumn } from '@/components/footer'\nimport { IconArrowForward } from '@/icons/arrow-forward'\n\n// ── Sample content — replace with your service's own ────────────────────────\nconst ctaSample = {\n  heading: 'Need help with your application?',\n  description: 'Our team can talk you through the steps and check what you need before you start.',\n  action: { label: 'Contact us', href: '#contact' },\n}\n\nconst columnsSample = [\n  {\n    heading: 'Services',\n    links: [\n      { name: 'Apply for a licence', href: '#licence' },\n      { name: 'Pay a fine', href: '#fine' },\n      { name: 'Book an appointment', href: '#appointment' },\n    ],\n  },\n  {\n    heading: 'About',\n    links: [\n      { name: 'Who we are', href: '#about' },\n      { name: 'Our strategy', href: '#strategy' },\n      { name: 'Careers', href: '#careers' },\n    ],\n  },\n  {\n    heading: 'Help',\n    links: [\n      { name: 'Accessibility help', href: '#accessibility-help' },\n      { name: 'Give feedback', href: '#feedback' },\n      { name: 'Report a problem', href: '#report' },\n    ],\n  },\n]\n\nconst legalLinksSample = [\n  { name: 'Accessibility', href: '#accessibility' },\n  { name: 'Privacy', href: '#privacy' },\n  { name: 'Copyright', href: '#copyright' },\n]\n\nconst departmentSample = 'Digital NSW, Department of Customer Service'\n\n/**\n * Repoints the button's colour tokens at the footer's ink, so the action reads\n * correctly on all thirteen surfaces and in both themes. `outline` rather than\n * `solid` because a solid button needs an inverse text colour, and the footer\n * exposes its ink but not its surface — outline needs only the one token. It is\n * also the right emphasis: the page's primary action belongs above the footer,\n * not in it.\n */\nconst ctaActionClassName = [\n  '[--btn-bg:var(--footer-ink)]',\n  '[--btn-icon:var(--footer-ink)]',\n  '[--btn-hover-overlay:var(--footer-halo)]',\n  '[--btn-active-overlay:var(--footer-halo-active)]',\n].join(' ')\n\ntype FooterCtaProps = Omit<React.ComponentProps<typeof Footer>, 'children'> & {\n  columns?: typeof columnsSample\n  cta?: typeof ctaSample\n}\n\n/**\n * A call-to-action band above the site map, for the one thing you most want\n * people to do when they reach the bottom of the page without converting —\n * usually \"contact us\" or \"start your application\".\n *\n * The band's panel is `--footer-halo` (the ink at 10%), so it lifts off the\n * surface by the same amount on every colour rather than being pinned to one\n * brand value.\n */\nexport function FooterCta({\n  columns = columnsSample,\n  cta = ctaSample,\n  legalLinks = legalLinksSample,\n  department = departmentSample,\n  ...props\n}: FooterCtaProps) {\n  return (\n    <Footer legalLinks={legalLinks} department={department} {...props}>\n      <div className='my-4 flex flex-col gap-4 rounded-sm border border-(--footer-border) bg-(--footer-halo) p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8'>\n        <div className='flex flex-col gap-1'>\n          <h2 className='text-lg font-bold text-pretty text-(--footer-ink)'>{cta.heading}</h2>\n          <p className='text-sm text-pretty text-(--footer-ink)'>{cta.description}</p>\n        </div>\n        <ButtonLink\n          href={cta.action.href}\n          variant='outline'\n          trailingVisual={IconArrowForward}\n          className={`shrink-0 ${ctaActionClassName}`}\n        >\n          {cta.action.label}\n        </ButtonLink>\n      </div>\n      <FooterNav className='lg:grid-cols-3'>\n        {columns.map((column) => (\n          <FooterNavColumn key={column.heading} heading={column.heading} links={column.links} />\n        ))}\n      </FooterNav>\n    </Footer>\n  )\n}\n",
+      "type": "registry:component",
+      "target": "components/footer-cta.tsx"
+    }
+  ],
+  "type": "registry:block",
+  "meta": {
+    "nswdsVersion": "4.1.6"
+  }
+}

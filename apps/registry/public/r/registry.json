@@ -430,6 +430,35 @@
       ]
     },
     {
+      "name": "footer",
+      "type": "registry:ui",
+      "title": "Footer",
+      "description": "End-of-page contentinfo landmark with acknowledgement of Country, legal links, ownership and social channels, themeable across 13 token-based surface colours.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/footer.tsx",
+          "type": "registry:ui",
+          "target": "components/footer.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "masthead",
       "type": "registry:ui",
       "title": "Masthead",
@@ -821,6 +850,155 @@
           "path": "src/patterns/forgot-password-form.tsx",
           "type": "registry:component",
           "target": "components/forgot-password-form.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-simple-centred",
+      "type": "registry:block",
+      "title": "Footer — Simple Centred",
+      "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/logo.json",
+        "https://nswds-ui-registry.vercel.app/r/separator.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-simple-centred.tsx",
+          "type": "registry:component",
+          "target": "components/footer-simple-centred.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-compact",
+      "type": "registry:block",
+      "title": "Footer — Compact Bar",
+      "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/logo.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-compact.tsx",
+          "type": "registry:component",
+          "target": "components/footer-compact.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-sitemap",
+      "type": "registry:block",
+      "title": "Footer — Site Map",
+      "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-sitemap.tsx",
+          "type": "registry:component",
+          "target": "components/footer-sitemap.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-sitemap-brand",
+      "type": "registry:block",
+      "title": "Footer — Site Map with Brand",
+      "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/logo.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-sitemap-brand.tsx",
+          "type": "registry:component",
+          "target": "components/footer-sitemap-brand.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-newsletter",
+      "type": "registry:block",
+      "title": "Footer — Newsletter",
+      "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/field.json",
+        "https://nswds-ui-registry.vercel.app/r/input.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-newsletter.tsx",
+          "type": "registry:component",
+          "target": "components/footer-newsletter.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-contact",
+      "type": "registry:block",
+      "title": "Footer — Contact Details",
+      "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-contact.tsx",
+          "type": "registry:component",
+          "target": "components/footer-contact.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-cta",
+      "type": "registry:block",
+      "title": "Footer — Call to Action",
+      "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-cta.tsx",
+          "type": "registry:component",
+          "target": "components/footer-cta.tsx"
+        }
+      ]
+    },
+    {
+      "name": "footer-accordion",
+      "type": "registry:block",
+      "title": "Footer — Collapsible Site Map",
+      "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/footer.json",
+        "https://nswds-ui-registry.vercel.app/r/collapsible.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/footer-accordion.tsx",
+          "type": "registry:component",
+          "target": "components/footer-accordion.tsx"
         }
       ]
     }

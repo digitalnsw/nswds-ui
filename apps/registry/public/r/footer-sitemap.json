@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footer-sitemap",
+  "title": "Footer — Site Map",
+  "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
+  "registryDependencies": [
+    "https://nswds-ui-registry.vercel.app/r/theme.json",
+    "https://nswds-ui-registry.vercel.app/r/footer.json"
+  ],
+  "files": [
+    {
+      "path": "src/patterns/footer-sitemap.tsx",
+      "content": "import type * as React from 'react'\n\nimport { Footer, FooterNav, FooterNavColumn } from '@/components/footer'\n\n// ── Sample content — replace with your service's own ────────────────────────\nconst columnsSample = [\n  {\n    heading: 'Services',\n    links: [\n      { name: 'Apply for a licence', href: '#licence' },\n      { name: 'Pay a fine', href: '#fine' },\n      { name: 'Book an appointment', href: '#appointment' },\n      { name: 'Check an application', href: '#application' },\n    ],\n  },\n  {\n    heading: 'About',\n    links: [\n      { name: 'Who we are', href: '#about' },\n      { name: 'Our strategy', href: '#strategy' },\n      { name: 'Careers', href: '#careers' },\n      { name: 'News', href: '#news' },\n    ],\n  },\n  {\n    heading: 'Help',\n    links: [\n      { name: 'Contact us', href: '#contact' },\n      { name: 'Accessibility help', href: '#accessibility-help' },\n      { name: 'Give feedback', href: '#feedback' },\n      { name: 'Report a problem', href: '#report' },\n    ],\n  },\n  {\n    heading: 'Popular',\n    links: [\n      { name: 'Service NSW', href: '#service-nsw' },\n      { name: 'Digital NSW', href: '#digital-nsw' },\n      { name: 'Data.NSW', href: '#data-nsw' },\n      { name: 'Have your say', href: '#have-your-say' },\n    ],\n  },\n]\n\nconst legalLinksSample = [\n  { name: 'Accessibility', href: '#accessibility' },\n  { name: 'Privacy', href: '#privacy' },\n  { name: 'Copyright', href: '#copyright' },\n  { name: 'Disclaimer', href: '#disclaimer' },\n]\n\nconst departmentSample = 'Digital NSW, Department of Customer Service'\n\ntype FooterSitemapProps = Omit<React.ComponentProps<typeof Footer>, 'children'> & {\n  columns?: typeof columnsSample\n}\n\n/**\n * Four columns of links above the standard footer. The default choice for a\n * department or agency site with more than a handful of pages.\n *\n * The columns slot into `Footer`'s `children`, so acknowledgement of Country,\n * the legal link row and the copyright line are all still supplied by `Footer`\n * itself — this block only adds the site map.\n *\n * Headings are `h2`, which is correct when the footer sits at the top level of\n * the page outline. If your layout nests it deeper, set `headingLevel` on the\n * `FooterNavColumn` below to keep the outline in order (WCAG 1.3.1) — this is\n * a copy-and-adapt block, so you own this file after `shadcn add`.\n */\nexport function FooterSitemap({\n  columns = columnsSample,\n  legalLinks = legalLinksSample,\n  department = departmentSample,\n  ...props\n}: FooterSitemapProps) {\n  return (\n    <Footer legalLinks={legalLinks} department={department} {...props}>\n      <FooterNav>\n        {columns.map((column) => (\n          <FooterNavColumn key={column.heading} heading={column.heading} links={column.links} />\n        ))}\n      </FooterNav>\n    </Footer>\n  )\n}\n",
+      "type": "registry:component",
+      "target": "components/footer-sitemap.tsx"
+    }
+  ],
+  "type": "registry:block",
+  "meta": {
+    "nswdsVersion": "4.1.6"
+  }
+}

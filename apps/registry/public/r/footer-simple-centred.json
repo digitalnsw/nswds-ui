@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "footer-simple-centred",
+  "title": "Footer — Simple Centred",
+  "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
+  "registryDependencies": [
+    "https://nswds-ui-registry.vercel.app/r/theme.json",
+    "https://nswds-ui-registry.vercel.app/r/footer.json",
+    "https://nswds-ui-registry.vercel.app/r/logo.json",
+    "https://nswds-ui-registry.vercel.app/r/separator.json"
+  ],
+  "files": [
+    {
+      "path": "src/patterns/footer-simple-centred.tsx",
+      "content": "import type * as React from 'react'\n\nimport {\n  Footer,\n  FooterAcknowledgement,\n  FooterLegalLinks,\n  FooterSmallPrint,\n} from '@/components/footer'\nimport { Logo } from '@/components/logo'\nimport { Separator } from '@/components/separator'\n\n// ── Sample content — replace with your service's own ────────────────────────\nconst legalLinksSample = [\n  { name: 'Accessibility', href: '#accessibility' },\n  { name: 'Privacy', href: '#privacy' },\n  { name: 'Copyright', href: '#copyright' },\n  { name: 'Contact us', href: '#contact' },\n]\n\nconst departmentSample = 'Digital NSW, Department of Customer Service'\n\ntype FooterSimpleCentredProps = Omit<\n  React.ComponentProps<typeof Footer>,\n  'acknowledgement' | 'children' | 'smallPrint'\n>\n\n/**\n * Everything centred under the NSW Government logo — the smallest footer that\n * still carries acknowledgement of Country, legal links and ownership. Suits a\n * single-purpose service or campaign site with no site map to show.\n *\n * Composes the parts directly inside a bare `Footer` (rather than using its\n * `legalLinks` prop) because the built-in link row left-aligns from `lg` up,\n * and this layout stays centred at every width.\n *\n * `logoType='default'` is correct for any surface that is light in light mode\n * and dark in dark mode — the logo is blue-800 on light, white on dark. On a\n * surface that is dark in BOTH themes (`-600`/`-800` colours) switch to\n * `logoType='mono-white'`, or the mark disappears into the background.\n */\nexport function FooterSimpleCentred({\n  legalLinks = legalLinksSample,\n  socialLinks,\n  department = departmentSample,\n  year,\n  ...props\n}: FooterSimpleCentredProps) {\n  return (\n    <Footer {...props} acknowledgement={false} smallPrint={false}>\n      <div className='flex justify-center py-4'>\n        <Logo className='h-14 w-auto' />\n      </div>\n      <FooterAcknowledgement className='justify-center'>\n        <span className='mx-auto block max-w-2xl text-center'>\n          We acknowledge the Traditional Custodians of the land on which we work and live, and pay\n          our respects to Elders past, present and emerging.\n        </span>\n      </FooterAcknowledgement>\n      <Separator decorative className='my-4 bg-(--footer-border)' />\n      <FooterLegalLinks legalLinks={legalLinks} className='lg:justify-center' />\n      <FooterSmallPrint\n        department={department}\n        socialLinks={socialLinks}\n        year={year}\n        className='sm:flex-col lg:[&>p]:text-center'\n      />\n    </Footer>\n  )\n}\n",
+      "type": "registry:component",
+      "target": "components/footer-simple-centred.tsx"
+    }
+  ],
+  "type": "registry:block",
+  "meta": {
+    "nswdsVersion": "4.1.6"
+  }
+}
