@@ -459,6 +459,35 @@
       ]
     },
     {
+      "name": "header",
+      "type": "registry:ui",
+      "title": "Header",
+      "description": "Top-of-page banner landmark with brand lockup, site name, version badge and a slot for header controls, in four WCAG 2.2 AAA surface colours.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/badge.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/logo.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/header.tsx",
+          "type": "registry:ui",
+          "target": "components/header.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "masthead",
       "type": "registry:ui",
       "title": "Masthead",
