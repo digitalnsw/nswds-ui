@@ -12,7 +12,28 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
+      // The bare entry does NOT cover subpath imports — each subpath is its
+      // own optimize entry, and one discovered mid-run (a late-collected
+      // story file importing a not-yet-scanned primitive) triggers a Vite
+      // re-optimisation that reloads the tester page: the run then dies with
+      // "Browser connection was closed" on whichever file was executing.
+      // List every subpath packages/ui/src imports (grep @base-ui/react/).
       '@base-ui/react',
+      '@base-ui/react/autocomplete',
+      '@base-ui/react/button',
+      '@base-ui/react/collapsible',
+      '@base-ui/react/dialog',
+      '@base-ui/react/field',
+      '@base-ui/react/input',
+      '@base-ui/react/menu',
+      '@base-ui/react/menubar',
+      '@base-ui/react/navigation-menu',
+      '@base-ui/react/popover',
+      '@base-ui/react/preview-card',
+      '@base-ui/react/scroll-area',
+      '@base-ui/react/separator',
+      '@base-ui/react/tooltip',
+      '@base-ui/react/use-render',
       '@tabler/icons-react',
       'class-variance-authority',
       'clsx',
@@ -53,6 +74,14 @@ export default defineConfig({
           },
           // No setupFiles needed — @storybook/addon-vitest 10.3+ applies
           // preview annotations automatically.
+          //
+          // 30s, not the 15s default: story files run in parallel pages of
+          // one browser, and the heavily interactive plays (navigation
+          // drills, dialog open/close, real transition settles) accumulate
+          // many individually-bounded waits that stretch under that load —
+          // none fails, but the sum can cross 15s and report as a bare
+          // timeout. Genuine hangs still fail, just at 30s.
+          testTimeout: 30_000,
         },
       },
     ],
