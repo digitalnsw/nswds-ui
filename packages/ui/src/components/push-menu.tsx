@@ -284,7 +284,14 @@ function PushMenu({
     }
   }, [])
 
-  React.useEffect(() => {
+  // Layout effect, not a passive one: the same commit that queues a focus
+  // move can also flip the previously-focused element inert (drilling turns
+  // the old level inert; going back turns the departing level inert), and the
+  // browser blurs an element the moment it becomes inert. Applying the new
+  // focus before paint means AT never observes the intermediate
+  // focus-on-body state, and a containing dialog's focus guards (Base UI
+  // Sheet) see focus already inside the popup when their async handlers run.
+  React.useLayoutEffect(() => {
     const pending = pendingFocusRef.current
     if (!pending) {
       return
@@ -306,11 +313,20 @@ function PushMenu({
     // overflow-hidden root; letting focus scroll it into view would desync the
     // container's scroll position from the transform.
     target?.focus({ preventScroll: true })
-  }, [navigationHistory])
+    // animationState is a dependency because back-navigation queues its focus
+    // move on the slide START (an animationState commit), not on the level
+    // pop — see navigateBack.
+  }, [navigationHistory, animationState])
 
   const breadcrumb = React.useMemo(
-    () => generatePushMenuBreadcrumb(navigationHistory),
-    [navigationHistory],
+    // During a back slide the trail already excludes the departing level —
+    // the breadcrumb tracks the level the user is arriving at (see
+    // activeIndex below), same as the live region.
+    () =>
+      generatePushMenuBreadcrumb(
+        animationState === 'sliding-backward' ? navigationHistory.slice(0, -1) : navigationHistory,
+      ),
+    [navigationHistory, animationState],
   )
 
   function navigateToSubmenu(item: PushMenuItem) {
@@ -340,8 +356,14 @@ function PushMenu({
     setIsAnimationStarted(false)
 
     // Two-step start: the new level mounts at translateX(100%) with no
-    // transition, then the next frame flips it to 0 with the transition on.
+    // transition, then flips to 0 with the transition on. The layout read in
+    // between is LOAD-BEARING: without it, nothing forces the browser to
+    // compute styles for the mounted-at-100% frame, and when both states land
+    // in one style recalc there is no transition — the panel snaps into
+    // place instead of sliding (an intermittent, timing-dependent jump).
+    // Reading layout inside the rAF forces that recalc deterministically.
     requestAnimationFrame(() => {
+      containerRef.current?.getBoundingClientRect()
       setIsAnimationStarted(true)
     })
 
@@ -356,21 +378,28 @@ function PushMenu({
     if (navigationHistory.length <= 1 || animationState !== 'idle') {
       return
     }
+    const popped = navigationHistory.at(-1)
+    const revealed = navigationHistory.at(-2)
+    if (!revealed) {
+      return
+    }
+
+    // Focus moves at slide START, symmetric with drilling forward: the
+    // 'sliding-backward' commit un-inerts the revealed level (see the
+    // activeIndex logic below) and the effect above focuses the item that
+    // opened the departing level. Restoring focus at the POP instead — while
+    // focus still sat on the departing level's Back button — meant the
+    // focused node was removed from a live dialog, and Base UI's focus
+    // containment would re-grab focus to the dialog popup a frame after our
+    // restoration, silently overriding it (observed inside Sheet).
+    pendingFocusRef.current = { levelId: revealed.id, itemId: popped?.parentItem?.id }
     setAnimationState('sliding-backward')
 
     timeoutRef.current = window.setTimeout(() => {
-      const popped = navigationHistory.at(-1)
       const newHistory = navigationHistory.slice(0, -1)
-      const revealed = newHistory.at(-1)
-      if (revealed) {
-        // Focus returns to the item that opened the level just left, restored
-        // after the slide settles (the revealed level is inert until this
-        // commit removes the departing one).
-        pendingFocusRef.current = { levelId: revealed.id, itemId: popped?.parentItem?.id }
-        setNavigationHistory(newHistory)
-        setAnimationState('idle')
-        onNavigate?.(revealed, newHistory)
-      }
+      setNavigationHistory(newHistory)
+      setAnimationState('idle')
+      onNavigate?.(revealed, newHistory)
     }, durationMs)
   }
 
@@ -380,6 +409,16 @@ function PushMenu({
   }
 
   const isAnimating = animationState !== 'idle'
+  // The level the user is arriving AT — the stack top, except during a back
+  // slide, where the user's intent has already committed to the level being
+  // revealed underneath. data-current, inert, the live region and the
+  // breadcrumb all follow this index so focus can land on the revealed level
+  // at slide start and AT hears the destination, not the departing level.
+  const activeIndex =
+    animationState === 'sliding-backward'
+      ? navigationHistory.length - 2
+      : navigationHistory.length - 1
+  const activeLevel = navigationHistory[activeIndex] ?? currentLevel
   const HeadingTag = `h${headingLevel}` as const
 
   return (
@@ -417,13 +456,17 @@ function PushMenu({
           titled levels would otherwise announce nothing. Consecutive levels
           always differ in depth, so consecutive announcements always differ. */}
       <div data-slot='push-menu-live-region' aria-live='polite' className='sr-only'>
-        {currentLevel.depth > 1
-          ? `${currentLevel.title}, level ${currentLevel.depth}`
-          : currentLevel.title}
+        {activeLevel.depth > 1
+          ? `${activeLevel.title}, level ${activeLevel.depth}`
+          : activeLevel.title}
       </div>
 
       {navigationHistory.map((level, index) => {
-        const isCurrentLevel = index === navigationHistory.length - 1
+        // The stack top is the level that MOVES (slides in forward, slides
+        // out backward); the active level is the one the user is arriving at
+        // — they differ only during a back slide.
+        const isTopLevel = index === navigationHistory.length - 1
+        const isActiveLevel = index === activeIndex
         // Always shown below the root: the Back button is the ONLY route back
         // (the breadcrumb is aria-hidden and there is no keyboard binding or
         // imperative API), so making it optional would strand users.
@@ -431,15 +474,15 @@ function PushMenu({
 
         let translateX = 0
         if (animationState === 'sliding-forward') {
-          translateX = isCurrentLevel ? (isAnimationStarted ? 0 : 100) : 0
+          translateX = isTopLevel ? (isAnimationStarted ? 0 : 100) : 0
         } else if (animationState === 'sliding-backward') {
-          translateX = isCurrentLevel ? 100 : 0
+          translateX = isTopLevel ? 100 : 0
         }
 
-        // Only the moving (current) level transitions; forward slides wait for
+        // Only the moving (top) level transitions; forward slides wait for
         // the second frame so the mount position is applied untransitioned.
         const isSliding =
-          isCurrentLevel &&
+          isTopLevel &&
           (animationState === 'sliding-backward' ||
             (animationState === 'sliding-forward' && isAnimationStarted))
 
@@ -448,10 +491,13 @@ function PushMenu({
             key={level.id}
             data-slot='push-menu-level'
             data-level-id={level.id}
-            data-current={isCurrentLevel || undefined}
-            // Hidden levels must be invisible to keyboard and AT, not just to
-            // the eye — they sit stacked underneath the current one.
-            inert={!isCurrentLevel}
+            data-current={isActiveLevel || undefined}
+            // Non-active levels must be invisible to keyboard and AT, not
+            // just to the eye. Keying this on the ACTIVE level (not the stack
+            // top) un-inerts the revealed level at back-slide start, so focus
+            // can move there immediately — and the focused Back button is
+            // never removed from a live dialog while still focused.
+            inert={!isActiveLevel}
             className={cn(
               'absolute inset-0 flex h-full w-full flex-col bg-popover will-change-transform',
               isSliding
@@ -496,7 +542,7 @@ function PushMenu({
               )}
             </div>
 
-            {showBreadcrumbs && isCurrentLevel && level.depth > 1 && (
+            {showBreadcrumbs && isActiveLevel && level.depth > 1 && (
               // aria-hidden: the trail repeats what the heading and live
               // region already announce, and "›" separators read poorly in AT.
               <p

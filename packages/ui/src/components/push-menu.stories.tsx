@@ -438,6 +438,45 @@ export const WithinSheet: Story = {
       () => document.querySelector('[data-slot="sheet-content"] [data-slot="push-menu"]') !== null,
       'Expected the PushMenu to render inside the opened Sheet.',
     )
+    const menu = document.querySelector<HTMLElement>('[data-slot="push-menu"]')!
+
+    // Drill in and back INSIDE the dialog, and assert focus ends on the item
+    // that opened the level. Regression test: focus used to be restored at
+    // the level POP, while the focused Back button was being removed — Base
+    // UI's dialog focus containment would then re-grab focus to the sheet
+    // popup a frame later, silently overriding the restoration. Moving the
+    // restoration to the back-slide START (revealed level un-inerted in the
+    // same commit) keeps focus inside the menu the whole way.
+    const branch = document.querySelector<HTMLButtonElement>('[data-item-id="services"]')
+    if (!branch) {
+      throw new Error('Expected the "services" drill-in button inside the sheet.')
+    }
+    branch.click()
+    await waitFor(
+      () => document.activeElement?.getAttribute('data-slot') === 'push-menu-back-button',
+      'Expected focus on the Back button after drilling inside the sheet.',
+    )
+    await waitFor(
+      () => !menu.hasAttribute('data-animating'),
+      'Expected the forward slide to settle before navigating back.',
+    )
+    ;(document.activeElement as HTMLElement).click()
+    await waitFor(
+      () => menu.querySelectorAll('[data-slot="push-menu-level"]').length === 1,
+      'Expected the sub-level to be removed after navigating back inside the sheet.',
+    )
+    // Poll rather than assert once: the old bug stole focus one frame AFTER
+    // restoration, so a single immediate check would pass against it.
+    await waitFor(
+      () => document.activeElement?.getAttribute('data-item-id') === 'services',
+      `Expected focus to stay on the "services" item after going back inside the sheet, got "${document.activeElement?.getAttribute('data-slot') ?? document.activeElement?.tagName}".`,
+    )
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    if (document.activeElement?.getAttribute('data-item-id') !== 'services') {
+      throw new Error(
+        `Expected focus to REMAIN on the "services" item (the dialog stole it), got "${document.activeElement?.getAttribute('data-slot') ?? document.activeElement?.tagName}".`,
+      )
+    }
 
     // The menu's close button closes the drawer.
     const close = document.querySelector<HTMLElement>('[data-slot="push-menu-close-button"]')
