@@ -58,6 +58,6 @@
   "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically — toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
   "type": "registry:theme",
   "meta": {
-    "nswdsVersion": "4.2.0"
+    "nswdsVersion": "4.3.0"
   }
 }

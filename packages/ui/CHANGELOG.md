@@ -1,3 +1,5 @@
+## [4.3.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.2.0...%40nswds%2Fui-v4.3.0) (2026-08-07)
+
 ## [4.2.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.6...%40nswds%2Fui-v4.2.0) (2026-08-06)
 
 ## [4.1.6](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.5...%40nswds%2Fui-v4.1.6) (2026-08-04)
