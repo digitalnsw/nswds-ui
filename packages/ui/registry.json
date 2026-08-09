@@ -272,11 +272,6 @@
           "target": "icons/chevron-right.tsx"
         },
         {
-          "path": "src/icons/circle.tsx",
-          "type": "registry:ui",
-          "target": "icons/circle.tsx"
-        },
-        {
           "path": "src/icons/close.tsx",
           "type": "registry:ui",
           "target": "icons/close.tsx"
@@ -295,11 +290,6 @@
           "path": "src/icons/dark-mode.tsx",
           "type": "registry:ui",
           "target": "icons/dark-mode.tsx"
-        },
-        {
-          "path": "src/icons/dock-to-left.tsx",
-          "type": "registry:ui",
-          "target": "icons/dock-to-left.tsx"
         },
         {
           "path": "src/icons/east.tsx",
@@ -742,38 +732,13 @@
       ]
     },
     {
-      "name": "navigation-menu",
-      "type": "registry:ui",
-      "title": "Navigation Menu",
-      "description": "Styled Base UI navigation-menu parts — list, triggers and popup panels with roving focus, keyboard support and framework-link injection via LinkProvider.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/link.json",
-        "{{REGISTRY_LOCATION}}/r/icons.json"
-      ],
-      "files": [
-        {
-          "path": "src/components/navigation-menu.tsx",
-          "type": "registry:ui",
-          "target": "components/navigation-menu.tsx"
-        },
-        {
-          "path": "src/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "lib/utils.ts"
-        }
-      ]
-    },
-    {
       "name": "main-nav",
       "type": "registry:ui",
       "title": "Main Navigation",
       "description": "The full-width NSW site navigation bar with mega-menu panels, current-page marking and 13 token-based surface colours, built on the navigation-menu component.",
-      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/navigation-menu.json",
         "{{REGISTRY_LOCATION}}/r/link.json",
         "{{REGISTRY_LOCATION}}/r/icons.json"
       ],
@@ -784,27 +749,9 @@
           "target": "components/main-nav.tsx"
         },
         {
-          "path": "src/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "lib/utils.ts"
-        }
-      ]
-    },
-    {
-      "name": "menubar",
-      "type": "registry:ui",
-      "title": "Menubar",
-      "description": "Application menu bar on the Base UI menubar and menu primitives — menus, items, checkbox and radio items, submenus and shortcuts.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/icons.json"
-      ],
-      "files": [
-        {
-          "path": "src/components/menubar.tsx",
+          "path": "src/components/navigation-menu.tsx",
           "type": "registry:ui",
-          "target": "components/menubar.tsx"
+          "target": "components/navigation-menu.tsx"
         },
         {
           "path": "src/lib/utils.ts",
@@ -920,61 +867,6 @@
           "path": "src/components/push-menu.tsx",
           "type": "registry:ui",
           "target": "components/push-menu.tsx"
-        },
-        {
-          "path": "src/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "lib/utils.ts"
-        }
-      ]
-    },
-    {
-      "name": "skeleton",
-      "type": "registry:ui",
-      "title": "Skeleton",
-      "description": "Loading placeholder block with a pulse animation.",
-      "dependencies": ["clsx", "tailwind-merge"],
-      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
-      "files": [
-        {
-          "path": "src/components/skeleton.tsx",
-          "type": "registry:ui",
-          "target": "components/skeleton.tsx"
-        },
-        {
-          "path": "src/lib/utils.ts",
-          "type": "registry:lib",
-          "target": "lib/utils.ts"
-        }
-      ]
-    },
-    {
-      "name": "sidebar",
-      "type": "registry:ui",
-      "title": "Sidebar",
-      "description": "Composable application-shell sidebar — provider with persisted state and keyboard shortcut, offcanvas/icon collapsing, floating and inset variants, and a mobile sheet takeover.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
-      "registryDependencies": [
-        "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/button.json",
-        "{{REGISTRY_LOCATION}}/r/input.json",
-        "{{REGISTRY_LOCATION}}/r/link.json",
-        "{{REGISTRY_LOCATION}}/r/separator.json",
-        "{{REGISTRY_LOCATION}}/r/sheet.json",
-        "{{REGISTRY_LOCATION}}/r/skeleton.json",
-        "{{REGISTRY_LOCATION}}/r/tooltip.json",
-        "{{REGISTRY_LOCATION}}/r/icons.json"
-      ],
-      "files": [
-        {
-          "path": "src/components/sidebar.tsx",
-          "type": "registry:ui",
-          "target": "components/sidebar.tsx"
-        },
-        {
-          "path": "src/hooks/use-is-mobile.ts",
-          "type": "registry:hook",
-          "target": "hooks/use-is-mobile.ts"
         },
         {
           "path": "src/lib/utils.ts",

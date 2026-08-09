@@ -92,6 +92,18 @@ type NavigationMenuProps = Omit<NavigationMenuPrimitive.Root.Props, 'className'>
  * Top-level navigation menu — a menubar of triggers whose panels open into one
  * shared, animated popup.
  *
+ * INTERNAL to MainNav — not exported from the package barrel, not a registry
+ * item, no stories. It began as a public generic wrapper but was pulled from
+ * the public API: bare primitive wrappers are not the nswds-ui style (the
+ * design system publishes NSW-branded components, not shadcn-alikes), and
+ * MainNav is the supported way to get this behaviour. The file ships inside
+ * the main-nav registry item, and the module remains reachable through the
+ * package's undocumented `components/navigation-menu` export subpath purely
+ * as a build artefact — treat that as private API with no stability promise.
+ * (The package name is deliberately not written out here: this comment ships
+ * in registry content, and the alias-leak guard rejects any occurrence of the
+ * package-prefixed import form.)
+ *
  * Consumers only write `List > Item > (Trigger + Content)` pairs; the popup
  * plumbing Base UI requires (Portal → Positioner → Popup → Viewport, rendered
  * once at root level, into which every `Content` teleports) is composed here so
