@@ -4,15 +4,35 @@
 
 * **ui:** add navigation suite — eight components and a mobile-nav block ([#91](https://github.com/digitalnsw/nswds-ui/issues/91)) ([1376ced](https://github.com/digitalnsw/nswds-ui/commit/1376ced824170a3dd0050c177fad65c60da14dc7))
 
-## [4.3.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.2.0...%40nswds%2Fui-v4.3.0) (2026-08-07)
+## [4.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.2.0...@nswds/ui-v4.3.0) (2026-08-07)
 
-## [4.2.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.6...%40nswds%2Fui-v4.2.0) (2026-08-06)
+### Features
 
-## [4.1.6](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.5...%40nswds%2Fui-v4.1.6) (2026-08-04)
+* **ui:** add Header component ([#90](https://github.com/digitalnsw/nswds-ui/issues/90)) ([711a0a3](https://github.com/digitalnsw/nswds-ui/commit/711a0a3d4bc061aec78fa9362759c829ee33d89f))
 
-## [4.1.5](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.4...%40nswds%2Fui-v4.1.5) (2026-08-04)
+## [4.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.6...@nswds/ui-v4.2.0) (2026-08-06)
 
-## [4.1.4](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.3...%40nswds%2Fui-v4.1.4) (2026-08-04)
+### Features
+
+* **ui:** add Footer component and eight footer blocks ([#88](https://github.com/digitalnsw/nswds-ui/issues/88)) ([700f63d](https://github.com/digitalnsw/nswds-ui/commit/700f63d1fb5cf3aa6d239f169c3bd422d9c792a6))
+
+## [4.1.6](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.5...@nswds/ui-v4.1.6) (2026-08-04)
+
+### Bug Fixes
+
+* **deps:** update semantic-release monorepo (major) ([#77](https://github.com/digitalnsw/nswds-ui/issues/77)) ([7e949b9](https://github.com/digitalnsw/nswds-ui/commit/7e949b91107be35b489a731427fe1757008e89b6))
+
+## [4.1.5](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.4...@nswds/ui-v4.1.5) (2026-08-04)
+
+### Bug Fixes
+
+* **deps:** update dependency @nswds/tokens to v4 ([#76](https://github.com/digitalnsw/nswds-ui/issues/76)) ([581a528](https://github.com/digitalnsw/nswds-ui/commit/581a528153c9ac621f28339abf174430ec72474c))
+
+## [4.1.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.3...@nswds/ui-v4.1.4) (2026-08-04)
+
+### Bug Fixes
+
+* **deps:** update dependency prettier-plugin-tailwindcss to ^0.8.0 ([#71](https://github.com/digitalnsw/nswds-ui/issues/71)) ([03375f7](https://github.com/digitalnsw/nswds-ui/commit/03375f78e008909e01fc0448acf2bdf47c4839d8))
 
 ## [4.1.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.1.2...@nswds/ui-v4.1.3) (2026-08-04)
 
