@@ -373,6 +373,7 @@ Run from the **repo root** unless noted.
 | Check component drift   | `npm run check:drift -w @nswds/ui`                            |
 | Check icons parity      | `npm run check:icons -w @nswds/ui`                            |
 | Check published package | `npm run check:package -w @nswds/ui`                          |
+| Test consumer fixture   | `./scripts/test-consumer-fixture.sh`                          |
 | Build registry JSON     | `npm run registry:build`                                      |
 | Validate registry.json  | `npm run registry:validate`                                   |
 | Run Storybook tests     | `npm run test -w @workspace/storybook`                        |
@@ -384,9 +385,10 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:drift`, `check:icons`, `build -w @nswds/ui`,
-`check:package`, a registry-freshness rebuild, and the Storybook suite. The four
-middle ones are easy to miss locally, and each fails for a reason the usual trio
-cannot see:
+`check:package`, `scripts/test-consumer-fixture.sh`, a registry-freshness
+rebuild, a Playwright Chromium install, and the Storybook suite. The five middle
+ones are easy to miss locally, and each fails for a reason the usual trio cannot
+see:
 
 - **`format:check`** is `prettier --check .` over the **whole repo**. A
   path-scoped `npx prettier --check packages/ui/src` passes while an unformatted
@@ -406,6 +408,13 @@ cannot see:
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.
+- **`scripts/test-consumer-fixture.sh`** is the only gate with **no npm script**,
+  so it is invisible from `package.json` — run it by path. It packs the tarball,
+  cold-installs it into `fixtures/consumer`, then runs `tsc --noEmit`,
+  `vite build`, and asserts that an imported icon reaches the bundle, an
+  unimported one does not (tree-shaking), and the compiled stylesheet shipped.
+  Build `@nswds/ui` first. It is not redundant with `check:package`: that
+  validates the package's _shape_, this exercises it as a consumer receives it.
 
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.
