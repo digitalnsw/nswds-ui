@@ -1,3 +1,9 @@
+## [4.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.3.0...@nswds/ui-v4.4.0) (2026-08-10)
+
+### Features
+
+* **ui:** add navigation suite — eight components and a mobile-nav block ([#91](https://github.com/digitalnsw/nswds-ui/issues/91)) ([1376ced](https://github.com/digitalnsw/nswds-ui/commit/1376ced824170a3dd0050c177fad65c60da14dc7))
+
 ## [4.3.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.2.0...%40nswds%2Fui-v4.3.0) (2026-08-07)
 
 ## [4.2.0](https://github.com/digitalnsw/nswds-ui/compare/%40nswds%2Fui-v4.1.6...%40nswds%2Fui-v4.2.0) (2026-08-06)
