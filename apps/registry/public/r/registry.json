@@ -303,6 +303,16 @@
           "target": "icons/arrow-forward.tsx"
         },
         {
+          "path": "src/icons/check.tsx",
+          "type": "registry:ui",
+          "target": "icons/check.tsx"
+        },
+        {
+          "path": "src/icons/chevron-right.tsx",
+          "type": "registry:ui",
+          "target": "icons/chevron-right.tsx"
+        },
+        {
           "path": "src/icons/close.tsx",
           "type": "registry:ui",
           "target": "icons/close.tsx"
@@ -318,9 +328,19 @@
           "target": "icons/colors.tsx"
         },
         {
+          "path": "src/icons/dark-mode.tsx",
+          "type": "registry:ui",
+          "target": "icons/dark-mode.tsx"
+        },
+        {
           "path": "src/icons/east.tsx",
           "type": "registry:ui",
           "target": "icons/east.tsx"
+        },
+        {
+          "path": "src/icons/error.tsx",
+          "type": "registry:ui",
+          "target": "icons/error.tsx"
         },
         {
           "path": "src/icons/expand-more.tsx",
@@ -333,6 +353,16 @@
           "target": "icons/key.tsx"
         },
         {
+          "path": "src/icons/keyboard-arrow-down.tsx",
+          "type": "registry:ui",
+          "target": "icons/keyboard-arrow-down.tsx"
+        },
+        {
+          "path": "src/icons/light-mode.tsx",
+          "type": "registry:ui",
+          "target": "icons/light-mode.tsx"
+        },
+        {
           "path": "src/icons/login.tsx",
           "type": "registry:ui",
           "target": "icons/login.tsx"
@@ -341,6 +371,11 @@
           "path": "src/icons/mail.tsx",
           "type": "registry:ui",
           "target": "icons/mail.tsx"
+        },
+        {
+          "path": "src/icons/menu.tsx",
+          "type": "registry:ui",
+          "target": "icons/menu.tsx"
         },
         {
           "path": "src/icons/more-horiz.tsx",
@@ -368,6 +403,11 @@
           "target": "icons/person-add.tsx"
         },
         {
+          "path": "src/icons/remove.tsx",
+          "type": "registry:ui",
+          "target": "icons/remove.tsx"
+        },
+        {
           "path": "src/icons/search.tsx",
           "type": "registry:ui",
           "target": "icons/search.tsx"
@@ -376,6 +416,11 @@
           "path": "src/icons/shapes.tsx",
           "type": "registry:ui",
           "target": "icons/shapes.tsx"
+        },
+        {
+          "path": "src/icons/west.tsx",
+          "type": "registry:ui",
+          "target": "icons/west.tsx"
         },
         {
           "path": "src/icons/widgets.tsx",
@@ -815,6 +860,197 @@
       ]
     },
     {
+      "name": "main-nav",
+      "type": "registry:ui",
+      "title": "Main Navigation",
+      "description": "The full-width NSW site navigation bar with mega-menu panels, current-page marking and 13 token-based surface colours, built on the navigation-menu component.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/main-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/main-nav.tsx"
+        },
+        {
+          "path": "src/components/navigation-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/navigation-menu.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "side-nav",
+      "type": "registry:ui",
+      "title": "Side Navigation",
+      "description": "Vertical section navigation with arbitrary collapsible nesting, current-page marking and auto-expansion of the active branch.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/collapsible.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/side-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/side-nav.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "step-indicator",
+      "type": "registry:ui",
+      "title": "Step Indicator",
+      "description": "Ordered multi-step progress list with status markers (completed, saved, in progress, error, cannot start) and an aria-current step, plus a sectioned StepNav wrapper.",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/step-indicator.tsx",
+          "type": "registry:ui",
+          "target": "components/step-indicator.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "expandable-search",
+      "type": "registry:ui",
+      "title": "Expandable Search",
+      "description": "A 48px search button that expands into a text field on focus, with ink-derived surface colours matching the footer palette.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/expandable-search.tsx",
+          "type": "registry:ui",
+          "target": "components/expandable-search.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "theme-switcher",
+      "type": "registry:ui",
+      "title": "Theme Switcher",
+      "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/theme-switcher.tsx",
+          "type": "registry:ui",
+          "target": "components/theme-switcher.tsx"
+        }
+      ]
+    },
+    {
+      "name": "push-menu",
+      "type": "registry:ui",
+      "title": "Push Menu",
+      "description": "Multi-level drill-down navigation menu with slide transitions, focus management and inert parked levels, for mobile drawers.",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/link.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/push-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/push-menu.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "site-search",
+      "type": "registry:ui",
+      "title": "Site Search",
+      "description": "Cmd/Ctrl-K site search palette on the Base UI autocomplete and dialog primitives — grouped results, keyboard filtering and an onSelect callback for framework routing.",
+      "dependencies": [
+        "@base-ui/react",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/site-search.tsx",
+          "type": "registry:ui",
+          "target": "components/site-search.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
@@ -1028,6 +1264,26 @@
           "path": "src/patterns/footer-accordion.tsx",
           "type": "registry:component",
           "target": "components/footer-accordion.tsx"
+        }
+      ]
+    },
+    {
+      "name": "mobile-nav",
+      "type": "registry:block",
+      "title": "Mobile Navigation Drawer",
+      "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
+      "registryDependencies": [
+        "https://nswds-ui-registry.vercel.app/r/theme.json",
+        "https://nswds-ui-registry.vercel.app/r/button.json",
+        "https://nswds-ui-registry.vercel.app/r/sheet.json",
+        "https://nswds-ui-registry.vercel.app/r/push-menu.json",
+        "https://nswds-ui-registry.vercel.app/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/mobile-nav.tsx",
+          "type": "registry:component",
+          "target": "components/mobile-nav.tsx"
         }
       ]
     }
