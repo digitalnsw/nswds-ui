@@ -44,6 +44,10 @@ Registry: https://nswds-ui-registry.vercel.app
 
 **Upgrading from 1.x:** see [docs/migrating-to-v2.md](docs/migrating-to-v2.md).
 
+**Working out what changed between versions:** see
+[docs/release-notes.md](docs/release-notes.md). Note that 4.1.4 through 4.3.0 have empty
+release notes; that page explains how to reconstruct the changes for those versions.
+
 ## Developing the system
 
 See [AGENTS.md](AGENTS.md) for architecture, conventions, how to add a component, and the
