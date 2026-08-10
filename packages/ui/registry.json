@@ -7,9 +7,9 @@
       "name": "theme",
       "type": "registry:theme",
       "title": "NSWDS Theme",
-      "description": "NSW Government semantic design tokens \u2014 maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
+      "description": "NSW Government semantic design tokens — maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
       "dependencies": ["@nswds/tokens"],
-      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically \u2014 toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
+      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically — toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
       "cssVars": {
         "theme": {
           "font-heading": "var(--font-sans)"
@@ -132,7 +132,7 @@
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
-      "description": "Form field layout primitives \u2014 set, group, label, description, error, and separator slots.",
+      "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
       "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -262,6 +262,16 @@
           "target": "icons/arrow-forward.tsx"
         },
         {
+          "path": "src/icons/check.tsx",
+          "type": "registry:ui",
+          "target": "icons/check.tsx"
+        },
+        {
+          "path": "src/icons/chevron-right.tsx",
+          "type": "registry:ui",
+          "target": "icons/chevron-right.tsx"
+        },
+        {
           "path": "src/icons/close.tsx",
           "type": "registry:ui",
           "target": "icons/close.tsx"
@@ -277,9 +287,19 @@
           "target": "icons/colors.tsx"
         },
         {
+          "path": "src/icons/dark-mode.tsx",
+          "type": "registry:ui",
+          "target": "icons/dark-mode.tsx"
+        },
+        {
           "path": "src/icons/east.tsx",
           "type": "registry:ui",
           "target": "icons/east.tsx"
+        },
+        {
+          "path": "src/icons/error.tsx",
+          "type": "registry:ui",
+          "target": "icons/error.tsx"
         },
         {
           "path": "src/icons/expand-more.tsx",
@@ -292,6 +312,16 @@
           "target": "icons/key.tsx"
         },
         {
+          "path": "src/icons/keyboard-arrow-down.tsx",
+          "type": "registry:ui",
+          "target": "icons/keyboard-arrow-down.tsx"
+        },
+        {
+          "path": "src/icons/light-mode.tsx",
+          "type": "registry:ui",
+          "target": "icons/light-mode.tsx"
+        },
+        {
           "path": "src/icons/login.tsx",
           "type": "registry:ui",
           "target": "icons/login.tsx"
@@ -300,6 +330,11 @@
           "path": "src/icons/mail.tsx",
           "type": "registry:ui",
           "target": "icons/mail.tsx"
+        },
+        {
+          "path": "src/icons/menu.tsx",
+          "type": "registry:ui",
+          "target": "icons/menu.tsx"
         },
         {
           "path": "src/icons/more-horiz.tsx",
@@ -327,6 +362,11 @@
           "target": "icons/person-add.tsx"
         },
         {
+          "path": "src/icons/remove.tsx",
+          "type": "registry:ui",
+          "target": "icons/remove.tsx"
+        },
+        {
           "path": "src/icons/search.tsx",
           "type": "registry:ui",
           "target": "icons/search.tsx"
@@ -335,6 +375,11 @@
           "path": "src/icons/shapes.tsx",
           "type": "registry:ui",
           "target": "icons/shapes.tsx"
+        },
+        {
+          "path": "src/icons/west.tsx",
+          "type": "registry:ui",
+          "target": "icons/west.tsx"
         },
         {
           "path": "src/icons/widgets.tsx",
@@ -687,10 +732,178 @@
       ]
     },
     {
+      "name": "main-nav",
+      "type": "registry:ui",
+      "title": "Main Navigation",
+      "description": "The full-width NSW site navigation bar with mega-menu panels, current-page marking and 13 token-based surface colours, built on the navigation-menu component.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/main-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/main-nav.tsx"
+        },
+        {
+          "path": "src/components/navigation-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/navigation-menu.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "side-nav",
+      "type": "registry:ui",
+      "title": "Side Navigation",
+      "description": "Vertical section navigation with arbitrary collapsible nesting, current-page marking and auto-expansion of the active branch.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/collapsible.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/side-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/side-nav.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "step-indicator",
+      "type": "registry:ui",
+      "title": "Step Indicator",
+      "description": "Ordered multi-step progress list with status markers (completed, saved, in progress, error, cannot start) and an aria-current step, plus a sectioned StepNav wrapper.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/step-indicator.tsx",
+          "type": "registry:ui",
+          "target": "components/step-indicator.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "expandable-search",
+      "type": "registry:ui",
+      "title": "Expandable Search",
+      "description": "A 48px search button that expands into a text field on focus, with ink-derived surface colours matching the footer palette.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/expandable-search.tsx",
+          "type": "registry:ui",
+          "target": "components/expandable-search.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "theme-switcher",
+      "type": "registry:ui",
+      "title": "Theme Switcher",
+      "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/theme-switcher.tsx",
+          "type": "registry:ui",
+          "target": "components/theme-switcher.tsx"
+        }
+      ]
+    },
+    {
+      "name": "push-menu",
+      "type": "registry:ui",
+      "title": "Push Menu",
+      "description": "Multi-level drill-down navigation menu with slide transitions, focus management and inert parked levels, for mobile drawers.",
+      "dependencies": ["clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/push-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/push-menu.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "site-search",
+      "type": "registry:ui",
+      "title": "Site Search",
+      "description": "Cmd/Ctrl-K site search palette on the Base UI autocomplete and dialog primitives — grouped results, keyboard filtering and an onSelect callback for framework routing.",
+      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/site-search.tsx",
+          "type": "registry:ui",
+          "target": "components/site-search.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
-      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
+      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -714,7 +927,7 @@
       "name": "sign-up-form",
       "type": "registry:block",
       "title": "Sign-up Form",
-      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
+      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -737,7 +950,7 @@
       "name": "forgot-password-form",
       "type": "registry:block",
       "title": "Forgot Password Form",
-      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
+      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -757,7 +970,7 @@
     {
       "name": "footer-simple-centred",
       "type": "registry:block",
-      "title": "Footer \u2014 Simple Centred",
+      "title": "Footer — Simple Centred",
       "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -776,7 +989,7 @@
     {
       "name": "footer-compact",
       "type": "registry:block",
-      "title": "Footer \u2014 Compact Bar",
+      "title": "Footer — Compact Bar",
       "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -794,7 +1007,7 @@
     {
       "name": "footer-sitemap",
       "type": "registry:block",
-      "title": "Footer \u2014 Site Map",
+      "title": "Footer — Site Map",
       "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -811,7 +1024,7 @@
     {
       "name": "footer-sitemap-brand",
       "type": "registry:block",
-      "title": "Footer \u2014 Site Map with Brand",
+      "title": "Footer — Site Map with Brand",
       "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -829,7 +1042,7 @@
     {
       "name": "footer-newsletter",
       "type": "registry:block",
-      "title": "Footer \u2014 Newsletter",
+      "title": "Footer — Newsletter",
       "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -850,7 +1063,7 @@
     {
       "name": "footer-contact",
       "type": "registry:block",
-      "title": "Footer \u2014 Contact Details",
+      "title": "Footer — Contact Details",
       "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -868,7 +1081,7 @@
     {
       "name": "footer-cta",
       "type": "registry:block",
-      "title": "Footer \u2014 Call to Action",
+      "title": "Footer — Call to Action",
       "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -887,7 +1100,7 @@
     {
       "name": "footer-accordion",
       "type": "registry:block",
-      "title": "Footer \u2014 Collapsible Site Map",
+      "title": "Footer — Collapsible Site Map",
       "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -900,6 +1113,26 @@
           "path": "src/patterns/footer-accordion.tsx",
           "type": "registry:component",
           "target": "components/footer-accordion.tsx"
+        }
+      ]
+    },
+    {
+      "name": "mobile-nav",
+      "type": "registry:block",
+      "title": "Mobile Navigation Drawer",
+      "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/sheet.json",
+        "{{REGISTRY_LOCATION}}/r/push-menu.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/mobile-nav.tsx",
+          "type": "registry:component",
+          "target": "components/mobile-nav.tsx"
         }
       ]
     }
