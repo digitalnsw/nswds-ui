@@ -3,6 +3,12 @@
 //   src/components/  — every component must ship on BOTH channels: exported
 //                      from src/index.ts (npm) and registered in registry.json
 //                      (shadcn), unless explicitly allowlisted as internal.
+//                      An internal component has no public API of its own: it
+//                      is absent from the barrel and owns no registry item. It
+//                      MAY still ship as a supporting file inside another
+//                      component's item — a registry consumer copies source,
+//                      so a public component's internal building block has to
+//                      travel with it or the copy will not compile.
 //   src/patterns/    — registry-only worked examples (e.g. the form patterns).
 //                      Each must be registered in registry.json as a block and
 //                      must NOT be exported from src/index.ts (they ship only
@@ -17,7 +23,14 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 // Intentionally internal files in src/components/. Add an entry ONLY with a
 // reason. (The form patterns are no longer here — they live in src/patterns/
 // and ship as registry blocks.)
-const INTERNAL = new Set([])
+const INTERNAL = new Set([
+  // Base UI navigation-menu wrapper, the building block MainNav composes. Not
+  // public API: bare primitive wrappers are not the nswds-ui style, and MainNav
+  // is the supported way to get this behaviour. It ships to registry consumers
+  // as a supporting file of the main-nav item, because their copy of MainNav
+  // imports it.
+  'navigation-menu',
+])
 
 function sourceNames(dir) {
   if (!existsSync(dir)) {
@@ -53,6 +66,19 @@ for (const item of registry.items) {
 const registryFiles = new Set(itemTypesByFile.keys())
 const registeredAs = (path, type) => itemTypesByFile.get(path)?.has(type) ?? false
 
+// A file "owns" an item when it is that item's primary (first) file — the
+// component the item exists to deliver. Supporting files listed after it
+// (src/lib/utils.ts, an internal building block) do not own the item. This is
+// what separates a public component from an internal one that merely travels
+// with a public sibling, so it is checked by position rather than by item name.
+const ownedItemNames = new Map()
+for (const item of registry.items) {
+  const primary = item.files?.[0]?.path
+  if (primary) {
+    ownedItemNames.set(primary, item.name)
+  }
+}
+
 const problems = []
 
 // Components: shipped on both channels unless allowlisted internal.
@@ -87,16 +113,30 @@ for (const pattern of patterns) {
   }
 }
 
-// Inverse direction: allowlisted internals must not leak into a channel.
+// Inverse direction: allowlisted internals must not acquire a public API.
 for (const component of INTERNAL) {
+  const path = `src/components/${component}.tsx`
+
   if (indexSource.includes(`./components/${component}.js`)) {
     problems.push(
       `${component} is allowlisted as internal but exported from src/index.ts — remove it from INTERNAL in scripts/check-component-drift.mjs`,
     )
   }
-  if (registryFiles.has(`src/components/${component}.tsx`)) {
+
+  // Owning an item is the leak; being a supporting file of someone else's is
+  // the intended way an internal building block reaches registry consumers.
+  const owns = ownedItemNames.get(path)
+  if (owns !== undefined) {
     problems.push(
-      `${component} is allowlisted as internal but registered in registry.json — remove it from INTERNAL in scripts/check-component-drift.mjs`,
+      `${component} is allowlisted as internal but owns the "${owns}" registry item — internals may only ship as a supporting file of another item, so either drop that item or remove ${component} from INTERNAL in scripts/check-component-drift.mjs`,
+    )
+  }
+
+  // An internal component nothing ships is dead weight: unreachable on npm
+  // (no barrel export) and absent from every registry item.
+  if (!registryFiles.has(path)) {
+    problems.push(
+      `${component} is allowlisted as internal but ships nowhere — no registry item includes ${path}, and it is not exported from src/index.ts, so no consumer can reach it`,
     )
   }
 }
