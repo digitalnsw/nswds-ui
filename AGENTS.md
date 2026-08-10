@@ -434,6 +434,11 @@ Conventional Commits drive the release. Allowed types (from `git-conventional-co
 
 Use `npm run commit` (runs `scripts/git-commit.sh`) for interactive commit message building.
 
+How the notes body is rendered from those commits — and the root
+`conventional-changelog-conventionalcommits` pin that must not move to a v10, or every
+release silently ships blank notes — is in
+[docs/release-notes.md](docs/release-notes.md).
+
 **Visual/token changes must ship a release.** Anything under `packages/ui/src/styles/**`
 (theme tokens, the `globals.css`/`package.css` entries) changes what every consumer renders,
 so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/retuned token, and a
