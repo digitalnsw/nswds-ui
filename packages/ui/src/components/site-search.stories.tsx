@@ -336,6 +336,9 @@ export const EmptyState: Story = {
 export const CustomTrigger: Story = {
   name: 'Custom trigger',
   args: {
+    // A text trigger is the composable path — the element owns its accessible
+    // name. `label` still names the panel and input, but must NOT reach here.
+    label: 'Search documentation',
     trigger: (
       <Button variant='outline' color='primary'>
         Search this site
@@ -344,14 +347,28 @@ export const CustomTrigger: Story = {
   },
   play: async ({ canvasElement }) => {
     const trigger = getTrigger(canvasElement)
+    if (trigger.dataset.slot !== 'site-search-trigger') {
+      throw new Error('Expected the custom trigger element to carry the trigger data-slot.')
+    }
     if (!trigger.textContent?.includes('Search this site')) {
       throw new Error('Expected the custom trigger element to render its own label.')
     }
     if (trigger.getAttribute('aria-haspopup') !== 'dialog') {
       throw new Error('Expected the custom trigger to inherit the dialog trigger ARIA.')
     }
+    // The default icon button's `aria-label={label}` must not be applied to a
+    // custom trigger — doing so would replace "Search this site" as the
+    // accessible name (WCAG 2.2, 2.5.3 Label in Name).
+    if (trigger.hasAttribute('aria-label')) {
+      throw new Error(
+        `Expected no aria-label on the custom trigger, got "${trigger.getAttribute('aria-label')}".`,
+      )
+    }
 
     await openPalette(canvasElement)
+    if (getPanel()!.getAttribute('aria-label') !== 'Search documentation') {
+      throw new Error('Expected `label` to still name the panel when a custom trigger is passed.')
+    }
     await closePalette()
   },
 }

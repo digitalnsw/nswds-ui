@@ -58,12 +58,20 @@ type SiteSearchProps = {
   emptyMessage?: string
   /**
    * The element that opens the palette. Defaults to a ghost icon `Button`
-   * named by `label`. Pass an element to replace it (it is composed via
-   * Base UI's `render` prop, so it inherits the trigger behaviour and ARIA);
-   * pass `null` to render no trigger at all (open via `open` or the shortcut).
-   * A non-element node (e.g. a string) becomes the label of the default button.
+   * named by `label`. Pass an element to replace it — it is composed via Base
+   * UI's `render` prop, so it inherits the trigger behaviour and ARIA — or
+   * `null` to render no trigger at all (open via `open` or the shortcut).
+   * A custom trigger owns its own accessible name — `label` is applied as
+   * `aria-label` to the default icon button only, since overriding a visible
+   * label that way fails WCAG 2.2, 2.5.3 Label in Name.
+   *
+   * Conditional triggers must resolve to `null`, not `false`: write
+   * `cond ? <Button/> : null`, since `cond && <Button/>` yields `false`, which
+   * Base UI's `render` prop rejects with an invalid-element error. TypeScript
+   * catches it (`false` is not assignable here); plain-JS consumers see the
+   * error at render.
    */
-  trigger?: React.ReactNode
+  trigger?: React.ReactElement | null
   /**
    * Extra content rendered at the foot of the panel, below the results —
    * e.g. shortcut hints or a "browse all" link.
@@ -227,15 +235,8 @@ function SiteSearch({
 
   return (
     <Dialog.Root open={open} onOpenChange={(next) => requestOpenChange(next)}>
-      {trigger === null ? null : React.isValidElement(trigger) ? (
-        <Dialog.Trigger
-          data-slot='site-search-trigger'
-          render={trigger as React.ReactElement<Record<string, unknown>>}
-        />
-      ) : (
-        <Dialog.Trigger data-slot='site-search-trigger' render={defaultTrigger}>
-          {trigger}
-        </Dialog.Trigger>
+      {trigger === null ? null : (
+        <Dialog.Trigger data-slot='site-search-trigger' render={trigger ?? defaultTrigger} />
       )}
 
       <Dialog.Portal>

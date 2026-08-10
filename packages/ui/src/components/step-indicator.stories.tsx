@@ -1,5 +1,6 @@
 /**
- * StepIndicator — Default + AllStatuses + Current + StepNav + CssCheck
+ * StepIndicator — Default + AllStatuses + DefaultFallback + Current + StepNav
+ * + CssCheck
  *
  * Vertical journey progress list: one link per step with a status marker and
  * connector line, plus the sectioned StepNav shell (heading + indicator per
@@ -38,11 +39,22 @@ const allStatuses: StepStatus[] = [
   'cannot-start',
 ]
 
-const allStatusSteps: Step[] = allStatuses.map((status) => ({
-  title: status === 'default' ? 'default (no status prop)' : status,
-  href: `#status-${status}`,
-  status,
-}))
+// The 'default' entry omits the `status` key rather than setting it: 'default'
+// is what the component's `step.status ?? 'default'` fallback resolves to, so
+// setting it explicitly here would leave that fallback unexercised — and would
+// make the label a claim the data contradicts.
+const allStatusSteps: Step[] = allStatuses.map((status) =>
+  status === 'default'
+    ? { title: 'default (status omitted)', href: `#status-${status}` }
+    : { title: status, href: `#status-${status}`, status },
+)
+
+// Rendered side by side so the omitted-status step can be compared against a
+// real explicit-'default' step (see the DefaultFallback story).
+const defaultFallbackSteps: Step[] = [
+  { title: 'Status omitted', href: '#fallback-omitted' },
+  { title: 'Status set to default', href: '#fallback-explicit', status: 'default' },
+]
 
 function getIndicator(canvasElement: HTMLElement): HTMLElement {
   const list = canvasElement.querySelector<HTMLElement>('[data-slot="step-indicator"]')
@@ -232,6 +244,71 @@ export const AllStatuses: Story = {
       throw new Error(
         `Expected ${allStatusSteps.length - 1} connectors (none on the last step), found ${connectors.length}.`,
       )
+    }
+  },
+}
+
+export const DefaultFallback: Story = {
+  name: 'Omitted status',
+  args: {
+    steps: defaultFallbackSteps,
+  },
+  play: async ({ canvasElement }) => {
+    const list = getIndicator(canvasElement)
+    const items = list.querySelectorAll<HTMLElement>('[data-slot="step"]')
+    const [omitted, explicit] = [items[0], items[1]]
+    if (!omitted || !explicit) {
+      throw new Error(`Expected 2 step items (omitted + explicit), found ${items.length}.`)
+    }
+
+    if (omitted.getAttribute('data-status') !== 'default') {
+      throw new Error(
+        `Expected a step with no status key to fall back to data-status="default", got "${omitted.getAttribute('data-status')}".`,
+      )
+    }
+
+    const markerOf = (item: HTMLElement) => {
+      const marker = item.querySelector<HTMLElement>('[data-slot="step-marker"]')
+      if (!marker) {
+        throw new Error('Expected every step to render a marker.')
+      }
+      return marker
+    }
+    const omittedMarker = markerOf(omitted)
+    const explicitMarker = markerOf(explicit)
+
+    // Equivalence, not a smoke test: the omitted-status marker is compared
+    // against a live explicit-'default' one rather than a hardcoded class
+    // string, so a restyle moves both sides together and the test still means
+    // "the ?? fallback picked the same treatment".
+    if (omittedMarker.outerHTML !== explicitMarker.outerHTML) {
+      throw new Error(
+        `Expected an omitted status to render the same marker markup as status="default".\n  omitted:  ${omittedMarker.outerHTML}\n  explicit: ${explicitMarker.outerHTML}`,
+      )
+    }
+
+    // …and the same resolved paint — the ink is declared per status on the
+    // <li> and inherited, so matching classes with a mismatched ink would mean
+    // the fallback landed on a different status entry.
+    const ink = (el: HTMLElement) => getComputedStyle(el).getPropertyValue('--step-ink').trim()
+    if (ink(omittedMarker) === '') {
+      throw new Error('Expected the omitted-status marker to inherit a resolved --step-ink.')
+    }
+    if (ink(omittedMarker) !== ink(explicitMarker)) {
+      throw new Error(
+        `Expected the omitted-status --step-ink to match status="default" (${ink(explicitMarker)}), got "${ink(omittedMarker)}".`,
+      )
+    }
+    for (const property of ['backgroundColor', 'borderTopColor'] as const) {
+      const [a, b] = [
+        getComputedStyle(omittedMarker)[property],
+        getComputedStyle(explicitMarker)[property],
+      ]
+      if (a !== b) {
+        throw new Error(
+          `Expected the omitted-status marker's ${property} to match status="default" ("${b}"), got "${a}".`,
+        )
+      }
     }
   },
 }
