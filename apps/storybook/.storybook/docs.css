@@ -1,0 +1,17 @@
+/*
+ * Storybook chrome overrides for docs pages. Loaded from preview.tsx AFTER
+ * `@nswds/ui/globals.css` — see the `docsContainer` comment there for why docs
+ * pages need help at all.
+ *
+ * Storybook paints the docs page frame from its own emotion theme rather than
+ * from our tokens, so the frame stayed white while the content inside it went
+ * dark. Point it at the token and it tracks the `.dark` class — and any
+ * re-themed `--background` — for free. `create()` can't do this: it runs colour
+ * strings through a parser that rejects `var(...)`.
+ *
+ * Two classes (0,2,0) so this outranks the single-class emotion rule it
+ * replaces regardless of which stylesheet the browser sees last.
+ */
+.sbdocs.sbdocs-wrapper {
+  background: var(--background);
+}
