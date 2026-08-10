@@ -13,7 +13,7 @@ import {
 } from '@workspace/theme-tools'
 import addonMsw from 'msw-storybook-addon'
 import { setupWorker } from 'msw/browser'
-import { type PropsWithChildren, useEffect, useState } from 'react'
+import { useEffect, useState, type PropsWithChildren } from 'react'
 
 import './docs.css'
 import { mswHandlers } from './msw-handlers'
