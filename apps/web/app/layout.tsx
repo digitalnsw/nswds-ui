@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from 'next'
+import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
 import { ThemeProvider } from '@/components/theme-provider'
@@ -7,7 +7,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 // apps/** live and emits utilities for the sandbox's own classes.
 import '../../../packages/ui/src/styles/globals.css'
 
-import { siteDescription, siteKeywords, siteName, siteURL } from '@/lib/site_name'
+import { site } from '@/lib/site'
 
 const publicSans = Public_Sans({
   subsets: ['latin'],
@@ -21,69 +21,20 @@ const jetBrainsMono = JetBrains_Mono({
   variable: '--font-mono',
 })
 
-export const metadata: Metadata = {
-  title: {
-    template: `%s | ${siteName}`,
-    default: siteName,
-  },
-  description: siteDescription,
+// Icons come from the app/favicon.ico, app/icon.svg and app/apple-icon.png file
+// conventions. defineSite deliberately emits no `icons` key — setting one does
+// not add to them, it suppresses icon.svg and apple-icon.png while favicon.ico
+// survives, so the failure is partial and easy to miss.
+export const { metadata } = site
 
-  metadataBase: new URL(siteURL),
-
-  keywords: [...siteKeywords],
-
-  icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
-  },
-
-  robots: {
-    index: true,
-    follow: true,
-    nocache: false,
-  },
-
-  alternates: {
-    canonical: '/',
-  },
-
-  openGraph: {
-    title: siteName,
-    description: siteDescription,
-    url: siteURL,
-    siteName: siteName,
-    type: 'website',
-    locale: 'en_AU',
-    images: [
-      {
-        url: 'https://digitalnsw.github.io/images/nsw-gov-logo-primary.png',
-        width: 260,
-        height: 280,
-        alt: 'NSW Government logo',
-      },
-      {
-        url: 'https://digitalnsw.github.io/images/og.png',
-        width: 1200,
-        height: 630,
-        alt: `${siteName} - NSW Government logo on a colour-block background`,
-      },
-    ],
-  },
-
-  twitter: {
-    card: 'summary_large_image',
-    site: '@DigitalNSW',
-    creator: '@DigitalNSW',
-    title: siteName,
-    description: siteDescription,
-    images: ['https://digitalnsw.github.io/images/nsw-gov-logo-primary.png'],
-  },
-}
-
+// The one place this app departs from the fleet default, and it is a spread
+// rather than an option because the package will not accept the media-array
+// form: a manifest's `theme_color` is a bare string with no media equivalent,
+// so an array can never agree with it. This app ships no app/manifest.ts and
+// genuinely has light and dark themes, so there is nothing here to disagree
+// with. Revisit if it ever becomes installable.
 export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
+  ...site.viewport,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#22272b' },
