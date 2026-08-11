@@ -5,7 +5,7 @@ import React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-import { Badge } from '../components/badge.js'
+import { Badge, type BadgeProps } from '../components/badge.js'
 import { Link } from '../components/link.js'
 import { Logo } from '../components/logo.js'
 
@@ -130,6 +130,24 @@ type HeaderBrandProps = React.ComponentPropsWithoutRef<'div'> & {
    */
   versionLabel?: string
   /**
+   * Props forwarded to the version `Badge` — `size`, `color`, `variant`,
+   * `className` and the rest of its API. Use it when the badge has to meet a
+   * house rule the default does not, most often a minimum type size:
+   *
+   * ```tsx
+   * <HeaderBrand version="2.1.0" badgeProps={{ size: 'lg' }} />
+   * ```
+   *
+   * Applied after the defaults below, so anything passed here wins — including
+   * `color`, whose surface-aware default exists to stop the badge painting
+   * itself the same colour as a dark header. Overriding it is the same trade as
+   * supplying your own `logo` node: the contrast is then yours to check.
+   *
+   * `children` is excluded — the badge's content is `version` and
+   * `versionLabel`.
+   */
+  badgeProps?: Omit<BadgeProps, 'children'>
+  /**
    * `true` (default) renders the NSW Government waratah, `false` omits it, and
    * a node replaces it — pass an agency lockup here.
    */
@@ -182,6 +200,7 @@ function HeaderBrand({
   headingLevel,
   version,
   versionLabel = 'Version',
+  badgeProps,
   logo = true,
   label,
   children,
@@ -236,6 +255,7 @@ function HeaderBrand({
           data-slot='header-version'
           variant='soft'
           color={onDarkSurface ? 'white' : 'primary'}
+          {...badgeProps}
         >
           {versionLabel ? <span className='sr-only'>{versionLabel} </span> : null}
           {version}

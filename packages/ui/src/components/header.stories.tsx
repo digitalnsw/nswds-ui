@@ -369,15 +369,18 @@ export const Brand: Story = {
       <Header id='header-brand-no-logo' sticky={false}>
         <HeaderBrand logo={false} sitename='No logo' />
       </Header>
+      <Header id='header-brand-badge-props' sticky={false}>
+        <HeaderBrand sitename='Larger version badge' version='2.1.0' badgeProps={{ size: 'lg' }} />
+      </Header>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const brands = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header-brand"]')
-    if (brands.length !== 5) {
-      throw new Error(`Expected 5 brands, got ${brands.length}.`)
+    if (brands.length !== 6) {
+      throw new Error(`Expected 6 brands, got ${brands.length}.`)
     }
 
-    const [, plain, , heading, noLogo] = brands
+    const [, plain, , heading, noLogo, badgeSized] = brands
 
     // Default: the site name is a span, not a heading — the page's own <h1>
     // belongs to its main content.
@@ -391,6 +394,20 @@ export const Brand: Story = {
     // logo={false} removes the mark and its visually-hidden organisation name.
     if (noLogo!.querySelector('svg')) {
       throw new Error('Expected logo={false} to omit the logo.')
+    }
+
+    // badgeProps reaches the version Badge, and `lg` resolves to 16px at every
+    // viewport — the scale is flat, so this holds whatever width the test runs
+    // at. Both halves matter to a service held to a minimum type size: without
+    // the passthrough the size is unreachable, and before the scale was
+    // flattened `lg` still fell to 14px above 640px.
+    const sized = badgeSized!.querySelector<HTMLElement>('[data-slot="header-version"]')
+    if (!sized) {
+      throw new Error('Expected a version badge in the badgeProps header.')
+    }
+    const fontSize = getComputedStyle(sized).fontSize
+    if (fontSize !== '16px') {
+      throw new Error(`Expected badgeProps={{ size: 'lg' }} to render 16px text, got ${fontSize}.`)
     }
   },
 }
