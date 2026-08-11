@@ -46,6 +46,30 @@ export function Toolbar() {
 }
 ```
 
+### Icons in a React Server Component
+
+Icon slots — `leadingVisual`, `trailingVisual`, `trailingAction`, and `Footer`'s `socialLinks[].icon` — take **either the component or an element**. In a server component, pass the element:
+
+```tsx
+// app/page.tsx — a server component, no 'use client'
+import { ButtonLink } from '@nswds/ui'
+import { IconDownload } from '@nswds/ui/icons'
+
+export default function Page() {
+  return (
+    <ButtonLink href='/report.pdf' leadingVisual={<IconDownload />}>
+      Download
+    </ButtonLink>
+  )
+}
+```
+
+Passing the component itself (`leadingVisual={IconDownload}`) throws there:
+
+> Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server".
+
+`Button`, `ButtonLink` and `FooterSocialLink` are client components; the icon modules deliberately are not, so they stay server-renderable and a `<IconDownload />` on a server page ships no JavaScript. That means a bare icon function is just a function value, and functions do not serialise across the RSC boundary — an element does. Client components ("use client") can use either form.
+
 ### Dark mode
 
 Toggle the `dark` class on a root element (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). The semantic tokens remap automatically.

@@ -308,6 +308,40 @@ const buttonVariants = cva(styles.base, {
   },
 })
 
+/**
+ * An icon slot. Takes either form:
+ *
+ * - the component itself — `leadingVisual={IconDownload}`
+ * - a rendered element — `leadingVisual={<IconDownload />}`
+ *
+ * **From a React Server Component, use the element form.** `Button` and
+ * `ButtonLink` are `'use client'` modules, while the icon modules carry no
+ * directive — deliberately, so an icon stays server-renderable and ships no
+ * JavaScript. That means in a server component `IconDownload` is an ordinary
+ * function value, and functions cannot cross the RSC boundary into a client
+ * component ("Functions cannot be passed directly to Client Components"). A
+ * React element can, because it serialises. Client components can use either.
+ */
+type IconSlot = React.ElementType | React.ReactElement
+
+/**
+ * Renders an icon slot in whichever form it arrived, stamping `data-slot='icon'`
+ * so the `*:data-[slot=icon]:…` rules above size and colour it. An element that
+ * already carries its own `data-slot` keeps it — the NSWDS icons bake one in, and
+ * a consumer who set one deliberately meant it.
+ */
+function renderIconSlot(slot: IconSlot | undefined | null): React.ReactNode {
+  if (!slot) return null
+  if (React.isValidElement<Record<string, unknown>>(slot)) {
+    return React.cloneElement(slot, { 'data-slot': 'icon', ...slot.props })
+  }
+  // `isValidElement` is a type guard, but its false branch does not subtract
+  // ReactElement from the union — TS keeps both members — so name the remaining
+  // case explicitly. Anything that is not a valid element is a component type.
+  const Icon = slot as React.ElementType
+  return <Icon data-slot='icon' />
+}
+
 /** Visual/content props shared by `Button` and `ButtonLink`. */
 type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
   className?: string
@@ -320,12 +354,12 @@ type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
   /** Horizontal alignment of button content. */
   alignContent?: 'center' | 'start'
   disabled?: boolean
-  /** Icon component rendered before the label. */
-  leadingVisual?: React.ElementType
-  /** Icon component rendered after the label. */
-  trailingVisual?: React.ElementType
-  /** Icon component rendered as a trailing action (far end). */
-  trailingAction?: React.ElementType
+  /** Icon rendered before the label. Component or element — see `IconSlot`. */
+  leadingVisual?: IconSlot
+  /** Icon rendered after the label. Component or element — see `IconSlot`. */
+  trailingVisual?: IconSlot
+  /** Icon rendered as a trailing action (far end). Component or element. */
+  trailingAction?: IconSlot
   /** Allow the button label to wrap onto multiple lines. Defaults to true. */
   labelWrap?: boolean
   /** Optional numeric badge rendered after the label. */
@@ -368,9 +402,9 @@ function buttonClasses({
 /** Shared inner layout: spinner, visuals, label, count, touch target. */
 function ButtonContent({
   loading,
-  leadingVisual: LeadingVisual,
-  trailingVisual: TrailingVisual,
-  trailingAction: TrailingAction,
+  leadingVisual,
+  trailingVisual,
+  trailingAction,
   labelWrap,
   count,
   countLabel,
@@ -403,7 +437,7 @@ function ButtonContent({
           svgClassName='block size-full'
         />
       )}
-      {LeadingVisual && <LeadingVisual data-slot='icon' />}
+      {renderIconSlot(leadingVisual)}
       {labelWrap === false ? <span className='whitespace-nowrap'>{children}</span> : children}
       {count !== undefined && (
         <span className='rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums opacity-75'>
@@ -411,8 +445,8 @@ function ButtonContent({
           {countLabel ? <span className='sr-only'> {countLabel}</span> : null}
         </span>
       )}
-      {TrailingVisual && <TrailingVisual data-slot='icon' />}
-      {TrailingAction && <TrailingAction data-slot='icon' />}
+      {renderIconSlot(trailingVisual)}
+      {renderIconSlot(trailingAction)}
     </TouchTarget>
   )
 }
@@ -589,4 +623,4 @@ function TouchTarget({ children }: { children: React.ReactNode }) {
 }
 
 export { Button, ButtonLink, buttonVariants, TouchTarget }
-export type { ButtonLinkProps, ButtonProps }
+export type { ButtonLinkProps, ButtonProps, IconSlot }

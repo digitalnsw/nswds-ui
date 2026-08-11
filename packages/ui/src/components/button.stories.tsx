@@ -510,6 +510,56 @@ export const Default: Story = {
   },
 }
 
+export const IconSlotForms: Story = {
+  name: 'Icon Slot Forms',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The icon slots take the component (`leadingVisual={IconAdd}`) or an element (`leadingVisual={<IconAdd />}`). Both render the same markup; the element form is the one a React Server Component must use, because a bare icon function cannot cross the RSC boundary into this client component.',
+      },
+    },
+  },
+  render: () => (
+    <div className='flex gap-4'>
+      <Button leadingVisual={IconAdd} trailingVisual={IconArrowForward}>
+        Component form
+      </Button>
+      <Button leadingVisual={<IconAdd />} trailingVisual={<IconArrowForward />}>
+        Element form
+      </Button>
+      {/* A consumer-supplied mark with no baked-in data-slot — the button must
+          stamp one on, or it loses the icon sizing and colour rules. */}
+      <Button leadingVisual={<svg viewBox='0 0 24 24' aria-hidden />}>Bare svg</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const iconsIn = (name: string) =>
+      Array.from(getButton(canvasElement, name).querySelectorAll('svg[data-slot="icon"]'))
+
+    const componentForm = iconsIn('Component form')
+    const elementForm = iconsIn('Element form')
+
+    if (componentForm.length !== 2) {
+      throw new Error(`Component form: expected 2 icons, got ${componentForm.length}.`)
+    }
+    if (elementForm.length !== 2) {
+      throw new Error(`Element form: expected 2 icons, got ${elementForm.length}.`)
+    }
+
+    // Same slot, same order, same paths — the two forms are interchangeable.
+    componentForm.forEach((icon, i) => {
+      if (icon.innerHTML !== elementForm[i]!.innerHTML) {
+        throw new Error(`Icon ${i} differs between the component and element forms.`)
+      }
+    })
+
+    if (iconsIn('Bare svg').length !== 1) {
+      throw new Error('An element without its own data-slot should still be stamped with one.')
+    }
+  },
+}
+
 export const Playground: Story = {
   name: 'Playground',
   parameters: {
