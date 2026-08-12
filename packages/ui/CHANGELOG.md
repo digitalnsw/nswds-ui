@@ -1,3 +1,9 @@
+## [4.4.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.0...@nswds/ui-v4.4.1) (2026-08-12)
+
+### Bug Fixes
+
+* **ui:** match the dark variant to the element carrying the marker ([#102](https://github.com/digitalnsw/nswds-ui/issues/102)) ([164745f](https://github.com/digitalnsw/nswds-ui/commit/164745fa72dfa88827f4c1ebb81176729fa22cb9))
+
 ## [4.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.3.0...@nswds/ui-v4.4.0) (2026-08-10)
 
 ### Features
