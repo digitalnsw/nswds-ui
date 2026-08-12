@@ -12,7 +12,7 @@ import { IconDarkMode } from '../icons/dark-mode.js'
 import { IconMenu } from '../icons/menu.js'
 import { IconSearch } from '../icons/search.js'
 
-import { Button } from './button.js'
+import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
 import { Masthead } from './masthead.js'
 import { SkipLinks } from './skip-link.js'
@@ -403,6 +403,71 @@ export const Actions: Story = {
       <DemoActions />
     </Header>
   ),
+}
+
+export const MixedActions: Story = {
+  name: 'With mixed actions',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'An action row that mixes icon buttons with a labelled one. `size="icon"` is the right call when the row is all icons (see "With actions"), but it is a flat 40×40 that matches no text step — drop it next to a `ButtonLink` and it sits short. Use `iconOnly` at the same `size` as the labelled control instead, and the row shares one height.',
+      },
+    },
+  },
+  render: () => (
+    <Header sticky={false}>
+      <HeaderBrand sitename='Design System' />
+      <HeaderActions>
+        <Button
+          data-probe='icon-only'
+          variant='ghost'
+          color='grey'
+          size='default'
+          iconOnly
+          aria-label='Search'
+          leadingVisual={IconSearch}
+        />
+        <Button
+          variant='ghost'
+          color='grey'
+          size='default'
+          iconOnly
+          aria-label='Switch to dark theme'
+          leadingVisual={IconDarkMode}
+        />
+        {/* `labelWrap={false}` is not incidental. `HeaderActions` is a flex row,
+            so a labelled control shrinks when the header is cramped and its
+            label wraps to a second line — which makes the row ragged again for
+            an entirely different reason than the one this story is about. A
+            header action should stay on one line; opt out explicitly. */}
+        <ButtonLink
+          data-probe='labelled'
+          href='#'
+          size='default'
+          variant='outline'
+          labelWrap={false}
+        >
+          Sign in
+        </ButtonLink>
+      </HeaderActions>
+    </Header>
+  ),
+  play: async ({ canvasElement }) => {
+    const square = canvasElement.querySelector<HTMLElement>('[data-probe="icon-only"]')
+    const labelled = canvasElement.querySelector<HTMLElement>('[data-probe="labelled"]')
+    if (!square || !labelled) {
+      throw new Error('Expected both an icon-only Button and a labelled ButtonLink in the row.')
+    }
+
+    const a = square.getBoundingClientRect()
+    const b = labelled.getBoundingClientRect()
+    if (Math.abs(a.height - b.height) > 0.5) {
+      throw new Error(
+        `Header action row is ragged: the icon-only Button is ${a.height}px tall, the ButtonLink beside it ${b.height}px.`,
+      )
+    }
+  },
 }
 
 export const Scrolled: Story = {
