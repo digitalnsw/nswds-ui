@@ -138,10 +138,15 @@ type HeaderBrandProps = React.ComponentPropsWithoutRef<'div'> & {
    * <HeaderBrand version="2.1.0" badgeProps={{ size: 'lg' }} />
    * ```
    *
-   * Applied after the defaults below, so anything passed here wins — including
-   * `color`, whose surface-aware default exists to stop the badge painting
-   * itself the same colour as a dark header. Overriding it is the same trade as
-   * supplying your own `logo` node: the contrast is then yours to check.
+   * An explicit value always wins — including `color`, whose surface-aware
+   * default exists to stop the badge painting itself the same colour as a dark
+   * header. Overriding it is the same trade as supplying your own `logo` node:
+   * the contrast is then yours to check.
+   *
+   * `undefined` and `null` do *not* win: they fall back to the defaults, so a
+   * conditional like `{ color: cond ? 'accent' : undefined }` keeps the
+   * surface-aware colour on the falsy branch rather than dropping the badge to
+   * cva's own `primary` default.
    *
    * `children` is excluded — the badge's content is `version` and
    * `versionLabel`.
@@ -253,9 +258,18 @@ function HeaderBrand({
         // surface — so dark surfaces take the white badge instead.
         <Badge
           data-slot='header-version'
-          variant='soft'
-          color={onDarkSurface ? 'white' : 'primary'}
           {...badgeProps}
+          // Derived after the spread rather than before it. Spreading last would
+          // let a key that is merely *present* win, so
+          // `badgeProps={{ color: cond ? 'accent' : undefined }}` would pass
+          // `undefined` through to cva, which falls back to its own
+          // `defaultVariants.color` of `primary` — and primary-800 is the dark
+          // header's own background, so the badge would vanish into it. `??`
+          // keeps explicit values winning while undefined (and null, which
+          // cva's VariantProps permits and which would otherwise render an
+          // unstyled badge) falls back to the surface-aware default.
+          variant={badgeProps?.variant ?? 'soft'}
+          color={badgeProps?.color ?? (onDarkSurface ? 'white' : 'primary')}
         >
           {versionLabel ? <span className='sr-only'>{versionLabel} </span> : null}
           {version}

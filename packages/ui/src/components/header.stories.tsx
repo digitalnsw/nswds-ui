@@ -283,12 +283,23 @@ export const Colours: Story = {
       <Header id='header-grey' color='grey' sticky={false}>
         <HeaderBrand sitename='Grey' version='2.1.0' />
       </Header>
+      {/* A key that is merely present in badgeProps must not beat the
+          surface-aware default. Passing `color: undefined` used to reach cva,
+          which fell back to its own `primary` — this header's own background —
+          and the badge disappeared. The contrast check below covers it. */}
+      <Header id='header-dark-badge-undefined' color='dark' sticky={false}>
+        <HeaderBrand
+          sitename='Dark, badgeProps color undefined'
+          version='2.1.0'
+          badgeProps={{ color: undefined }}
+        />
+      </Header>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const headers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header"]')
-    if (headers.length !== 4) {
-      throw new Error(`Expected 4 headers, got ${headers.length}.`)
+    if (headers.length !== 5) {
+      throw new Error(`Expected 5 headers, got ${headers.length}.`)
     }
 
     // The dark surfaces must not paint the default (blue) wordmark, which
