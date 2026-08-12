@@ -401,40 +401,137 @@ function sourceFiles(dir, found = []) {
   return found
 }
 
-/** Blank out comments, preserving offsets and line breaks. */
-function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (comment) => comment.replace(/[^\n]/g, ' '))
-}
-
 /**
  * Class strings that can end up on the SAME element.
  *
  * A single literal obviously qualifies. So does a run of literals separated by
- * nothing but whitespace and commas — an array of class strings, or a `cn(…)` /
- * `cva(…)` argument list, both of which concatenate onto one element. Anything
- * else between them (an identifier, an object key, a call) ends the run, which
- * is what keeps sibling `cva` variants apart.
+ * nothing but whitespace, commas and comments — an array of class strings, or a
+ * `cn(…)` / `cva(…)` argument list, both of which concatenate onto one element.
+ * Anything else between them (an identifier, an object key, a call) ends the
+ * run, which is what keeps sibling `cva` variants apart.
+ *
+ * This walks the source once rather than blanking comments first and matching
+ * literals second. Two passes cannot agree on what a string is: a URL in a
+ * literal (`'https://www.w3.org/…'`, all over story-helpers.tsx) starts with
+ * `//` as far as a comment regex is concerned, so stripping first eats the rest
+ * of the literal INCLUDING its closing quote — and every literal after it in the
+ * file then pairs up against the wrong quote. Class strings silently merge or
+ * vanish, and a guard that fails silently is worse than no guard.
+ *
+ * Regex literals are the remaining ambiguity, since `/` is also division — and
+ * in JSX it is also the closing tag. Only a `/` in a position where a value must
+ * begin (after `=`, `(`, `,`, `:`, `{`, …) opens a regex; `</div>` follows `<`
+ * and `<br />` follows a name, so neither qualifies. Treating those as regexes
+ * would swallow the rest of the line, class strings included.
  */
 function classStringGroups(source) {
-  const code = stripComments(source)
-  const literal = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`((?:[^`\\]|\\.)*)`/g
   const groups = []
   let current = null
+  let line = 1
+  let previous = ''
+  let i = 0
+  // Whether only separators (whitespace, commas, comments) have been seen since
+  // the previous literal closed — i.e. whether this literal continues that run.
+  let adjacent = false
 
-  for (const match of code.matchAll(literal)) {
-    // Template-literal interpolation splits a string into separate class lists.
-    const text = (match[1] ?? match[2] ?? match[3] ?? '').replace(/\$\{[^}]*\}/g, ' ')
-    if (current && /^[\s,]*$/.test(code.slice(current.end, match.index))) {
-      current.text += ` ${text}`
-      current.end = match.index + match[0].length
+  while (i < source.length) {
+    const char = source[i]
+    const next = source[i + 1]
+
+    if (char === '\n') {
+      line++
+      i++
       continue
     }
-    current = {
-      text,
-      line: code.slice(0, match.index).split('\n').length,
-      end: match.index + match[0].length,
+
+    if (char === '/' && next === '/') {
+      while (i < source.length && source[i] !== '\n') i++
+      continue
     }
-    groups.push(current)
+
+    if (char === '/' && next === '*') {
+      i += 2
+      while (i < source.length && !(source[i] === '*' && source[i + 1] === '/')) {
+        if (source[i] === '\n') line++
+        i++
+      }
+      i += 2
+      continue
+    }
+
+    // A `/` opening a regex literal. Deliberately narrow: only where a value
+    // must begin. `<` is excluded so JSX closing tags stay ordinary text.
+    if (char === '/' && (previous === '' || /[=(,:!&|?{;[]/.test(previous))) {
+      i++
+      let inClass = false
+      while (i < source.length) {
+        if (source[i] === '\\') {
+          i += 2
+          continue
+        }
+        if (source[i] === '[') inClass = true
+        else if (source[i] === ']') inClass = false
+        else if (source[i] === '/' && !inClass) break
+        else if (source[i] === '\n') break
+        i++
+      }
+      i++
+      previous = '/'
+      adjacent = false
+      continue
+    }
+
+    if (char === "'" || char === '"' || char === '`') {
+      const quote = char
+      const startLine = line
+      let text = ''
+      i++
+
+      while (i < source.length && source[i] !== quote) {
+        if (source[i] === '\\') {
+          if (source[i + 1] === '\n') line++
+          text += ' '
+          i += 2
+          continue
+        }
+        // Interpolation splits a template into separate class lists.
+        if (quote === '`' && source[i] === '$' && source[i + 1] === '{') {
+          let depth = 1
+          i += 2
+          while (i < source.length && depth > 0) {
+            if (source[i] === '{') depth++
+            else if (source[i] === '}') depth--
+            else if (source[i] === '\n') line++
+            i++
+          }
+          text += ' '
+          continue
+        }
+        if (source[i] === '\n') line++
+        text += source[i]
+        i++
+      }
+      i++
+
+      if (current && adjacent) {
+        current.text += ` ${text}`
+      } else {
+        current = { text, line: startLine }
+        groups.push(current)
+      }
+
+      previous = quote
+      adjacent = true
+      continue
+    }
+
+    if (!/\s/.test(char)) {
+      previous = char
+      if (char !== ',') {
+        adjacent = false
+      }
+    }
+    i++
   }
 
   return groups

@@ -58,18 +58,46 @@ ls "$BUNDLE_DIR"/*.css >/dev/null 2>&1 || {
 # Footer's `.lg\:justify-start` on v4.3.0. Prove both halves are really there
 # before asserting anything about them, or the check silently degrades into a
 # package-only one the moment app.css or the fixture markup drifts.
-STYLESHEETS=("$BUNDLE_DIR"/*.css)
-STYLESHEET="${STYLESHEETS[0]}"
+#
+# The two markers have to be classes only ONE half can emit. Every colliding
+# utility in the fixture's markup is by definition one the package emits too, so
+# none of them can tell the halves apart — the app marker is a class the package
+# never uses, and its uniqueness is re-verified below rather than assumed.
+PACKAGE_MARKER='max-lg\:justify-center'
+APP_MARKER='justify-evenly'
+INSTALLED_CSS="node_modules/@nswds/ui/dist/styles.css"
 
-echo "── Assert: the stylesheet holds both halves (ours + the app's own build)"
-grep -qF 'max-lg\:justify-center' "$STYLESHEET" || {
-  echo "::error::No @nswds/ui utilities in the consumer stylesheet — the package half is missing." >&2
+echo "── Assert: '$APP_MARKER' is still absent from the packaged stylesheet"
+# Without this, a moved/renamed path would make the grep below fail open and
+# skip the very check that keeps the marker honest.
+[ -f "$INSTALLED_CSS" ] || {
+  echo "::error::$INSTALLED_CSS not found in the installed package — cannot verify that '$APP_MARKER' is app-only." >&2
   exit 1
 }
-grep -qE '\.justify-center[{,]' "$STYLESHEET" || {
-  echo "::error::The fixture's own Tailwind build emitted no '.justify-center'. fixtures/consumer must keep using the bare utilities that collide with Footer, or this stops testing the two-build hazard." >&2
+if grep -qE "\.${APP_MARKER}[{,]" "$INSTALLED_CSS"; then
+  echo "::error::@nswds/ui now emits '.${APP_MARKER}', so it can no longer prove the fixture's own Tailwind build ran. Pick a different app-only marker here and in fixtures/consumer/src/main.tsx." >&2
   exit 1
-}
+fi
+
+# Vite can emit more than one CSS asset, and the halves are only interleaved
+# within a single file — so select by content rather than trusting glob order.
+echo "── Assert: one CSS asset holds both halves (ours + the app's own build)"
+STYLESHEET=""
+for candidate in "$BUNDLE_DIR"/*.css; do
+  if grep -qF "$PACKAGE_MARKER" "$candidate" && grep -qE "\.${APP_MARKER}[{,]" "$candidate"; then
+    STYLESHEET="$candidate"
+    break
+  fi
+done
+
+if [ -z "$STYLESHEET" ]; then
+  echo "::error::No CSS asset contains both '$PACKAGE_MARKER' (@nswds/ui) and '.$APP_MARKER' (the fixture's own build), so this is no longer testing the two-build hazard. Candidates:" >&2
+  for candidate in "$BUNDLE_DIR"/*.css; do
+    echo "::error::  $candidate — package half: $(grep -cF "$PACKAGE_MARKER" "$candidate"), app half: $(grep -cE "\.${APP_MARKER}[{,]" "$candidate")" >&2
+  done
+  exit 1
+fi
+echo "   $STYLESHEET"
 
 # Same invariant the package's own build enforces, but against the stylesheet a
 # consumer actually ends up with: no element a component renders may carry two

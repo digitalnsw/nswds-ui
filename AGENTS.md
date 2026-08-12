@@ -439,9 +439,13 @@ are easy to miss locally, and each fails for a reason the usual trio cannot see
   `fixtures/consumer/src/app.css`), which is the only place the two-build
   cascade configuration is exercised end to end — Storybook and `apps/` consume
   `globals.css`, the dev entry, so they cannot reproduce it. It re-runs
-  `check:cascade` against the combined stylesheet, and first asserts that both
-  halves are present, so trimming the fixture's markup cannot quietly turn that
-  into a package-only check.
+  `check:cascade` against the combined stylesheet, having first located the CSS
+  asset containing a marker from each half. The app-side marker has to be a
+  class **we never emit** — every colliding utility in the fixture's markup is
+  by definition one we emit too, so none of them can tell the halves apart — and
+  the script re-verifies that against the installed stylesheet each run. Without
+  both of those the check passes against our half alone, which is to say it
+  silently stops testing anything.
 
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.

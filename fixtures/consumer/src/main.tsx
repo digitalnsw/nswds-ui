@@ -373,6 +373,13 @@ function App() {
         <div className='grid grid-cols-1 gap-8 pb-4'>
           <span className='flex h-10 flex-row items-center gap-2 border-b py-3'>Row</span>
         </div>
+        {/* `justify-evenly` is the marker the fixture script uses to prove this
+            Tailwind build actually ran. It has to be a class @nswds/ui never
+            emits — every class above is one the package emits too, so none of
+            them can tell the two halves apart. The script re-checks that
+            against the installed stylesheet on every run, so the marker cannot
+            quietly stop being app-only. */}
+        <div className='flex justify-evenly'>Marker</div>
       </section>
 
       {/* Footer is the component the hazard was reported against: its legal-link
