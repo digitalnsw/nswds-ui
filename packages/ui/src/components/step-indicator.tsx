@@ -141,7 +141,7 @@ const stepStatusStyles: Record<
 // the tree-shakeable --color-black bridge alias.
 const markerBase = [
   'relative z-10 flex size-6 items-center justify-center rounded-full',
-  'transition-colors motion-reduce:transition-none',
+  'motion-safe:transition-colors',
   '[--step-ink-hover:color-mix(in_oklch,var(--step-ink)_85%,var(--black))]',
 ]
 
@@ -166,7 +166,7 @@ const markerStyles = {
 // ramp. Hover moved from the text spans to `group-hover` so the whole link
 // (marker included) gives feedback, not just the glyph under the pointer.
 const stepTextClassName =
-  'text-sm text-grey-700 transition-colors group-hover:text-grey-800 motion-reduce:transition-none dark:text-grey-300 dark:group-hover:text-grey-100'
+  'text-sm text-grey-700 motion-safe:transition-colors group-hover:text-grey-800 dark:text-grey-300 dark:group-hover:text-grey-100'
 
 // Emphasised text for the current step. Source used primary-500 /
 // dark:slate-400; remapped to primary-800 / primary-200 — the ramp's text
@@ -335,7 +335,7 @@ function StepIndicator({
                     {style.marker === 'dot' ? (
                       <span
                         className={cn(
-                          'size-2 rounded-full transition-colors motion-reduce:transition-none',
+                          'size-2 rounded-full motion-safe:transition-colors',
                           currentVariant === 'dot'
                             ? 'bg-(--step-ink)'
                             : 'bg-transparent group-hover:bg-(--step-ink)',
@@ -437,7 +437,7 @@ function StepNav({
       ref={ref}
       data-slot='step-nav'
       aria-label={ariaLabel}
-      className={cn('text-base lg:text-sm', className)}
+      className={cn('max-lg:text-base lg:text-sm', className)}
       {...props}
     >
       <ol role='list' className='space-y-9'>
@@ -447,7 +447,7 @@ function StepNav({
               {section.title}
             </Heading>
             <StepIndicator
-              className='mt-2 lg:mt-4'
+              className='max-lg:mt-2 lg:mt-4'
               steps={section.steps}
               currentHref={currentHref}
               onNavigate={onNavigate}

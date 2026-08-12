@@ -28,20 +28,39 @@ export default function Demo() {
 
 `@nswds/ui/styles.css` ships the full token foundation (NSW palette, masterbrand theme, semantic tokens) plus all component styles, so components render correctly with no extra wiring.
 
-### Import it last
+### Import order
 
-If your app also imports the `@nswds/tokens` Tailwind bridges — you only need them when your **own** Tailwind build has to know the NSW scales, so `bg-primary-800` or `text-text-muted` written in your code resolves — put `@nswds/ui/styles.css` **after** them:
+If your app also imports the `@nswds/tokens` Tailwind bridges — you only need them when your **own** Tailwind build has to know the NSW scales, so `bg-primary-800` or `text-text-muted` written in your code resolves — put `@nswds/ui/styles.css` **after** them, and your own Tailwind build after that:
 
 ```css
 /* Bridges first: they teach your Tailwind build the NSW scales. */
 @import '@nswds/tokens/tailwind/colors/global/oklch.css';
 @import '@nswds/tokens/tailwind/colors/semantic/oklch.css';
 
-/* @nswds/ui last: it is the only one of these that carries dark mode. */
+/* @nswds/ui after the bridges: it is the only one of them that carries dark mode. */
 @import '@nswds/ui/styles.css';
+
+/* Your own Tailwind build last — see the next section. */
+@import 'tailwindcss';
 ```
 
-The order matters because both stylesheets emit an unlayered `:root` block of light-mode values, and only `@nswds/ui/styles.css` also ships the `[data-theme='dark'], .dark` block. `:root` and `.dark` have identical specificity, so the block that appears **last** wins. Import the bridge afterwards and its light values land last: every `bg-*` utility still flips to dark (those are compiled classes, not tokens) while the semantic role tokens stay light — so backgrounds go dark and text stays dark on top of them. Nothing errors; it just looks broken.
+The bridges must come first because both stylesheets emit an unlayered `:root` block of light-mode values, and only `@nswds/ui/styles.css` also ships the `[data-theme='dark'], .dark` block. `:root` and `.dark` have identical specificity, so the block that appears **last** wins. Import a bridge afterwards and its light values land last: every `bg-*` utility still flips to dark (those are compiled classes, not tokens) while the semantic role tokens stay light — so backgrounds go dark and text stays dark on top of them. Nothing errors; it just looks broken.
+
+### Using it with your own Tailwind build
+
+`@import 'tailwindcss'` goes last for a different reason: it leaves you with two independently-sorted sets of utilities in the same `utilities` cascade layer, and a media query adds no specificity. Within one Tailwind build the sorter guarantees `.lg\:justify-start` is emitted after `.justify-center`; across two builds nothing does, so whichever half comes last wins any tie. Ours going first means your utilities win those ties, which is what you want: a class you wrote should beat one you didn't.
+
+Reverse it and the same mechanism works against you — our plain `.inline-flex` (Button's base) would outrank your `hidden sm:inline-flex`, showing a button you meant to hide on mobile.
+
+Our components no longer depend on that tiebreak. Where a component needs a responsive override it uses mutually exclusive variants (`max-lg:justify-center lg:justify-start`) rather than a bare utility plus an override of it, so no rule you emit can displace one of ours on an element you never referenced. This is enforced on every build — see `scripts/check-cascade-safety.mjs`.
+
+If you do hit a conflict, a call-site override outranks both halves:
+
+```tsx
+<Footer className='[&_[data-slot=footer-legal-links]]:lg:justify-start' />
+```
+
+> **Don't reach for a named cascade layer to pin the order.** `@import '@nswds/ui/styles.css' layer(nswds)` looks tidy, but it also layers the `:root` and `[data-theme='dark'], .dark` token blocks the file carries, and layered custom properties lose to any unlayered `:root` — including the ones the bridges above ship. That is the dark-mode failure described in the previous section, with no import order that recovers it.
 
 ### Dark mode
 

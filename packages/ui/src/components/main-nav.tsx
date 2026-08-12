@@ -246,7 +246,7 @@ const mainNavPanelInk =
 // here" at rest and "this panel is open" during use.
 const mainNavTriggerClassName = [
   mainNavItemInk,
-  'mb-0 h-auto min-h-14 w-auto justify-start rounded-none px-4 py-2 text-base leading-6 font-bold text-(--main-nav-ink)',
+  'mb-0 h-auto min-h-14 w-auto justify-start rounded-none max-lg:px-4 py-2 text-base leading-6 font-bold text-(--main-nav-ink)',
   'lg:px-8',
   '[&_svg]:size-6',
   'data-popup-open:shadow-[inset_0_-4px_0_0_currentColor]',
@@ -259,7 +259,7 @@ const mainNavTriggerClassName = [
 // pairs it with aria-current='page' on the same element (WCAG 2.4.8).
 const mainNavTopLinkClassName = [
   mainNavItemInk,
-  'inline-flex min-h-14 flex-row items-center justify-start gap-1 rounded-none px-4 py-2 text-base leading-6 font-bold whitespace-nowrap text-(--main-nav-ink)',
+  'inline-flex min-h-14 flex-row items-center justify-start gap-1 rounded-none max-lg:px-4 py-2 text-base leading-6 font-bold whitespace-nowrap text-(--main-nav-ink)',
   'lg:px-8',
   'data-active:shadow-[inset_0_-4px_0_0_currentColor]',
 ].join(' ')
@@ -420,13 +420,13 @@ function MainNavMenuItem({ item, color, currentHref, panelWidth }: MainNavMenuIt
               {item.title}
               <IconEast
                 aria-hidden='true'
-                className='ml-4 size-6 shrink-0 text-current transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 motion-reduce:transition-none'
+                className='ml-4 size-6 shrink-0 text-current duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-1 motion-safe:transition-transform'
               />
             </NavigationMenuLink>
           )}
           <div
             data-slot='main-nav-panel-links'
-            className='grid grid-cols-1 overflow-hidden px-4 pb-12 sm:grid-cols-2 lg:grid-cols-3'
+            className='grid overflow-hidden px-4 pb-12 max-sm:grid-cols-1 sm:max-lg:grid-cols-2 lg:grid-cols-3'
           >
             {links.map((link, index) => (
               <NavigationMenuLink

@@ -63,7 +63,7 @@ export function FooterContact({
 }: FooterContactProps) {
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
-      <div className='grid gap-8 py-4 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16'>
+      <div className='grid py-4 max-lg:gap-8 lg:grid-cols-[minmax(0,22rem)_1fr] lg:gap-16'>
         <div className='flex flex-col gap-3'>
           <h2 className='text-sm font-bold text-(--footer-ink)'>Contact us</h2>
           {/* not-italic: browsers italicise <address> by default. */}

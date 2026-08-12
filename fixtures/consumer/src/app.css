@@ -1,0 +1,16 @@
+/*
+ * The documented consumer setup, exactly as packages/ui/README.md describes it:
+ * the precompiled stylesheet first, then the app's OWN Tailwind build over its
+ * own markup.
+ *
+ * That is the configuration the cascade hazard lives in — both halves emit into
+ * the same `utilities` cascade layer, each sorted only within itself, so a class
+ * the app happens to use is re-emitted after ours and can outrank one of our
+ * responsive rules on an element the app never referenced. main.tsx deliberately
+ * uses the utilities that previously collided with Footer, and the fixture
+ * script runs scripts/check-cascade-safety.mjs over the combined result.
+ *
+ * See packages/ui/scripts/check-cascade-safety.mjs for the full explanation.
+ */
+@import '@nswds/ui/styles.css';
+@import 'tailwindcss';

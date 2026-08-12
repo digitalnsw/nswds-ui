@@ -9,7 +9,7 @@ import { cn } from '../lib/utils.js'
 // variant can omit it entirely (otherwise it wouldn't actually be unstyled).
 const styledBase = [
   // Typography + transition
-  'font-medium underline decoration-current underline-offset-4 transition-colors motion-reduce:transition-none',
+  'font-medium underline decoration-current underline-offset-4 motion-safe:transition-colors',
   // Text colour derives from --link-color; --link-halo and --link-halo-active
   // derive from --link-color via color-mix so each variant only sets the one
   // token and the hover/active halos follow automatically.

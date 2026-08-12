@@ -36,13 +36,13 @@ export function FooterCompact({
 }: FooterCompactProps) {
   return (
     <Footer {...props} acknowledgement={false} smallPrint={false}>
-      <div className='flex flex-col items-center gap-4 py-2 lg:flex-row lg:gap-8'>
+      <div className='flex items-center py-2 max-lg:flex-col max-lg:gap-4 lg:flex-row lg:gap-8'>
         <Logo className='h-8 w-auto shrink-0' />
         {/* Labelled because this nav sits alongside the site's other landmarks;
             "Footer" distinguishes it in a screen reader's landmark list. */}
         <nav
           aria-label='Footer'
-          className='flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm lg:justify-start'
+          className='flex flex-wrap gap-x-4 gap-y-2 text-sm max-lg:justify-center lg:justify-start'
         >
           {legalLinks.map((item) => (
             <FooterNavLink key={item.name} href={item.href}>

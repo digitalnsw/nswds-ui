@@ -13,7 +13,7 @@ import { Spinner } from '../components/spinner.js'
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all motion-reduce:transition-none',
+    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold motion-safe:transition-all',
     // Height floor, published per size step as `--btn-h` (see `styles.size`).
     // A floor rather than a fixed height so a wrapped label can still grow.
     'min-h-(--btn-h)',
