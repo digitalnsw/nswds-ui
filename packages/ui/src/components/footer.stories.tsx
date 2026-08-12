@@ -221,6 +221,116 @@ function getFooter(canvasElement: HTMLElement) {
   return el
 }
 
+// One colour, twice: the surface as the page currently themes it, then the same
+// surface inside a locally-scoped `.dark`. Shared by both dark-mode stories.
+function SurfacePair({ color, ...args }: React.ComponentProps<typeof Footer>) {
+  return (
+    <div data-surface-pair='' className='overflow-hidden rounded-sm border border-border'>
+      <div className='border-b border-border bg-muted px-4 py-2 text-sm font-medium'>{color}</div>
+      <Footer {...args} color={color} topBorder={false} acknowledgement={false} />
+      <div className='dark'>
+        <Footer {...args} color={color} topBorder={false} acknowledgement={false} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Dark-mode assertions ─────────────────────────────────────────────────────
+
+const parse = (c: string) => c.match(/[\d.]+/g)?.map(Number) ?? []
+
+// WCAG relative luminance from the oklch L channel is not linear, but for
+// ordering within one hue family the L channel is monotonic — enough to prove
+// the surface actually deepened.
+const lightness = (el: HTMLElement) => parse(getComputedStyle(el).backgroundColor)[0] ?? NaN
+
+// Custom properties are substituted as the text the stylesheet authored, not as
+// a computed colour, and the two builds spell white differently: the dev entry
+// emits `oklch(1 0 0)` while the production build's CSS minifier rewrites it to
+// `oklch(100% 0 0)`. Comparing that text directly passed in dev and failed in
+// the built Storybook that Chromatic snapshots. Painting the value onto a canvas
+// is the one normalisation that crosses colour spaces — `getComputedStyle` and
+// `fillStyle` both keep oklch as oklch and hex as rgb, so neither can compare
+// the two.
+const WHITE_RGBA = '255,255,255,255'
+const toRgba = (value: string) => {
+  const context = document.createElement('canvas').getContext('2d')
+  if (!context) {
+    throw new Error('Could not get a 2D canvas context to resolve colours.')
+  }
+  // An unparseable value leaves fillStyle untouched, so seed it with black: a
+  // colour no check here expects, rather than a stale one that might pass.
+  context.fillStyle = '#000000'
+  context.fillStyle = value
+  context.fillRect(0, 0, 1, 1)
+  return Array.from(context.getImageData(0, 0, 1, 1).data).join(',')
+}
+
+// What every dark surface owes us, however it came to be dark.
+function assertDarkSurface(footer: HTMLElement, label: string) {
+  // Ink must go white in dark mode on every variant, including the ones that
+  // carry dark ink in light mode.
+  const ink = getComputedStyle(footer).getPropertyValue('--footer-ink').trim()
+  if (!ink) {
+    throw new Error(`The dark ${label} surface declares no --footer-ink.`)
+  }
+  if (toRgba(ink) !== WHITE_RGBA) {
+    throw new Error(`Expected white ink on the dark ${label} surface, got "${ink}".`)
+  }
+
+  // The links have to follow the ink, not just the container.
+  const link = footer.querySelector<HTMLElement>('[data-slot="footer-legal-links"] a')
+  if (!link) {
+    throw new Error(`The dark ${label} surface rendered no legal links to check.`)
+  }
+  if (parse(getComputedStyle(link).color)[0] !== 1) {
+    throw new Error(`Expected the dark ${label} legal links to inherit white ink.`)
+  }
+}
+
+function assertSurfacePairs(canvasElement: HTMLElement, expected: number) {
+  const cards = canvasElement.querySelectorAll<HTMLElement>('[data-surface-pair]')
+  if (cards.length !== expected) {
+    throw new Error(`Expected ${expected} colour cards, got ${cards.length}.`)
+  }
+
+  for (const card of cards) {
+    const [ambient, nested] = card.querySelectorAll<HTMLElement>('[data-slot="footer"]')
+    const name = ambient!.dataset.color
+
+    // Is the page dark ALREADY, above this card? Storybook's theme toolbar puts
+    // `.dark` on <html>, and the dark variant matches `.dark *` at any depth, so
+    // the first footer is dark too and there is no light surface left to compare
+    // against. Ask the DOM rather than the toolbar global: it is the ancestor
+    // marker, not the addon, that decides how these render — and a consumer can
+    // set `[data-theme='dark']` instead.
+    if (ambient!.closest('.dark, [data-theme="dark"]')) {
+      // A locally-scoped `.dark` inside an already-dark page must be a no-op —
+      // that idempotence is the one thing the pairing can still prove here, and
+      // both halves still have to hold up as dark surfaces.
+      const outer = getComputedStyle(ambient!).backgroundColor
+      const inner = getComputedStyle(nested!).backgroundColor
+      if (outer !== inner) {
+        throw new Error(
+          `With the page already dark, the nested .dark changed the "${name}" surface (${inner} vs ${outer}) — a .dark inside a .dark must not compound.`,
+        )
+      }
+      assertDarkSurface(ambient!, `"${name}" (ambient)`)
+      assertDarkSurface(nested!, `"${name}" (nested)`)
+      continue
+    }
+
+    const lightL = lightness(ambient!)
+    const darkL = lightness(nested!)
+    if (!(darkL < lightL)) {
+      throw new Error(
+        `Expected the dark-mode surface for "${name}" to be darker than the light one (L ${darkL} vs ${lightL}). Did the dark: variant resolve?`,
+      )
+    }
+    assertDarkSurface(nested!, `"${name}"`)
+  }
+}
+
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
@@ -321,85 +431,58 @@ export const Colours: Story = {
 export const DarkMode: Story = {
   name: 'Dark Mode',
   // Scopes `.dark` locally rather than relying on the toolbar toggle, so the
-  // light and dark rendering of the same variant sit side by side.
+  // light and dark rendering of the same variant sit side by side. That pairing
+  // only holds while the page around it is light — see the note below, and
+  // `DarkModeNested` for the case where it doesn't.
   render: (args) => (
     <div className='space-y-4'>
+      <p className='hidden text-sm text-muted-foreground dark:block'>
+        The theme toolbar is set to Dark, so both rows of every card below render the same dark
+        surface — a locally-scoped .dark inside an already-dark page is a no-op. Switch the toolbar
+        to Light to see each colour paired against its light surface.
+      </p>
       {footerColors.map((color) => (
-        <div key={color} className='overflow-hidden rounded-sm border border-border'>
-          <div className='border-b border-border bg-muted px-4 py-2 text-sm font-medium'>
-            {color}
-          </div>
-          <Footer {...args} color={color} topBorder={false} acknowledgement={false} />
-          <div className='dark'>
-            <Footer {...args} color={color} topBorder={false} acknowledgement={false} />
-          </div>
-        </div>
+        <SurfacePair key={color} {...args} color={color} />
       ))}
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const parse = (c: string) => c.match(/[\d.]+/g)?.map(Number) ?? []
-    // WCAG relative luminance from the oklch L channel is not linear, but for
-    // ordering within one hue family the L channel is monotonic — enough to
-    // prove the surface actually deepened.
-    const lightness = (el: HTMLElement) => parse(getComputedStyle(el).backgroundColor)[0] ?? NaN
+    assertSurfacePairs(canvasElement, footerColors.length)
+  },
+}
 
-    // Custom properties are substituted as the text the stylesheet authored,
-    // not as a computed colour, and the two builds spell white differently:
-    // the dev entry emits `oklch(1 0 0)` while the production build's CSS
-    // minifier rewrites it to `oklch(100% 0 0)`. Comparing that text directly
-    // passed in dev and failed in the built Storybook that Chromatic
-    // snapshots. Painting the value onto a canvas is the one normalisation
-    // that crosses colour spaces — `getComputedStyle` and `fillStyle` both
-    // keep oklch as oklch and hex as rgb, so neither can compare the two.
-    const WHITE_RGBA = '255,255,255,255'
-    const toRgba = (value: string) => {
-      const context = document.createElement('canvas').getContext('2d')
-      if (!context) {
-        throw new Error('Could not get a 2D canvas context to resolve colours.')
-      }
-      // An unparseable value leaves fillStyle untouched, so seed it with black:
-      // a colour no check here expects, rather than a stale one that might pass.
-      context.fillStyle = '#000000'
-      context.fillStyle = value
-      context.fillRect(0, 0, 1, 1)
-      return Array.from(context.getImageData(0, 0, 1, 1).data).join(',')
-    }
+// Two colours that already carry white ink in light mode, two that have to flip
+// from dark ink — enough to cover both directions without a second full grid.
+const NESTED_DARK_COLORS = ['white', 'grey-200', 'primary-800', 'accent-400'] as const
 
-    const cards = canvasElement.querySelectorAll<HTMLElement>('.overflow-hidden')
-    if (cards.length !== footerColors.length) {
-      throw new Error(`Expected ${footerColors.length} colour cards, got ${cards.length}.`)
-    }
-
-    for (const card of cards) {
-      const [light, dark] = card.querySelectorAll<HTMLElement>('[data-slot="footer"]')
-      const name = light!.dataset.color
-      const lightL = lightness(light!)
-      const darkL = lightness(dark!)
-
-      if (!(darkL < lightL)) {
-        throw new Error(
-          `Expected the dark-mode surface for "${name}" to be darker than the light one (L ${darkL} vs ${lightL}). Did the dark: variant resolve?`,
-        )
-      }
-
-      // Ink must go white in dark mode on every variant, including the ones
-      // that carry dark ink in light mode.
-      const ink = getComputedStyle(dark!).getPropertyValue('--footer-ink').trim()
-      if (!ink) {
-        throw new Error(`The dark "${name}" surface declares no --footer-ink.`)
-      }
-      if (toRgba(ink) !== WHITE_RGBA) {
-        throw new Error(`Expected white ink on the dark "${name}" surface, got "${ink}".`)
-      }
-
-      // The links have to follow the ink, not just the container.
-      const link = dark!.querySelector<HTMLElement>('[data-slot="footer-legal-links"] a')
-      const linkL = parse(getComputedStyle(link!).color)[0]
-      if (linkL !== 1) {
-        throw new Error(`Expected the dark "${name}" legal links to inherit white ink.`)
-      }
-    }
+export const DarkModeNested: Story = {
+  name: 'Dark Mode (page already dark)',
+  // Story-level globals put the preview into exactly the state the theme
+  // toolbar's Dark setting does — `.dark` on <html>, applied by the preview
+  // decorator — rather than a `.dark` wrapper around the story. The distinction
+  // is load-bearing: the shadcn semantic tokens are declared on `:root`, so
+  // `--muted` and friends only flip when the marker lands on the ROOT element,
+  // while the footer's own `dark:` utilities match `.dark *` at any depth. A
+  // wrapper div would darken the footers and leave the page chrome light, which
+  // is a state no real page is ever in.
+  globals: { theme: 'dark' },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The same pairing with the page around it already dark, which is what the theme toolbar does to every other dark-mode story. Both rows render identically here, and that is the point: a locally-scoped `.dark` inside an already-dark page must be a no-op rather than compounding. `DarkMode` cannot assert its light-vs-dark comparison in this state — there is no light surface left to compare against — so the pairing is asserted for idempotence instead, and this story keeps that path covered rather than leaving it to whoever next flips the toggle.',
+      },
+    },
+  },
+  render: (args) => (
+    <div className='space-y-4'>
+      {NESTED_DARK_COLORS.map((color) => (
+        <SurfacePair key={color} {...args} color={color} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    assertSurfacePairs(canvasElement, NESTED_DARK_COLORS.length)
   },
 }
 
