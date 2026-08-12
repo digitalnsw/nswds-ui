@@ -426,10 +426,15 @@ export const IconOnly: Story = {
             <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>
               {size}
             </span>
-            <Button data-probe='text' size={size}>
+            {/* `labelWrap={false}` keeps the assertions about box geometry. A
+                label that wraps to a second line makes the button taller for a
+                reason that has nothing to do with the size step, which would
+                make this story fail on viewport width rather than on a real
+                regression. */}
+            <Button data-probe='text' size={size} labelWrap={false}>
               Button
             </Button>
-            <ButtonLink data-probe='link' size={size} href='#' variant='outline'>
+            <ButtonLink data-probe='link' size={size} href='#' variant='outline' labelWrap={false}>
               ButtonLink
             </ButtonLink>
             <Button
@@ -457,7 +462,7 @@ export const IconOnly: Story = {
         className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
       >
         <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>icon</span>
-        <Button data-probe='text' size='default'>
+        <Button data-probe='text' size='default' labelWrap={false}>
           Button
         </Button>
         <Button

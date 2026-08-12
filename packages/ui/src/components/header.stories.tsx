@@ -436,7 +436,18 @@ export const MixedActions: Story = {
           aria-label='Switch to dark theme'
           leadingVisual={IconDarkMode}
         />
-        <ButtonLink data-probe='labelled' href='#' size='default' variant='outline'>
+        {/* `labelWrap={false}` is not incidental. `HeaderActions` is a flex row,
+            so a labelled control shrinks when the header is cramped and its
+            label wraps to a second line — which makes the row ragged again for
+            an entirely different reason than the one this story is about. A
+            header action should stay on one line; opt out explicitly. */}
+        <ButtonLink
+          data-probe='labelled'
+          href='#'
+          size='default'
+          variant='outline'
+          labelWrap={false}
+        >
           Sign in
         </ButtonLink>
       </HeaderActions>
