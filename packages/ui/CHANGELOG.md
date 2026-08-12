@@ -1,3 +1,9 @@
+## [4.6.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.5.0...@nswds/ui-v4.6.0) (2026-08-12)
+
+### Features
+
+* **ui:** accept an element in every icon slot so RSCs can pass icons ([#103](https://github.com/digitalnsw/nswds-ui/issues/103)) ([ab3514b](https://github.com/digitalnsw/nswds-ui/commit/ab3514bb209ac2d678893c7a8cfc8f714357e7d5))
+
 ## [4.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.2...@nswds/ui-v4.5.0) (2026-08-12)
 
 ### Features
