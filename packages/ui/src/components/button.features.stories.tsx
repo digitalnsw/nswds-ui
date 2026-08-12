@@ -394,11 +394,14 @@ export const Sizes: Story = {
 
 const scaleSteps = ['sm', 'default', 'lg'] as const
 
-// Glyph size per step, off the 4px icon ladder (20/24/28/32/36/40). A
-// function of the step alone — same value whether the button carries a label
-// or is icon-only, and the same at every breakpoint, which is what makes it
-// assertable without knowing the viewport.
-const glyphSizes: Record<(typeof scaleSteps)[number], number> = {
+// Beside a label the glyph matches the text, and the text is 16px at every
+// step — so this is one number, not a ramp.
+const LABEL_GLYPH = 24
+
+// Icon-only has no label to match, so the glyph scales with its square, off
+// the 4px ladder (20/24/28/32/36/40). Constant per step across breakpoints,
+// which is what makes both assertable without knowing the viewport.
+const iconOnlyGlyphSizes: Record<(typeof scaleSteps)[number], number> = {
   sm: 20,
   default: 24,
   lg: 28,
@@ -538,12 +541,14 @@ export const IconOnly: Story = {
         )
       }
 
-      // The glyph is a function of the step alone: one size at every
-      // breakpoint (so this is assertable without knowing the viewport) and
-      // the same whether the button carries a label or not. That second part
-      // is what lets `iconOnly` avoid overriding the glyph at all.
-      const expected = glyphSizes[size]
-      for (const probeName of ['text', 'icon-only'] as const) {
+      // Two different rules, so assert both. Beside a label the glyph tracks
+      // the text, which is 16px at every step — one constant. Icon-only has
+      // no text to match, so it tracks the square instead. Both hold across
+      // breakpoints, which is what makes them assertable here.
+      for (const [probeName, expected] of [
+        ['text', LABEL_GLYPH],
+        ['icon-only', iconOnlyGlyphSizes[size]],
+      ] as const) {
         const glyph = canvasElement.querySelector<HTMLElement>(
           `[data-row="${size}"] [data-probe="${probeName}"] [data-slot="icon"]`,
         )
