@@ -19,7 +19,16 @@
 @import '@nswds/tokens/css/colors/semantic/oklch.css';
 /* Semantic role tokens (DARK): same names, dark values, scoped `[data-theme=dark], .dark`
    (the .dark scope was added in @nswds/tokens 4.1.0). This makes the role tokens below
-   flip automatically under our `.dark` class — no hand-maintained dark overrides needed. */
+   flip automatically under our `.dark` class — no hand-maintained dark overrides needed.
+
+   ORDER IS LOAD-BEARING, and not only inside this file. `[data-theme=dark], .dark` is
+   specificity (0,1,0) — identical to the `:root` of the light import above — so dark
+   wins here purely by coming second. The same tie is why a CONSUMER must import
+   `@nswds/ui/styles.css` AFTER any `@nswds/tokens/tailwind/colors/semantic/*` bridge:
+   that bridge bundles its own unlayered `:root` of LIGHT values and ships no dark
+   counterpart, so imported later it lands last and dark mode silently no-ops. The
+   README documents the required order; the durable fix is upstream, raising the dark
+   block's specificity in @nswds/tokens so no bare `:root` can undercut it. */
 @import '@nswds/tokens/css/colors/semantic/oklch.dark.css';
 /* Masterbrand theme: --primary-* → --nsw-blue-*, --accent-* → --nsw-red-* (preset excludes themes) */
 @import '@nswds/tokens/css/colors/themes/masterbrand/oklch.css';
@@ -35,7 +44,18 @@
    unreferenced @theme keys. */
 @import '@nswds/tokens/css/typography/global.css';
 
-@custom-variant dark (&:is(.dark *));
+/* `dark:` utility variant. Two things it must line up with:
+   1. The element carrying the marker, not just its descendants. `.dark *` alone
+      never matches the element the class sits on — which is normally <html>,
+      exactly where next-themes and Storybook's toolbar put it — so `dark:` on
+      the root element silently did nothing. `.dark, .dark *` covers both.
+   2. The selectors the token values actually flip on. The semantic dark import
+      above is scoped `[data-theme='dark'], .dark`, so a consumer toggling the
+      attribute form (next-themes' `attribute="data-theme"`) got mode-aware role
+      tokens but dead `dark:` utilities. Matching both keeps the two in step.
+   Specificity is unchanged at (0,2,0): `:is()` takes its most specific argument,
+   and every argument here is a single class or attribute. */
+@custom-variant dark (&:is(.dark, .dark *, [data-theme='dark'], [data-theme='dark'] *));
 
 @theme inline {
   --font-heading: var(--font-sans);

@@ -28,6 +28,29 @@ export default function Demo() {
 
 `@nswds/ui/styles.css` ships the full token foundation (NSW palette, masterbrand theme, semantic tokens) plus all component styles, so components render correctly with no extra wiring.
 
+### Import it last
+
+If your app also imports the `@nswds/tokens` Tailwind bridges — you only need them when your **own** Tailwind build has to know the NSW scales, so `bg-primary-800` or `text-text-muted` written in your code resolves — put `@nswds/ui/styles.css` **after** them:
+
+```css
+/* Bridges first: they teach your Tailwind build the NSW scales. */
+@import '@nswds/tokens/tailwind/colors/global/oklch.css';
+@import '@nswds/tokens/tailwind/colors/semantic/oklch.css';
+
+/* @nswds/ui last: it is the only one of these that carries dark mode. */
+@import '@nswds/ui/styles.css';
+```
+
+The order matters because both stylesheets emit an unlayered `:root` block of light-mode values, and only `@nswds/ui/styles.css` also ships the `[data-theme='dark'], .dark` block. `:root` and `.dark` have identical specificity, so the block that appears **last** wins. Import the bridge afterwards and its light values land last: every `bg-*` utility still flips to dark (those are compiled classes, not tokens) while the semantic role tokens stay light — so backgrounds go dark and text stays dark on top of them. Nothing errors; it just looks broken.
+
+### Dark mode
+
+Toggle `class="dark"` or `data-theme="dark"` on a root element (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). Semantic tokens and `dark:` utilities both key off either marker, and both match the element carrying it as well as its descendants — so a scoped `<div class="dark">` darkens just that subtree.
+
+```tsx
+<html lang='en' className='dark'>
+```
+
 ### Icons
 
 Icons are tree-shakeable from the barrel, or importable individually:
@@ -45,10 +68,6 @@ export function Toolbar() {
   )
 }
 ```
-
-### Dark mode
-
-Toggle the `dark` class on a root element (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). The semantic tokens remap automatically.
 
 ## Components
 
