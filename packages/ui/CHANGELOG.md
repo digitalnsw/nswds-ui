@@ -1,3 +1,9 @@
+## [4.7.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.1...@nswds/ui-v4.7.2) (2026-08-12)
+
+### Bug Fixes
+
+* **ui:** tell the user which flag is missing its path in check:cascade ([#110](https://github.com/digitalnsw/nswds-ui/issues/110)) ([bd9ca22](https://github.com/digitalnsw/nswds-ui/commit/bd9ca229115f6f900ee40805a4b192a77c4e224b))
+
 ## [4.7.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.0...@nswds/ui-v4.7.1) (2026-08-12)
 
 ### Bug Fixes
