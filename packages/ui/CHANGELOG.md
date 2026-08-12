@@ -1,3 +1,9 @@
+## [4.7.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.0...@nswds/ui-v4.7.1) (2026-08-12)
+
+### Bug Fixes
+
+* **ui:** make component class strings survive a consumer's own Tailwind build ([#106](https://github.com/digitalnsw/nswds-ui/issues/106)) ([7391b36](https://github.com/digitalnsw/nswds-ui/commit/7391b36e55157f00b5bd8f265fa59e2ac8f087fa))
+
 ## [4.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.6.0...@nswds/ui-v4.7.0) (2026-08-12)
 
 ### Features

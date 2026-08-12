@@ -1,6 +1,6 @@
 {
   "name": "@nswds/ui",
-  "version": "4.7.0",
+  "version": "4.7.1",
   "description": "UI components for NSW Government digital products, providing reusable design elements and patterns for consistent user interfaces.",
   "license": "MIT",
   "homepage": "https://github.com/digitalnsw/nswds-ui#readme",
