@@ -112,7 +112,7 @@ const footerVariants = cva(
 
 const footerContainerVariants = cva(
   [
-    'mx-auto flex w-full flex-col py-6 sm:py-8',
+    'mx-auto flex w-full flex-col max-sm:py-6 sm:py-8',
     // Lateral padding funnels through --footer-padding-x so an app can retune
     // it once (via the `style` prop or a utility class) without a new variant.
     // Same mechanism, and the same 16px → 24px → 48px rhythm, as the Masthead.
@@ -169,7 +169,7 @@ const footerLinkClassName = [
   // Negative margin + padding keeps the hover/focus halo from shifting layout.
   '-m-1 rounded-sm p-1 text-(--footer-ink)',
   'underline decoration-current underline-offset-4',
-  'transition-colors motion-reduce:transition-none',
+  'motion-safe:transition-colors',
   'hover:bg-(--footer-halo) hover:decoration-2',
   'active:bg-(--footer-halo-active) active:decoration-2',
   // outline-(--footer-ink) guarantees the indicator contrasts with the surface
@@ -232,7 +232,7 @@ function FooterAcknowledgement({ className, children, ref, ...props }: FooterAck
       className={cn('flex flex-row items-center gap-5 py-4', className)}
       ref={ref}
     >
-      <p className='text-center text-base text-pretty text-(--footer-ink) lg:text-left'>
+      <p className='text-base text-pretty text-(--footer-ink) max-lg:text-center lg:text-left'>
         {children ??
           'We acknowledge the Traditional Custodians of the land on which we work and live, and pay our respects to Elders past, present and emerging.'}
       </p>
@@ -267,7 +267,7 @@ function FooterLegalLinks({
       {...props}
       aria-label={ariaLabel}
       className={cn(
-        'flex flex-wrap justify-center gap-x-4 gap-y-3 py-4 text-sm lg:justify-start',
+        'flex flex-wrap gap-x-4 gap-y-3 py-4 text-sm max-lg:justify-center lg:justify-start',
         className,
       )}
       ref={ref}
@@ -327,7 +327,7 @@ function FooterNav({
       data-slot='footer-nav'
       {...props}
       aria-label={ariaLabel}
-      className={cn('grid gap-8 py-4 sm:grid-cols-2 lg:grid-cols-4', className)}
+      className={cn('grid gap-8 py-4 sm:max-lg:grid-cols-2 lg:grid-cols-4', className)}
       ref={ref}
     />
   )
@@ -412,10 +412,13 @@ function FooterSmallPrint({
     <div
       data-slot='footer-small-print'
       {...props}
-      className={cn('flex flex-col items-center justify-between gap-5 pt-4 sm:flex-row', className)}
+      className={cn(
+        'flex items-center justify-between gap-5 pt-4 max-sm:flex-col sm:flex-row',
+        className,
+      )}
       ref={ref}
     >
-      <p className='text-center text-sm text-(--footer-ink) lg:text-left'>
+      <p className='text-sm text-(--footer-ink) max-lg:text-center lg:text-left'>
         {children ?? (
           <>
             &copy; Copyright {year}
@@ -424,7 +427,7 @@ function FooterSmallPrint({
         )}
       </p>
       {socialLinks && socialLinks.length > 0 && (
-        <ul className='flex list-none justify-center gap-4 lg:justify-end'>
+        <ul className='flex list-none gap-4 max-lg:justify-center lg:justify-end'>
           {socialLinks.map((item) => (
             <li key={item.name}>
               <FooterSocialLink

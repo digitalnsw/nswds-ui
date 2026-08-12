@@ -23,7 +23,7 @@ const skipLinkVariants = cva(
     // pattern) — still in the tab order, so it is the first thing keyboard
     // and screen-reader users reach.
     'absolute inset-x-0 top-0 w-full -translate-y-[101%]',
-    'transition-transform motion-reduce:transition-none',
+    'motion-safe:transition-transform',
     'focus:translate-y-0',
     // min-h-11 keeps the revealed bar at ≥44px — 2.5.5 Target Size (AAA).
     'group flex min-h-11 items-center px-4 py-2 text-xs font-medium no-underline',

@@ -61,7 +61,7 @@ function Spinner({
         viewBox='0 0 100 101'
         aria-hidden='true'
         className={cn(
-          'inline animate-spin motion-reduce:animate-none',
+          'inline motion-safe:animate-spin',
           theme.color[color],
           theme.size[size],
           svgClassName,

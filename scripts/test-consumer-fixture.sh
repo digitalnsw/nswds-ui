@@ -2,7 +2,8 @@
 # Verifies the PACKED @nswds/ui artefact end-to-end, the way a consumer
 # receives it: npm pack → cold install into the fixtures/consumer Vite app →
 # tsc --noEmit → vite build → assert tree-shaking (the imported icon's path
-# data is in the bundle; an unimported icon's is not).
+# data is in the bundle; an unimported icon's is not) → assert the stylesheet
+# is cascade-safe in the two-build configuration the README documents.
 #
 # publint/attw validate the package's *shape*; this exercises it.
 set -euo pipefail
@@ -51,4 +52,32 @@ ls "$BUNDLE_DIR"/*.css >/dev/null 2>&1 || {
   exit 1
 }
 
-echo "✔ Consumer fixture: install, typecheck, build, and tree-shaking all pass"
+# The fixture imports @nswds/ui/styles.css AND runs its own Tailwind build, so
+# its stylesheet holds two independently-sorted sets of utilities in one cascade
+# layer — the configuration in which an app's own `.justify-center` outranked
+# Footer's `.lg\:justify-start` on v4.3.0. Prove both halves are really there
+# before asserting anything about them, or the check silently degrades into a
+# package-only one the moment app.css or the fixture markup drifts.
+STYLESHEETS=("$BUNDLE_DIR"/*.css)
+STYLESHEET="${STYLESHEETS[0]}"
+
+echo "── Assert: the stylesheet holds both halves (ours + the app's own build)"
+grep -qF 'max-lg\:justify-center' "$STYLESHEET" || {
+  echo "::error::No @nswds/ui utilities in the consumer stylesheet — the package half is missing." >&2
+  exit 1
+}
+grep -qE '\.justify-center[{,]' "$STYLESHEET" || {
+  echo "::error::The fixture's own Tailwind build emitted no '.justify-center'. fixtures/consumer must keep using the bare utilities that collide with Footer, or this stops testing the two-build hazard." >&2
+  exit 1
+}
+
+# Same invariant the package's own build enforces, but against the stylesheet a
+# consumer actually ends up with: no element a component renders may carry two
+# rules that set one property differently and are separated only by emission
+# order.
+echo "── Assert: no component depends on emission order in the combined stylesheet"
+node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
+  --css "$STYLESHEET" \
+  --src "$ROOT/packages/ui/src"
+
+echo "✔ Consumer fixture: install, typecheck, build, tree-shaking and cascade safety all pass"

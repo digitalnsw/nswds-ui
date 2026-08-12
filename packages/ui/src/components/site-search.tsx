@@ -242,7 +242,7 @@ function SiteSearch({
       <Dialog.Portal>
         <Dialog.Backdrop
           data-slot='site-search-overlay'
-          className='fixed inset-0 z-50 bg-black/80 transition-opacity duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs motion-reduce:transition-none'
+          className='fixed inset-0 z-50 bg-black/80 duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs motion-safe:transition-opacity'
         />
         <Dialog.Popup
           data-slot='site-search-panel'
@@ -255,7 +255,7 @@ function SiteSearch({
             // Centred panel on the house popup surface (popover.tsx / sheet.tsx).
             'fixed top-[max(--spacing(4),15vh)] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2',
             'rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden',
-            'transition duration-150 ease-out motion-reduce:transition-none',
+            'duration-150 ease-out motion-safe:transition',
             'data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
             className,
           )}

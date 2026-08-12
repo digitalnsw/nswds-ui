@@ -28,6 +28,29 @@ export default function Demo() {
 
 `@nswds/ui/styles.css` ships the full token foundation (NSW palette, masterbrand theme, semantic tokens) plus all component styles, so components render correctly with no extra wiring.
 
+### Using it with your own Tailwind build
+
+Most apps import this stylesheet _and_ run Tailwind over their own markup. That gives you two independently-sorted sets of utilities in the same `utilities` cascade layer, so **import ours first**:
+
+```css
+@import '@nswds/ui/styles.css';
+@import 'tailwindcss';
+```
+
+Order matters because a media query adds no specificity. Within one Tailwind build the sorter guarantees `.lg\:justify-start` is emitted after `.justify-center`; across two builds nothing does, so whichever half comes last wins any tie. Importing ours first means your utilities always win a tie, which is what you want: a class you wrote should beat one you didn't.
+
+Reverse the order and the same mechanism works against you — our plain `.inline-flex` (Button's base) would outrank your `hidden sm:inline-flex`, showing a button you meant to hide on mobile.
+
+Our components no longer depend on that tiebreak. Where a component needs a responsive override it uses mutually exclusive variants (`max-lg:justify-center lg:justify-start`) rather than a bare utility plus an override of it, so no rule you emit can displace one of ours on an element you never referenced. This is enforced on every build — see `scripts/check-cascade-safety.mjs`.
+
+If you do hit a conflict, a call-site override outranks both halves:
+
+```tsx
+<Footer className='[&_[data-slot=footer-legal-links]]:lg:justify-start' />
+```
+
+> **Don't import this stylesheet into a named cascade layer.** `@import '@nswds/ui/styles.css' layer(nswds)` looks like a tidy way to pin the order, but it also layers the `:root` and `[data-theme=dark], .dark` token blocks the file carries. Layered custom properties lose to any unlayered `:root` — including the one `@nswds/tokens` ships — and your theme will resolve to the wrong values.
+
 ### Icons
 
 Icons are tree-shakeable from the barrel, or importable individually:

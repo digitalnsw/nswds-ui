@@ -99,7 +99,7 @@ const focusOutline = {
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-center rounded-sm font-normal border forced-colors:outline transition-all motion-reduce:transition-none h-fit shrink-0',
+    'relative isolate inline-flex items-center rounded-sm font-normal border forced-colors:outline motion-safe:transition-all h-fit shrink-0',
     // Icon
     '*:data-[slot=icon]:size-4 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center sm:*:data-[slot=icon]:size-3',
   ],
@@ -304,9 +304,9 @@ const styles = {
   },
   size: {
     default:
-      'py-[calc(--spacing(1))] px-[calc(--spacing(2))] gap-[calc(--spacing(1)*1.5)] text-sm/5 sm:text-xs/5',
-    sm: 'py-[calc(--spacing(1)*0.5)] px-[calc(--spacing(1)*1.5)] gap-[calc(--spacing(1)*1.5)] text-sm/5 sm:text-xs/5',
-    lg: 'py-[calc(--spacing(1))] px-[calc(--spacing(2)*1.25)] gap-[calc(--spacing(2))] text-base/5 sm:text-sm/5',
+      'py-[calc(--spacing(1))] px-[calc(--spacing(2))] gap-[calc(--spacing(1)*1.5)] max-sm:text-sm/5 sm:text-xs/5',
+    sm: 'py-[calc(--spacing(1)*0.5)] px-[calc(--spacing(1)*1.5)] gap-[calc(--spacing(1)*1.5)] max-sm:text-sm/5 sm:text-xs/5',
+    lg: 'py-[calc(--spacing(1))] px-[calc(--spacing(2)*1.25)] gap-[calc(--spacing(2))] max-sm:text-base/5 sm:text-sm/5',
   },
 }
 

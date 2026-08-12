@@ -52,8 +52,8 @@ type SideNavItem = {
  */
 const sideNavRowVariants = cva(
   [
-    'w-full cursor-pointer rounded-r-sm border-l border-transparent py-1 pr-2 pl-4 text-left text-base/8 sm:text-sm/6',
-    'transition-colors motion-reduce:transition-none',
+    'w-full cursor-pointer rounded-r-sm border-l border-transparent py-1 pr-2 pl-4 text-left max-sm:text-base/8 sm:text-sm/6',
+    'motion-safe:transition-colors',
     'hover:border-grey-950 hover:bg-primary-800/10 hover:font-semibold hover:text-grey-950',
     'dark:text-grey-400 dark:hover:border-grey-400 dark:hover:text-white',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
@@ -131,7 +131,7 @@ function SideNavList({ items, currentHref, onNavigate, nested = false }: SideNav
       data-slot='side-nav-list'
       className={cn(
         'flex flex-col border-l border-grey-400 dark:border-grey-200/15',
-        nested ? 'mt-2 ml-5 gap-1' : 'mt-2 gap-2 lg:mt-4',
+        nested ? 'mt-2 ml-5 gap-1' : 'gap-2 max-lg:mt-2 lg:mt-4',
       )}
     >
       {items.map((item) => (
@@ -182,7 +182,7 @@ function SideNavRow({ item, currentHref, onNavigate }: SideNavRowProps) {
             <span>{item.title}</span>
             <IconChevronRight
               aria-hidden='true'
-              className='ml-2 size-5 shrink-0 transition-transform duration-200 group-data-panel-open:rotate-90 motion-reduce:transition-none'
+              className='ml-2 size-5 shrink-0 duration-200 group-data-panel-open:rotate-90 motion-safe:transition-transform'
             />
           </CollapsibleTrigger>
           <CollapsibleContent data-slot='side-nav-panel'>
@@ -317,7 +317,7 @@ function SideNav({
       aria-label={ariaLabel}
       // Base ink declared once here (the source inherited the page body's
       // colour in light mode; a design-system component states it).
-      className={cn('text-base text-grey-800 lg:text-sm dark:text-grey-400', className)}
+      className={cn('text-grey-800 max-lg:text-base lg:text-sm dark:text-grey-400', className)}
       ref={ref}
     >
       <ul role='list' data-slot='side-nav-sections' className='flex flex-col gap-9'>

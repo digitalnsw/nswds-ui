@@ -285,6 +285,16 @@ export { <Name>, <name>Variants }
 management unless Base UI explicitly provides an escape hatch for it. Check the
 [Base UI docs](https://base-ui.com/) for which primitive to use.
 
+**Responsive class strings must be cascade-safe.** Never pair a bare utility with a
+responsive override of the same property — write `max-lg:justify-center lg:justify-start`,
+not `justify-center lg:justify-start`, and `motion-safe:transition-colors`, not
+`transition-colors motion-reduce:transition-none`. The two forms render identically here,
+but the first survives being dropped into a consumer's stylesheet and the second does not:
+npm consumers import our precompiled utilities _and_ run their own Tailwind build, which
+re-emits any class they also use after ours, and a media query carries no extra specificity
+to defend the override. `check:cascade` runs on every build and fails on the unsafe form;
+its script header has the full explanation.
+
 ### Step 2 — Export from the package barrel
 
 Add to `packages/ui/src/index.ts`:
@@ -356,27 +366,28 @@ Stories live in `packages/ui/src/` but are **excluded from the tsup build** (see
 
 Run from the **repo root** unless noted.
 
-| What                    | Command                                                       |
-| ----------------------- | ------------------------------------------------------------- |
-| Install deps            | `npm install`                                                 |
-| Dev all apps            | `npm run dev`                                                 |
-| Storybook only          | `npm run dev -w @workspace/storybook` → http://localhost:6006 |
-| Web sandbox only        | `npm run dev -w web` → http://localhost:3000                  |
-| Build everything        | `npm run build`                                               |
-| Build UI package only   | `npm run build -w @nswds/ui`                                  |
-| Build JS only           | `npm run build:js -w @nswds/ui`                               |
-| Build CSS only          | `npm run build:css -w @nswds/ui`                              |
-| Lint all                | `npm run lint`                                                |
-| Format all              | `npm run format`                                              |
-| Check formatting        | `npm run format:check`                                        |
-| Type check all          | `npm run typecheck`                                           |
-| Check component drift   | `npm run check:drift -w @nswds/ui`                            |
-| Check icons parity      | `npm run check:icons -w @nswds/ui`                            |
-| Check published package | `npm run check:package -w @nswds/ui`                          |
-| Test consumer fixture   | `./scripts/test-consumer-fixture.sh`                          |
-| Build registry JSON     | `npm run registry:build`                                      |
-| Validate registry.json  | `npm run registry:validate`                                   |
-| Run Storybook tests     | `npm run test -w @workspace/storybook`                        |
+| What                    | Command                                                        |
+| ----------------------- | -------------------------------------------------------------- |
+| Install deps            | `npm install`                                                  |
+| Dev all apps            | `npm run dev`                                                  |
+| Storybook only          | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
+| Web sandbox only        | `npm run dev -w web` → http://localhost:3000                   |
+| Build everything        | `npm run build`                                                |
+| Build UI package only   | `npm run build -w @nswds/ui`                                   |
+| Build JS only           | `npm run build:js -w @nswds/ui`                                |
+| Build CSS only          | `npm run build:css -w @nswds/ui`                               |
+| Lint all                | `npm run lint`                                                 |
+| Format all              | `npm run format`                                               |
+| Check formatting        | `npm run format:check`                                         |
+| Type check all          | `npm run typecheck`                                            |
+| Check component drift   | `npm run check:drift -w @nswds/ui`                             |
+| Check cascade safety    | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
+| Check icons parity      | `npm run check:icons -w @nswds/ui`                             |
+| Check published package | `npm run check:package -w @nswds/ui`                           |
+| Test consumer fixture   | `./scripts/test-consumer-fixture.sh`                           |
+| Build registry JSON     | `npm run registry:build`                                       |
+| Validate registry.json  | `npm run registry:validate`                                    |
+| Run Storybook tests     | `npm run test -w @workspace/storybook`                         |
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
 
@@ -386,9 +397,9 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:drift`, `check:icons`, `build -w @nswds/ui`,
 `check:package`, `scripts/test-consumer-fixture.sh`, a registry-freshness
-rebuild, a Playwright Chromium install, and the Storybook suite. The five middle
-ones are easy to miss locally, and each fails for a reason the usual trio cannot
-see:
+rebuild, a Playwright Chromium install, and the Storybook suite. The middle ones
+are easy to miss locally, and each fails for a reason the usual trio cannot see
+(`check:cascade` is not a step of its own — it runs inside `build`):
 
 - **`format:check`** is `prettier --check .` over the **whole repo**. A
   path-scoped `npx prettier --check packages/ui/src` passes while an unformatted
@@ -405,6 +416,15 @@ see:
   reaches registry consumers (they copy source, so it has to travel with it).
 - **`check:icons`** regenerates the icon barrel and fails on any difference —
   see §4 and the icon generator for the regeneration command.
+- **`check:cascade`** (`packages/ui/scripts/check-cascade-safety.mjs`) runs
+  inside `build`, not as its own CI step, because it reads the built
+  `dist/styles.css` — so a `build` that "succeeds" locally without it has not
+  actually been run. It fails when a component's class string pairs a rule with
+  a conditional (media or container query) override of the same property whose
+  conditions overlap, because that pair resolves by emission order alone and an
+  npm consumer's own Tailwind build can re-emit the loser after ours. See §4
+  Step 1 for the authoring rule and the script header for why cascade layers
+  cannot fix it instead.
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.
@@ -415,6 +435,13 @@ see:
   unimported one does not (tree-shaking), and the compiled stylesheet shipped.
   Build `@nswds/ui` first. It is not redundant with `check:package`: that
   validates the package's _shape_, this exercises it as a consumer receives it.
+  The fixture runs its OWN Tailwind build alongside our stylesheet (see
+  `fixtures/consumer/src/app.css`), which is the only place the two-build
+  cascade configuration is exercised end to end — Storybook and `apps/` consume
+  `globals.css`, the dev entry, so they cannot reproduce it. It re-runs
+  `check:cascade` against the combined stylesheet, and first asserts that both
+  halves are present, so trimming the fixture's markup cannot quietly turn that
+  into a package-only check.
 
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.

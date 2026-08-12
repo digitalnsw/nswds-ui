@@ -57,7 +57,7 @@ const navigationMenuTriggerVariants = cva([
   // mb-2 pairs with the list's bottom hairline, matching the app source.
   'group mb-2 inline-flex h-9 w-max cursor-pointer items-center justify-center gap-1 rounded-sm px-4 py-2 text-sm font-medium whitespace-nowrap select-none',
   'bg-transparent text-foreground',
-  'transition-colors motion-reduce:transition-none',
+  'motion-safe:transition-colors',
   // Resting halo on hover/focus/open. `focus:` (not focus-visible) is
   // deliberate for the tint — like Button, triggers give click feedback —
   // while the *outline* below stays keyboard-only.
@@ -161,9 +161,9 @@ function NavigationMenu({
             // Base UI reports its measured geometry through these vars; sizing
             // the box from them lets top/left glide between triggers.
             'isolate z-50 box-border h-[var(--positioner-height)] w-[var(--positioner-width)] max-w-[var(--available-width)]',
-            'transition-[top,left,right,bottom] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[top,left,right,bottom]',
             // data-instant: Base UI disables the glide (e.g. keyboard re-anchor).
-            'data-instant:transition-none motion-reduce:transition-none',
+            'data-instant:transition-none',
           )}
         >
           <NavigationMenuPrimitive.Popup
@@ -175,7 +175,7 @@ function NavigationMenu({
               // it into --popup-*), so switching sections morphs the surface
               // instead of jump-cutting.
               'h-[var(--popup-height)] w-[var(--popup-width)] max-w-[var(--available-width)] origin-(--transform-origin)',
-              'transition-[opacity,transform,width,height,scale,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+              'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[opacity,transform,width,height,scale,translate]',
               // Open/close via Base UI transition attributes.
               'data-starting-style:scale-95 data-starting-style:opacity-0',
               'data-ending-style:scale-95 data-ending-style:opacity-0',
@@ -272,7 +272,7 @@ function NavigationMenuTrigger({ className, children, ...props }: NavigationMenu
       <NavigationMenuPrimitive.Icon
         data-slot='navigation-menu-icon'
         aria-hidden='true'
-        className='flex transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-popup-open:rotate-180 motion-reduce:transition-none'
+        className='flex duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] data-popup-open:rotate-180 motion-safe:transition-transform'
       >
         <IconKeyboardArrowDown className='size-5' />
       </NavigationMenuPrimitive.Icon>
@@ -301,7 +301,7 @@ function NavigationMenuContent({ className, ...props }: NavigationMenuContentPro
       data-slot='navigation-menu-content'
       className={cn(
         'h-full w-max max-w-[var(--available-width)] p-2',
-        'transition-[opacity,translate] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+        'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[opacity,translate]',
         'data-ending-style:opacity-0 data-starting-style:opacity-0',
         // Slide with the direction of travel between adjacent triggers.
         'data-starting-style:data-[activation-direction=left]:-translate-x-1/2',
@@ -361,7 +361,7 @@ function NavigationMenuLink({
       className={cn(
         navigationMenuInk,
         'flex flex-col gap-1 rounded-sm p-2 text-sm text-foreground',
-        'transition-colors motion-reduce:transition-none',
+        'motion-safe:transition-colors',
         'hover:bg-(--nav-menu-halo) focus:bg-(--nav-menu-halo) active:bg-(--nav-menu-halo-active)',
         // Persistent tint for the current page (`active` prop → data-active).
         'data-active:bg-(--nav-menu-halo)',

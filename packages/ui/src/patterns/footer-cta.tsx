@@ -84,7 +84,7 @@ export function FooterCta({
 }: FooterCtaProps) {
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
-      <div className='my-4 flex flex-col gap-4 rounded-sm border border-(--footer-border) bg-(--footer-halo) p-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8'>
+      <div className='my-4 flex rounded-sm border border-(--footer-border) bg-(--footer-halo) p-6 max-sm:flex-col max-sm:gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8'>
         <div className='flex flex-col gap-1'>
           <h2 className='text-lg font-bold text-pretty text-(--footer-ink)'>{cta.heading}</h2>
           <p className='text-sm text-pretty text-(--footer-ink)'>{cta.description}</p>
