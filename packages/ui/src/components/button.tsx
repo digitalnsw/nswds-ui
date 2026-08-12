@@ -335,11 +335,6 @@ const buttonVariants = cva(styles.base, {
     // pixel grid and stays crisp only at the sizes it was designed for, so
     // "40% of the box" would produce sizes no glyph was drawn for.
     //
-    // This is the NSW Design System's scale with one deliberate divergence:
-    // NSWDS publishes 20 / 24 / 30 / 36 and 30 is not a multiple of 4, so 28
-    // and 32 take its place. 24px is what NSWDS puts in a standard button and
-    // 20px in a small one, which is where `default` and `sm` below come from.
-    //
     // These override the step's own `--btn-icon-size` rather than inheriting
     // it. Beside a label an icon is an accent sized to the text; when it is
     // the only content it *is* the label, so it steps up and holds one size
