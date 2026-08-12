@@ -327,13 +327,21 @@ type IconSlot = React.ElementType | React.ReactElement
 /**
  * Renders an icon slot in whichever form it arrived, stamping `data-slot='icon'`
  * so the `*:data-[slot=icon]:…` rules above size and colour it. An element that
- * already carries its own `data-slot` keeps it — the NSWDS icons bake one in, and
- * a consumer who set one deliberately meant it.
+ * sets its own `data-slot` to an actual value keeps it — a consumer who named one
+ * deliberately meant it. `undefined` and `null` count as unset and get the stamp,
+ * because forwarding an optional prop that happens to be absent is idiomatic React
+ * and must not silently strip the icon's sizing and colour.
+ *
+ * Passing only the key we intend to set is deliberate: `cloneElement` already seeds
+ * its props from `slot.props`, so spreading them back into the config would be a
+ * no-op — except that React 19 copies every config key across with no undefined-skip
+ * (`defaultProps` having been removed), which is exactly how a forwarded
+ * `data-slot={undefined}` would erase the stamp.
  */
 function renderIconSlot(slot: IconSlot | undefined | null): React.ReactNode {
   if (!slot) return null
-  if (React.isValidElement<Record<string, unknown>>(slot)) {
-    return React.cloneElement(slot, { 'data-slot': 'icon', ...slot.props })
+  if (React.isValidElement<{ 'data-slot'?: string }>(slot)) {
+    return React.cloneElement(slot, { 'data-slot': slot.props['data-slot'] ?? 'icon' })
   }
   // `isValidElement` is a type guard, but its false branch does not subtract
   // ReactElement from the union — TS keeps both members — so name the remaining

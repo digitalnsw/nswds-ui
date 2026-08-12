@@ -531,6 +531,11 @@ export const IconSlotForms: Story = {
       {/* A consumer-supplied mark with no baked-in data-slot — the button must
           stamp one on, or it loses the icon sizing and colour rules. */}
       <Button leadingVisual={<svg viewBox='0 0 24 24' aria-hidden />}>Bare svg</Button>
+      {/* Forwarding an optional prop that happens to be undefined is idiomatic
+          React and must read as "not specified", not as "override with nothing"
+          — otherwise the stamp is erased and the icon silently loses its sizing
+          and colour rules. */}
+      <Button leadingVisual={<IconAdd data-slot={undefined} />}>Undefined slot</Button>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -556,6 +561,13 @@ export const IconSlotForms: Story = {
 
     if (iconsIn('Bare svg').length !== 1) {
       throw new Error('An element without its own data-slot should still be stamped with one.')
+    }
+
+    // React 19's cloneElement copies every config key over the element's props
+    // with no undefined-skip, so a `data-slot={undefined}` passed straight into
+    // the clone config erases the stamp instead of deferring to it.
+    if (iconsIn('Undefined slot').length !== 1) {
+      throw new Error('data-slot={undefined} should count as unset and still be stamped.')
     }
   },
 }
