@@ -1,3 +1,9 @@
+## [4.4.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.1...@nswds/ui-v4.4.2) (2026-08-12)
+
+### Bug Fixes
+
+* **ui:** enlarge the header brand logo and ink the sitename brand blue ([#108](https://github.com/digitalnsw/nswds-ui/issues/108)) ([24b5d6f](https://github.com/digitalnsw/nswds-ui/commit/24b5d6f9c3b8bc5148aaa02d90bb08ead51e79ad)), closes [#105](https://github.com/digitalnsw/nswds-ui/issues/105)
+
 ## [4.4.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.0...@nswds/ui-v4.4.1) (2026-08-12)
 
 ### Bug Fixes

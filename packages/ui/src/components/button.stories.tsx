@@ -200,7 +200,15 @@ const meta = {
           {/* Sizes */}
           <Section
             title='Sizes'
-            description='Four presets. Use icon for square, icon-only buttons (always supply an aria-label).'
+            description={
+              <>
+                Three scale steps — <code>sm</code>, <code>default</code>, <code>lg</code> — running
+                52 / 60 / 68px tall on narrow viewports and 44 / 52 / 60px from the <code>sm:</code>{' '}
+                breakpoint up. <code>icon</code> is not a fourth step on that ramp: it is a flat
+                40×40 chrome square for header actions, dialog close buttons and footer social
+                links, and it lines up with none of the three.
+              </>
+            }
           >
             <Preview>
               <div className='flex flex-wrap items-end gap-8'>
@@ -216,6 +224,38 @@ const meta = {
                 <Cell label='icon'>
                   <Button size='icon' aria-label='Add' leadingVisual={IconAdd} />
                 </Cell>
+              </div>
+            </Preview>
+          </Section>
+
+          {/* Icon-only buttons */}
+          <Section
+            title='Icon-only buttons'
+            description={
+              <>
+                The scale step and whether a button is icon-only are separate choices. Add{' '}
+                <code>iconOnly</code> to square the button at whatever <code>size</code> is active,
+                so it sits level with the text buttons beside it — the layout{' '}
+                <code>HeaderActions</code> exists for. Reach for <code>size=&apos;icon&apos;</code>{' '}
+                instead when you want the smaller chrome square and nothing needs to align with it.
+                Either way, supply an <code>aria-label</code>: there is no visible text.
+              </>
+            }
+          >
+            <Preview>
+              <div className='flex flex-wrap items-center gap-4'>
+                {(['sm', 'default', 'lg'] as const).map((size) => (
+                  <div key={size} className='flex items-center gap-2'>
+                    <Button size={size}>Button</Button>
+                    <Button
+                      size={size}
+                      iconOnly
+                      variant='outline'
+                      aria-label={`Search (${size})`}
+                      leadingVisual={IconSearch}
+                    />
+                  </div>
+                ))}
               </div>
             </Preview>
           </Section>
