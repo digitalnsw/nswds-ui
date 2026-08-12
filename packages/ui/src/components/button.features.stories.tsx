@@ -394,10 +394,11 @@ export const Sizes: Story = {
 
 const scaleSteps = ['sm', 'default', 'lg'] as const
 
-// Glyph size each step puts inside an `iconOnly` square, from the 4px icon
-// ladder (20/24/28/32/36/40). Constant across breakpoints by design, which is
-// what makes this assertable without knowing the viewport.
-const iconOnlyGlyphSizes: Record<(typeof scaleSteps)[number], number> = {
+// Glyph size per step, off the 4px icon ladder (20/24/28/32/36/40). A
+// function of the step alone — same value whether the button carries a label
+// or is icon-only, and the same at every breakpoint, which is what makes it
+// assertable without knowing the viewport.
+const glyphSizes: Record<(typeof scaleSteps)[number], number> = {
   sm: 20,
   default: 24,
   lg: 28,
@@ -440,7 +441,9 @@ export const IconOnly: Story = {
                 reason that has nothing to do with the size step, which would
                 make this story fail on viewport width rather than on a real
                 regression. */}
-            <Button data-probe='text' size={size} labelWrap={false}>
+            {/* Carries a leading icon so its glyph can be compared against the
+                icon-only button's — they must be identical at a given step. */}
+            <Button data-probe='text' size={size} labelWrap={false} leadingVisual={IconAdd}>
               Button
             </Button>
             <ButtonLink data-probe='link' size={size} href='#' variant='outline' labelWrap={false}>
@@ -535,18 +538,24 @@ export const IconOnly: Story = {
         )
       }
 
-      // The glyph steps up off the 4px ladder and holds one size at every
-      // breakpoint, so this is assertable without knowing the viewport.
-      const glyph = canvasElement.querySelector<HTMLElement>(
-        `[data-row="${size}"] [data-probe="icon-only"] [data-slot="icon"]`,
-      )
-      if (!glyph) {
-        throw new Error(`No [data-slot="icon"] inside the "${size}" iconOnly button.`)
-      }
-      const expected = iconOnlyGlyphSizes[size]
-      const actual = glyph.getBoundingClientRect().height
-      if (Math.abs(actual - expected) > 0.5) {
-        throw new Error(`size="${size}" iconOnly glyph is ${actual}px, expected ${expected}px.`)
+      // The glyph is a function of the step alone: one size at every
+      // breakpoint (so this is assertable without knowing the viewport) and
+      // the same whether the button carries a label or not. That second part
+      // is what lets `iconOnly` avoid overriding the glyph at all.
+      const expected = glyphSizes[size]
+      for (const probeName of ['text', 'icon-only'] as const) {
+        const glyph = canvasElement.querySelector<HTMLElement>(
+          `[data-row="${size}"] [data-probe="${probeName}"] [data-slot="icon"]`,
+        )
+        if (!glyph) {
+          throw new Error(`No [data-slot="icon"] inside the "${size}" ${probeName} button.`)
+        }
+        const actual = glyph.getBoundingClientRect().height
+        if (Math.abs(actual - expected) > 0.5) {
+          throw new Error(
+            `size="${size}" ${probeName} glyph is ${actual}px, expected ${expected}px.`,
+          )
+        }
       }
     }
 

@@ -271,22 +271,34 @@ const styles = {
   // --btn-border-w` and the border adds `--btn-border-w` back, so every
   // variant lands on `--btn-h` whether it draws a 1px or 2px edge, and the
   // outer geometry stays put while the label shifts 1px to make room.
+  //
+  // `--btn-icon-size` comes off the icon ladder — 20 / 24 / 28 / 32 / 36 /
+  // 40px, i.e. `--spacing(5)` through `--spacing(10)`. Every level is a
+  // multiple of 4, so glyphs share the grid with the padding and heights
+  // around them and land on whole device pixels at 1x; a discrete ladder
+  // rather than a proportion of the box, because a glyph is only crisp at the
+  // sizes it was drawn for.
+  //
+  // The glyph is a function of the step alone — it does NOT shrink at `sm:`
+  // the way the padding does. Padding shrinks because a roomier viewport
+  // needs less of it; a glyph is content, and it used to get absolutely
+  // smaller as the viewport got larger. Holding it also keeps every step
+  // inside the 1.75rem line box, so the box height is unaffected by whether
+  // a button carries an icon, and an icon-only button needs no override.
   size: {
     default:
-      'px-[calc(--spacing(6)-var(--btn-border-w))] py-[calc(--spacing(4)-var(--btn-border-w))] sm:px-[calc(--spacing(5.5)-var(--btn-border-w))] sm:py-[calc(--spacing(3)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(4)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(3)*2)] [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
-    sm: 'px-[calc(--spacing(5)-var(--btn-border-w))] py-[calc(--spacing(3)-var(--btn-border-w))] sm:px-[calc(--spacing(4.5)-var(--btn-border-w))] sm:py-[calc(--spacing(2)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(3)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(2)*2)] [--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(4)]',
-    lg: 'px-[calc(--spacing(7)-var(--btn-border-w))] py-[calc(--spacing(5)-var(--btn-border-w))] sm:px-[calc(--spacing(6.5)-var(--btn-border-w))] sm:py-[calc(--spacing(4)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(5)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(4)*2)] [--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(6)]',
+      'px-[calc(--spacing(6)-var(--btn-border-w))] py-[calc(--spacing(4)-var(--btn-border-w))] sm:px-[calc(--spacing(5.5)-var(--btn-border-w))] sm:py-[calc(--spacing(3)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(4)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(3)*2)] [--btn-icon-size:--spacing(6)]',
+    sm: 'px-[calc(--spacing(5)-var(--btn-border-w))] py-[calc(--spacing(3)-var(--btn-border-w))] sm:px-[calc(--spacing(4.5)-var(--btn-border-w))] sm:py-[calc(--spacing(2)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(3)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(2)*2)] [--btn-icon-size:--spacing(5)]',
+    lg: 'px-[calc(--spacing(7)-var(--btn-border-w))] py-[calc(--spacing(5)-var(--btn-border-w))] sm:px-[calc(--spacing(6.5)-var(--btn-border-w))] sm:py-[calc(--spacing(4)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(5)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(4)*2)] [--btn-icon-size:--spacing(7)]',
     // A compact chrome square that deliberately sits below the text steps —
-    // header actions, dialog close buttons, footer social links. It is square
-    // at every breakpoint, so the glyph holds one size too; it used to shrink
-    // to `--spacing(5)` above `sm:`, filling half a box that never got smaller.
-    // For an icon button that must line up with text buttons beside it, use
-    // `iconOnly` with `sm`/`default`/`lg` instead.
+    // header actions, dialog close buttons, footer social links. For an icon
+    // button that must line up with text buttons beside it, use `iconOnly`
+    // with `sm`/`default`/`lg` instead.
     icon: 'w-10 h-10 flex-none [--btn-h:--spacing(10)] [--btn-icon-size:--spacing(6)]',
   },
   // Square the button at the current step and drop the horizontal padding, so
   // the scale step and "is this icon-only" are independent axes. The glyph
-  // inside it is sized per step in `compoundVariants` below.
+  // needs no adjustment — the step already sizes it off the ladder.
   iconOnly: 'size-(--btn-h) flex-none p-0 sm:p-0',
 }
 
@@ -325,41 +337,6 @@ const buttonVariants = cva(styles.base, {
     },
   },
   compoundVariants: [
-    // ── Icon-only glyph sizes ────────────────────────────────────────────
-    //
-    // The icon-size ladder is 20 / 24 / 28 / 32 / 36 / 40px — `--spacing(5)`
-    // through `--spacing(10)`. Every level is a multiple of 4, so glyphs sit
-    // on the same grid as the padding and heights around them, and each one
-    // lands on a whole device pixel at 1x. It is a discrete ladder rather
-    // than a proportion of the button box on purpose: an icon is drawn on a
-    // pixel grid and stays crisp only at the sizes it was designed for, so
-    // "40% of the box" would produce sizes no glyph was drawn for.
-    //
-    // These override the step's own `--btn-icon-size` rather than inheriting
-    // it. Beside a label an icon is an accent sized to the text; when it is
-    // the only content it *is* the label, so it steps up and holds one size
-    // across breakpoints — same reasoning as `size='icon'`, and for the same
-    // reason: the box it sits in never gets smaller either.
-    //
-    // Each entry restates the `sm:` value as well as the base one. The step
-    // ships both, and tailwind-merge scopes a modifier to its own group, so
-    // overriding only the base would leave the step's `sm:` shrink in force
-    // above the breakpoint.
-    {
-      size: 'sm',
-      iconOnly: true,
-      className: '[--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(5)]',
-    },
-    {
-      size: 'default',
-      iconOnly: true,
-      className: '[--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(6)]',
-    },
-    {
-      size: 'lg',
-      iconOnly: true,
-      className: '[--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(7)]',
-    },
     // The link variant reads as an inline Link despite the <button> tag:
     // strip the button chrome (padding from `size`, border, radius, bold
     // weight) and adopt Link's typography and 1em icon sizing so the hover
@@ -390,8 +367,9 @@ const buttonVariants = cva(styles.base, {
 /** Visual/content props shared by `Button` and `ButtonLink`. */
 type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly'> & {
   /**
-   * Scale step. `sm` / `default` / `lg` set the padding and icon size, and
-   * render 52 / 60 / 68px tall below `sm:` and 44 / 52 / 60px at or above it.
+   * Scale step. `sm` / `default` / `lg` render 52 / 60 / 68px tall below
+   * `sm:` and 44 / 52 / 60px at or above it, and set the glyph to 20 / 24 /
+   * 28px — the padding tightens on wider viewports, the glyph does not.
    *
    * `icon` is not a fourth step on that ramp — it is a flat 40×40 chrome
    * square (header actions, dialog close buttons, footer social links) that
@@ -404,10 +382,10 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * `size` step — so `iconOnly` beside a `size='default'` button matches it
    * exactly. Supply an `aria-label`, since there is no visible text.
    *
-   * The glyph steps up from the size the step uses beside a label, and holds
-   * it across breakpoints: 20px at `sm`, 24px at `default`, 28px at `lg`.
-   * For a denser icon button that does not align with the text steps, use
-   * `size='icon'` (24px in a 40×40 box).
+   * The glyph is whatever the step already uses — 20px at `sm`, 24px at
+   * `default`, 28px at `lg` — so an icon button and a text button at the same
+   * `size` show the same glyph. For a denser icon button that does not line
+   * up with the text steps, use `size='icon'` (24px in a 40×40 box).
    */
   iconOnly?: boolean | null
   className?: string
