@@ -285,7 +285,8 @@ const styles = {
     icon: 'w-10 h-10 flex-none [--btn-h:--spacing(10)] [--btn-icon-size:--spacing(6)]',
   },
   // Square the button at the current step and drop the horizontal padding, so
-  // the scale step and "is this icon-only" are independent axes.
+  // the scale step and "is this icon-only" are independent axes. The glyph
+  // inside it is sized per step in `compoundVariants` below.
   iconOnly: 'size-(--btn-h) flex-none p-0 sm:p-0',
 }
 
@@ -324,6 +325,46 @@ const buttonVariants = cva(styles.base, {
     },
   },
   compoundVariants: [
+    // ── Icon-only glyph sizes ────────────────────────────────────────────
+    //
+    // The icon-size ladder is 20 / 24 / 28 / 32 / 36 / 40px — `--spacing(5)`
+    // through `--spacing(10)`. Every level is a multiple of 4, so glyphs sit
+    // on the same grid as the padding and heights around them, and each one
+    // lands on a whole device pixel at 1x. It is a discrete ladder rather
+    // than a proportion of the button box on purpose: an icon is drawn on a
+    // pixel grid and stays crisp only at the sizes it was designed for, so
+    // "40% of the box" would produce sizes no glyph was drawn for.
+    //
+    // This is the NSW Design System's scale with one deliberate divergence:
+    // NSWDS publishes 20 / 24 / 30 / 36 and 30 is not a multiple of 4, so 28
+    // and 32 take its place. 24px is what NSWDS puts in a standard button and
+    // 20px in a small one, which is where `default` and `sm` below come from.
+    //
+    // These override the step's own `--btn-icon-size` rather than inheriting
+    // it. Beside a label an icon is an accent sized to the text; when it is
+    // the only content it *is* the label, so it steps up and holds one size
+    // across breakpoints — same reasoning as `size='icon'`, and for the same
+    // reason: the box it sits in never gets smaller either.
+    //
+    // Each entry restates the `sm:` value as well as the base one. The step
+    // ships both, and tailwind-merge scopes a modifier to its own group, so
+    // overriding only the base would leave the step's `sm:` shrink in force
+    // above the breakpoint.
+    {
+      size: 'sm',
+      iconOnly: true,
+      className: '[--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(5)]',
+    },
+    {
+      size: 'default',
+      iconOnly: true,
+      className: '[--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(6)]',
+    },
+    {
+      size: 'lg',
+      iconOnly: true,
+      className: '[--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(7)]',
+    },
     // The link variant reads as an inline Link despite the <button> tag:
     // strip the button chrome (padding from `size`, border, radius, bold
     // weight) and adopt Link's typography and 1em icon sizing so the hover
@@ -367,6 +408,11 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * Render as a square containing only the icon, at the height of the current
    * `size` step — so `iconOnly` beside a `size='default'` button matches it
    * exactly. Supply an `aria-label`, since there is no visible text.
+   *
+   * The glyph steps up from the size the step uses beside a label, and holds
+   * it across breakpoints: 20px at `sm`, 24px at `default`, 28px at `lg`.
+   * For a denser icon button that does not align with the text steps, use
+   * `size='icon'` (24px in a 40×40 box).
    */
   iconOnly?: boolean | null
   className?: string

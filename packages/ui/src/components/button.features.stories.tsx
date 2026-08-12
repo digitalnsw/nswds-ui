@@ -394,6 +394,15 @@ export const Sizes: Story = {
 
 const scaleSteps = ['sm', 'default', 'lg'] as const
 
+// Glyph size each step puts inside an `iconOnly` square, from the 4px icon
+// ladder (20/24/28/32/36/40). Constant across breakpoints by design, which is
+// what makes this assertable without knowing the viewport.
+const iconOnlyGlyphSizes: Record<(typeof scaleSteps)[number], number> = {
+  sm: 20,
+  default: 24,
+  lg: 28,
+}
+
 // Every variant that draws a button-shaped box. `link` is excluded: it strips
 // the chrome and hugs its line box on purpose, so it is not part of the
 // shared-height contract.
@@ -524,6 +533,20 @@ export const IconOnly: Story = {
         throw new Error(
           `size="${size}" iconOnly is ${square.width}×${square.height}, expected a square.`,
         )
+      }
+
+      // The glyph steps up off the 4px ladder and holds one size at every
+      // breakpoint, so this is assertable without knowing the viewport.
+      const glyph = canvasElement.querySelector<HTMLElement>(
+        `[data-row="${size}"] [data-probe="icon-only"] [data-slot="icon"]`,
+      )
+      if (!glyph) {
+        throw new Error(`No [data-slot="icon"] inside the "${size}" iconOnly button.`)
+      }
+      const expected = iconOnlyGlyphSizes[size]
+      const actual = glyph.getBoundingClientRect().height
+      if (Math.abs(actual - expected) > 0.5) {
+        throw new Error(`size="${size}" iconOnly glyph is ${actual}px, expected ${expected}px.`)
       }
     }
 
