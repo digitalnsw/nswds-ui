@@ -1,3 +1,15 @@
+## [4.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.2...@nswds/ui-v4.5.0) (2026-08-12)
+
+### Features
+
+* **ui:** give Button an iconOnly prop and derive every step's height from one token ([#107](https://github.com/digitalnsw/nswds-ui/issues/107)) ([ba4a171](https://github.com/digitalnsw/nswds-ui/commit/ba4a171f2c5cdc73a968fc1e80fa6b653809f69e))
+
+## [4.4.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.1...@nswds/ui-v4.4.2) (2026-08-12)
+
+### Bug Fixes
+
+* **ui:** enlarge the header brand logo and ink the sitename brand blue ([#108](https://github.com/digitalnsw/nswds-ui/issues/108)) ([24b5d6f](https://github.com/digitalnsw/nswds-ui/commit/24b5d6f9c3b8bc5148aaa02d90bb08ead51e79ad)), closes [#105](https://github.com/digitalnsw/nswds-ui/issues/105)
+
 ## [4.4.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.4.0...@nswds/ui-v4.4.1) (2026-08-12)
 
 ### Bug Fixes

@@ -264,6 +264,44 @@ export const Default: Story = {
   },
 }
 
+export const SocialIconElements: Story = {
+  name: 'Social Icons as Elements',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`socialLinks[].icon` takes the component or an element. A React Server Component assembling this data has to use the element form — `Footer` is server-compatible but the `ButtonLink` it forwards to is not, and a bare function cannot cross the RSC boundary.',
+      },
+    },
+  },
+  args: {
+    socialLinks: [
+      { name: 'LinkedIn', href: '#linkedin', icon: <LinkedInIcon /> },
+      { name: 'X', href: '#x', icon: <XIcon /> },
+      { name: 'YouTube', href: '#youtube', icon: <YouTubeIcon /> },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const social = getFooter(canvasElement).querySelectorAll<HTMLElement>(
+      '[data-slot="footer-social-link"]',
+    )
+
+    if (social.length !== 3) {
+      throw new Error(`Expected 3 social links, got ${social.length}.`)
+    }
+
+    for (const link of social) {
+      // data-slot is what the ButtonLink icon rules size and colour off — these
+      // stand-ins don't bake one in, so the slot has to stamp it.
+      if (!link.querySelector('svg[data-slot="icon"]')) {
+        throw new Error(
+          `Social link "${link.getAttribute('aria-label')}" rendered no [data-slot=icon] svg.`,
+        )
+      }
+    }
+  },
+}
+
 export const Colours: Story = {
   render: (args) => (
     <div className='space-y-4'>
@@ -306,6 +344,28 @@ export const DarkMode: Story = {
     // prove the surface actually deepened.
     const lightness = (el: HTMLElement) => parse(getComputedStyle(el).backgroundColor)[0] ?? NaN
 
+    // Custom properties are substituted as the text the stylesheet authored,
+    // not as a computed colour, and the two builds spell white differently:
+    // the dev entry emits `oklch(1 0 0)` while the production build's CSS
+    // minifier rewrites it to `oklch(100% 0 0)`. Comparing that text directly
+    // passed in dev and failed in the built Storybook that Chromatic
+    // snapshots. Painting the value onto a canvas is the one normalisation
+    // that crosses colour spaces — `getComputedStyle` and `fillStyle` both
+    // keep oklch as oklch and hex as rgb, so neither can compare the two.
+    const WHITE_RGBA = '255,255,255,255'
+    const toRgba = (value: string) => {
+      const context = document.createElement('canvas').getContext('2d')
+      if (!context) {
+        throw new Error('Could not get a 2D canvas context to resolve colours.')
+      }
+      // An unparseable value leaves fillStyle untouched, so seed it with black:
+      // a colour no check here expects, rather than a stale one that might pass.
+      context.fillStyle = '#000000'
+      context.fillStyle = value
+      context.fillRect(0, 0, 1, 1)
+      return Array.from(context.getImageData(0, 0, 1, 1).data).join(',')
+    }
+
     const cards = canvasElement.querySelectorAll<HTMLElement>('.overflow-hidden')
     if (cards.length !== footerColors.length) {
       throw new Error(`Expected ${footerColors.length} colour cards, got ${cards.length}.`)
@@ -326,7 +386,10 @@ export const DarkMode: Story = {
       // Ink must go white in dark mode on every variant, including the ones
       // that carry dark ink in light mode.
       const ink = getComputedStyle(dark!).getPropertyValue('--footer-ink').trim()
-      if (!ink.startsWith('oklch(1 0 0')) {
+      if (!ink) {
+        throw new Error(`The dark "${name}" surface declares no --footer-ink.`)
+      }
+      if (toRgba(ink) !== WHITE_RGBA) {
         throw new Error(`Expected white ink on the dark "${name}" surface, got "${ink}".`)
       }
 

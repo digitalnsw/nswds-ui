@@ -222,7 +222,13 @@ function HeaderBrand({
     logo === true ? (
       <Logo
         logoType={onDarkSurface ? 'reversed' : 'default'}
-        className='h-10 w-auto sm:h-12 lg:h-14'
+        // 64px from lg, 56px below it — 56px is the floor, so the lockup stays
+        // legible on a phone. Written as mutually exclusive breakpoint ranges
+        // rather than `h-14 lg:h-16`: a bare `h-14` a consumer also uses is
+        // re-emitted after ours by their own Tailwind build, and a media query
+        // adds no specificity, so it would outrank the lg step and freeze the
+        // logo at 56px.
+        className='w-auto max-lg:h-14 lg:h-16'
       />
     ) : (
       // `false` / `null` fall through as the falsy nodes they are; anything
@@ -250,7 +256,19 @@ function HeaderBrand({
       >
         {logoNode}
         {sitename ? (
-          <Sitename className='text-lg font-bold text-balance sm:text-xl'>{sitename}</Sitename>
+          // Brand-blue ink on the light surfaces (14.4:1 on white, 13.2:1 on
+          // grey-100 — both WCAG 2.2 AAA). The `dark` surface *is* primary-800
+          // and `grey` is nearly as deep, so those keep the header's own white
+          // ink; dark mode does the same, matching the `dark:text-white` the
+          // light/white variants already set on the surface.
+          <Sitename
+            className={cn(
+              'text-lg font-bold text-balance sm:text-xl',
+              !onDarkSurface && 'text-primary-800 dark:text-white',
+            )}
+          >
+            {sitename}
+          </Sitename>
         ) : null}
       </Link>
       {version ? (

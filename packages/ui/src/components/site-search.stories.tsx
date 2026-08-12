@@ -196,10 +196,16 @@ function typeIntoInput(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
+/**
+ * Dispatch a keydown and report whether a handler claimed it. `SiteSearch`
+ * calls `preventDefault()` on the chord it acts on, so the return value is a
+ * reliable "this press was handled" signal — which lets a caller wait for a
+ * listener to attach instead of assuming it already has.
+ */
 function pressKey(target: EventTarget, key: string, init: KeyboardEventInit = {}) {
-  target.dispatchEvent(
-    new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
-  )
+  const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })
+  target.dispatchEvent(event)
+  return event.defaultPrevented
 }
 
 async function openPalette(canvasElement: HTMLElement) {
@@ -302,7 +308,17 @@ export const Shortcut: Story = {
     }
 
     // Ctrl-K on the document opens…
-    pressKey(document, 'k', { ctrlKey: true })
+    //
+    // The listener is attached in an effect, and on a cold production build
+    // that effect can flush after the trigger is already in the DOM — a single
+    // dispatch then lands on nothing, so this passed in dev and failed in the
+    // built Storybook Chromatic snapshots. Retry until a press is actually
+    // claimed, then stop: the chord toggles, so pressing again once it has
+    // landed would close the palette we just opened.
+    await waitFor(
+      () => pressKey(document, 'k', { ctrlKey: true }),
+      'Expected the Ctrl-K listener to attach.',
+    )
     await waitFor(() => getPanel() !== null, 'Expected Ctrl-K to open the palette.')
 
     // …and the same chord toggles it closed again, per the nswds-app source.
@@ -522,10 +538,14 @@ export const CssCheck: Story = {
     if (!item) {
       throw new Error('Expected at least one result row to render.')
     }
-    if (item.getBoundingClientRect().height < 44) {
-      throw new Error(
-        `Expected result rows to be at least 44px tall, got ${item.getBoundingClientRect().height}px.`,
-      )
+    // Sub-pixel tolerance: `scale` serialises as "1" once it rounds there, so
+    // the poll above can clear while the composited value is still a hair
+    // under (44 × 0.99999965 = 43.99998), which failed this intermittently in
+    // the built Storybook. The assertion is about the 44px target size, not
+    // float-exactness.
+    const height = item.getBoundingClientRect().height
+    if (height < 44 - 0.05) {
+      throw new Error(`Expected result rows to be at least 44px tall, got ${height}px.`)
     }
 
     await closePalette()

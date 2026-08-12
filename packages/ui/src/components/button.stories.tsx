@@ -200,7 +200,15 @@ const meta = {
           {/* Sizes */}
           <Section
             title='Sizes'
-            description='Four presets. Use icon for square, icon-only buttons (always supply an aria-label).'
+            description={
+              <>
+                Three scale steps — <code>sm</code>, <code>default</code>, <code>lg</code> — running
+                52 / 60 / 68px tall on narrow viewports and 44 / 52 / 60px from the <code>sm:</code>{' '}
+                breakpoint up. <code>icon</code> is not a fourth step on that ramp: it is a flat
+                40×40 chrome square for header actions, dialog close buttons and footer social
+                links, and it lines up with none of the three.
+              </>
+            }
           >
             <Preview>
               <div className='flex flex-wrap items-end gap-8'>
@@ -216,6 +224,38 @@ const meta = {
                 <Cell label='icon'>
                   <Button size='icon' aria-label='Add' leadingVisual={IconAdd} />
                 </Cell>
+              </div>
+            </Preview>
+          </Section>
+
+          {/* Icon-only buttons */}
+          <Section
+            title='Icon-only buttons'
+            description={
+              <>
+                The scale step and whether a button is icon-only are separate choices. Add{' '}
+                <code>iconOnly</code> to square the button at whatever <code>size</code> is active,
+                so it sits level with the text buttons beside it — the layout{' '}
+                <code>HeaderActions</code> exists for. Reach for <code>size=&apos;icon&apos;</code>{' '}
+                instead when you want the smaller chrome square and nothing needs to align with it.
+                Either way, supply an <code>aria-label</code>: there is no visible text.
+              </>
+            }
+          >
+            <Preview>
+              <div className='flex flex-wrap items-center gap-4'>
+                {(['sm', 'default', 'lg'] as const).map((size) => (
+                  <div key={size} className='flex items-center gap-2'>
+                    <Button size={size}>Button</Button>
+                    <Button
+                      size={size}
+                      iconOnly
+                      variant='outline'
+                      aria-label={`Search (${size})`}
+                      leadingVisual={IconSearch}
+                    />
+                  </div>
+                ))}
               </div>
             </Preview>
           </Section>
@@ -507,6 +547,68 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const button = getButton(canvasElement, 'Continue')
     expectAttribute(button, 'data-variant', 'solid')
+  },
+}
+
+export const IconSlotForms: Story = {
+  name: 'Icon Slot Forms',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'The icon slots take the component (`leadingVisual={IconAdd}`) or an element (`leadingVisual={<IconAdd />}`). Both render the same markup; the element form is the one a React Server Component must use, because a bare icon function cannot cross the RSC boundary into this client component.',
+      },
+    },
+  },
+  render: () => (
+    <div className='flex gap-4'>
+      <Button leadingVisual={IconAdd} trailingVisual={IconArrowForward}>
+        Component form
+      </Button>
+      <Button leadingVisual={<IconAdd />} trailingVisual={<IconArrowForward />}>
+        Element form
+      </Button>
+      {/* A consumer-supplied mark with no baked-in data-slot — the button must
+          stamp one on, or it loses the icon sizing and colour rules. */}
+      <Button leadingVisual={<svg viewBox='0 0 24 24' aria-hidden />}>Bare svg</Button>
+      {/* Forwarding an optional prop that happens to be undefined is idiomatic
+          React and must read as "not specified", not as "override with nothing"
+          — otherwise the stamp is erased and the icon silently loses its sizing
+          and colour rules. */}
+      <Button leadingVisual={<IconAdd data-slot={undefined} />}>Undefined slot</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const iconsIn = (name: string) =>
+      Array.from(getButton(canvasElement, name).querySelectorAll('svg[data-slot="icon"]'))
+
+    const componentForm = iconsIn('Component form')
+    const elementForm = iconsIn('Element form')
+
+    if (componentForm.length !== 2) {
+      throw new Error(`Component form: expected 2 icons, got ${componentForm.length}.`)
+    }
+    if (elementForm.length !== 2) {
+      throw new Error(`Element form: expected 2 icons, got ${elementForm.length}.`)
+    }
+
+    // Same slot, same order, same paths — the two forms are interchangeable.
+    componentForm.forEach((icon, i) => {
+      if (icon.innerHTML !== elementForm[i]!.innerHTML) {
+        throw new Error(`Icon ${i} differs between the component and element forms.`)
+      }
+    })
+
+    if (iconsIn('Bare svg').length !== 1) {
+      throw new Error('An element without its own data-slot should still be stamped with one.')
+    }
+
+    // React 19's cloneElement copies every config key over the element's props
+    // with no undefined-skip, so a `data-slot={undefined}` passed straight into
+    // the clone config erases the stamp instead of deferring to it.
+    if (iconsIn('Undefined slot').length !== 1) {
+      throw new Error('data-slot={undefined} should count as unset and still be stamped.')
+    }
   },
 }
 
