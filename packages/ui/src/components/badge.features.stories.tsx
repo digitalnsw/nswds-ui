@@ -299,6 +299,27 @@ export const Sizes: Story = {
       ))}
     </div>
   ),
+  // Regression guard for the flat type scale. These sizes used to shrink at
+  // `sm:` (640px), which put default and sm badges at 12px — below the NSW
+  // minimum body-text size field.tsx documents — and capped lg at 14px, so no
+  // badge in the system could meet a 16px floor on desktop. Every size now
+  // holds one value at every viewport, so these assertions hold at any width.
+  play: async ({ canvasElement }) => {
+    const badges = canvasElement.querySelectorAll<HTMLElement>('span[data-variant]')
+    if (badges.length === 0) {
+      throw new Error('Expected the size matrix to render badges.')
+    }
+
+    const seen = new Set(Array.from(badges, (badge) => getComputedStyle(badge).fontSize))
+
+    const belowFloor = [...seen].filter((size) => Number.parseFloat(size) < 14)
+    if (belowFloor.length > 0) {
+      throw new Error(`Expected no badge below 14px, found ${belowFloor.join(', ')}.`)
+    }
+    if (!seen.has('16px')) {
+      throw new Error(`Expected the lg size to render 16px text, saw ${[...seen].join(', ')}.`)
+    }
+  },
 }
 
 // ─── States ──────────────────────────────────────────────────────────────────

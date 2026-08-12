@@ -100,8 +100,8 @@ const styles = {
   base: [
     // Base
     'relative isolate inline-flex items-center rounded-sm font-normal border forced-colors:outline transition-all motion-reduce:transition-none h-fit shrink-0',
-    // Icon
-    '*:data-[slot=icon]:size-4 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center sm:*:data-[slot=icon]:size-3',
+    // Icon — one flat size, for the same reason the type scale below is flat.
+    '*:data-[slot=icon]:size-4 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center',
   ],
   solid: [
     // Text color
@@ -302,11 +302,31 @@ const styles = {
       'dark:[--badge-hover-overlay:var(--color-accent-500)]/30 dark:data-[variant=solid]:[--badge-hover-overlay:var(--color-white)]/10',
     ],
   },
+  // ───────────────────────────────────────────────────────────────────────────
+  // Type scale (flat — do not reintroduce a `sm:` shrink)
+  // ───────────────────────────────────────────────────────────────────────────
+  //
+  // Each size holds one font-size at every viewport. Sizes are chosen from the
+  // hierarchy field.tsx documents: 16px is the body-copy ideal, 14px reads as
+  // supporting information, and 12px is below the NSW Government digital
+  // service standards minimum body-text size.
+  //
+  // These variants used to shrink at `sm:` (640px) — `text-sm/5 sm:text-xs/5`
+  // and `text-base/5 sm:text-sm/5` — inherited from the Catalyst-derived
+  // scaffolding this component started life as (4889aba). That put `default`
+  // and `sm` badges at 12px from 640px up, i.e. under the floor precisely where
+  // there is the most room, and capped `lg` at 14px so no badge in the system
+  // could meet a 16px minimum on desktop. Buttons — which badges sit beside in
+  // the header — have always been a flat `text-base/7`, so the shrink was also
+  // out of step with its closest sibling.
+  //
+  // Below 640px nothing changed: every value here is the size that breakpoint
+  // already rendered.
   size: {
     default:
-      'py-[calc(--spacing(1))] px-[calc(--spacing(2))] gap-[calc(--spacing(1)*1.5)] text-sm/5 sm:text-xs/5',
-    sm: 'py-[calc(--spacing(1)*0.5)] px-[calc(--spacing(1)*1.5)] gap-[calc(--spacing(1)*1.5)] text-sm/5 sm:text-xs/5',
-    lg: 'py-[calc(--spacing(1))] px-[calc(--spacing(2)*1.25)] gap-[calc(--spacing(2))] text-base/5 sm:text-sm/5',
+      'py-[calc(--spacing(1))] px-[calc(--spacing(2))] gap-[calc(--spacing(1)*1.5)] text-sm/5',
+    sm: 'py-[calc(--spacing(1)*0.5)] px-[calc(--spacing(1)*1.5)] gap-[calc(--spacing(1)*1.5)] text-sm/5',
+    lg: 'py-[calc(--spacing(1))] px-[calc(--spacing(2)*1.25)] gap-[calc(--spacing(2))] text-base/5',
   },
 }
 
