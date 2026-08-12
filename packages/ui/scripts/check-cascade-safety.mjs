@@ -83,12 +83,20 @@ let cssPath = 'dist/styles.css'
 const sourceDirs = []
 
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--css') {
-    cssPath = args[++i]
-  } else if (args[i] === '--src') {
-    sourceDirs.push(args[++i])
+  const flag = args[i]
+  if (flag === '--css' || flag === '--src') {
+    const value = args[++i]
+    if (value === undefined) {
+      console.error(`${flag} needs a path.`)
+      process.exit(2)
+    }
+    if (flag === '--css') {
+      cssPath = value
+    } else {
+      sourceDirs.push(value)
+    }
   } else {
-    console.error(`Unknown argument: ${args[i]}`)
+    console.error(`Unknown argument: ${flag}`)
     process.exit(2)
   }
 }
