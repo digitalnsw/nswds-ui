@@ -20,9 +20,9 @@ import { IconWest } from '../icons/west.js'
  * schedule focus restoration). Do not override the custom property directly —
  * that changes only the visual duration while the state machine still settles
  * on `durationMs`, desyncing the two; pass `durationMs` instead. Under
- * `prefers-reduced-motion` the slide is skipped (`motion-reduce:
- * transition-none`) but the state machine still waits the full duration; the
- * menu is simply "settled early" for those users, never broken.
+ * `prefers-reduced-motion` the slide is skipped (the transition is applied
+ * under `motion-safe:` only) but the state machine still waits the full
+ * duration; the menu is simply "settled early" for those users, never broken.
  */
 const PUSH_MENU_DURATION_MS = 300
 
@@ -132,7 +132,7 @@ const itemBaseClassName = [
   // min-h-11 guarantees the 44px minimum target size (WCAG 2.2, 2.5.8 Target
   // Size) even for single-line rows with compact padding overrides.
   'relative flex min-h-11 w-full cursor-pointer items-center justify-between gap-x-6 border-l p-4 text-left text-base',
-  'transition-colors motion-reduce:transition-none',
+  'motion-safe:transition-colors',
   'hover:border-primary-800 hover:bg-primary-800/10 dark:hover:border-primary-200 dark:hover:bg-primary-200/10',
   // Inset outline (negative offset): the levels scroll inside an
   // overflow-hidden root, so an outward offset would be clipped on the first
@@ -226,8 +226,8 @@ type PushMenuProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 't
  * - During the slide, rows get `pointer-events-none` and the state machine
  *   ignores re-entrant navigation, but nothing is ever `disabled` — disabling
  *   the focused Back button mid-animation would eject keyboard focus.
- * - Slides are CSS transforms with `motion-reduce:transition-none`, replacing
- *   the app's inline transition strings (which ignored reduced motion).
+ * - Slides are CSS transforms applied under `motion-safe:`, replacing the app's
+ *   inline transition strings (which ignored reduced motion).
  *
  * Departures from the nswds-app source, beyond the above:
  *
@@ -501,7 +501,7 @@ function PushMenu({
             className={cn(
               'absolute inset-0 flex h-full w-full flex-col bg-popover will-change-transform',
               isSliding
-                ? 'transition-transform duration-(--push-menu-duration) ease-out motion-reduce:transition-none'
+                ? 'duration-(--push-menu-duration) ease-out motion-safe:transition-transform'
                 : 'transition-none',
             )}
             style={{ transform: `translateX(${translateX}%)`, zIndex: index + 1 }}

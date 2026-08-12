@@ -383,7 +383,7 @@ function ExpandableSearchField({
           // form root, which shrink-wraps this element.
           'flex h-12 w-12 cursor-pointer overflow-hidden rounded-sm border-0 bg-transparent text-transparent',
           'placeholder:text-transparent placeholder:opacity-0',
-          'transition-[width,box-shadow,background-color] duration-300 ease-in-out motion-reduce:transition-none',
+          'duration-300 ease-in-out motion-safe:transition-[width,box-shadow,background-color]',
           // Hide WebKit's native clear affordance: the source field (type
           // text) had none, and Escape already clears a search input.
           '[&::-webkit-search-cancel-button]:appearance-none',
@@ -411,7 +411,7 @@ function ExpandableSearchField({
         type='submit'
         className={cn(
           'absolute top-0 right-0 z-10 flex h-12 w-12 cursor-pointer rounded-sm',
-          'transition-[background-color,box-shadow] duration-200 motion-reduce:transition-none',
+          'duration-200 motion-safe:transition-[background-color,box-shadow]',
           // Icon and halos all derive from the ink; the whole-form
           // focus-within halo marks the button as the pending action while
           // the user types.

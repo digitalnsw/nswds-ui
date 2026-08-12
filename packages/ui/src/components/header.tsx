@@ -53,7 +53,7 @@ const headerVariants = cva(
     // colour variant and both themes from one value. Mirrors the color-mix
     // derivation in footer.tsx (--footer-border) and link.tsx (--link-halo).
     '[--header-border:color-mix(in_oklch,var(--header-ink)_15%,transparent)]',
-    'transition-shadow duration-300 motion-reduce:transition-none',
+    'duration-300 motion-safe:transition-shadow',
   ],
   {
     variants: {
@@ -67,7 +67,7 @@ const headerVariants = cva(
 
 const headerContainerVariants = cva(
   [
-    'mx-auto flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-3 py-3 sm:py-4 lg:py-5',
+    'mx-auto flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-3 max-sm:py-3 sm:max-lg:py-4 lg:py-5',
     // Lateral padding funnels through --header-padding-x so an app can retune it
     // once (via the `style` prop or a utility class) without a new variant. Same
     // mechanism, and the same 16px → 24px → 48px rhythm, as Masthead and Footer.
@@ -240,7 +240,7 @@ function HeaderBrand({
     <div
       data-slot='header-brand'
       {...props}
-      className={cn('flex grow basis-0 items-center gap-3 sm:gap-4', className)}
+      className={cn('flex grow basis-0 items-center max-sm:gap-3 sm:gap-4', className)}
       ref={ref}
     >
       {/* variant='unstyled' — a brand lockup takes no underline or link
@@ -252,7 +252,7 @@ function HeaderBrand({
         variant='unstyled'
         href={href}
         aria-label={label}
-        className='-m-1 flex items-center gap-3 rounded-sm p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current sm:gap-4'
+        className='-m-1 flex items-center rounded-sm p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current max-sm:gap-3 sm:gap-4'
       >
         {logoNode}
         {sitename ? (
@@ -263,7 +263,7 @@ function HeaderBrand({
           // light/white variants already set on the surface.
           <Sitename
             className={cn(
-              'text-lg font-bold text-balance sm:text-xl',
+              'font-bold text-balance max-sm:text-lg sm:text-xl',
               !onDarkSurface && 'text-primary-800 dark:text-white',
             )}
           >
@@ -318,7 +318,10 @@ function HeaderActions({ className, ref, ...props }: HeaderActionsProps) {
     <div
       data-slot='header-actions'
       {...props}
-      className={cn('flex basis-0 items-center justify-end gap-2 sm:gap-4 md:grow', className)}
+      className={cn(
+        'flex basis-0 items-center justify-end max-sm:gap-2 sm:gap-4 md:grow',
+        className,
+      )}
       ref={ref}
     />
   )

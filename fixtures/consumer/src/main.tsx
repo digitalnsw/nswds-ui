@@ -11,7 +11,13 @@
 // per-icon subpath and the icons barrel (tree-shaking is asserted by the
 // fixture script — IconSearch must be in the bundle, unimported icons must
 // not), and React 19 ref-as-prop forwarding.
-import '@nswds/ui/styles.css'
+//
+// The stylesheet arrives through app.css, which pairs it with the fixture's own
+// Tailwind build — the two-build configuration a consumer following the README
+// ends up in, and the one the cascade hazard lives in. The `AppMarkup` block
+// below uses the bare utilities that previously collided with Footer, so the
+// built stylesheet really does contain both halves.
+import './app.css'
 
 import type {
   BadgeButtonProps,
@@ -85,6 +91,7 @@ import {
   FieldSeparator,
   FieldSet,
   FieldTitle,
+  Footer,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -354,6 +361,38 @@ function App() {
 
       {/* Sonner toaster */}
       <Toaster />
+
+      {/* The consumer's OWN markup. Every class here is a bare utility that
+          Footer's rows also depend on at some breakpoint, so the app's Tailwind
+          build emits its own copy of each into the second half of the
+          stylesheet — after ours, where it can outrank a responsive rule of
+          ours that carries no extra specificity. Keeping them here is what
+          makes the fixture's cascade assertion meaningful. */}
+      <section className='flex flex-col justify-center gap-3 py-6 text-center text-base'>
+        <p className='mt-2 px-4 text-lg'>Consumer-owned markup</p>
+        <div className='grid grid-cols-1 gap-8 pb-4'>
+          <span className='flex h-10 flex-row items-center gap-2 border-b py-3'>Row</span>
+        </div>
+        {/* `justify-evenly` is the marker the fixture script uses to prove this
+            Tailwind build actually ran. It has to be a class @nswds/ui never
+            emits — every class above is one the package emits too, so none of
+            them can tell the two halves apart. The script re-checks that
+            against the installed stylesheet on every run, so the marker cannot
+            quietly stop being app-only. */}
+        <div className='flex justify-evenly'>Marker</div>
+      </section>
+
+      {/* Footer is the component the hazard was reported against: its legal-link
+          and social rows split left/right from `lg`, and an app's plain
+          `justify-center` used to hold them centred at every width. */}
+      <Footer
+        department='Department of Customer Service'
+        legalLinks={[
+          { name: 'Privacy', href: '/privacy' },
+          { name: 'Accessibility', href: '/accessibility' },
+        ]}
+        socialLinks={[{ name: 'LinkedIn', href: 'https://www.linkedin.com', icon: IconSearch }]}
+      />
     </main>
   )
 }

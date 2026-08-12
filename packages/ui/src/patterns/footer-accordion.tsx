@@ -109,7 +109,7 @@ export function FooterAccordion({
 
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
-      <nav aria-label='Site map' className='grid gap-0 py-4 lg:grid-cols-4 lg:gap-8'>
+      <nav aria-label='Site map' className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'>
         {columns.map((column) => (
           <Collapsible
             key={column.heading}
@@ -123,7 +123,7 @@ export function FooterAccordion({
             }
             // Rules separate the stacked accordions on mobile; from lg the
             // columns sit side by side and the rules would be noise.
-            className='border-b border-(--footer-border) lg:border-b-0'
+            className='border-(--footer-border) max-lg:border-b lg:border-b-0'
           >
             {/* Two headings, exactly one displayed at a time — the hidden one
                 is display:none, so it is absent from the accessibility tree
@@ -132,7 +132,7 @@ export function FooterAccordion({
                 of it: rendering the trigger AS an h2 would strip the button
                 role and its keyboard behaviour). Desktop has nothing to
                 disclose, so a plain heading takes over. */}
-            <h2 className='hidden py-3 text-sm font-bold text-(--footer-ink) lg:block'>
+            <h2 className='py-3 text-sm font-bold text-(--footer-ink) max-lg:hidden lg:block'>
               {column.heading}
             </h2>
             <h2 className='lg:hidden'>
@@ -140,12 +140,12 @@ export function FooterAccordion({
                 {column.heading}
                 <IconExpandMore
                   aria-hidden='true'
-                  className='size-5 shrink-0 fill-current transition-transform group-aria-expanded:rotate-180 motion-reduce:transition-none'
+                  className='size-5 shrink-0 fill-current group-aria-expanded:rotate-180 motion-safe:transition-transform'
                 />
               </CollapsibleTrigger>
             </h2>
             <CollapsibleContent>
-              <ul className='flex list-none flex-col gap-2 pb-4 text-sm lg:pb-0'>
+              <ul className='flex list-none flex-col gap-2 text-sm max-lg:pb-4 lg:pb-0'>
                 {column.links.map((link) => (
                   <li key={link.name}>
                     <FooterNavLink href={link.href}>{link.name}</FooterNavLink>

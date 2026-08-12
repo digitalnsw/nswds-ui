@@ -74,7 +74,7 @@ export function FooterNewsletter({
 
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
-      <div className='grid gap-8 py-4 lg:grid-cols-[1fr_minmax(0,24rem)] lg:gap-16'>
+      <div className='grid py-4 max-lg:gap-8 lg:grid-cols-[1fr_minmax(0,24rem)] lg:gap-16'>
         <FooterNav className='py-0 lg:grid-cols-2'>
           {columns.map((column) => (
             <FooterNavColumn key={column.heading} heading={column.heading} links={column.links} />
@@ -85,7 +85,7 @@ export function FooterNewsletter({
             {/* Inherits the footer's ink from the root — Label sets no colour
                 of its own, so it tracks the surface automatically. */}
             <FieldLabel className='text-sm font-bold'>Subscribe to updates</FieldLabel>
-            <div className='flex flex-col gap-3 sm:flex-row'>
+            <div className='flex gap-3 max-sm:flex-col sm:flex-row'>
               <Input
                 type='email'
                 name='email'
