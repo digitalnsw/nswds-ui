@@ -264,6 +264,44 @@ export const Default: Story = {
   },
 }
 
+export const SocialIconElements: Story = {
+  name: 'Social Icons as Elements',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`socialLinks[].icon` takes the component or an element. A React Server Component assembling this data has to use the element form — `Footer` is server-compatible but the `ButtonLink` it forwards to is not, and a bare function cannot cross the RSC boundary.',
+      },
+    },
+  },
+  args: {
+    socialLinks: [
+      { name: 'LinkedIn', href: '#linkedin', icon: <LinkedInIcon /> },
+      { name: 'X', href: '#x', icon: <XIcon /> },
+      { name: 'YouTube', href: '#youtube', icon: <YouTubeIcon /> },
+    ],
+  },
+  play: async ({ canvasElement }) => {
+    const social = getFooter(canvasElement).querySelectorAll<HTMLElement>(
+      '[data-slot="footer-social-link"]',
+    )
+
+    if (social.length !== 3) {
+      throw new Error(`Expected 3 social links, got ${social.length}.`)
+    }
+
+    for (const link of social) {
+      // data-slot is what the ButtonLink icon rules size and colour off — these
+      // stand-ins don't bake one in, so the slot has to stamp it.
+      if (!link.querySelector('svg[data-slot="icon"]')) {
+        throw new Error(
+          `Social link "${link.getAttribute('aria-label')}" rendered no [data-slot=icon] svg.`,
+        )
+      }
+    }
+  },
+}
+
 export const Colours: Story = {
   render: (args) => (
     <div className='space-y-4'>

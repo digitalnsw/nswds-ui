@@ -3,7 +3,7 @@ import React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-import { ButtonLink } from '../components/button.js'
+import { ButtonLink, type IconSlot } from '../components/button.js'
 import { Link } from '../components/link.js'
 import { Separator } from '../components/separator.js'
 
@@ -151,12 +151,17 @@ type FooterSocialLinkItem = {
   name: string
   href: string
   /**
-   * Icon component for the channel. Brand marks (LinkedIn, X, Facebook…) are
-   * not part of the NSWDS icon set — which is Material Symbols — so the mark is
-   * supplied by the consuming app. It is rendered through `ButtonLink`'s
-   * `leadingVisual` slot, which sizes and colours it.
+   * Icon for the channel — the component (`IconLinkedIn`) or an element
+   * (`<IconLinkedIn />`). Brand marks (LinkedIn, X, Facebook…) are not part of
+   * the NSWDS icon set — which is Material Symbols — so the mark is supplied by
+   * the consuming app. It is rendered through `ButtonLink`'s `leadingVisual`
+   * slot, which sizes and colours it.
+   *
+   * `Footer` is server-compatible but `ButtonLink` is not, so a React Server
+   * Component assembling `socialLinks` must use the element form; the component
+   * form cannot cross the RSC boundary. See `IconSlot`.
    */
-  icon: React.ElementType
+  icon: IconSlot
   /**
    * Accessible name for the link. Defaults to `Follow us on {name}`.
    */
@@ -191,7 +196,8 @@ type FooterSocialLinkProps = Omit<
   React.ComponentPropsWithoutRef<typeof ButtonLink>,
   'children' | 'color' | 'leadingVisual' | 'size' | 'variant'
 > & {
-  icon: React.ElementType
+  /** Channel mark — component or element. See `IconSlot`. */
+  icon: IconSlot
   /** Accessible name, e.g. "Follow us on LinkedIn". */
   label: string
 }
