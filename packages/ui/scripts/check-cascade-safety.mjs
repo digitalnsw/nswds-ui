@@ -86,7 +86,10 @@ for (let i = 0; i < args.length; i++) {
   const flag = args[i]
   if (flag === '--css' || flag === '--src') {
     const value = args[++i]
-    if (value === undefined) {
+    // Nothing, an empty string, or the next flag all mean this flag got no
+    // path. Swallowing the next flag would blame whatever followed it — and an
+    // empty one reaches existsSync('') and reports a build problem instead.
+    if (value === undefined || value === '' || value.startsWith('--')) {
       console.error(`${flag} needs a path.`)
       process.exit(2)
     }
