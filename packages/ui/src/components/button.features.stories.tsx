@@ -19,9 +19,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
 
-import { IconAdd, IconEast } from '../icons/index.js'
+import { IconAdd, IconEast, IconSearch } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
-import { Button, buttonVariants } from './button.js'
+import { Button, ButtonLink, buttonVariants } from './button.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -387,6 +387,161 @@ export const Sizes: Story = {
   ),
   play: async ({ canvasElement }) => {
     getButton(canvasElement, 'Next')
+  },
+}
+
+// ─── Icon-only sizing ─────────────────────────────────────────────────────────
+
+const scaleSteps = ['sm', 'default', 'lg'] as const
+
+// Every variant that draws a button-shaped box. `link` is excluded: it strips
+// the chrome and hugs its line box on purpose, so it is not part of the
+// shared-height contract.
+const borderedVariants = variants.filter((variant) => variant !== 'link')
+
+export const IconOnly: Story = {
+  name: 'Icon Only',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Each scale step beside its icon-only twin, plus the compact `size="icon"` square that sits off the ramp entirely.',
+          why: '`size` and "is this icon-only" are independent axes. `iconOnly` squares the button at the current step, so an icon button in a header action row lines up with the text buttons next to it; `size="icon"` is a deliberately smaller chrome square that lines up with none of them. Before `iconOnly` existed there was no prop combination that produced an icon button at the `default` scale, and consumers hand-copied the padding into a `className`.',
+          how: 'Check that the icon-only square in each row is exactly as tall as the Button and ButtonLink beside it, at both viewport widths — the play() function asserts this. The `icon` row should visibly not match.',
+          caveat:
+            'Heights are viewport-dependent (52/60/68px below `sm:`, 44/52/60px at or above it), so the assertions compare siblings rather than pinning absolute numbers — except `size="icon"`, whose 40×40 is a fixed contract.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-3xl space-y-6'>
+      <div className='space-y-3'>
+        {scaleSteps.map((size) => (
+          <div
+            key={`icon-only-${size}`}
+            data-row={size}
+            className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
+          >
+            <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>
+              {size}
+            </span>
+            <Button data-probe='text' size={size}>
+              Button
+            </Button>
+            <ButtonLink data-probe='link' size={size} href='#' variant='outline'>
+              ButtonLink
+            </ButtonLink>
+            <Button
+              data-probe='icon-only'
+              size={size}
+              iconOnly
+              variant='outline'
+              aria-label={`Search (${size})`}
+              leadingVisual={IconSearch}
+            />
+            <Button
+              size={size}
+              iconOnly
+              variant='ghost'
+              color='grey'
+              aria-label={`Add (${size})`}
+              leadingVisual={IconAdd}
+            />
+          </div>
+        ))}
+      </div>
+
+      <div
+        data-row='icon'
+        className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
+      >
+        <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>icon</span>
+        <Button data-probe='text' size='default'>
+          Button
+        </Button>
+        <Button
+          data-probe='icon-only'
+          size='icon'
+          variant='outline'
+          aria-label='Compact search'
+          leadingVisual={IconSearch}
+        />
+        <span className='text-xs text-muted-foreground'>
+          Compact chrome square — 40×40 at every breakpoint, deliberately shorter than the text
+          steps.
+        </span>
+      </div>
+
+      {/* `outline` and `surface` draw a 2px border where the rest draw 1px. The
+          steps subtract `--btn-border-w` from their padding so that difference
+          never reaches the outer box — before that they came out 2px taller. */}
+      <div
+        data-row='variants'
+        className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
+      >
+        <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>variants</span>
+        {borderedVariants.map((variant) => (
+          <Button key={`variant-height-${variant}`} data-probe={variant} variant={variant}>
+            {variant}
+          </Button>
+        ))}
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const probe = (row: string, name: string) => {
+      const el = canvasElement.querySelector<HTMLElement>(
+        `[data-row="${row}"] [data-probe="${name}"]`,
+      )
+      if (!el) throw new Error(`Missing [data-probe="${name}"] in the "${row}" row.`)
+      return el.getBoundingClientRect()
+    }
+
+    for (const size of scaleSteps) {
+      const text = probe(size, 'text')
+      const link = probe(size, 'link')
+      const square = probe(size, 'icon-only')
+
+      // The whole point of `iconOnly`: it takes its height from the same
+      // `--btn-h` the text step publishes, so these cannot drift apart.
+      if (Math.abs(square.height - text.height) > 0.5) {
+        throw new Error(
+          `size="${size}" iconOnly is ${square.height}px tall but the text Button beside it is ${text.height}px.`,
+        )
+      }
+      if (Math.abs(link.height - text.height) > 0.5) {
+        throw new Error(
+          `size="${size}" ButtonLink is ${link.height}px tall but Button is ${text.height}px.`,
+        )
+      }
+      if (Math.abs(square.width - square.height) > 0.5) {
+        throw new Error(
+          `size="${size}" iconOnly is ${square.width}×${square.height}, expected a square.`,
+        )
+      }
+    }
+
+    // `size="icon"` is off the ramp on purpose — pin it so a future retune of
+    // the text steps cannot quietly drag it along.
+    const compact = probe('icon', 'icon-only')
+    if (Math.abs(compact.width - 40) > 0.5 || Math.abs(compact.height - 40) > 0.5) {
+      throw new Error(`size="icon" is ${compact.width}×${compact.height}, expected 40×40.`)
+    }
+
+    // Variant is not allowed to change the height either — the 2px-border
+    // variants must land on the same box as the 1px ones.
+    const heights = borderedVariants.map(
+      (variant) => [variant, probe('variants', variant).height] as const,
+    )
+    const [, baseline] = heights[0]!
+    for (const [variant, height] of heights) {
+      if (Math.abs(height - baseline) > 0.5) {
+        throw new Error(
+          `variant="${variant}" is ${height}px tall but variant="${heights[0]![0]}" is ${baseline}px at the same size.`,
+        )
+      }
+    }
   },
 }
 

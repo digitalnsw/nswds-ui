@@ -14,14 +14,27 @@ const styles = {
   base: [
     // Base
     'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold transition-all motion-reduce:transition-none',
+    // Height floor, published per size step as `--btn-h` (see `styles.size`).
+    // A floor rather than a fixed height so a wrapped label can still grow.
+    'min-h-(--btn-h)',
+    // Border width, so the size steps can subtract it from their padding and
+    // keep the outer box identical across variants. `outline` and `surface`
+    // draw a 2px border and raise this to match; everything else stays 1px.
+    // Without it the steps subtracted a hard-coded 1px and those two variants
+    // came out 2px taller than `solid` at every step and breakpoint.
+    '[--btn-border-w:1px]',
     // Focus — deliberately `focus:` (paints on pointer clicks too), unlike
     // Link/Input which use `focus-visible:`. Buttons give click feedback with
     // the ring; links only ring for keyboard/AT focus. Do not "unify" this.
     'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
-    // Icon
-    '*:data-[slot=icon]:-mx-0.25 *:data-[slot=icon]:my-0.25 sm:*:data-[slot=icon]:my-0.5 *:data-[slot=icon]:size-(--btn-icon-size) *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText]',
+    // Icon. No vertical margin: the glyph is `self-center` in a baseline-aligned
+    // row, so margin buys it nothing optically and only inflates the flex line.
+    // It was inert at `sm`/`default` (glyph + margin stayed inside the 1.75rem
+    // line box) but pushed `lg` 2px past its own height below `sm:`, so a `lg`
+    // button measured 70px with an icon and 68px without.
+    '*:data-[slot=icon]:-mx-0.25 *:data-[slot=icon]:size-(--btn-icon-size) *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:self-center *:data-[slot=icon]:text-(--btn-icon) forced-colors:[--btn-icon:ButtonText] forced-colors:hover:[--btn-icon:ButtonText]',
   ],
   solid: [
     // Text color
@@ -75,7 +88,7 @@ const styles = {
     // Text color
     'text-(--btn-bg)',
     // Optical border, implemented as the button background to avoid corner artifacts
-    'border-(--btn-bg)/50 border-2 bg-(--btn-bg)/5',
+    'border-(--btn-bg)/50 border-2 bg-(--btn-bg)/5 [--btn-border-w:2px]',
     // Dark mode: border is rendered on `after` so background is set to button background
     'dark:bg-(--btn-bg)/30',
     // Button background, implemented as foreground layer to stack on top of pseudo-border layer
@@ -99,7 +112,7 @@ const styles = {
   ],
   outline: [
     // Text color
-    'border-(--btn-bg) text-(--btn-bg) border-2',
+    'border-(--btn-bg) text-(--btn-bg) border-2 [--btn-border-w:2px]',
     // Optical border, implemented as the button background to avoid corner artifacts
     'bg-transparent',
     // Button background, implemented as foreground layer to stack on top of pseudo-border layer
@@ -246,13 +259,34 @@ const styles = {
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
   },
+  // Each step publishes its own height as `--btn-h`, built from the same two
+  // numbers that produce its box: one line box (`text-base/7` — Tailwind's
+  // `/7` is `--spacing(7)`, so this is the same token, not a matching literal)
+  // plus twice the vertical padding. `styles.base` pins it with `min-h`, and
+  // `styles.iconOnly` reads it as both dimensions of the square — so an
+  // icon-only button is exactly as tall as the text button beside it by
+  // construction, and stays that way if a step is ever retuned.
+  //
+  // The border cancels out of that sum: padding is `--spacing(n) -
+  // --btn-border-w` and the border adds `--btn-border-w` back, so every
+  // variant lands on `--btn-h` whether it draws a 1px or 2px edge, and the
+  // outer geometry stays put while the label shifts 1px to make room.
   size: {
     default:
-      'px-[calc(--spacing(6)-1px)] py-[calc(--spacing(4)-1px)] sm:px-[calc(--spacing(5.5)-1px)] sm:py-[calc(--spacing(3)-1px)] [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
-    sm: 'px-[calc(--spacing(5)-1px)] py-[calc(--spacing(3)-1px)] sm:px-[calc(--spacing(4.5)-1px)] sm:py-[calc(--spacing(2)-1px)] [--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(4)]',
-    lg: 'px-[calc(--spacing(7)-1px)] py-[calc(--spacing(5)-1px)] sm:px-[calc(--spacing(6.5)-1px)] sm:py-[calc(--spacing(4)-1px)] [--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(6)]',
-    icon: 'w-10 h-10 flex-none [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
+      'px-[calc(--spacing(6)-var(--btn-border-w))] py-[calc(--spacing(4)-var(--btn-border-w))] sm:px-[calc(--spacing(5.5)-var(--btn-border-w))] sm:py-[calc(--spacing(3)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(4)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(3)*2)] [--btn-icon-size:--spacing(6)] sm:[--btn-icon-size:--spacing(5)]',
+    sm: 'px-[calc(--spacing(5)-var(--btn-border-w))] py-[calc(--spacing(3)-var(--btn-border-w))] sm:px-[calc(--spacing(4.5)-var(--btn-border-w))] sm:py-[calc(--spacing(2)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(3)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(2)*2)] [--btn-icon-size:--spacing(5)] sm:[--btn-icon-size:--spacing(4)]',
+    lg: 'px-[calc(--spacing(7)-var(--btn-border-w))] py-[calc(--spacing(5)-var(--btn-border-w))] sm:px-[calc(--spacing(6.5)-var(--btn-border-w))] sm:py-[calc(--spacing(4)-var(--btn-border-w))] [--btn-h:calc(--spacing(7)+--spacing(5)*2)] sm:[--btn-h:calc(--spacing(7)+--spacing(4)*2)] [--btn-icon-size:--spacing(7)] sm:[--btn-icon-size:--spacing(6)]',
+    // A compact chrome square that deliberately sits below the text steps —
+    // header actions, dialog close buttons, footer social links. It is square
+    // at every breakpoint, so the glyph holds one size too; it used to shrink
+    // to `--spacing(5)` above `sm:`, filling half a box that never got smaller.
+    // For an icon button that must line up with text buttons beside it, use
+    // `iconOnly` with `sm`/`default`/`lg` instead.
+    icon: 'w-10 h-10 flex-none [--btn-h:--spacing(10)] [--btn-icon-size:--spacing(6)]',
   },
+  // Square the button at the current step and drop the horizontal padding, so
+  // the scale step and "is this icon-only" are independent axes.
+  iconOnly: 'size-(--btn-h) flex-none p-0 sm:p-0',
 }
 
 const buttonVariants = cva(styles.base, {
@@ -282,6 +316,12 @@ const buttonVariants = cva(styles.base, {
       lg: styles.size.lg,
       icon: styles.size.icon,
     },
+    // Declared after `size` so its `p-0` reaches `cn()` downstream of the
+    // step's `px-*`/`py-*` and wins the tailwind-merge conflict.
+    iconOnly: {
+      true: styles.iconOnly,
+      false: '',
+    },
   },
   compoundVariants: [
     // The link variant reads as an inline Link despite the <button> tag:
@@ -292,6 +332,9 @@ const buttonVariants = cva(styles.base, {
       variant: 'link',
       className: [
         'rounded-none border-0 p-0 sm:p-0',
+        // Release the step's height floor too — an inline link hugs its line
+        // box, it does not stand a button's worth of space tall.
+        'min-h-0',
         // Hug the label even in stretching grid/flex contexts so the hover
         // halo wraps the text like an inline Link, not the allocated box.
         // `block` still wins — its w-full is applied after this in cn().
@@ -309,7 +352,23 @@ const buttonVariants = cva(styles.base, {
 })
 
 /** Visual/content props shared by `Button` and `ButtonLink`. */
-type ButtonOwnProps = VariantProps<typeof buttonVariants> & {
+type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly'> & {
+  /**
+   * Scale step. `sm` / `default` / `lg` set the padding and icon size, and
+   * render 52 / 60 / 68px tall below `sm:` and 44 / 52 / 60px at or above it.
+   *
+   * `icon` is not a fourth step on that ramp — it is a flat 40×40 chrome
+   * square (header actions, dialog close buttons, footer social links) that
+   * lines up with none of them. For an icon-only button that must sit level
+   * with text buttons beside it, pair `iconOnly` with `sm`/`default`/`lg`.
+   */
+  size?: 'sm' | 'default' | 'lg' | 'icon' | null
+  /**
+   * Render as a square containing only the icon, at the height of the current
+   * `size` step — so `iconOnly` beside a `size='default'` button matches it
+   * exactly. Supply an `aria-label`, since there is no visible text.
+   */
+  iconOnly?: boolean | null
   className?: string
   /** Button label. Optional for icon-only buttons (supply an `aria-label`). */
   children?: React.ReactNode
@@ -349,6 +408,7 @@ function buttonClasses({
   variant,
   color,
   size,
+  iconOnly,
   block,
   alignContent,
   className,
@@ -356,7 +416,7 @@ function buttonClasses({
 }: ButtonOwnProps & { effectiveDisabled?: boolean }) {
   return clsx(
     cn(
-      buttonVariants({ variant, color, size }),
+      buttonVariants({ variant, color, size, iconOnly }),
       block && 'w-full',
       alignContent === 'start' && 'justify-start',
       className,
@@ -419,20 +479,21 @@ function ButtonContent({
 
 /**
  * Dev-only guard shared by `Button` and `ButtonLink`: an icon-only button
- * (`size="icon"`) renders no visible text, so it must carry an explicit
- * accessible name. Warns in development when one is missing; a no-op in
- * production. A falsy `aria-label` (including `""`) counts as missing.
+ * (`size="icon"` or `iconOnly`) renders no visible text, so it must carry an
+ * explicit accessible name. Warns in development when one is missing; a no-op
+ * in production. A falsy `aria-label` (including `""`) counts as missing.
  */
 function warnIfIconButtonUnlabelled(
-  size: VariantProps<typeof buttonVariants>['size'],
+  size: ButtonOwnProps['size'],
+  iconOnly: ButtonOwnProps['iconOnly'],
   props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown },
 ) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  if (size === 'icon' && !props['aria-label'] && !props['aria-labelledby']) {
+  if ((size === 'icon' || iconOnly) && !props['aria-label'] && !props['aria-labelledby']) {
     console.warn(
-      '[nswds/ui] Icon-only buttons (size="icon") have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',
+      '[nswds/ui] Icon-only buttons (size="icon" or iconOnly) have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',
     )
   }
 }
@@ -450,6 +511,7 @@ function Button({
   variant,
   color,
   size,
+  iconOnly,
   children,
   block,
   loading,
@@ -466,7 +528,7 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props)
 
   return (
     <ButtonPrimitive
@@ -478,6 +540,7 @@ function Button({
         variant,
         color,
         size,
+        iconOnly,
         block,
         alignContent,
         className,
@@ -512,6 +575,7 @@ function ButtonLink({
   variant,
   color,
   size,
+  iconOnly,
   children,
   block,
   loading,
@@ -528,7 +592,7 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props)
 
   return (
     <Link
@@ -551,6 +615,7 @@ function ButtonLink({
         variant,
         color,
         size,
+        iconOnly,
         block,
         alignContent,
         className,
