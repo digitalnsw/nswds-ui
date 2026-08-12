@@ -1,3 +1,9 @@
+## [4.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.6.0...@nswds/ui-v4.7.0) (2026-08-12)
+
+### Features
+
+* **ui:** add HeaderBrand badgeProps and flatten the Badge type scale ([#104](https://github.com/digitalnsw/nswds-ui/issues/104)) ([5949aa2](https://github.com/digitalnsw/nswds-ui/commit/5949aa249a33c61a04631d229944b44fe961a77b))
+
 ## [4.6.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.5.0...@nswds/ui-v4.6.0) (2026-08-12)
 
 ### Features
