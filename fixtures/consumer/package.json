@@ -9,7 +9,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@nswds/tokens": "^4.0.0",
+    "@nswds/tokens": "^5.0.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },

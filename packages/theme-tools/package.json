@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@nswds/tokens": "^4.1.0"
+    "@nswds/tokens": "^5.0.0"
   },
   "devDependencies": {
     "@workspace/typescript-config": "*",
