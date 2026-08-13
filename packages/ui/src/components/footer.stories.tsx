@@ -294,9 +294,19 @@ function assertSurfacePairs(canvasElement: HTMLElement, expected: number) {
     throw new Error(`Expected ${expected} colour cards, got ${cards.length}.`)
   }
 
-  for (const card of cards) {
-    const [ambient, nested] = card.querySelectorAll<HTMLElement>('[data-slot="footer"]')
-    const name = ambient!.dataset.color
+  for (const [index, card] of cards.entries()) {
+    // The count above guards `cards`; this guards the footers INSIDE one, which
+    // is a different collection. Without it a SurfacePair that stopped
+    // rendering both halves would surface as a bare getComputedStyle TypeError
+    // naming neither the card nor the colour.
+    const footers = card.querySelectorAll<HTMLElement>('[data-slot="footer"]')
+    const [ambient, nested] = footers
+    if (!ambient || !nested) {
+      throw new Error(
+        `Expected card ${index} to render 2 footers (the ambient surface, then the nested .dark one), got ${footers.length}.`,
+      )
+    }
+    const name = ambient.dataset.color
 
     // Is the page dark ALREADY, above this card? Storybook's theme toolbar puts
     // `.dark` on <html>, and the dark variant matches `.dark *` at any depth, so
@@ -304,30 +314,30 @@ function assertSurfacePairs(canvasElement: HTMLElement, expected: number) {
     // against. Ask the DOM rather than the toolbar global: it is the ancestor
     // marker, not the addon, that decides how these render — and a consumer can
     // set `[data-theme='dark']` instead.
-    if (ambient!.closest('.dark, [data-theme="dark"]')) {
+    if (ambient.closest('.dark, [data-theme="dark"]')) {
       // A locally-scoped `.dark` inside an already-dark page must be a no-op —
       // that idempotence is the one thing the pairing can still prove here, and
       // both halves still have to hold up as dark surfaces.
-      const outer = getComputedStyle(ambient!).backgroundColor
-      const inner = getComputedStyle(nested!).backgroundColor
+      const outer = getComputedStyle(ambient).backgroundColor
+      const inner = getComputedStyle(nested).backgroundColor
       if (outer !== inner) {
         throw new Error(
           `With the page already dark, the nested .dark changed the "${name}" surface (${inner} vs ${outer}) — a .dark inside a .dark must not compound.`,
         )
       }
-      assertDarkSurface(ambient!, `"${name}" (ambient)`)
-      assertDarkSurface(nested!, `"${name}" (nested)`)
+      assertDarkSurface(ambient, `"${name}" (ambient)`)
+      assertDarkSurface(nested, `"${name}" (nested)`)
       continue
     }
 
-    const lightL = lightness(ambient!)
-    const darkL = lightness(nested!)
+    const lightL = lightness(ambient)
+    const darkL = lightness(nested)
     if (!(darkL < lightL)) {
       throw new Error(
         `Expected the dark-mode surface for "${name}" to be darker than the light one (L ${darkL} vs ${lightL}). Did the dark: variant resolve?`,
       )
     }
-    assertDarkSurface(nested!, `"${name}"`)
+    assertDarkSurface(nested, `"${name}"`)
   }
 }
 
