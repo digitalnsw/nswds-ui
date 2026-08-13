@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
-    "@nswds/tokens": "^4.1.0",
+    "@nswds/tokens": "^5.0.0",
     "@storybook/addon-docs": "10.5.7",
     "@storybook/react-vite": "10.5.7",
     "@tailwindcss/cli": "^4.3.0",
