@@ -27,6 +27,6 @@
   ],
   "type": "registry:ui",
   "meta": {
-    "nswdsVersion": "4.7.2"
+    "nswdsVersion": "5.0.0"
   }
 }

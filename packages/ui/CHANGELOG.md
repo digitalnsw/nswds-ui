@@ -1,3 +1,19 @@
+## [5.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.2...@nswds/ui-v5.0.0) (2026-08-13)
+
+### ⚠ BREAKING CHANGES
+
+* **deps:** @nswds/tokens v5 raises the specificity of the semantic dark
+block from (0,1,0) to (0,2,0), emitting it as
+`:is([data-theme='dark'], .dark):is([data-theme='dark'], .dark)`. An override of
+a dark role token written as a bare `[data-theme='dark'] { ... }` or
+`.dark { ... }` no longer wins - match it with the same doubled `:is()`, or any
+selector of specificity (0,2,0) or higher. Token values are unchanged; the only
+change to the published stylesheet is this selector.
+
+### Bug Fixes
+
+* **deps:** update dependency @nswds/tokens to v5 ([#114](https://github.com/digitalnsw/nswds-ui/issues/114)) ([8c6f319](https://github.com/digitalnsw/nswds-ui/commit/8c6f31909f7043f99ccebd577549e9582b04c3c9))
+
 ## [4.7.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.1...@nswds/ui-v4.7.2) (2026-08-12)
 
 ### Bug Fixes
