@@ -83,12 +83,23 @@ let cssPath = 'dist/styles.css'
 const sourceDirs = []
 
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--css') {
-    cssPath = args[++i]
-  } else if (args[i] === '--src') {
-    sourceDirs.push(args[++i])
+  const flag = args[i]
+  if (flag === '--css' || flag === '--src') {
+    const value = args[++i]
+    // Nothing, an empty string, or the next flag all mean this flag got no
+    // path. Swallowing the next flag would blame whatever followed it — and an
+    // empty one reaches existsSync('') and reports a build problem instead.
+    if (value === undefined || value === '' || value.startsWith('--')) {
+      console.error(`${flag} needs a path.`)
+      process.exit(2)
+    }
+    if (flag === '--css') {
+      cssPath = value
+    } else {
+      sourceDirs.push(value)
+    }
   } else {
-    console.error(`Unknown argument: ${args[i]}`)
+    console.error(`Unknown argument: ${flag}`)
     process.exit(2)
   }
 }
