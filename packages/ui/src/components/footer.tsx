@@ -184,8 +184,14 @@ const footerLinkClassName = [
 
 // Repoints ButtonLink's ghost-variant tokens at the footer's ink and halos so
 // the social buttons follow the surface colour instead of the button palette.
+// The `dark:` repeat is load-bearing, not redundant: `styles.colors` in
+// button.tsx gives each colour a `dark:[--btn-bg:…]` ink counterpart, which
+// would otherwise outrank the bare declaration here and repaint these glyphs in
+// the palette's ink. Restating it under the same variant makes the two
+// equal-specificity, and tailwind-merge keeps this one because the component's
+// className is merged last. `--footer-ink` already resolves per theme.
 const footerSocialLinkClassName = [
-  '[--btn-bg:var(--footer-ink)]',
+  '[--btn-bg:var(--footer-ink)] dark:[--btn-bg:var(--footer-ink)]',
   '[--btn-icon:var(--footer-ink)]',
   '[--btn-transparent:transparent]',
   '[--btn-hover-overlay:var(--footer-halo)]',
