@@ -3,8 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "main": "index.cjs",
+  "scripts": {
+    "test": "node --test release-scope.test.mjs"
+  },
   "files": [
-    "index.cjs"
+    "index.cjs",
+    "release-scope.mjs"
   ],
   "dependencies": {
     "@semantic-release/changelog": "^7.0.0",

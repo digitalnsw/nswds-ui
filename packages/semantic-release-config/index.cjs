@@ -1,12 +1,28 @@
 const pkgRoot = 'packages/ui'
 
+// Self-reference by package specifier rather than a relative path: plugin
+// names are resolved from the repo root (semantic-release's cwd), not from
+// this file. The package declares no `exports` map, so the subpath resolves
+// through the workspace symlink in the root node_modules.
+const releaseScope = '@workspace/semantic-release-config/release-scope.mjs'
+
 module.exports = {
   branches: ['main'],
   tagFormat: '@nswds/ui-v${version}',
   plugins: [
     [
-      '@semantic-release/commit-analyzer',
+      // Wraps BOTH @semantic-release/commit-analyzer and
+      // @semantic-release/release-notes-generator, filtering each to the
+      // commits that actually touched `pkgRoot`, so a dependency bump confined
+      // to an unpublished workspace stops cutting an empty release (#119).
+      //
+      // Listed ONCE, deliberately: semantic-release runs every plugin that
+      // defines a given step, so a second entry would emit the release notes
+      // twice. One config object feeds both wrapped plugins — the analyzer
+      // ignores keys it does not know, and vice versa.
+      releaseScope,
       {
+        paths: [`${pkgRoot}/`],
         preset: 'conventionalcommits',
         releaseRules: [
           { breaking: true, release: 'major' },
@@ -23,12 +39,6 @@ module.exports = {
           { type: 'merge', release: false },
           { type: 'refactor', release: false },
         ],
-      },
-    ],
-    [
-      '@semantic-release/release-notes-generator',
-      {
-        preset: 'conventionalcommits',
       },
     ],
     [
