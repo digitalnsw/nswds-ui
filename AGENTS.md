@@ -366,28 +366,29 @@ Stories live in `packages/ui/src/` but are **excluded from the tsup build** (see
 
 Run from the **repo root** unless noted.
 
-| What                    | Command                                                        |
-| ----------------------- | -------------------------------------------------------------- |
-| Install deps            | `npm install`                                                  |
-| Dev all apps            | `npm run dev`                                                  |
-| Storybook only          | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
-| Web sandbox only        | `npm run dev -w web` → http://localhost:3000                   |
-| Build everything        | `npm run build`                                                |
-| Build UI package only   | `npm run build -w @nswds/ui`                                   |
-| Build JS only           | `npm run build:js -w @nswds/ui`                                |
-| Build CSS only          | `npm run build:css -w @nswds/ui`                               |
-| Lint all                | `npm run lint`                                                 |
-| Format all              | `npm run format`                                               |
-| Check formatting        | `npm run format:check`                                         |
-| Type check all          | `npm run typecheck`                                            |
-| Check component drift   | `npm run check:drift -w @nswds/ui`                             |
-| Check cascade safety    | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
-| Check icons parity      | `npm run check:icons -w @nswds/ui`                             |
-| Check published package | `npm run check:package -w @nswds/ui`                           |
-| Test consumer fixture   | `./scripts/test-consumer-fixture.sh`                           |
-| Build registry JSON     | `npm run registry:build`                                       |
-| Validate registry.json  | `npm run registry:validate`                                    |
-| Run Storybook tests     | `npm run test -w @workspace/storybook`                         |
+| What                            | Command                                                        |
+| ------------------------------- | -------------------------------------------------------------- |
+| Install deps                    | `npm install`                                                  |
+| Dev all apps                    | `npm run dev`                                                  |
+| Storybook only                  | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
+| Web sandbox only                | `npm run dev -w web` → http://localhost:3000                   |
+| Build everything                | `npm run build`                                                |
+| Build UI package only           | `npm run build -w @nswds/ui`                                   |
+| Build JS only                   | `npm run build:js -w @nswds/ui`                                |
+| Build CSS only                  | `npm run build:css -w @nswds/ui`                               |
+| Lint all                        | `npm run lint`                                                 |
+| Format all                      | `npm run format`                                               |
+| Check formatting                | `npm run format:check`                                         |
+| Type check all                  | `npm run typecheck`                                            |
+| Check component drift           | `npm run check:drift -w @nswds/ui`                             |
+| Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
+| Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
+| Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
+| Check published package         | `npm run check:package -w @nswds/ui`                           |
+| Test consumer fixture           | `./scripts/test-consumer-fixture.sh`                           |
+| Build registry JSON             | `npm run registry:build`                                       |
+| Validate registry.json          | `npm run registry:validate`                                    |
+| Run Storybook tests             | `npm run test -w @workspace/storybook`                         |
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
 
@@ -468,6 +469,53 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.
+
+### Storybook suite reliability — two guards, one workaround
+
+The Storybook Vitest browser suite (`npm run test -w @workspace/storybook`)
+runs every story file as a browser test on CI's 2-core runners. Two
+configuration guards (the pre-bundle list and `noDiscovery`, first bullet) and
+one workaround (the GC hook, second bullet) keep it stable, and none of them
+is optional:
+
+- **`optimizeDeps.include` must list every bare import reachable from
+  `packages/ui/src`** (`apps/storybook/vitest.config.ts`). Stories import
+  `@nswds/ui` as a workspace-linked package, which Vite treats as source and
+  never pre-bundles, so its third-party imports are invisible to the cold-start
+  scanner. `optimizeDeps.noDiscovery: true` makes an incomplete list degrade to
+  slower-but-correct unbundled serving instead of a mid-run re-optimisation
+  that reloads the tester page — but under `noDiscovery`, CJS-only entries
+  (`react/jsx-runtime`, `react/jsx-dev-runtime`, `react-dom/client`,
+  `aria-query`) must be listed explicitly or every story file fails at import
+  with "does not provide an export named 'jsxDEV'". `check:optimize-deps`
+  enforces list completeness in CI.
+- **`apps/storybook/vitest.setup.ts` forces a Chromium garbage collection
+  after every story file.** Chromium leaks ~2 MiB of shared memory per
+  304-revalidated script load, and Playwright's `--disable-dev-shm-usage`
+  turns the leaked blocks into deleted-but-open files on the runner's ~14 GB
+  disk. Under per-story iframe isolation the module graph is revalidated per
+  file, so free disk can collapse at ~1.2 GB/s mid-run and kill the tester
+  page — surfacing as a roaming
+  `Cannot connect to the iframe` / `Failed to fetch dynamically imported module`
+  failure that never reproduces locally. The per-file
+  `cdp().send('HeapProfiler.collectGarbage')` hook keeps the disk floor high
+  (~11.5 GB vs a 0.33–1.36 GB cliff without it). This is a workaround for
+  [vitest#9437](https://github.com/vitest-dev/vitest/issues/9437); its removal
+  condition — a released vitest carrying
+  [vitest#10912](https://github.com/vitest-dev/vitest/pull/10912) — is tracked
+  in issue #126. Do not remove it early, and judge any change to it on several
+  CI runs, never one: the unmasked failure was probabilistic (~1 pass in 4).
+
+Diagnosing a suspected recurrence: deleted-but-open files are invisible to
+`du` and to any post-run inspection — only a `df` poll **during** the run sees
+the collapse. Add a 2-second `df -k / /tmp /dev/shm` background loop around
+the Storybook CI step and compare the series against the failure timestamp.
+
+A separate, milder failure mode also exists — occasional bare
+`Test timed out in 30000ms` under full-suite load on developer machines. It is
+load-dependent, local-only, and not covered by the guards above; before blaming
+a change for it, re-run the failing files in isolation and compare against an
+unmodified tree.
 
 ### Node version — the engine floor
 
@@ -567,13 +615,13 @@ just the commit that happened to trigger the run.
 
 This monorepo publishes exactly one package, but semantic-release runs from the
 repo root and sees every commit on `main`. Without the scope test, a `fix(deps)`
-bump confined to an unpublished workspace cut a full patch release: `apps/web`
-is `private: true` and ships nowhere, yet updating `next` inside it published
-`@nswds/ui` 5.0.1, whose tarball was functionally identical to 5.0.0 and whose
-changelog described a Next.js upgrade that was not in it. Six of the twenty-five
-releases before this landed were that. Each one also opened a Renovate PR in
-every consuming repo — eight and counting — with a full CI run apiece, for no
-change at all (issue #119).
+bump confined to an unpublished workspace cuts a full patch release — `apps/web`
+is `private: true` and ships nowhere, yet a Next.js bump inside it would publish
+an `@nswds/ui` version whose tarball is functionally identical to its
+predecessor and whose changelog describes a change that is not in it. Before the
+gate existed, roughly a third of releases were empty in exactly this way, and
+each empty version opened a Renovate PR (with a full CI run) in every consuming
+repo — at least eight repos — for no change at all.
 
 The gate lives in `packages/semantic-release-config/release-scope.mjs`, which
 wraps `@semantic-release/commit-analyzer` and
@@ -586,13 +634,11 @@ _open_.
 
 Two consequences that look like bugs but are not:
 
-- **Changes to `packages/ui/` under a non-releasable type now wait.** A
-  `build:`/`chore:`/`refactor:` commit no longer ships by piggybacking on an
-  unrelated `fix:` elsewhere in the repo — which is what actually happened in
-  4.1.1, where a `build(prettier)` reformat of 87 files rode out on a CI lint
-  fix. It ships with the next genuinely releasable commit. This is the stated
-  policy in the table above finally holding, but it does mean a formatting-only
-  change can sit unpublished for a while.
+- **Changes to `packages/ui/` under a non-releasable type wait.** A
+  `build:`/`chore:`/`refactor:` commit cannot ship by piggybacking on an
+  unrelated `fix:` elsewhere in the repo; it ships with the next genuinely
+  releasable commit. This is the commit-type table above holding as stated, but
+  it does mean a formatting-only change can sit unpublished for a while.
 - **`git commit --allow-empty -m 'fix: …'` still forces a release.** An empty
   commit reports no files, and no-files fails open. That is the supported escape
   hatch when something outside `packages/ui/` genuinely needs to reach
@@ -747,13 +793,9 @@ verifies registry output freshness instead.)
 
 ## 9. TODOs / Known Gaps
 
-| #   | Issue                                                    | Where                                                                                       |
-| --- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| 1   | ~~`fill-nsw-blue-800` / `fill-nsw-red-600` not defined~~ | Fixed — `@nswds/tokens` imported                                                            |
-| 2   | ~~Registry not deployed~~                                | Fixed — Vercel project `nswds-ui-registry` deploys from `apps/registry`                     |
-| 3   | ~~`.npmrc` provenance~~                                  | Reversed — provenance requires a public repo; `provenance=false` with rationale in `.npmrc` |
-| 4   | ~~First npm publish (bootstrap) not yet done~~           | Fixed — v1.2.0 published via OIDC on 2026-05-24                                             |
-| 5   | ~~`shadcn` listed as runtime dependency~~                | Fixed — moved to `devDependencies`                                                          |
-| 6   | ~~`zod` listed as runtime dependency but unused~~        | Fixed — removed (no imports found)                                                          |
-| 7   | ~~No primitive token layer~~                             | Fixed — `@nswds/tokens` provides the full primitive → semantic hierarchy                    |
-| 8   | `apps/web` has no content (`page.tsx` returns null)      | Expected; it's a dev sandbox                                                                |
+Only live items belong here — a fixed entry is deleted, not struck through.
+
+| #   | Issue                                                   | Where / status                                                                                                                                        |
+| --- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/web` has no content (`page.tsx` returns null)     | Expected; it's a dev sandbox                                                                                                                          |
+| 2   | Storybook Chromium GC workaround awaits an upstream fix | `apps/storybook/vitest.setup.ts`; remove when a released vitest carries vitest#10912 — tracked in issue #126, blocked on an upstream release (see §5) |
