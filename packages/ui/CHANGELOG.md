@@ -1,3 +1,9 @@
+## [5.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.0...@nswds/ui-v5.0.1) (2026-08-14)
+
+### Bug Fixes
+
+* **deps:** update dependency next to v16.3.1 ([#118](https://github.com/digitalnsw/nswds-ui/issues/118)) ([d568cae](https://github.com/digitalnsw/nswds-ui/commit/d568caedb5e9d578e5f0500a3dd75e0f4bcaf834))
+
 ## [5.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v4.7.2...@nswds/ui-v5.0.0) (2026-08-13)
 
 ### ⚠ BREAKING CHANGES
