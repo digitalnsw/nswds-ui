@@ -111,20 +111,43 @@ describe('analyzeCommits', () => {
     assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor([reformat, elsewhere])), null)
   })
 
-  test('sees through a merge commit to the net change it introduced', async () => {
-    // Without `-m --first-parent`, git diff-tree prints nothing for a merge
-    // and every non-squashed merge would look out of scope.
+  test('releases a non-squashed merge of an in-scope fix, given real messages', async () => {
+    // Mirrors what semantic-release actually hands the plugin for a
+    // non-squashed merge: BOTH the merge commit (with its real, unparseable
+    // "Merge pull request…" subject) and the branch's inner commit (with the
+    // conventional message). The release type comes from the inner commit;
+    // the merge commit contributes nothing either way.
     git('checkout', '-b', 'feature')
-    commit('fix(ui): honour prefers-reduced-motion', {
+    const inner = commit('fix(ui): honour prefers-reduced-motion', {
       'packages/ui/src/components/spinner.tsx': 'export const Spinner = 1\n',
     })
     git('checkout', 'main')
     git('merge', '--no-ff', '-m', 'Merge pull request #1 from digitalnsw/fix/motion', 'feature')
     const merge = {
       hash: git('rev-parse', 'HEAD'),
-      message: 'fix(ui): honour prefers-reduced-motion',
+      message: 'Merge pull request #1 from digitalnsw/fix/motion',
     }
-    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor([merge])), 'patch')
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor([merge, inner])), 'patch')
+  })
+
+  test('drops a merge whose message is releasable but whose net change is out of scope', async () => {
+    // THE test that pins `-m --first-parent` in changedFiles(). Without `-m`,
+    // git diff-tree reports NO files for a merge commit, and an empty file
+    // list takes the deliberate fail-open path — the merge would be KEPT and
+    // its releasable subject would wrongly cut a release. (Not "look out of
+    // scope": empty fails open, i.e. IN scope.) With the flags, the net
+    // first-parent diff is apps/web only, so the merge is dropped and there
+    // is nothing to release. Deleting the flags fails exactly this test.
+    git('checkout', '-b', 'web-only')
+    const inner = commit('feat(web): sandbox tweak', {
+      'apps/web/app/sandbox.tsx': 'export default 1\n',
+    })
+    git('checkout', 'main')
+    git('merge', '--no-ff', '-m', 'fix: bring in web sandbox tweaks', 'web-only')
+    const merge = { hash: git('rev-parse', 'HEAD'), message: 'fix: bring in web sandbox tweaks' }
+    // The inner commit rides along as semantic-release would supply it; its
+    // diff is apps/web only, so scope drops it too.
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor([merge, inner])), null)
   })
 
   test('fails OPEN on an empty commit, keeping --allow-empty as a force-release hatch', async () => {
