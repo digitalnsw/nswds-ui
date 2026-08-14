@@ -116,21 +116,6 @@ export default defineConfig({
         ],
         test: {
           name: 'storybook',
-          // EXPERIMENT — issue #83, do not merge.
-          //
-          // Proxy for the larger-runner test: run story files strictly one at
-          // a time, eliminating concurrent iframe setup on the 2-core runner.
-          // If the roaming "Cannot connect to the iframe" death stops under
-          // this, the failure is resource/concurrency pressure; if it
-          // persists on a sequential run, it points at the orchestrator
-          // itself (version pinning is the next lead).
-          //
-          // The issue lists fileParallelism: false as already refuted, but
-          // that run predates #121 — on that tree the optimizeDeps include
-          // list was missing four deps, so a mid-run discovery reload could
-          // kill even a sequential run. With noDiscovery merged, this is a
-          // fresh experiment, not a retry.
-          fileParallelism: false,
           browser: {
             enabled: true,
             // Vitest 4 requires a factory, not a string.
