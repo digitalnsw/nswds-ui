@@ -1,3 +1,9 @@
+## [5.0.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.1...@nswds/ui-v5.0.2) (2026-08-14)
+
+### Bug Fixes
+
+* **button:** flip non-solid ink for dark mode ([#124](https://github.com/digitalnsw/nswds-ui/issues/124)) ([ba487d4](https://github.com/digitalnsw/nswds-ui/commit/ba487d44ad8e9592f8559955b75b604bdbfe1cd9))
+
 ## [5.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.0...@nswds/ui-v5.0.1) (2026-08-14)
 
 ### Bug Fixes
