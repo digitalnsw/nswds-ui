@@ -583,7 +583,13 @@ function warnIfIconButtonUnlabelled(
  */
 function Button({
   className,
-  variant,
+  // Defaulted here rather than left to cva's `defaultVariants` so that
+  // `data-variant` below is always present in the DOM. cva resolves its own
+  // default internally and emits the right classes either way, but the
+  // attribute was simply absent — so the `data-[variant=solid]:` state-overlay
+  // rules in `styles.colors` never matched a default `<Button>`, which is what
+  // gives a solid button its white/black hover and active wash.
+  variant = 'solid',
   color,
   size,
   iconOnly,
@@ -647,7 +653,8 @@ function Button({
  */
 function ButtonLink({
   className,
-  variant,
+  // Always emitted as `data-variant` — see the note in `Button`.
+  variant = 'solid',
   color,
   size,
   iconOnly,
