@@ -2,9 +2,13 @@
 
 Releases are cut by semantic-release on merge to `main`. The version comes from the
 Conventional Commits subject lines in the release range, and the notes body is rendered by
-`@semantic-release/release-notes-generator` using the `conventionalcommits` preset. Both are
-configured in [`release.config.cjs`](../release.config.cjs), which extends
-`@workspace/semantic-release-config`.
+`@semantic-release/release-notes-generator` using the `conventionalcommits` preset. Both run
+wrapped by the path-scoped release gate
+(`packages/semantic-release-config/release-scope.mjs`), which filters the commit list to
+commits touching `packages/ui/` — so the version decision and the notes describe only
+changes that actually shipped in the package (see [AGENTS.md](../AGENTS.md), "Which commits
+can cut a release"). Everything is configured in [`release.config.cjs`](../release.config.cjs), which
+extends `@workspace/semantic-release-config`.
 
 The rendered body is published in two places, with identical content:
 
