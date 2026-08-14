@@ -29,6 +29,10 @@
 import { cdp, server } from '@vitest/browser/context'
 import { afterAll } from 'vitest'
 
+// Runs once per STORY FILE, not once per suite: vitest evaluates setup files
+// inside each test file's tester iframe, so this afterAll registers afresh in
+// every file. That per-file cadence is load-bearing — the disk burst happens
+// mid-run, so a suite-level cleanup would collect only after the damage.
 afterAll(async () => {
   if (server.provider === 'playwright' && server.browser === 'chromium') {
     await cdp().send('HeapProfiler.collectGarbage')
