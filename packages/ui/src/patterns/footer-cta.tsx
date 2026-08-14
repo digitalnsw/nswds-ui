@@ -55,7 +55,9 @@ const departmentSample = 'Digital NSW, Department of Customer Service'
  * not in it.
  */
 const ctaActionClassName = [
-  '[--btn-bg:var(--footer-ink)]',
+  // The `dark:` repeat is load-bearing — see the note on
+  // `footerSocialLinkClassName` in footer.tsx.
+  '[--btn-bg:var(--footer-ink)] dark:[--btn-bg:var(--footer-ink)]',
   '[--btn-icon:var(--footer-ink)]',
   '[--btn-hover-overlay:var(--footer-halo)]',
   '[--btn-active-overlay:var(--footer-halo-active)]',

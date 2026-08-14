@@ -26,9 +26,25 @@ const styles = {
     // Focus — deliberately `focus:` (paints on pointer clicks too), unlike
     // Link/Input which use `focus-visible:`. Buttons give click feedback with
     // the ring; links only ring for keyboard/AT focus. Do not "unify" this.
+    // The ring is offset 2px, so it lands on the *page* rather than on the
+    // button. `--btn-bg` is the ink (see the note above `styles.colors`), which
+    // flips for dark mode, so the ring follows the theme for every variant —
+    // including `solid`, whose ring used to be its own fill colour and so went
+    // near-invisible on a dark surface.
     'focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--btn-bg)',
     // Disabled
     'data-disabled:opacity-50 data-disabled:pointer-events-none',
+    // State overlays, derived from the ink rather than restated per colour.
+    // Deriving them means they follow `--btn-bg` wherever it comes from: the
+    // colour token, its dark-mode counterpart, or a surface that re-points the
+    // ink at its own (`[--btn-bg:var(--footer-ink)]` in footer.tsx and
+    // footer-cta.tsx). `solid` overrides both with its white/black pair at
+    // `data-[variant=solid]:` — an attribute selector, so it outranks these
+    // regardless of source order. `oklab` matches the interpolation space
+    // Tailwind's own `/10` alpha modifier emits, so the painted colour is
+    // unchanged from when each colour restated these itself.
+    '[--btn-hover-overlay:color-mix(in_oklab,var(--btn-bg)_10%,transparent)]',
+    '[--btn-active-overlay:color-mix(in_oklab,var(--btn-bg)_20%,transparent)]',
     // Glyph size beside a label: one value for every step and breakpoint.
     // Every step sets `text-base/7`, so the label is 16px whatever the step —
     // only the padding changes. An icon next to it has to match the *text*,
@@ -51,9 +67,9 @@ const styles = {
     // Optical border, implemented as the button background to avoid corner artifacts
     'border-transparent bg-(--btn-border)',
     // Dark mode: border is rendered on `after` so background is set to button background
-    'dark:bg-(--btn-bg)',
+    'dark:bg-(--btn-fill)',
     // Button background, implemented as foreground layer to stack on top of pseudo-border layer
-    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-bg)',
+    'before:absolute before:inset-0 before:-z-10 before:rounded-[calc(var(--radius-sm)-1px)] before:bg-(--btn-fill)',
     // Drop shadow, applied to the inset `before` layer so it blends with the border
     'before:shadow-sm',
     // Background color is moved to control and shadow is removed in dark mode so hide `before` pseudo
@@ -178,57 +194,98 @@ const styles = {
     'hover:shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]',
     'active:shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]',
   ],
+  // Two variables, deliberately separate.
+  //
+  // `--btn-fill` is the block of colour `solid` paints behind `--btn-text`.
+  // `--btn-bg` is the *ink*: the glyph and label on every non-solid variant
+  // (`text-(--btn-bg)`), the border on `outline`/`surface`, the tint on
+  // `soft`/`surface`, the `link` halos, the state overlays derived in
+  // `styles.base`, and the focus ring. They start life the same colour, and
+  // only part company in dark mode.
+  //
+  // They used to be one variable, which made the ink un-flippable. The values
+  // here are masterbrand palette steps, and palette steps are theme-invariant —
+  // `styles.css` re-declares only the *semantic* tokens under
+  // `[data-theme=dark], .dark`. Design-system surfaces do flip, though
+  // (`Header color='white'` is `bg-white dark:bg-grey-900`), so a non-solid
+  // button kept its light-mode ink on a dark surface: `primary-800` on
+  // `grey-900` measures 1.32:1, far under the 3:1 WCAG 1.4.11 asks of a UI
+  // component, with the overlays and focus ring unpainted for the same reason.
+  // Splitting the fill off means `--btn-bg` can flip on its own without
+  // repainting `solid`, so the dark counterparts below need no variant scoping
+  // and stay at single-class specificity — which is what keeps them overridable
+  // by a surface that imposes its own ink (`[--btn-bg:var(--footer-ink)]` in
+  // footer.tsx and footer-cta.tsx). Raising their specificity would silently
+  // win against those, so keep any future dark value a bare `dark:` utility.
+  //
+  // `-200` is the package's established ink-on-dark (`--link-color`,
+  // `--main-nav-panel-ink`) and clears 10:1 against every dark surface token.
+  // `white` and `secondary` are already light inks, so they have no counterpart.
+  //
+  // Dark values use the raw NSW tokens for the tree-shaking reason spelled out
+  // above `danger` below.
   colors: {
     grey: [
       // Base
-      '[--btn-bg:var(--color-grey-600)] [--btn-border:var(--color-grey-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--color-grey-600)] [--btn-bg:var(--color-grey-600)] [--btn-border:var(--color-grey-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--grey-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-grey-600)]/10 [--btn-active-overlay:var(--color-grey-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     white: [
+      // No dark counterpart: white is already the maximum-contrast ink on any
+      // dark surface. Surface-conditional in the same way as `secondary` — on a
+      // light surface a non-solid `white` button is white on white. See the
+      // note on the `color` prop.
       // Base
-      '[--btn-bg:var(--color-white)] [--btn-border:var(--color-white)]/90 [--btn-text:var(--color-grey-800)]',
+      '[--btn-fill:var(--color-white)] [--btn-bg:var(--color-white)] [--btn-border:var(--color-white)]/90 [--btn-text:var(--color-grey-800)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-white)]/10 [--btn-active-overlay:var(--color-white)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-black)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     primary: [
       // Base
-      '[--btn-bg:var(--color-primary-800)] [--btn-border:var(--color-primary-800)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--color-primary-800)] [--btn-bg:var(--color-primary-800)] [--btn-border:var(--color-primary-800)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--primary-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-primary-800)]/10 [--btn-active-overlay:var(--color-primary-800)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     secondary: [
+      // No dark counterpart: `primary-200` already *is* the ink the other
+      // colours flip to. Like `white`, this token is surface-conditional — it
+      // is meant for dark surfaces, where it lands at 15.40:1. As a non-solid
+      // ink on a light one it measures ~1.2:1, so that pairing is misuse
+      // rather than a defect to fix here. See the note on the `color` prop.
       // Base
-      '[--btn-bg:var(--color-primary-200)] [--btn-border:var(--color-primary-200)]/90 [--btn-text:var(--color-primary-800)]',
+      '[--btn-fill:var(--color-primary-200)] [--btn-bg:var(--color-primary-200)] [--btn-border:var(--color-primary-200)]/90 [--btn-text:var(--color-primary-800)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-primary-200)]/10 [--btn-active-overlay:var(--color-primary-200)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/15',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-primary-800)]/10',
     ],
     tertiary: [
       // Base
-      '[--btn-bg:var(--color-primary-600)] [--btn-border:var(--color-primary-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--color-primary-600)] [--btn-bg:var(--color-primary-600)] [--btn-border:var(--color-primary-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--primary-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-primary-600)]/10 [--btn-active-overlay:var(--color-primary-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     accent: [
       // Base
-      '[--btn-bg:var(--color-accent-600)] [--btn-border:var(--color-accent-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--color-accent-600)] [--btn-bg:var(--color-accent-600)] [--btn-border:var(--color-accent-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--accent-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--color-accent-600)]/10 [--btn-active-overlay:var(--color-accent-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
@@ -242,27 +299,30 @@ const styles = {
     // not a Tailwind theme), so they always resolve.
     danger: [
       // Base
-      '[--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--danger-600)] [--btn-bg:var(--danger-600)] [--btn-border:var(--danger-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--danger-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--danger-600)]/10 [--btn-active-overlay:var(--danger-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     success: [
       // Base
-      '[--btn-bg:var(--success-600)] [--btn-border:var(--success-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--success-600)] [--btn-bg:var(--success-600)] [--btn-border:var(--success-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--success-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--success-600)]/10 [--btn-active-overlay:var(--success-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
     warning: [
       // Base
-      '[--btn-bg:var(--warning-600)] [--btn-border:var(--warning-600)]/90 [--btn-text:white]',
+      '[--btn-fill:var(--warning-600)] [--btn-bg:var(--warning-600)] [--btn-border:var(--warning-600)]/90 [--btn-text:white]',
+      // Dark mode: ink
+      'dark:[--btn-bg:var(--warning-200)]',
       // State: Hover
-      '[--btn-hover-overlay:var(--warning-600)]/10 [--btn-active-overlay:var(--warning-600)]/20',
       'data-[variant=solid]:[--btn-hover-overlay:var(--color-white)]/10',
       // State: Active
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
@@ -421,7 +481,33 @@ function renderIconSlot(slot: IconSlot | undefined | null): React.ReactNode {
 }
 
 /** Visual/content props shared by `Button` and `ButtonLink`. */
-type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly'> & {
+type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly' | 'color'> & {
+  /**
+   * Colour token. Most are safe on any surface: the non-solid variants take
+   * their ink from the token and it flips for dark mode, so `primary` reads
+   * correctly on a light page and on a dark one.
+   *
+   * `white` and `secondary` are the exceptions — both are
+   * **surface-conditional, for dark surfaces only**. Their inks (`white` and
+   * `primary-200`) are already light, which is what makes them right on a
+   * dark surface and unusable on a light one: a non-solid button in either
+   * colour measures around 1.2:1 on white, against the 3:1 WCAG 1.4.11 asks
+   * of a UI component. Reach for them the way `Hero` does — over a
+   * `primary-800` panel — and use `primary` on a light or theme-flipping
+   * surface. `solid` is unaffected either way, since it pairs `--btn-fill`
+   * with `--btn-text` rather than painting the ink.
+   */
+  color?:
+    | 'white'
+    | 'grey'
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'accent'
+    | 'danger'
+    | 'success'
+    | 'warning'
+    | null
   /**
    * Scale step. `sm` / `default` / `lg` render 52 / 60 / 68px tall below
    * `sm:` and 44 / 52 / 60px at or above it. The step changes padding only —
@@ -583,7 +669,14 @@ function warnIfIconButtonUnlabelled(
  */
 function Button({
   className,
-  variant,
+  // Defaulted here rather than left to cva's `defaultVariants` so that
+  // `data-variant` below is always present in the DOM. cva resolves its own
+  // default internally and emits the right classes either way, but the
+  // attribute was simply absent — so the `data-[variant=solid]:` state-overlay
+  // rules in `styles.colors` never matched a default `<Button>`. It fell
+  // through to the derived overlay in `styles.base` and painted `--btn-bg` at
+  // 10% over its own fill, which is the same colour: no visible hover at all.
+  variant = 'solid',
   color,
   size,
   iconOnly,
@@ -647,7 +740,8 @@ function Button({
  */
 function ButtonLink({
   className,
-  variant,
+  // Always emitted as `data-variant` — see the note in `Button`.
+  variant = 'solid',
   color,
   size,
   iconOnly,
