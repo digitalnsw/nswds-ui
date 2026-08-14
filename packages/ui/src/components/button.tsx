@@ -487,8 +487,8 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * their ink from the token and it flips for dark mode, so `primary` reads
    * correctly on a light page and on a dark one.
    *
-   * `white` and `secondary` are the exceptions — both are **surface-
-   * conditional, for dark surfaces only**. Their inks (`white` and
+   * `white` and `secondary` are the exceptions — both are
+   * **surface-conditional, for dark surfaces only**. Their inks (`white` and
    * `primary-200`) are already light, which is what makes them right on a
    * dark surface and unusable on a light one: a non-solid button in either
    * colour measures around 1.2:1 on white, against the 3:1 WCAG 1.4.11 asks
