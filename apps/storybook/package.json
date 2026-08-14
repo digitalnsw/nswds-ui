@@ -7,6 +7,7 @@
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
     "test": "vitest --project storybook run",
+    "check:optimize-deps": "node scripts/check-optimize-deps.mjs",
     "lint": "eslint --max-warnings 0",
     "typecheck": "tsc --noEmit"
   },

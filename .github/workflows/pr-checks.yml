@@ -110,6 +110,13 @@ jobs:
             exit 1
           fi
 
+      # Runs before the (slow) Playwright install so it fails fast. A
+      # dependency of packages/ui that is missing from optimizeDeps.include
+      # gets discovered mid-run, which reloads the tester page and kills an
+      # unrelated story file — the intermittent failure of issue #83.
+      - name: Storybook pre-bundle drift check
+        run: npm run check:optimize-deps -w @workspace/storybook
+
       # Playwright system deps live outside ~/.cache/ms-playwright and would
       # need re-installing on every cold runner anyway, so we install both
       # the browser and its apt deps in one step. Roughly 30-60s on a cold
