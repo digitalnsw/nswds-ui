@@ -24,9 +24,14 @@ export default defineConfig({
   // The victim is whatever happened to be executing, which is why the failure
   // roams and why it never reproduced locally, where a warm
   // node_modules/.vite cache means there is nothing left to discover. See
-  // issue #83 — `msw-storybook-addon` was masking it by making startup slow
-  // enough that discovery settled before the suite got going. Removing MSW,
-  // upgrading Storybook, or simply a faster runner all unmask it.
+  // issue #83.
+  //
+  // This list is now the ONLY thing standing between the suite and that
+  // failure. `msw-storybook-addon` used to mask it accidentally — its
+  // `worker.start()` made startup slow enough (~100s vs ~25s) that discovery
+  // settled before the suite got going — and MSW has since been removed, so
+  // there is no longer any accidental cushion. A faster runner or a Storybook
+  // upgrade would have taken it away regardless.
   //
   // `npm run check:optimize-deps -w @workspace/storybook` fails the build when
   // packages/ui/src grows an import that is missing here.
@@ -98,7 +103,6 @@ export default defineConfig({
       // and causes "Vitest failed to find the current suite" errors).
       '@storybook/react-vite',
       '@storybook/addon-a11y',
-      'msw-storybook-addon',
     ],
   },
   test: {
