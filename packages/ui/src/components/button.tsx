@@ -237,8 +237,9 @@ const styles = {
     ],
     white: [
       // No dark counterpart: white is already the maximum-contrast ink on any
-      // dark surface. It is the light-mode pairing that constrains this token —
-      // it is only safe on a dark surface, which is why `Hero` reaches for it.
+      // dark surface. Surface-conditional in the same way as `secondary` — on a
+      // light surface a non-solid `white` button is white on white. See the
+      // note on the `color` prop.
       // Base
       '[--btn-fill:var(--color-white)] [--btn-bg:var(--color-white)] [--btn-border:var(--color-white)]/90 [--btn-text:var(--color-grey-800)]',
       // State: Hover
@@ -258,9 +259,10 @@ const styles = {
     ],
     secondary: [
       // No dark counterpart: `primary-200` already *is* the ink the other
-      // colours flip to. Note the mirror-image problem in light mode — as a
-      // non-solid ink this token is ~1.2:1 on a white surface — which is a
-      // separate defect from the dark-mode one fixed here, and is left alone.
+      // colours flip to. Like `white`, this token is surface-conditional — it
+      // is meant for dark surfaces, where it lands at 15.40:1. As a non-solid
+      // ink on a light one it measures ~1.2:1, so that pairing is misuse
+      // rather than a defect to fix here. See the note on the `color` prop.
       // Base
       '[--btn-fill:var(--color-primary-200)] [--btn-bg:var(--color-primary-200)] [--btn-border:var(--color-primary-200)]/90 [--btn-text:var(--color-primary-800)]',
       // State: Hover
@@ -479,7 +481,33 @@ function renderIconSlot(slot: IconSlot | undefined | null): React.ReactNode {
 }
 
 /** Visual/content props shared by `Button` and `ButtonLink`. */
-type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly'> & {
+type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly' | 'color'> & {
+  /**
+   * Colour token. Most are safe on any surface: the non-solid variants take
+   * their ink from the token and it flips for dark mode, so `primary` reads
+   * correctly on a light page and on a dark one.
+   *
+   * `white` and `secondary` are the exceptions — both are **surface-
+   * conditional, for dark surfaces only**. Their inks (`white` and
+   * `primary-200`) are already light, which is what makes them right on a
+   * dark surface and unusable on a light one: a non-solid button in either
+   * colour measures around 1.2:1 on white, against the 3:1 WCAG 1.4.11 asks
+   * of a UI component. Reach for them the way `Hero` does — over a
+   * `primary-800` panel — and use `primary` on a light or theme-flipping
+   * surface. `solid` is unaffected either way, since it pairs `--btn-fill`
+   * with `--btn-text` rather than painting the ink.
+   */
+  color?:
+    | 'white'
+    | 'grey'
+    | 'primary'
+    | 'secondary'
+    | 'tertiary'
+    | 'accent'
+    | 'danger'
+    | 'success'
+    | 'warning'
+    | null
   /**
    * Scale step. `sm` / `default` / `lg` render 52 / 60 / 68px tall below
    * `sm:` and 44 / 52 / 60px at or above it. The step changes padding only —
