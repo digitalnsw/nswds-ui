@@ -602,9 +602,20 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
      that changed nothing under `packages/ui/`** — see "Which commits can cut a
      release" below.
    - If a release is warranted: bumps version in `packages/ui/package.json`, writes `packages/ui/CHANGELOG.md`, regenerates `package-lock.json` (`npm install --package-lock-only` via `@semantic-release/exec`), publishes to npm via OIDC (no `NPM_TOKEN` needed — uses `id-token: write` permission), creates a GitHub release + tag (`@nswds/ui-vX.Y.Z`), commits the updated `packages/ui/package.json`, CHANGELOG, and `package-lock.json` back.
-6. If a new tag was created: runs `npm run registry:build` and uploads the output as a GitHub Actions artifact (`shadcn-registry-<sha>`).
-
-**The registry artifact is uploaded but NOT yet deployed.** See TODO below.
+6. If a new tag was created, verifies the release actually shipped, because
+   semantic-release pushes the version-bump commit and tag **before** the npm
+   publish step — a failed publish would otherwise leave green-looking tags
+   with no package behind them:
+   - **npm**: polls `npm view @nswds/ui@<version>` until the new version
+     appears; fails loudly if it never does.
+   - **registry**: polls the deployed registry's `/r/version.json` (~10-minute
+     budget) until it reports the new version. Vercel deploys the registry
+     from the version-bump commit semantic-release just pushed, gated by the
+     `ignoreCommand` in `apps/registry/vercel.json` (see §7).
+7. On any failure, the `alert-on-failure` job files (or bumps) an issue
+   labelled `release-failure`, and the weekly release-drift audit
+   (`release-drift-audit.yml`) closes it automatically once the git tag, npm,
+   and the deployed registry agree again.
 
 ### Which commits can cut a release
 
