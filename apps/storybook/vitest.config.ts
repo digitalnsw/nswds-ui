@@ -8,16 +8,52 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
   // Pre-bundle the component library deps so Vite doesn't reload mid-test.
+  //
+  // Why this list has to be maintained by hand: stories import `@nswds/ui` as
+  // a bare specifier, and it is a workspace-LINKED package, so Vite treats it
+  // as source and never pre-bundles it. Its own third-party imports are
+  // therefore invisible to the cold-start scanner and get discovered one at a
+  // time, as whichever story first pulls in that component executes.
+  // Discovering a new dependency mid-run triggers a re-optimisation and a
+  // FULL-PAGE RELOAD of the tester page (Vite's documented behaviour — see
+  // `holdUntilCrawlEnd`), which kills whichever test file was running:
+  //
+  //     Cannot connect to the iframe […] don't forget to call event.preventDefault()
+  //     Caused by: TypeError: Failed to fetch dynamically imported module: …/<random>.stories.tsx
+  //
+  // The victim is whatever happened to be executing, which is why the failure
+  // roams and why it never reproduced locally, where a warm
+  // node_modules/.vite cache means there is nothing left to discover. See
+  // issue #83 — `msw-storybook-addon` was masking it by making startup slow
+  // enough that discovery settled before the suite got going. Removing MSW,
+  // upgrading Storybook, or simply a faster runner all unmask it.
+  //
+  // `npm run check:optimize-deps -w @workspace/storybook` fails the build when
+  // packages/ui/src grows an import that is missing here.
   optimizeDeps: {
+    // Belt and braces over the list below: with discovery off, Vite cannot
+    // re-optimise mid-run at all, so the reload race above is impossible by
+    // construction rather than by the list happening to be complete. A
+    // dependency that IS missing degrades to being served unbundled — slower,
+    // still correct — except for CJS-only ones, which must be listed
+    // explicitly under this setting or their named exports will not survive
+    // the ESM round-trip (`react/jsx-dev-runtime` and `aria-query` below).
+    noDiscovery: true,
     include: [
       'react',
       'react-dom',
+      // Required by `noDiscovery` above: these are CJS and reach Vite only
+      // through the JSX transform and @storybook/addon-vitest's setup file,
+      // never through an import we wrote, so nothing else would list them.
+      // Unbundled, their named exports do not round-trip through ESM and
+      // every one of the 65 story files dies at import with "does not provide
+      // an export named 'jsxDEV'" — verified, not theoretical.
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
+      'react-dom/client',
       // The bare entry does NOT cover subpath imports — each subpath is its
-      // own optimize entry, and one discovered mid-run (a late-collected
-      // story file importing a not-yet-scanned primitive) triggers a Vite
-      // re-optimisation that reloads the tester page: the run then dies with
-      // "Browser connection was closed" on whichever file was executing.
-      // List every subpath packages/ui/src imports (grep @base-ui/react/).
+      // own optimize entry. List every subpath packages/ui/src imports
+      // (grep @base-ui/react/).
       '@base-ui/react',
       '@base-ui/react/autocomplete',
       '@base-ui/react/button',
@@ -35,6 +71,20 @@ export default defineConfig({
       'class-variance-authority',
       'clsx',
       'tailwind-merge',
+      // The rest of @nswds/ui's runtime `dependencies`. These were the four
+      // missing entries behind #83: every one of them is imported by a
+      // component that HAS a story (sonner.tsx, drawer.tsx → vaul,
+      // resizable.tsx → react-resizable-panels, theme-switcher/sonner →
+      // next-themes), so each was guaranteed to be discovered mid-run — a
+      // reload apiece, at whatever point in the suite that story ran.
+      // Keep in step with `dependencies` in packages/ui/package.json.
+      'next-themes',
+      'react-resizable-panels',
+      'sonner',
+      'vaul',
+      // Imported by the .mdx docs pages, which sit under the same stories
+      // glob as the test files (apps/storybook/.storybook/main.ts).
+      '@storybook/addon-docs/blocks',
       // `storybook/test` is a subpath export used by stories for `fn()` mocks.
       // Without pre-bundling, Vite's scanner can't resolve it cleanly in an
       // npm workspace.

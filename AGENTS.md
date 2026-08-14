@@ -397,9 +397,10 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:drift`, `check:icons`, `build -w @nswds/ui`,
 `check:package`, `scripts/test-consumer-fixture.sh`, a registry-freshness
-rebuild, a Playwright Chromium install, and the Storybook suite. The middle ones
-are easy to miss locally, and each fails for a reason the usual trio cannot see
-(`check:cascade` is not a step of its own — it runs inside `build`):
+rebuild, `check:optimize-deps`, a Playwright Chromium install, and the Storybook
+suite. The middle ones are easy to miss locally, and each fails for a reason the
+usual trio cannot see (`check:cascade` is not a step of its own — it runs inside
+`build`):
 
 - **`format:check`** is `prettier --check .` over the **whole repo**. A
   path-scoped `npx prettier --check packages/ui/src` passes while an unformatted
@@ -416,6 +417,17 @@ are easy to miss locally, and each fails for a reason the usual trio cannot see
   reaches registry consumers (they copy source, so it has to travel with it).
 - **`check:icons`** regenerates the icon barrel and fails on any difference —
   see §4 and the icon generator for the regeneration command.
+- **`check:optimize-deps`**
+  (`apps/storybook/scripts/check-optimize-deps.mjs`) asserts that every bare
+  import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
+  `apps/storybook/vitest.config.ts`. Stories import `@nswds/ui` as a
+  workspace-**linked** package, which Vite treats as source and never
+  pre-bundles, so its third-party imports are invisible to the cold-start
+  scanner and get discovered one at a time as stories execute. Each discovery
+  triggers a re-optimisation and a full-page reload that kills whichever story
+  was mid-flight, surfacing as `Cannot connect to the iframe` against a random
+  victim file. Add a component with a new dependency and forget this list, and
+  the Storybook job starts failing intermittently somewhere else entirely.
 - **`check:cascade`** (`packages/ui/scripts/check-cascade-safety.mjs`) runs
   inside `build`, not as its own CI step, because it reads the built
   `dist/styles.css` — so a `build` that "succeeds" locally without it has not
