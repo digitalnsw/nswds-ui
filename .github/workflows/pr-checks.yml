@@ -124,12 +124,39 @@ jobs:
       - name: Install Playwright Chromium
         run: npm exec -w @workspace/storybook -- playwright install chromium --with-deps
 
+      # EXPERIMENT — issue #83 verification, do not merge.
+      # Hypothesis under test (upstream vitest#9437): Chromium leaks 2MiB of
+      # shared memory per 304-revalidated script load; Playwright's
+      # --disable-dev-shm-usage turns those into deleted-but-open files in
+      # /tmp, so free DISK collapses invisibly mid-run and the tester page
+      # dies. Deleted-but-open files are invisible to `du` but counted by
+      # `df`, so we poll `df` every 2s in the background and dump the series
+      # afterwards. Prediction: free space falls by GBs as files execute, and
+      # on failing runs crosses towards zero right at the death.
+      - name: Start disk telemetry (issue 83 verification)
+        run: |
+          nohup bash -c 'while true; do
+            printf "%s %s\n" "$(date -u +%H:%M:%S)" "$(df -k --output=target,avail / /tmp /dev/shm 2>/dev/null | tail -n +2 | tr -s " " | tr "\n" " ")"
+            sleep 2
+          done' > "$RUNNER_TEMP/disk-telemetry.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/disk-telemetry.pid"
+          df -h / /tmp /dev/shm || true
+
       # Vitest browser mode runs every story file as a test. The storybookTest
       # plugin auto-generates a `test()` per story export; @storybook/addon-a11y
       # runs axe-core in an `afterEach` hook and (because preview.tsx sets
       # `a11y.test: 'error'`) any violation fails the test.
       - name: Storybook tests (Vitest browser + axe a11y)
         run: npm run test -w @workspace/storybook
+
+      - name: Report disk telemetry (issue 83 verification)
+        if: always()
+        run: |
+          kill "$(cat "$RUNNER_TEMP/disk-telemetry.pid")" 2>/dev/null || true
+          echo "=== disk telemetry (UTC time, then mount/avail-KB pairs) ==="
+          cat "$RUNNER_TEMP/disk-telemetry.log"
+          echo "=== end-of-run state ==="
+          df -h / /tmp /dev/shm || true
 
   # Token/theme CSS under packages/ui/src/styles/ changes what EVERY consumer
   # renders, but a `chore:`/`style:`/`refactor:` PR triggers no release, so the
