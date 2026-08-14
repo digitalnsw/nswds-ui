@@ -395,9 +395,10 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
-`format:check`, `check:drift`, `check:icons`, `build -w @nswds/ui`,
-`check:package`, `scripts/test-consumer-fixture.sh`, a registry-freshness
-rebuild, `check:optimize-deps`, a Playwright Chromium install, and the Storybook
+`format:check`, `check:drift`, `check:icons`, the release-config tests,
+`build -w @nswds/ui`, `check:package`, `scripts/test-consumer-fixture.sh`, a
+registry-freshness rebuild, `check:optimize-deps`, a Playwright Chromium
+install, and the Storybook
 suite. The middle ones are easy to miss locally, and each fails for a reason the
 usual trio cannot see (`check:cascade` is not a step of its own — it runs inside
 `build`):
@@ -417,6 +418,12 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   reaches registry consumers (they copy source, so it has to travel with it).
 - **`check:icons`** regenerates the icon barrel and fails on any difference —
   see §4 and the icon generator for the regeneration command.
+- **the release-config tests** (`npm test -w @workspace/semantic-release-config`)
+  cover the path-scoped release gate described in §6. They exist because
+  release.yml commits with `[skip ci]`, so nothing else in CI ever exercises the
+  release configuration — a mistake there is invisible until it has already
+  published, or silently failed to. They build a throwaway git repo per case, so
+  they need no real history and pass under this job's shallow checkout.
 - **`check:optimize-deps`**
   (`apps/storybook/scripts/check-optimize-deps.mjs`) asserts that every bare
   import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
@@ -543,11 +550,63 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
 3. Runs `npm ci`.
 4. Builds `@nswds/ui` (`npm run build -w @nswds/ui`).
 5. Runs `npm run release` (semantic-release):
-   - Analyses commits since the last `@nswds/ui-v*` tag.
+   - Analyses commits since the last `@nswds/ui-v*` tag, **excluding commits
+     that changed nothing under `packages/ui/`** — see "Which commits can cut a
+     release" below.
    - If a release is warranted: bumps version in `packages/ui/package.json`, writes `packages/ui/CHANGELOG.md`, regenerates `package-lock.json` (`npm install --package-lock-only` via `@semantic-release/exec`), publishes to npm via OIDC (no `NPM_TOKEN` needed — uses `id-token: write` permission), creates a GitHub release + tag (`@nswds/ui-vX.Y.Z`), commits the updated `packages/ui/package.json`, CHANGELOG, and `package-lock.json` back.
 6. If a new tag was created: runs `npm run registry:build` and uploads the output as a GitHub Actions artifact (`shadcn-registry-<sha>`).
 
 **The registry artifact is uploaded but NOT yet deployed.** See TODO below.
+
+### Which commits can cut a release
+
+A release happens only when a commit is **both** a releasable type (per the
+table above) **and** touches `packages/ui/`. Both halves are required, and the
+test is applied per commit across the whole range since the last tag — never to
+just the commit that happened to trigger the run.
+
+This monorepo publishes exactly one package, but semantic-release runs from the
+repo root and sees every commit on `main`. Without the scope test, a `fix(deps)`
+bump confined to an unpublished workspace cut a full patch release: `apps/web`
+is `private: true` and ships nowhere, yet updating `next` inside it published
+`@nswds/ui` 5.0.1, whose tarball was functionally identical to 5.0.0 and whose
+changelog described a Next.js upgrade that was not in it. Six of the twenty-five
+releases before this landed were that. Each one also opened a Renovate PR in
+every consuming repo — eight and counting — with a full CI run apiece, for no
+change at all (issue #119).
+
+The gate lives in `packages/semantic-release-config/release-scope.mjs`, which
+wraps `@semantic-release/commit-analyzer` and
+`@semantic-release/release-notes-generator` with the commit list filtered to
+`paths`. Filtering both matters: the analyzer decides whether to release, the
+notes generator decides what the changelog claims shipped. Read that file's
+header before changing it — in particular for why `package-lock.json` is
+deliberately out of scope, and why commits git cannot inspect deliberately fail
+_open_.
+
+Two consequences that look like bugs but are not:
+
+- **Changes to `packages/ui/` under a non-releasable type now wait.** A
+  `build:`/`chore:`/`refactor:` commit no longer ships by piggybacking on an
+  unrelated `fix:` elsewhere in the repo — which is what actually happened in
+  4.1.1, where a `build(prettier)` reformat of 87 files rode out on a CI lint
+  fix. It ships with the next genuinely releasable commit. This is the stated
+  policy in the table above finally holding, but it does mean a formatting-only
+  change can sit unpublished for a while.
+- **`git commit --allow-empty -m 'fix: …'` still forces a release.** An empty
+  commit reports no files, and no-files fails open. That is the supported escape
+  hatch when something outside `packages/ui/` genuinely needs to reach
+  consumers.
+
+Renovate can also stop generating the misleading label in the first place: the
+shared preset in `digitalnsw/nswds-devops` brings `config:recommended`, whose
+`:semanticPrefixFixDepsChoreOthers` makes any **production**-dependency update a
+`fix(deps)` — including production dependencies of workspaces that publish
+nothing. A `matchFileNames` rule for `apps/**/package.json` setting
+`semanticCommitType: "chore"` would fix the label at source. That is a change to
+_that_ repo, and it is a complement rather than an alternative: it does nothing
+for hand-written `fix:` commits, which is why the gate above is the load-bearing
+half.
 
 ### npm Trusted Publishing (OIDC) — first-publish bootstrap
 

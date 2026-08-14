@@ -72,6 +72,15 @@ jobs:
       - name: Icon module parity check
         run: npm run check:icons -w @nswds/ui
 
+      # release.yml commits with [skip ci], so the release pipeline is never
+      # exercised by PR CI — a mistake in the release config is only visible
+      # after it has published, or silently failed to. These tests cover the
+      # path-scoped release gate (which decides whether a release happens at
+      # all) against a throwaway git repo, so they need no real history and
+      # work under this job's shallow checkout.
+      - name: Release config tests
+        run: npm test -w @workspace/semantic-release-config
+
       # @nswds/ui's `exports` field points subpath imports
       # (e.g. `@nswds/ui/lib/theme-palette`) at `./dist/lib/*.js`, so the
       # package must be built before Storybook can resolve them.
