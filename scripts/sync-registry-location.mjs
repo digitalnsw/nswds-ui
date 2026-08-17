@@ -9,6 +9,17 @@
 // truth that CI and all code read) and find-replaces it through the human-facing
 // docs. The generated registry JSON is handled by registry:build, which reads
 // registry.config.json. Idempotent: a no-op when nothing changed.
+//
+// registry.config.json holds TWO urls and this script only ever touches the
+// first:
+//   location — the PUBLIC url consumers are told to use
+//              (https://ui.digital.nsw.gov.au/registry). Stamped into the
+//              registry JSON's registryDependencies and into the docs below.
+//   origin   — the underlying registry deployment that apps/web proxies
+//              /registry to. Deliberately NOT derived from `location`: they
+//              differ because the public url is a proxied path on the web app's
+//              domain, so pointing the proxy at `location` would loop. Change it
+//              by hand, only when the registry's Vercel project url changes.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'

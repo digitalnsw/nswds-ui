@@ -4,10 +4,10 @@
   "title": "Footer — Collapsible Site Map",
   "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/footer.json",
-    "https://nswds-ui-registry.vercel.app/r/collapsible.json",
-    "https://nswds-ui-registry.vercel.app/r/icons.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+    "https://ui.digital.nsw.gov.au/registry/r/collapsible.json",
+    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
   ],
   "files": [
     {

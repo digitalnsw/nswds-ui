@@ -8,8 +8,8 @@
     "tailwind-merge"
   ],
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/separator.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/separator.json"
   ],
   "files": [
     {

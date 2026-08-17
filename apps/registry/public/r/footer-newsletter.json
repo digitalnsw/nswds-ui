@@ -4,12 +4,12 @@
   "title": "Footer — Newsletter",
   "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/footer.json",
-    "https://nswds-ui-registry.vercel.app/r/button.json",
-    "https://nswds-ui-registry.vercel.app/r/field.json",
-    "https://nswds-ui-registry.vercel.app/r/input.json",
-    "https://nswds-ui-registry.vercel.app/r/icons.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+    "https://ui.digital.nsw.gov.au/registry/r/button.json",
+    "https://ui.digital.nsw.gov.au/registry/r/field.json",
+    "https://ui.digital.nsw.gov.au/registry/r/input.json",
+    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
   ],
   "files": [
     {

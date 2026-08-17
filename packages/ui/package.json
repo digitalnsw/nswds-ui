@@ -45,10 +45,11 @@
     "verify:dist": "node scripts/verify-dist.mjs",
     "check:cascade": "node scripts/check-cascade-safety.mjs",
     "check:drift": "node scripts/check-component-drift.mjs",
+    "check:registry-resolves": "node scripts/check-registry-resolves.mjs",
     "check:icons": "node scripts/generate-icons.mjs check",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./postcss.config",
     "lint": "eslint --max-warnings 0",
-    "registry:build": "npm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r",
+    "registry:build": "npm run registry:validate && shadcn build registry.json --cwd . --output ../../apps/registry/public/r && node scripts/rewrite-registry-aliases.mjs ../../apps/registry/public/r && npm run check:registry-resolves",
     "registry:validate": "shadcn registry validate registry.json --cwd .",
     "typecheck": "tsc --noEmit"
   },

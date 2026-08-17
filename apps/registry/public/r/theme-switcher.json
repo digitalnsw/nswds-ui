@@ -4,9 +4,9 @@
   "title": "Theme Switcher",
   "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/button.json",
-    "https://nswds-ui-registry.vercel.app/r/icons.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/button.json",
+    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
   ],
   "files": [
     {

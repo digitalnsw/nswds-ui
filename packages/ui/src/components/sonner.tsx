@@ -5,7 +5,10 @@ import * as React from 'react'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
 
 import { Spinner } from '../components/spinner.js'
-import { IconCheckCircle, IconError, IconInfo, IconWarning } from '../icons/index.js'
+import { IconCheckCircle } from '../icons/check-circle.js'
+import { IconError } from '../icons/error.js'
+import { IconInfo } from '../icons/info.js'
+import { IconWarning } from '../icons/warning.js'
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = 'system' } = useTheme()

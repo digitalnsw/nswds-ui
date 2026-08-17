@@ -332,8 +332,17 @@ Add an entry to `packages/ui/registry.json`:
 }
 ```
 
-Only list `src/lib/utils.ts` if the component uses `cn()`. Only list deps the component
-actually imports — consumers install them on `shadcn add`.
+Only list `src/lib/utils.ts` if the component uses `cn()`. List every dep the component
+actually imports, even one a `registryDependencies` sibling already installs — consumers
+install them on `shadcn add`, and relying on a sibling's declaration breaks silently the
+day that sibling drops it.
+
+The same completeness rule applies to files: **anything the component imports has to be
+delivered by this item or one of its `registryDependencies`.** Registry consumers copy
+source, so an import of a file no item ships compiles here and fails for them. Icons are
+the usual trap — import them per-icon (`../icons/close.js`), never through the
+`../icons/index.js` barrel, and make sure each one you use is in the `icons` item's
+`files` list. `check:registry-resolves` (§5) enforces both rules.
 
 Then regenerate the registry output and commit it with your source change:
 
@@ -344,6 +353,12 @@ npm run registry:build   # writes apps/registry/public/r/*.json
 The generated JSON in `apps/registry/public/r/` is committed to git. The PR check
 (`.github/workflows/pr-checks.yml`) rebuilds the registry and fails if the committed
 output doesn't match — a stale or missing JSON file blocks the merge.
+
+**Removing an item is not symmetric.** `shadcn build` writes but never deletes, and the
+freshness check compares `git status`, which cannot see a file nothing regenerates. So
+deleting an item from `registry.json` also means deleting
+`apps/registry/public/r/<name>.json` by hand, or it stays committed and deployed
+indefinitely. `check:registry-resolves` fails on the orphan if you forget.
 
 ### Step 4 — Write a Storybook story
 
@@ -388,6 +403,7 @@ Run from the **repo root** unless noted.
 | Test consumer fixture           | `./scripts/test-consumer-fixture.sh`                           |
 | Build registry JSON             | `npm run registry:build`                                       |
 | Validate registry.json          | `npm run registry:validate`                                    |
+| Check registry items resolve    | `npm run check:registry-resolves -w @nswds/ui`                 |
 | Run Storybook tests             | `npm run test -w @workspace/storybook`                         |
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
@@ -398,8 +414,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:drift`, `check:icons`, the release-config tests,
 `build -w @nswds/ui`, `check:package`, `scripts/test-consumer-fixture.sh`, a
-registry-freshness rebuild, `check:optimize-deps`, a Playwright Chromium
-install, and the Storybook
+registry-freshness rebuild, `check:registry-resolves`, `check:optimize-deps`, a
+Playwright Chromium install, and the Storybook
 suite. The middle ones are easy to miss locally, and each fails for a reason the
 usual trio cannot see (`check:cascade` is not a step of its own — it runs inside
 `build`):
@@ -417,6 +433,30 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   that owns no registry item but still ships as a supporting file inside another
   item's `files` list, which is how a public component's internal building block
   reaches registry consumers (they copy source, so it has to travel with it).
+- **`check:registry-resolves`**
+  (`packages/ui/scripts/check-registry-resolves.mjs`) is the companion to
+  `check:drift`, and the two are easy to confuse. Drift proves a component is
+  **registered**; this proves the registered item would actually **compile**
+  once `shadcn add` copies it. It reads the BUILT JSON (post alias-rewrite, with
+  each file's `content` inline — i.e. what consumers actually fetch), resolves
+  each item's transitive `registryDependencies` closure, and requires that every
+  `@/…` import is delivered by that closure and every npm import is declared in
+  the item's **own** `dependencies`. It also fails on a relative import that
+  escaped the rewrite, a `registryDependency` on the wrong host or naming no
+  such item, and an orphaned output file.
+  Four real bugs motivated it, all of which passed drift, validate **and** the
+  freshness rebuild: `sheet`/`sonner` imported the icons barrel (`@/icons/index`
+  — a generated re-export of ~3900 modules the icons item can never ship);
+  `footer-contact` imported two icons that were not in the icons item's file
+  list; `field` imported `@base-ui/react` while declaring only `cva`/`clsx`/
+  `tailwind-merge`, working purely because `separator` happened to pull it in.
+  The fourth is the one worth remembering: **`shadcn build` never deletes.**
+  Remove an item from `registry.json` and its JSON stays committed and deployed
+  forever, and the freshness step cannot see it because `git status` reports
+  modified and new files, not a leftover nothing regenerates. `description-list`
+  survived three releases that way — removed from the npm barrel as a breaking
+  change, still served on the registry, still advertised in three docs. When you
+  delete an item, delete `apps/registry/public/r/<name>.json` by hand.
 - **`check:icons`** regenerates the icon barrel and fails on any difference —
   see §4 and the icon generator for the regeneration command.
 - **the release-config tests** (`npm test -w @workspace/semantic-release-config`)
@@ -706,6 +746,40 @@ which project's Root Directory is set.
 | `nswds-ui-web`       | `apps/web`       | Dev sandbox / design docs site |
 | `nswds-ui-storybook` | `apps/storybook` | Component catalogue            |
 | `nswds-ui-registry`  | `apps/registry`  | shadcn registry JSON endpoint  |
+
+### The registry's two URLs — `location` vs `origin`
+
+Consumers are told to install from **`https://ui.digital.nsw.gov.au/registry`**, which is
+a path on the **web** project's domain, not the registry project's. `apps/web/next.config.mjs`
+rewrites `/registry/:path*` to the registry deployment. So the registry has two URLs, and
+`registry.config.json` carries both:
+
+| Field      | Value                                    | Who reads it                                                                                                                 |
+| ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `location` | `https://ui.digital.nsw.gov.au/registry` | `rewrite-registry-aliases.mjs` (stamps `registryDependencies`), `sync-registry-location.mjs` (docs), the two workflows below |
+| `origin`   | `https://nswds-ui-registry.vercel.app`   | `apps/web/next.config.mjs` — the rewrite **destination** only                                                                |
+
+**They must never be collapsed back into one value.** The proxy destination has to be the
+registry's own origin: point the rewrite at `location` and `/registry/:path*` resolves to
+`/registry/:path*` on the same host — an infinite proxy loop that takes the docs site down
+with it. `next.config.mjs` reads `origin` and throws at build time if it is missing, and the
+comment there restates why; do not "simplify" it.
+
+Change `location` via `REGISTRY_LOCATION` in `.env` + `npm run registry:sync` (it rewrites
+the config, the docs, and the generated JSON together). Change `origin` by hand, and only
+when the registry project's own Vercel URL changes.
+
+Two consequences worth knowing:
+
+- **`registry:sync` only touches `location`.** It preserves `origin`, but it also keys its
+  doc find-replace off the _old_ `location`, so editing `registry.config.json` by hand and
+  then running it will not update the docs — change `.env` and let the script do both.
+- **Release verification now polls through the proxy.** `release.yml` and
+  `release-drift-audit.yml` read `.location`, so they fetch `/r/version.json` via the web
+  app. That is deliberate — it verifies the URL consumers actually hit — but it means a
+  broken web deploy surfaces as a _registry_ drift alert. If that misdirection ever costs
+  real debugging time, switch those two workflows to `.origin` and accept that the public
+  path goes unchecked.
 
 ### Per-project settings
 

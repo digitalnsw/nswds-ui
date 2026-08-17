@@ -133,7 +133,7 @@
       "type": "registry:ui",
       "title": "Field",
       "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
-      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/label.json",
@@ -262,9 +262,19 @@
           "target": "icons/arrow-forward.tsx"
         },
         {
+          "path": "src/icons/call.tsx",
+          "type": "registry:ui",
+          "target": "icons/call.tsx"
+        },
+        {
           "path": "src/icons/check.tsx",
           "type": "registry:ui",
           "target": "icons/check.tsx"
+        },
+        {
+          "path": "src/icons/check-circle.tsx",
+          "type": "registry:ui",
+          "target": "icons/check-circle.tsx"
         },
         {
           "path": "src/icons/chevron-right.tsx",
@@ -307,6 +317,11 @@
           "target": "icons/expand-more.tsx"
         },
         {
+          "path": "src/icons/info.tsx",
+          "type": "registry:ui",
+          "target": "icons/info.tsx"
+        },
+        {
           "path": "src/icons/key.tsx",
           "type": "registry:ui",
           "target": "icons/key.tsx"
@@ -320,6 +335,11 @@
           "path": "src/icons/light-mode.tsx",
           "type": "registry:ui",
           "target": "icons/light-mode.tsx"
+        },
+        {
+          "path": "src/icons/location-on.tsx",
+          "type": "registry:ui",
+          "target": "icons/location-on.tsx"
         },
         {
           "path": "src/icons/login.tsx",
@@ -375,6 +395,11 @@
           "path": "src/icons/shapes.tsx",
           "type": "registry:ui",
           "target": "icons/shapes.tsx"
+        },
+        {
+          "path": "src/icons/warning.tsx",
+          "type": "registry:ui",
+          "target": "icons/warning.tsx"
         },
         {
           "path": "src/icons/west.tsx",

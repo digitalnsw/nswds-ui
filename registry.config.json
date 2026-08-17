@@ -1,3 +1,4 @@
 {
-  "location": "https://nswds-ui-registry.vercel.app"
+  "location": "https://ui.digital.nsw.gov.au/registry",
+  "origin": "https://nswds-ui-registry.vercel.app"
 }
