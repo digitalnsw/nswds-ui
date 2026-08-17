@@ -31,15 +31,11 @@ storybook-static/
 
 # Debug
 npm-debug.log*
+/.playwright-cli
 
 # Misc
 .DS_Store
 *.pem
-CLAUDE.md
-
-/.kiro
-/.playwright-cli
-/.claude
 
 # OS junk
 .DS_Store
@@ -48,4 +44,19 @@ CLAUDE.md
 fixtures/consumer/node_modules/
 fixtures/consumer/dist/
 fixtures/consumer/package-lock.json
+
+# ai
+/.claude
+.claude
+.codex
+/.codex
+/.kiro
+AGENTS.md
+CLAUDE.md
+
+# snyk
+# Scan report written by `npm run snyk:check` (--json-file-output). A local
+# artifact, not a source file: it embeds absolute paths and the full resolved
+# dependency inventory, and goes stale the moment anything is installed.
+snyk-code-analysis.json
 snyk-analysis.json
