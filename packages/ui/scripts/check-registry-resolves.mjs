@@ -124,8 +124,8 @@ for (const name of itemsByName.keys()) {
   }
 }
 
-// A registryDependency is a URL; the item it names is its basename. Returns
-// null for anything unresolvable so the caller can report it precisely.
+// A registryDependency is a URL; the item it names is its basename.
+// (We currently treat any non-URL/odd value as an invalid dependency and report it via the existence checks below.)
 const dependencyName = (url) => stripJson(basename(url))
 
 // Transitive closure over registryDependencies, cycle-safe.
