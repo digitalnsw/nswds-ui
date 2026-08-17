@@ -4,9 +4,9 @@
   "title": "Footer — Site Map with Brand",
   "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/footer.json",
-    "https://nswds-ui-registry.vercel.app/r/logo.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+    "https://ui.digital.nsw.gov.au/registry/r/logo.json"
   ],
   "files": [
     {

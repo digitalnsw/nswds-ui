@@ -4,7 +4,7 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog'
 import * as React from 'react'
 
 import { Button } from '../components/button.js'
-import { IconClose } from '../icons/index.js'
+import { IconClose } from '../icons/close.js'
 import { cn } from '../lib/utils.js'
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {

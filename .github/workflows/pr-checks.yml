@@ -8,6 +8,7 @@ name: PR Checks
 #   - The packed npm artefact is well-formed (publint + arethetypeswrong)
 #   - The committed registry JSON (apps/registry/public/r/) matches a fresh
 #     `registry:build` — generated output must be committed with source changes
+#   - Every registry item's shipped source resolves — check:registry-resolves
 #   - Storybook stories load and pass their play() functions
 #   - axe-core a11y checks pass for every story (via @storybook/addon-a11y
 #     with `a11y.test: 'error'` in apps/storybook/.storybook/preview.tsx)
@@ -118,6 +119,13 @@ jobs:
             git diff --stat -- apps/registry/public/r
             exit 1
           fi
+
+      # Proves the registry JSON would actually COMPILE once copied, which
+      # neither check:drift (registration only) nor registry:validate (schema
+      # only) can see. Also runs inside registry:build above, so this step is a
+      # cheap re-run that gives the failure its own name in the checks list.
+      - name: Registry resolution check
+        run: npm run check:registry-resolves -w @nswds/ui
 
       # Runs before the (slow) Playwright install so it fails fast. A
       # dependency of packages/ui that is missing from optimizeDeps.include

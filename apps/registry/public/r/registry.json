@@ -74,9 +74,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/spinner.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/spinner.json"
       ],
       "files": [
         {
@@ -103,9 +103,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json"
       ],
       "files": [
         {
@@ -130,7 +130,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -151,14 +151,15 @@
       "title": "Field",
       "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
       "dependencies": [
+        "@base-ui/react",
         "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/label.json",
-        "https://nswds-ui-registry.vercel.app/r/separator.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/label.json",
+        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
       ],
       "files": [
         {
@@ -184,7 +185,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -209,7 +210,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -234,8 +235,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/separator.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
       ],
       "files": [
         {
@@ -261,7 +262,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -303,9 +304,19 @@
           "target": "icons/arrow-forward.tsx"
         },
         {
+          "path": "src/icons/call.tsx",
+          "type": "registry:ui",
+          "target": "icons/call.tsx"
+        },
+        {
           "path": "src/icons/check.tsx",
           "type": "registry:ui",
           "target": "icons/check.tsx"
+        },
+        {
+          "path": "src/icons/check-circle.tsx",
+          "type": "registry:ui",
+          "target": "icons/check-circle.tsx"
         },
         {
           "path": "src/icons/chevron-right.tsx",
@@ -348,6 +359,11 @@
           "target": "icons/expand-more.tsx"
         },
         {
+          "path": "src/icons/info.tsx",
+          "type": "registry:ui",
+          "target": "icons/info.tsx"
+        },
+        {
           "path": "src/icons/key.tsx",
           "type": "registry:ui",
           "target": "icons/key.tsx"
@@ -361,6 +377,11 @@
           "path": "src/icons/light-mode.tsx",
           "type": "registry:ui",
           "target": "icons/light-mode.tsx"
+        },
+        {
+          "path": "src/icons/location-on.tsx",
+          "type": "registry:ui",
+          "target": "icons/location-on.tsx"
         },
         {
           "path": "src/icons/login.tsx",
@@ -418,6 +439,11 @@
           "target": "icons/shapes.tsx"
         },
         {
+          "path": "src/icons/warning.tsx",
+          "type": "registry:ui",
+          "target": "icons/warning.tsx"
+        },
+        {
           "path": "src/icons/west.tsx",
           "type": "registry:ui",
           "target": "icons/west.tsx"
@@ -440,7 +466,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -464,7 +490,7 @@
         "clsx"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -485,10 +511,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/separator.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
       ],
       "files": [
         {
@@ -514,10 +540,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/badge.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/logo.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/badge.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
       ],
       "files": [
         {
@@ -543,7 +569,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -569,7 +595,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -594,7 +620,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -619,7 +645,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -643,7 +669,7 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -664,7 +690,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -690,7 +716,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -716,7 +742,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -742,7 +768,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -768,7 +794,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -794,9 +820,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -821,9 +847,9 @@
         "next-themes"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/spinner.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/spinner.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -844,7 +870,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
       ],
       "files": [
         {
@@ -871,9 +897,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -904,10 +930,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/collapsible.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/collapsible.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -932,9 +958,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -960,8 +986,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -982,9 +1008,9 @@
       "title": "Theme Switcher",
       "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1004,10 +1030,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1033,9 +1059,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1056,15 +1082,15 @@
       "title": "Login Form",
       "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/card.json",
-        "https://nswds-ui-registry.vercel.app/r/field.json",
-        "https://nswds-ui-registry.vercel.app/r/input.json",
-        "https://nswds-ui-registry.vercel.app/r/labeled-separator.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/separator.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/card.json",
+        "https://ui.digital.nsw.gov.au/registry/r/field.json",
+        "https://ui.digital.nsw.gov.au/registry/r/input.json",
+        "https://ui.digital.nsw.gov.au/registry/r/labeled-separator.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/separator.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1080,14 +1106,14 @@
       "title": "Sign-up Form",
       "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/card.json",
-        "https://nswds-ui-registry.vercel.app/r/field.json",
-        "https://nswds-ui-registry.vercel.app/r/input.json",
-        "https://nswds-ui-registry.vercel.app/r/labeled-separator.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/card.json",
+        "https://ui.digital.nsw.gov.au/registry/r/field.json",
+        "https://ui.digital.nsw.gov.au/registry/r/input.json",
+        "https://ui.digital.nsw.gov.au/registry/r/labeled-separator.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1103,12 +1129,12 @@
       "title": "Forgot Password Form",
       "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/card.json",
-        "https://nswds-ui-registry.vercel.app/r/field.json",
-        "https://nswds-ui-registry.vercel.app/r/input.json",
-        "https://nswds-ui-registry.vercel.app/r/link.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/card.json",
+        "https://ui.digital.nsw.gov.au/registry/r/field.json",
+        "https://ui.digital.nsw.gov.au/registry/r/input.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json"
       ],
       "files": [
         {
@@ -1124,10 +1150,10 @@
       "title": "Footer — Simple Centred",
       "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/logo.json",
-        "https://nswds-ui-registry.vercel.app/r/separator.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/logo.json",
+        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
       ],
       "files": [
         {
@@ -1143,9 +1169,9 @@
       "title": "Footer — Compact Bar",
       "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/logo.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
       ],
       "files": [
         {
@@ -1161,8 +1187,8 @@
       "title": "Footer — Site Map",
       "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json"
       ],
       "files": [
         {
@@ -1178,9 +1204,9 @@
       "title": "Footer — Site Map with Brand",
       "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/logo.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
       ],
       "files": [
         {
@@ -1196,12 +1222,12 @@
       "title": "Footer — Newsletter",
       "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/field.json",
-        "https://nswds-ui-registry.vercel.app/r/input.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/field.json",
+        "https://ui.digital.nsw.gov.au/registry/r/input.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1217,9 +1243,9 @@
       "title": "Footer — Contact Details",
       "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1235,10 +1261,10 @@
       "title": "Footer — Call to Action",
       "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1254,10 +1280,10 @@
       "title": "Footer — Collapsible Site Map",
       "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/footer.json",
-        "https://nswds-ui-registry.vercel.app/r/collapsible.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
+        "https://ui.digital.nsw.gov.au/registry/r/collapsible.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {
@@ -1273,11 +1299,11 @@
       "title": "Mobile Navigation Drawer",
       "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
       "registryDependencies": [
-        "https://nswds-ui-registry.vercel.app/r/theme.json",
-        "https://nswds-ui-registry.vercel.app/r/button.json",
-        "https://nswds-ui-registry.vercel.app/r/sheet.json",
-        "https://nswds-ui-registry.vercel.app/r/push-menu.json",
-        "https://nswds-ui-registry.vercel.app/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/sheet.json",
+        "https://ui.digital.nsw.gov.au/registry/r/push-menu.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [
         {

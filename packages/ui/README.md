@@ -114,7 +114,7 @@ Passing the component itself (`leadingVisual={IconDownload}`) throws there:
 
 ## Components
 
-Badge, Button, ButtonLink, Card, DescriptionList, Field, Input, Label, LabeledSeparator, Link, Logo (NSW Government logo), Separator, Spinner — plus the icon set under `@nswds/ui/icons`.
+Badge, Button, ButtonLink, Card, Field, Input, Label, LabeledSeparator, Link, Logo (NSW Government logo), Separator, Spinner — plus the icon set under `@nswds/ui/icons`.
 
 Every interactive component wraps a Base UI primitive, which provides focus management, keyboard navigation, and ARIA semantics. Each component also exports its `cva` variants function (for example `buttonVariants`) so you can extend styling.
 
@@ -124,10 +124,10 @@ Every visual property traces back to a CSS custom property token. Components ref
 
 ## Prefer the source in your repo?
 
-The same components are distributed through a [shadcn](https://ui.shadcn.com/) registry at **https://nswds-ui-registry.vercel.app**, which copies the component source directly into your project for teams that want to adapt it:
+The same components are distributed through a [shadcn](https://ui.shadcn.com/) registry at **https://ui.digital.nsw.gov.au/registry**, which copies the component source directly into your project for teams that want to adapt it:
 
 ```bash
-npx shadcn@latest add https://nswds-ui-registry.vercel.app/r/button.json
+npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json
 ```
 
 The npm package gives you versioned, upgradeable components; the registry gives you editable source. See the [registry installation guide](https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md) for the full setup, including the one-time `@nswds` namespace configuration.

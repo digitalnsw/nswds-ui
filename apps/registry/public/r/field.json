@@ -4,14 +4,15 @@
   "title": "Field",
   "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
   "dependencies": [
+    "@base-ui/react",
     "class-variance-authority",
     "clsx",
     "tailwind-merge"
   ],
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/label.json",
-    "https://nswds-ui-registry.vercel.app/r/separator.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/label.json",
+    "https://ui.digital.nsw.gov.au/registry/r/separator.json"
   ],
   "files": [
     {

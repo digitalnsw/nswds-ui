@@ -40,7 +40,7 @@ Icons are per-module and tree-shakable — your bundle contains only the icons y
 [docs/installing-from-the-registry.md](docs/installing-from-the-registry.md) — configure the
 `@nswds` namespace once, then `npx shadcn@latest add @nswds/button`. The token foundation
 installs automatically via the `theme` registry item.
-Registry: https://nswds-ui-registry.vercel.app
+Registry: https://ui.digital.nsw.gov.au/registry
 
 **Upgrading from 1.x:** see [docs/migrating-to-v2.md](docs/migrating-to-v2.md).
 

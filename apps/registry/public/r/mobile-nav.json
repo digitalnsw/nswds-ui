@@ -4,11 +4,11 @@
   "title": "Mobile Navigation Drawer",
   "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
   "registryDependencies": [
-    "https://nswds-ui-registry.vercel.app/r/theme.json",
-    "https://nswds-ui-registry.vercel.app/r/button.json",
-    "https://nswds-ui-registry.vercel.app/r/sheet.json",
-    "https://nswds-ui-registry.vercel.app/r/push-menu.json",
-    "https://nswds-ui-registry.vercel.app/r/icons.json"
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/button.json",
+    "https://ui.digital.nsw.gov.au/registry/r/sheet.json",
+    "https://ui.digital.nsw.gov.au/registry/r/push-menu.json",
+    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
   ],
   "files": [
     {
