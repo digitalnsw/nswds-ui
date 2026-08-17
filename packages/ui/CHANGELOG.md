@@ -1,3 +1,9 @@
+## [5.0.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.2...@nswds/ui-v5.0.3) (2026-08-17)
+
+### Bug Fixes
+
+* **registry:** repair unresolvable items and serve from the public domain ([#128](https://github.com/digitalnsw/nswds-ui/issues/128)) ([3bf74aa](https://github.com/digitalnsw/nswds-ui/commit/3bf74aa28d4dd4f24244cf96e5a4cd33d3eccc36))
+
 ## [5.0.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.1...@nswds/ui-v5.0.2) (2026-08-14)
 
 ### Bug Fixes
