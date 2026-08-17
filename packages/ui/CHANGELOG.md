@@ -1,3 +1,9 @@
+## [5.0.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.3...@nswds/ui-v5.0.4) (2026-08-17)
+
+### Bug Fixes
+
+* **registry:** repair item resolution and update app favicons ([#130](https://github.com/digitalnsw/nswds-ui/issues/130)) ([d24ee04](https://github.com/digitalnsw/nswds-ui/commit/d24ee048d0e5e91acdeef7bfd97057b42eba5141))
+
 ## [5.0.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.2...@nswds/ui-v5.0.3) (2026-08-17)
 
 ### Bug Fixes
