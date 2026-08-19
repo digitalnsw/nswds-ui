@@ -1,6 +1,10 @@
+import { Toaster } from '@nswds/ui'
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
+import { DesignSystemProvider } from '@/components/providers'
+import { SiteChrome } from '@/components/site-chrome'
+import { SiteFooter } from '@/components/site-footer'
 import { ThemeProvider } from '@/components/theme-provider'
 // Import the SOURCE dev entry (not the `@nswds/ui/styles.css` export, which
 // is the prebuilt dist/styles.css) so this app's Tailwind build scans
@@ -53,8 +57,17 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
+      <body className='flex min-h-dvh flex-col bg-background text-foreground'>
+        <ThemeProvider>
+          <DesignSystemProvider>
+            <SiteChrome />
+            <main id='content' className='flex-1'>
+              {children}
+            </main>
+            <SiteFooter />
+            <Toaster />
+          </DesignSystemProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
