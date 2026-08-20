@@ -48,6 +48,20 @@ const levels = (...titles) => titles.map((title) => ({ title }))
  */
 const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
 
+/**
+ * The separator the elision branch emits around the ellipsis — ONE space
+ * either side.
+ *
+ * Deliberately shared between the positive and negative elision tests. The
+ * negative test can only prove "no elision happened" if the string it searches
+ * for is the one the implementation actually emits, and a hand-written literal
+ * gives no signal when it is wrong: an earlier revision of this file searched
+ * for "…  ›" (two spaces), which never occurs, so the assertion passed even on
+ * a fully elided trail. Asserting the SAME constant is present in the positive
+ * test makes a typo here fail loudly instead of silently disarming the guard.
+ */
+const ELISION_MARKER = ' › … › '
+
 function assertWithinBound(result, maxLength, context) {
   assert.ok(
     result.length <= maxLength,
@@ -93,6 +107,12 @@ describe('generatePushMenuBreadcrumb', () => {
         40,
       )
       assert.equal(result, 'Services › … › Registration › Renew')
+      // Pins ELISION_MARKER to what the implementation really emits, which is
+      // what lets the negative test below mean anything.
+      assert.ok(
+        result.includes(ELISION_MARKER),
+        `ELISION_MARKER ${JSON.stringify(ELISION_MARKER)} is not what the implementation emits: ${JSON.stringify(result)}`,
+      )
       assertWithinBound(result, 40, 'elided trail')
     })
 
@@ -106,11 +126,34 @@ describe('generatePushMenuBreadcrumb', () => {
     })
 
     test('elision is not attempted below four levels', () => {
-      // Three levels go straight to truncation — there is no middle worth
-      // collapsing, and the old code relied on this to stay within bound.
-      const result = generatePushMenuBreadcrumb(levels('A'.repeat(30), 'B'.repeat(30)), 20)
-      assert.ok(!result.includes('…  ›'), `unexpected elision marker: ${result}`)
-      assertWithinBound(result, 20, 'three-level trail')
+      // Three levels is the boundary immediately below the `length > 3`
+      // threshold, so this is the case that would break first if the threshold
+      // were loosened.
+      //
+      // Elision cannot help here regardless: with three levels the elided form
+      // INSERTS a segment rather than replacing one, so it is always exactly 4
+      // characters LONGER than the plain trail (measured at 1, 5 and 30
+      // character titles). Since elision is only reached when the trail already
+      // exceeds the budget, the length check would reject it anyway. Hence the
+      // exact-equality assertion below rather than a substring probe alone — it
+      // is the falsifiable one.
+      //
+      // The constants are chosen so the assertion also pins the LEVEL COUNT:
+      // at this budget two levels fit whole ("AAAAA › BBBBB", no ellipsis)
+      // while three do not, so quietly dropping a level fails the assertion.
+      // An earlier revision passed two levels while claiming three, and no
+      // assertion noticed.
+      // One binding for the budget: the call and the bound assertion drifted
+      // apart while this test was being written, which the assertion could not
+      // notice because the looser bound still held.
+      const maxLength = 18
+      const result = generatePushMenuBreadcrumb(
+        levels('A'.repeat(5), 'B'.repeat(5), 'C'.repeat(5)),
+        maxLength,
+      )
+      assert.equal(result, 'AAAAA › BBBBB › C…')
+      assert.ok(!result.includes(ELISION_MARKER), `unexpected elision marker: ${result}`)
+      assertWithinBound(result, maxLength, 'three-level trail')
     })
   })
 
