@@ -4,8 +4,10 @@
   "title": "Sonner",
   "description": "A toast notification surface wired to next-themes, with NSWDS status icons.",
   "dependencies": [
+    "clsx",
+    "next-themes",
     "sonner",
-    "next-themes"
+    "tailwind-merge"
   ],
   "registryDependencies": [
     "https://ui.digital.nsw.gov.au/registry/r/theme.json",
@@ -15,9 +17,15 @@
   "files": [
     {
       "path": "src/components/sonner.tsx",
-      "content": "'use client'\n\nimport { useTheme } from 'next-themes'\nimport * as React from 'react'\nimport { Toaster as Sonner, type ToasterProps } from 'sonner'\n\nimport { Spinner } from '@/components/spinner'\nimport { IconCheckCircle } from '@/icons/check-circle'\nimport { IconError } from '@/icons/error'\nimport { IconInfo } from '@/icons/info'\nimport { IconWarning } from '@/icons/warning'\n\nconst Toaster = ({ ...props }: ToasterProps) => {\n  const { theme = 'system' } = useTheme()\n\n  return (\n    <Sonner\n      theme={theme as ToasterProps['theme']}\n      className='toaster group'\n      icons={{\n        success: <IconCheckCircle className='size-4' />,\n        info: <IconInfo className='size-4' />,\n        warning: <IconWarning className='size-4' />,\n        error: <IconError className='size-4' />,\n        loading: <Spinner size='sm' color='current' label='' />,\n      }}\n      style={\n        {\n          '--normal-bg': 'var(--popover)',\n          '--normal-text': 'var(--popover-foreground)',\n          '--normal-border': 'var(--border)',\n          '--border-radius': 'var(--radius)',\n        } as React.CSSProperties\n      }\n      toastOptions={{\n        classNames: {\n          toast: 'cn-toast',\n        },\n      }}\n      {...props}\n    />\n  )\n}\n\nexport { Toaster }\n",
+      "content": "'use client'\n\nimport { useTheme } from 'next-themes'\nimport * as React from 'react'\nimport { Toaster as Sonner, type ToasterProps } from 'sonner'\n\nimport { Spinner } from '@/components/spinner'\nimport { IconCheckCircle } from '@/icons/check-circle'\nimport { IconError } from '@/icons/error'\nimport { IconInfo } from '@/icons/info'\nimport { IconWarning } from '@/icons/warning'\nimport { cn } from '@/lib/utils'\n\n/**\n * Binds sonner's own theming variables to the NSW semantic tokens.\n *\n * All four names below are sonner's public CSS API — three `--normal-*` colour\n * variables plus `--border-radius`, which is a separate name rather than part\n * of that family. Sonner's own stylesheet reads each of them.\n *\n * They are set ONLY here: none of the four is defined in the compiled\n * `dist/styles.css`, so this object is the single point at which the design\n * system's tokens reach a toast. Losing it silently drops every toast back to\n * sonner's built-in palette, which is why `style` is merged below rather than\n * overwritten.\n */\nconst tokenBridge = {\n  '--normal-bg': 'var(--popover)',\n  '--normal-text': 'var(--popover-foreground)',\n  '--normal-border': 'var(--border)',\n  '--border-radius': 'var(--radius)',\n} as React.CSSProperties\n\n/**\n * Toast host. Mount once, near the root.\n *\n * Every prop this component sets a default for is MERGED with the consumer's\n * value rather than replaced. Spreading `{...props}` last — the shadcn default\n * this was scaffolded from — meant a consumer passing `style` for something\n * unrelated (a z-index, an offset) silently discarded the whole token bridge\n * above, and passing one `icons` entry discarded the other four. Object spread\n * replaces keys wholesale; it does not deep-merge.\n */\nconst Toaster = ({ className, style, icons, toastOptions, ...props }: ToasterProps) => {\n  const { theme = 'system' } = useTheme()\n\n  return (\n    <Sonner\n      theme={theme as ToasterProps['theme']}\n      // `toaster` and `group` are shadcn-compatible styling hooks. Nothing in\n      // this package targets them, but consumers migrating from shadcn may, so\n      // they are kept and merged rather than dropped.\n      className={cn('toaster group', className)}\n      icons={{\n        success: <IconCheckCircle className='size-4' />,\n        info: <IconInfo className='size-4' />,\n        warning: <IconWarning className='size-4' />,\n        error: <IconError className='size-4' />,\n        loading: <Spinner size='sm' color='current' label='' />,\n        ...icons,\n      }}\n      style={{ ...tokenBridge, ...style }}\n      // Two levels of merge, not one: a consumer's `toastOptions` must not drop\n      // our `classNames`, and their `classNames` must not drop `toast`.\n      toastOptions={{\n        ...toastOptions,\n        classNames: {\n          toast: 'cn-toast',\n          ...toastOptions?.classNames,\n        },\n      }}\n      {...props}\n    />\n  )\n}\n\nexport { Toaster }\n",
       "type": "registry:ui",
       "target": "components/sonner.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
     }
   ],
   "type": "registry:ui",

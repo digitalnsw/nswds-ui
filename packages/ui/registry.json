@@ -722,7 +722,7 @@
       "type": "registry:ui",
       "title": "Sonner",
       "description": "A toast notification surface wired to next-themes, with NSWDS status icons.",
-      "dependencies": ["sonner", "next-themes"],
+      "dependencies": ["clsx", "next-themes", "sonner", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/spinner.json",
@@ -733,6 +733,11 @@
           "path": "src/components/sonner.tsx",
           "type": "registry:ui",
           "target": "components/sonner.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
         }
       ]
     },
