@@ -1,3 +1,9 @@
+## [5.0.7](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.6...@nswds/ui-v5.0.7) (2026-08-20)
+
+### Bug Fixes
+
+* **ui:** add sign-in autocomplete and stop Toaster clobbering its props ([#137](https://github.com/digitalnsw/nswds-ui/issues/137)) ([09d524c](https://github.com/digitalnsw/nswds-ui/commit/09d524ca82da24451314594ad8ce3d80359d8f12))
+
 ## [5.0.6](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.5...@nswds/ui-v5.0.6) (2026-08-20)
 
 ### Bug Fixes
