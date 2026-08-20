@@ -97,6 +97,22 @@ export const Default: Story = {
       throw new Error('LoginForm: expected at least one <input type="password"> in the canvas.')
     }
 
+    // WCAG 2.1 SC 1.3.5 Identify Input Purpose (AA), and what lets a password
+    // manager offer the saved credential. Asserted here because no automated
+    // gate can: axe's `autocomplete-valid` rule only validates values that are
+    // PRESENT, so a missing attribute passes the a11y suite silently. The
+    // sibling SignUpForm carries the mirror assertion for `new-password`.
+    if (emailInput.getAttribute('autocomplete') !== 'username') {
+      throw new Error(
+        `LoginForm: the sign-in identifier must set autoComplete="username", received "${emailInput.getAttribute('autocomplete')}".`,
+      )
+    }
+    if (passwordInput.getAttribute('autocomplete') !== 'current-password') {
+      throw new Error(
+        `LoginForm: the password input must set autoComplete="current-password", received "${passwordInput.getAttribute('autocomplete')}".`,
+      )
+    }
+
     const submit = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
     if (!submit) {
       throw new Error('LoginForm: expected at least one <button type="submit"> in the canvas.')

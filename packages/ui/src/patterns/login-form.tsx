@@ -47,14 +47,25 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                * No htmlFor/id wiring: each control sits in a Field, which
                * associates the label (and any description/error) with the input
                * automatically via Base UI, generating ids per instance — so two
-               * LoginForms on one page don't collide. */}
+               * LoginForms on one page don't collide.
+               *
+               * autoComplete is not decoration: it is the technique that
+               * satisfies WCAG 2.1 SC 1.3.5 Identify Input Purpose (AA), and
+               * it is what lets a password manager offer the saved credential.
+               * `username` — not `email` — is the correct token for a sign-in
+               * identifier even when the control is type="email": managers pair
+               * `username` with `current-password` to recognise a login form.
+               * (SignUpForm uses `new-password` for the same reason in reverse.)
+               * Note that axe cannot catch this — `autocomplete-valid` only
+               * checks values that are present, so a missing attribute passes
+               * every automated gate. */}
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <Input type='email' placeholder='m@example.com' required />
+                <Input type='email' autoComplete='username' placeholder='m@example.com' required />
               </Field>
               <Field className='relative [&>a]:w-auto'>
                 <FieldLabel>Password</FieldLabel>
-                <Input type='password' required />
+                <Input type='password' autoComplete='current-password' required />
                 {/*
                  * Placed AFTER the input in DOM (rather than next to the
                  * label) so keyboard tab order is email → password → forgot,
