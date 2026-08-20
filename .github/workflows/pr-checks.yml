@@ -91,6 +91,15 @@ jobs:
       - name: Build @nswds/ui
         run: npm run build -w @nswds/ui
 
+      # Unit tests for the package's pure logic, run with node:test against
+      # dist/ (the source is TSX, which Node cannot strip). Must sit AFTER the
+      # build for that reason. The Storybook suite below covers rendered
+      # behaviour; it does not reach exported helpers like
+      # generatePushMenuBreadcrumb, which ships on both channels and had no
+      # coverage at all.
+      - name: Unit tests (@nswds/ui)
+        run: npm test -w @nswds/ui
+
       # publint validates package.json/files/exports against the packed
       # tarball; attw checks that every exports entry resolves with correct
       # types under bundler + node16 ESM resolution. Both run on `npm pack`
