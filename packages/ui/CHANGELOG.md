@@ -1,3 +1,9 @@
+## [5.0.6](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.5...@nswds/ui-v5.0.6) (2026-08-20)
+
+### Bug Fixes
+
+* **ui:** drop the invalid currentFill attribute from Spinner ([#136](https://github.com/digitalnsw/nswds-ui/issues/136)) ([7215a0e](https://github.com/digitalnsw/nswds-ui/commit/7215a0e05d6a4edcafc3ff90d48e49cd9cba2a16))
+
 ## [5.0.5](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.4...@nswds/ui-v5.0.5) (2026-08-20)
 
 ### Bug Fixes
