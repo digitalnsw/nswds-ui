@@ -60,3 +60,7 @@ CLAUDE.md
 # dependency inventory, and goes stale the moment anything is installed.
 snyk-code-analysis.json
 snyk-analysis.json
+
+# Impeccable (user-level design skill) working files — regenerable tool
+# artifacts (design sidecar, local config), not project source.
+.impeccable/
