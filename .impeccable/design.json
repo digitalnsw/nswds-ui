@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-20T00:00:00+10:00",
+  "title": "Design System: NSWDS UI",
+  "extensions": {
+    "colorMeta": {
+      "nsw-blue-800": {
+        "role": "primary",
+        "displayName": "nsw-blue-800",
+        "canonical": "oklch(0.289999 0.117296 259.841938)",
+        "tonalRamp": [
+          "oklch(0.138623 0.062732 261.699127)",
+          "oklch(0.289999 0.117296 259.841938)",
+          "oklch(0.504429 0.200565 260.409998)",
+          "oklch(0.719588 0.160232 241.934243)",
+          "oklch(0.864091 0.092143 223.595164)",
+          "oklch(0.896395 0.067447 225.364647)",
+          "oklch(0.926674 0.041663 227.890787)",
+          "oklch(0.981046 0.012805 221.42319)"
+        ]
+      },
+      "nsw-red-600": {
+        "role": "secondary",
+        "displayName": "nsw-red-600",
+        "canonical": "oklch(0.561955 0.217505 20.33356)",
+        "tonalRamp": [
+          "oklch(0.156795 0.062933 19.607624)",
+          "oklch(0.316967 0.126887 17.133117)",
+          "oklch(0.439441 0.172351 18.724983)",
+          "oklch(0.561955 0.217505 20.33356)",
+          "oklch(0.707215 0.150378 15.602977)",
+          "oklch(0.850883 0.08303 10.570683)",
+          "oklch(0.946252 0.027827 6.653086)",
+          "oklch(0.984801 0.007587 7.280361)"
+        ]
+      },
+      "text-default": {
+        "role": "neutral",
+        "displayName": "text-default",
+        "canonical": "oklch(0.175228 0.006346 236.981786)",
+        "tonalRamp": [
+          "oklch(0.126543 0.006953 243.792325)",
+          "oklch(0.175228 0.006346 236.981786)",
+          "oklch(0.308978 0.011017 236.97265)",
+          "oklch(0.426427 0.011202 232.617199)",
+          "oklch(0.645222 0.009348 225.150438)",
+          "oklch(0.863097 0.007776 228.868893)",
+          "oklch(0.94007 0 0)",
+          "oklch(0.985104 0 0)"
+        ]
+      },
+      "danger-solid": {
+        "role": "status",
+        "displayName": "danger-solid",
+        "canonical": "oklch(0.501996 0.192725 18.079135)"
+      },
+      "surface-default": { "role": "neutral", "displayName": "surface-default", "canonical": "oklch(1 0 0)" },
+      "background-subtle": { "role": "neutral", "displayName": "background-subtle", "canonical": "oklch(0.970151 0 0)" },
+      "border-default": { "role": "neutral", "displayName": "border-default", "canonical": "oklch(0.901624 0.003538 219.535738)" },
+      "border-strong": { "role": "neutral", "displayName": "border-strong", "canonical": "oklch(0.645222 0.009348 225.150438)" },
+      "primary-200": { "role": "primary", "displayName": "primary-200 (dark-mode ink)", "canonical": "oklch(0.926674 0.041663 227.890787)" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero and page-level headings; the prose scale's h1 at weight 800." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings and strong emphasis at semibold 600." },
+      "body": { "displayName": "Body", "purpose": "All running copy — Public Sans 400 at 16px/1.625." },
+      "label": { "displayName": "Label", "purpose": "Form labels, navigation, subtle emphasis at medium 500; bold 700 reserved for button labels and key figures." },
+      "mono": { "displayName": "Mono", "purpose": "Code, tabular data, technical content — JetBrains Mono." }
+    },
+    "shadows": [
+      { "name": "whisper", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "The system's only cast shadow — under solid/tinted button fills; removed entirely in dark mode." },
+      { "name": "hairline-ring", "value": "0 0 0 1px color-mix(in oklab, oklch(0.175228 0.006346 236.981786) 10%, transparent)", "purpose": "Drawn depth for cards and containers per The Hairline Rule." },
+      { "name": "link-halo", "value": "0 -2px 0 color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 10%, transparent), 0 4px 0 color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 10%, transparent)", "purpose": "Extends the link hover halo 2px above and 4px below the line box." }
+    ],
+    "motion": [
+      { "name": "duration-instant", "value": "100ms", "purpose": "Micro-feedback — hover, focus rings, toggles." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Default transition duration; dropdowns, popovers, exits." },
+      { "name": "duration-base", "value": "250ms", "purpose": "Most UI transitions." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Modals, drawers, sheets entering or leaving." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing; all durations collapse to 0.01ms under prefers-reduced-motion." },
+      { "name": "ease-decelerate", "value": "cubic-bezier(0, 0, 0.2, 1)", "purpose": "Entrances and surfaces that stay nearby." },
+      { "name": "ease-accelerate", "value": "cubic-bezier(0.4, 0, 1, 1)", "purpose": "Permanent exits." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (solid)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The default action: NSW navy fill, white bold label, whisper shadow, ink-derived states.",
+      "html": "<button class=\"ds-btn-primary\">Get started</button>",
+      "css": ".ds-btn-primary { background: oklch(0.289999 0.117296 259.841938); color: #fff; font-family: 'Public Sans', Arial, sans-serif; font-size: 1rem; line-height: 1.75rem; font-weight: 700; padding: 11px 21px; min-height: 52px; border: 1px solid transparent; border-radius: 4px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-primary:hover { background: color-mix(in oklab, white 10%, oklch(0.289999 0.117296 259.841938)); } .ds-btn-primary:active { background: color-mix(in oklab, black 15%, oklch(0.289999 0.117296 259.841938)); } .ds-btn-primary:focus { outline: 2px solid oklch(0.289999 0.117296 259.841938); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action: 2px ink border, transparent fill, tint-on-hover derived from the ink.",
+      "html": "<button class=\"ds-btn-outline\">Learn more</button>",
+      "css": ".ds-btn-outline { background: transparent; color: oklch(0.289999 0.117296 259.841938); font-family: 'Public Sans', Arial, sans-serif; font-size: 1rem; line-height: 1.75rem; font-weight: 700; padding: 10px 20px; min-height: 52px; border: 2px solid oklch(0.289999 0.117296 259.841938); border-radius: 4px; transition: background 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-outline:hover { background: color-mix(in oklab, oklch(0.289999 0.117296 259.841938) 10%, transparent); } .ds-btn-outline:active { background: color-mix(in oklab, oklch(0.289999 0.117296 259.841938) 20%, transparent); } .ds-btn-outline:focus { outline: 2px solid oklch(0.289999 0.117296 259.841938); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "48px control on a white surface with a hairline border; strong-border focus ring offset onto the page.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search nsw.gov.au\" />",
+      "css": ".ds-input { height: 48px; width: 100%; background: oklch(1 0 0); color: oklch(0.175228 0.006346 236.981786); font-family: 'Public Sans', Arial, sans-serif; font-size: 1rem; padding: 8px 16px; border: 1px solid oklch(0.901624 0.003538 219.535738); border-radius: 4px; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-input::placeholder { color: oklch(0.426427 0.011202 232.617199); } .ds-input:hover { background: oklch(0.970151 0 0); } .ds-input:focus-visible { outline: 2px solid oklch(0.645222 0.009348 225.150438); outline-offset: 2px; }"
+    },
+    {
+      "name": "Halo Link",
+      "kind": "custom",
+      "refersTo": "link",
+      "description": "The signature GOV.UK-lineage link: underlined navy ink; hover thickens the underline and paints a 10% halo cloned per wrapped line.",
+      "html": "<a class=\"ds-link\" href=\"#\">Apply for a licence</a>",
+      "css": ".ds-link { color: oklch(0.289999 0.117296 259.841938); font-family: 'Public Sans', Arial, sans-serif; font-weight: 500; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: currentColor; box-decoration-break: clone; -webkit-box-decoration-break: clone; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-link:hover { text-decoration-thickness: 2px; background: color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 10%, transparent); box-shadow: 0 -2px 0 color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 10%, transparent), 0 4px 0 color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 10%, transparent); } .ds-link:active { background: color-mix(in oklch, oklch(0.289999 0.117296 259.841938) 18%, transparent); } .ds-link:focus-visible { outline: 2px solid oklch(0.289999 0.117296 259.841938); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat container: white surface, 8px corners, hairline ring instead of a shadow, 32px padding.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-title\">Service NSW centres</div><p class=\"ds-card-body\">Find your nearest centre, check opening hours and book an appointment before you visit.</p></div>",
+      "css": ".ds-card { background: oklch(1 0 0); color: oklch(0.175228 0.006346 236.981786); border-radius: 8px; box-shadow: 0 0 0 1px color-mix(in oklab, oklch(0.175228 0.006346 236.981786) 10%, transparent); padding: 32px; font-family: 'Public Sans', Arial, sans-serif; display: flex; flex-direction: column; gap: 16px; } .ds-card-title { font-size: 1.5rem; font-weight: 500; } .ds-card-body { font-size: 1rem; line-height: 1.625; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Civic Grid",
+    "overview": "The NSW Government masterbrand is a print identity built on hairlines, flat colour bands, and a 12×12 grid — structure is the brand. NSWDS UI translates that identity into product interfaces: depth is drawn with hairlines rather than cast with shadows, colour arrives as flat token-traced fills rather than gradients, and every measurement lands on a 4px grid. The translation is deliberate, not apologetic — small radii (4–8px) and whisper-subtle elevation are the screen dialect of a flat print brand, chosen because screens need affordance cues that paper does not. The component character is refined and restrained: optical borders that keep every variant's outer geometry identical, hover states derived mathematically from a single ink variable, focus rings that always land on the page rather than the control. The craft hides itself; what the citizen sees is a plain, trustworthy interface where controls look exactly like what they do. Dark mode is first-class, driven entirely by mode-aware role tokens — no component carries a hand-maintained dark palette.",
+    "keyCharacteristics": [
+      "Flat-first surfaces, structured by hairlines and tone shifts, on a 4px spatial grid",
+      "Every colour traces to a token; components speak only in semantic roles",
+      "Public Sans throughout — the NSW Government brand typeface",
+      "Generous, unhurried geometry: 44px+ touch floors, 48–52px controls",
+      "Automatic, role-token-driven dark mode",
+      "Accessibility inherited from Base UI primitives and enforced at WCAG 2.2 AA"
+    ],
+    "rules": [
+      { "name": "The Token Trace Rule", "body": "Components reference semantic tokens only — never a Tailwind palette colour, never a hex literal. Every colour on screen must trace back through the four token layers to @nswds/tokens.", "section": "colors" },
+      { "name": "The Role-Flip Rule", "body": "Dark mode is the role tokens' job. Semantic roles flip automatically; palette steps are theme-invariant. A component needing a dark-specific value uses a bare dark: utility at single-class specificity (the established ink-on-dark is the -200 ramp step), never a hand-maintained dark block.", "section": "colors" },
+      { "name": "The Reserved Red Rule", "body": "nsw-red-600 is brand accent, not status. Errors use the danger ramp; the waratah red appears rarely, and its rarity is what keeps it meaningful.", "section": "colors" },
+      { "name": "The One Label Rule", "body": "Button labels are 16px/28px bold at every size step and every breakpoint — the steps change padding, never type. An icon beside a label is always 24px, matched to the text rather than the box.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "If a boundary is needed, draw it: ring-1 ring-foreground/10 or border-default. Never reach for a drop shadow to do a hairline's job.", "section": "elevation" },
+      { "name": "The Derived State Rule", "body": "A component's hover, active, halo, and focus colours are color-mix derivatives of one ink variable — never independently chosen colours. Change the ink and every state follows.", "section": "components" },
+      { "name": "The Inherited Interaction Rule", "body": "All interactive behaviour wraps a @base-ui/react primitive. No hand-rolled ARIA, focus traps, or keyboard handlers, ever.", "section": "components" }
+    ],
+    "dos": [
+      "Do reference semantic tokens for every visual property — bg-primary, text-muted-foreground, outline-(--input-ring) — and let role tokens carry dark mode.",
+      "Do keep geometry on the 4px grid: 4px control radii, 8px container radii, 44px+ touch floors, 48–52px controls.",
+      "Do derive states: 10% hover / 20% active color-mix overlays of the ink, 2px offset focus rings in the ink colour.",
+      "Do write cascade-safe responsive pairs (max-lg:justify-center lg:justify-start) and motion-safe: transitions on the token durations (150ms standard easing).",
+      "Do hold WCAG 2.2 AA: 4.5:1 for text (the text-muted-not-text-subtle placeholder choice is the precedent), 3:1 for UI component contrast."
+    ],
+    "donts": [
+      "Don't use gradients, glassmorphism, decorative shadow ramps, or oversized radii — the flat masterbrand and its hairline depth are the identity.",
+      "Don't confuse restraint with austerity: generous padding, warm plain copy, and the halo signature keep the system humane.",
+      "Don't imitate the legacy nsw-design-system's rendered look; translate the masterbrand through this system's tokens instead.",
+      "Don't use nsw-red-600 for errors (that's the danger ramp) or spend it freely — the waratah red stays scarce.",
+      "Don't hand-roll accessibility or restate dark-mode colours per component; Base UI primitives and role tokens own those."
+    ]
+  }
+}
