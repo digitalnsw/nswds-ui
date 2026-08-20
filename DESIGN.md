@@ -2,63 +2,63 @@
 name: NSWDS UI
 description: The NSW Government masterbrand translated into a headless, token-driven product UI system.
 colors:
-  nsw-blue-800: "oklch(0.289999 0.117296 259.841938)"
-  nsw-red-600: "oklch(0.561955 0.217505 20.33356)"
-  primary-200: "oklch(0.926674 0.041663 227.890787)"
-  surface-default: "oklch(1 0 0)"
-  background-subtle: "oklch(0.970151 0 0)"
-  text-default: "oklch(0.175228 0.006346 236.981786)"
-  text-muted: "oklch(0.426427 0.011202 232.617199)"
-  text-inverse: "oklch(1 0 0)"
-  border-default: "oklch(0.901624 0.003538 219.535738)"
-  border-strong: "oklch(0.645222 0.009348 225.150438)"
-  danger-solid: "oklch(0.501996 0.192725 18.079135)"
+  nsw-blue-800: 'oklch(0.289999 0.117296 259.841938)'
+  nsw-red-600: 'oklch(0.561955 0.217505 20.33356)'
+  primary-200: 'oklch(0.926674 0.041663 227.890787)'
+  surface-default: 'oklch(1 0 0)'
+  background-subtle: 'oklch(0.970151 0 0)'
+  text-default: 'oklch(0.175228 0.006346 236.981786)'
+  text-muted: 'oklch(0.426427 0.011202 232.617199)'
+  text-inverse: 'oklch(1 0 0)'
+  border-default: 'oklch(0.901624 0.003538 219.535738)'
+  border-strong: 'oklch(0.645222 0.009348 225.150438)'
+  danger-solid: 'oklch(0.501996 0.192725 18.079135)'
 typography:
   display:
-    fontFamily: "Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif"
+    fontFamily: 'Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif'
     fontWeight: 800
   headline:
-    fontFamily: "Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif"
+    fontFamily: 'Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif'
     fontWeight: 600
   body:
-    fontFamily: "Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif"
-    fontSize: "1rem"
+    fontFamily: 'Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif'
+    fontSize: '1rem'
     fontWeight: 400
     lineHeight: 1.625
   label:
-    fontFamily: "Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif"
+    fontFamily: 'Public Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Noto Sans, Helvetica, Arial, sans-serif'
     fontWeight: 500
   mono:
-    fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace"
+    fontFamily: 'JetBrains Mono, ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace'
 rounded:
-  none: "0px"
-  sm: "4px"
-  md: "8px"
-  lg: "16px"
-  pill: "9999px"
+  none: '0px'
+  sm: '4px'
+  md: '8px'
+  lg: '16px'
+  pill: '9999px'
 components:
   button-primary:
-    backgroundColor: "{colors.nsw-blue-800}"
-    textColor: "{colors.text-inverse}"
-    rounded: "{rounded.sm}"
-    height: "52px"
-    padding: "11px 21px"
+    backgroundColor: '{colors.nsw-blue-800}'
+    textColor: '{colors.text-inverse}'
+    rounded: '{rounded.sm}'
+    height: '52px'
+    padding: '11px 21px'
   button-outline:
-    backgroundColor: "transparent"
-    textColor: "{colors.nsw-blue-800}"
-    rounded: "{rounded.sm}"
-    height: "52px"
+    backgroundColor: 'transparent'
+    textColor: '{colors.nsw-blue-800}'
+    rounded: '{rounded.sm}'
+    height: '52px'
   input:
-    backgroundColor: "{colors.surface-default}"
-    textColor: "{colors.text-default}"
-    rounded: "{rounded.sm}"
-    height: "48px"
-    padding: "8px 16px"
+    backgroundColor: '{colors.surface-default}'
+    textColor: '{colors.text-default}'
+    rounded: '{rounded.sm}'
+    height: '48px'
+    padding: '8px 16px'
   card:
-    backgroundColor: "{colors.surface-default}"
-    textColor: "{colors.text-default}"
-    rounded: "{rounded.md}"
-    padding: "32px"
+    backgroundColor: '{colors.surface-default}'
+    textColor: '{colors.text-default}'
+    rounded: '{rounded.md}'
+    padding: '32px'
 ---
 
 # Design System: NSWDS UI
@@ -67,7 +67,7 @@ components:
 
 **Creative North Star: "The Civic Grid"**
 
-The NSW Government masterbrand is a print identity built on hairlines, flat colour bands, and a 12×12 grid — structure *is* the brand. NSWDS UI translates that identity into product interfaces: depth is drawn with hairlines rather than cast with shadows, colour arrives as flat token-traced fills rather than gradients, and every measurement lands on a 4px grid. The translation is deliberate, not apologetic — small radii (4–8px) and whisper-subtle elevation are the screen dialect of a flat print brand, chosen because screens need affordance cues that paper does not.
+The NSW Government masterbrand is a print identity built on hairlines, flat colour bands, and a 12×12 grid — structure _is_ the brand. NSWDS UI translates that identity into product interfaces: depth is drawn with hairlines rather than cast with shadows, colour arrives as flat token-traced fills rather than gradients, and every measurement lands on a 4px grid. The translation is deliberate, not apologetic — small radii (4–8px) and whisper-subtle elevation are the screen dialect of a flat print brand, chosen because screens need affordance cues that paper does not.
 
 The component character is **refined and restrained**: optical borders that keep every variant's outer geometry identical, hover states derived mathematically from a single ink variable, focus rings that always land on the page rather than the control. The craft hides itself; what the citizen sees is a plain, trustworthy interface where controls look exactly like what they do. Dark mode is first-class, driven entirely by mode-aware role tokens — no component carries a hand-maintained dark palette.
 
@@ -88,11 +88,11 @@ A corporate-restraint palette — NSW navy on white and cool grey, with the wara
 
 ### Primary
 
-- **`nsw-blue-800`** (oklch(0.289999 0.117296 259.841938), the brand's #002664): the core NSW navy. It is the primary action colour (`--action-default`), the link colour, and the solid button fill in light mode. In dark mode the action role flips to the brightened `nsw-blue-500` ramp step and interactive *ink* (non-solid button text, borders, links) flips to `primary-200` — components never restate this; the role tokens carry it.
+- **`nsw-blue-800`** (oklch(0.289999 0.117296 259.841938), the brand's #002664): the core NSW navy. It is the primary action colour (`--action-default`), the link colour, and the solid button fill in light mode. In dark mode the action role flips to the brightened `nsw-blue-500` ramp step and interactive _ink_ (non-solid button text, borders, links) flips to `primary-200` — components never restate this; the role tokens carry it.
 
 ### Secondary
 
-- **`nsw-red-600`** (oklch(0.561955 0.217505 20.33356), the brand's #d7153a): the waratah red, exposed as the masterbrand `--accent-*` ramp. Secondary emphasis and supporting highlights only — it is deliberately scarce in product UI, and it is *not* the error colour (that is `danger-solid`, a distinct ramp).
+- **`nsw-red-600`** (oklch(0.561955 0.217505 20.33356), the brand's #d7153a): the waratah red, exposed as the masterbrand `--accent-*` ramp. Secondary emphasis and supporting highlights only — it is deliberately scarce in product UI, and it is _not_ the error colour (that is `danger-solid`, a distinct ramp).
 
 ### Neutral
 
@@ -116,7 +116,7 @@ A corporate-restraint palette — NSW navy on white and cool grey, with the wara
 
 **Display Font:** Public Sans (with system and Arial fallbacks)
 **Body Font:** Public Sans (same stack)
-**Label/Mono Font:** JetBrains Mono (code, tabular and technical content)
+**Mono Font:** JetBrains Mono (code, tabular and technical content)
 
 **Character:** The NSW Government brand typeface carried straight into product UI — open, legible, unornamented. One family does everything; hierarchy comes from weight and size, never from a second voice.
 
@@ -138,7 +138,7 @@ Everything lands on the Tailwind 4px spacing grid — padding, control heights, 
 
 ## Elevation & Depth
 
-Flat-first, hairline-built. Depth in this system is *drawn*, not cast: containers separate from the page with a 1px ring of foreground at 10% opacity and with surface-role tone shifts (`surface-default` → `background-subtle` → `surface-raised`), not with shadow ramps. The only shadow in the system is a whisper — Tailwind's `shadow-sm` under solid and tinted button fills — and dark mode removes even that, replacing it with a faint `white/5` border. Popovers and dialogs are "raised" by role token, which in dark mode reads lighter rather than floating higher.
+Flat-first, hairline-built. Depth in this system is _drawn_, not cast: containers separate from the page with a 1px ring of foreground at 10% opacity and with surface-role tone shifts (`surface-default` → `background-subtle` → `surface-raised`), not with shadow ramps. The only shadow in the system is a whisper — Tailwind's `shadow-sm` under solid and tinted button fills — and dark mode removes even that, replacing it with a faint `white/5` border. Popovers and dialogs are "raised" by role token, which in dark mode reads lighter rather than floating higher.
 
 ### Named Rules
 
@@ -146,7 +146,7 @@ Flat-first, hairline-built. Depth in this system is *drawn*, not cast: container
 
 ## Shapes
 
-Crisp, small-radius geometry — the screen dialect of the masterbrand's square print panels. Controls (buttons, inputs) use gently eased corners (4px, `rounded-sm`); containers (cards, popovers) step up to 8px (`rounded-md`, the system's base `--radius`); 16px (`lg`) and pill exist in the scale for the few components that need them. Nothing is sharper than 0 or softer than a pill, and oversized "friendly" radii are off-brand. Buttons draw *optical* borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box.
+Crisp, small-radius geometry — the screen dialect of the masterbrand's square print panels. Controls (buttons, inputs) use gently eased corners (4px, `rounded-sm`); containers (cards, popovers) step up to 8px (`rounded-md`, the system's base `--radius`); 16px (`lg`) and pill exist in the scale for the few components that need them. Nothing is sharper than 0 or softer than a pill, and oversized "friendly" radii are off-brand. Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box.
 
 ## Components
 
@@ -155,7 +155,7 @@ Crisp, small-radius geometry — the screen dialect of the masterbrand's square 
 - **Character:** Sturdy geometry, restrained surface. Six variants (`solid`, `soft`, `surface`, `outline`, `ghost`, `link`) × nine colour tokens, all driven by two variables: `--btn-fill` (the solid block) and `--btn-bg` (the ink — text, borders, tints, overlays, focus ring).
 - **Shape:** Gently eased corners (4px); 1px optical border (2px on `outline`/`surface`) subtracted from padding so all variants match geometry.
 - **Primary (solid):** `nsw-blue-800` fill, white 16px bold label, 52px tall at `default` size on desktop (60px on touch viewports).
-- **Hover / Focus:** Hover and active states are 10%/20% `color-mix` overlays of the ink — derived, never restated (solid flips to white/black overlays). Focus is a 2px ring in the ink colour, offset 2px so it lands on the page; buttons ring on *click* too (`focus:`), while links and inputs ring only for keyboard (`focus-visible:`) — this asymmetry is deliberate feedback design.
+- **Hover / Focus:** Hover and active states are 10%/20% `color-mix` overlays of the ink — derived, never restated (solid flips to white/black overlays). Focus is a 2px ring in the ink colour, offset 2px so it lands on the page; buttons ring on _click_ too (`focus:`), while links and inputs ring only for keyboard (`focus-visible:`) — this asymmetry is deliberate feedback design.
 - **Link variant:** sheds all button chrome and adopts the Link component's underline-and-halo treatment.
 
 ### Cards / Containers
