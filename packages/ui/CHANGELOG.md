@@ -1,3 +1,9 @@
+## [5.0.5](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.4...@nswds/ui-v5.0.5) (2026-08-20)
+
+### Bug Fixes
+
+* **ui:** bound generatePushMenuBreadcrumb by maxLength ([#135](https://github.com/digitalnsw/nswds-ui/issues/135)) ([150389c](https://github.com/digitalnsw/nswds-ui/commit/150389cb0f2c13f2f5969a82ed835e4f995c63f5))
+
 ## [5.0.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.3...@nswds/ui-v5.0.4) (2026-08-17)
 
 ### Bug Fixes
