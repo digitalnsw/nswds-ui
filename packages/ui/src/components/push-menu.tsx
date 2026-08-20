@@ -56,11 +56,49 @@ function buildLevelId(path: string[]): string {
 }
 
 /**
+ * Truncates to at most `maxLength` UTF-16 units, ellipsis included in the
+ * budget.
+ *
+ * Iterates CODE POINTS (`for…of` over a string) rather than slicing by index:
+ * a plain `slice` can cut between the two halves of a surrogate pair, leaving
+ * a lone surrogate that renders as U+FFFD (an emoji in a level title was
+ * enough to reproduce it). Accumulating whole code points and checking the
+ * running UTF-16 length keeps both properties at once — never a split pair,
+ * and never over budget.
+ *
+ * Code points, not grapheme clusters: a base character can still be separated
+ * from a following combining mark. That degrades to an odd-looking glyph
+ * rather than the U+FFFD this fixes, and `Intl.Segmenter` is too recent to
+ * hand to registry consumers (who copy this source) without a fallback.
+ */
+function truncateWithEllipsis(value: string, maxLength: number): string {
+  if (maxLength < 1) {
+    return ''
+  }
+  const budget = maxLength - 1
+  let out = ''
+  for (const codePoint of value) {
+    if (out.length + codePoint.length > budget) {
+      break
+    }
+    out += codePoint
+  }
+  return `${out}…`
+}
+
+/**
  * Collapses a trail of level titles into a single "A › B › C" string, keeping
  * the ends and eliding the middle once it outgrows `maxLength`. Exported so an
  * app can render the same trail outside the menu (e.g. in a sheet header).
  * Prefixed with "PushMenu" to avoid colliding with a future breadcrumb
  * component in the package barrel.
+ *
+ * `maxLength` is a HARD bound on the returned string, measured in UTF-16 units
+ * (`String.length`) — the one exception is a single level, whose title is
+ * returned verbatim because there is nothing to collapse. Callers rendering the
+ * trail in a fixed-width slot can rely on that. Middle-elision is attempted
+ * first because it reads better; when it does not fit, the full trail is
+ * truncated from the end.
  */
 function generatePushMenuBreadcrumb(levels: { title: string }[], maxLength = 50): string {
   const first = levels[0]
@@ -73,13 +111,21 @@ function generatePushMenuBreadcrumb(levels: { title: string }[], maxLength = 50)
     return full
   }
 
+  // Only worth eliding if it actually gets under the budget. With exactly four
+  // levels it replaces ONE title with "…", which saves nothing when that title
+  // is short — "A › B › C › D" and "A › … › C › D" are the same length — and
+  // with long titles the elided form can still run well over. Returning it
+  // unchecked is what broke the bound.
   const last = levels.at(-1)
   const secondLast = levels.at(-2)
   if (levels.length > 3 && first && last && secondLast) {
-    return `${first.title} › … › ${secondLast.title} › ${last.title}`
+    const elided = `${first.title} › … › ${secondLast.title} › ${last.title}`
+    if (elided.length <= maxLength) {
+      return elided
+    }
   }
 
-  return `${full.slice(0, maxLength - 1)}…`
+  return truncateWithEllipsis(full, maxLength)
 }
 
 /**

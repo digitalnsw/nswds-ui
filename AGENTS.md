@@ -400,6 +400,7 @@ Run from the **repo root** unless noted.
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
 | Check published package         | `npm run check:package -w @nswds/ui`                           |
+| Run @nswds/ui unit tests        | `npm test -w @nswds/ui` (needs `dist/`)                        |
 | Test consumer fixture           | `./scripts/test-consumer-fixture.sh`                           |
 | Build registry JSON             | `npm run registry:build`                                       |
 | Validate registry.json          | `npm run registry:validate`                                    |
@@ -413,7 +414,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:drift`, `check:icons`, the release-config tests,
-`build -w @nswds/ui`, `check:package`, `scripts/test-consumer-fixture.sh`, a
+`build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
+`scripts/test-consumer-fixture.sh`, a
 registry-freshness rebuild, `check:registry-resolves`, `check:optimize-deps`, a
 Playwright Chromium install, and the Storybook
 suite. The middle ones are easy to miss locally, and each fails for a reason the
@@ -488,6 +490,15 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.
+- **`test -w @nswds/ui`** is `node --test` over `packages/ui/tests/`, covering
+  the package's pure exported logic. It runs against **`dist/`**, not `src/` —
+  the source is TSX and Node cannot strip JSX — so it must come after `build`,
+  and it fails with a "run build first" message rather than a confusing import
+  error if you forget. The Storybook suite does not replace it: that renders
+  components, so it never reaches an exported helper like
+  `generatePushMenuBreadcrumb`, which shipped on both channels across thirteen
+  releases (v4.4.0 → v5.0.4) with no coverage and two bugs. Pure logic goes
+  here; rendered behaviour goes in a story.
 - **`scripts/test-consumer-fixture.sh`** is the only gate with **no npm script**,
   so it is invisible from `package.json` — run it by path. It packs the tarball,
   cold-installs it into `fixtures/consumer`, then runs `tsc --noEmit`,
