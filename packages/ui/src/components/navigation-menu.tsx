@@ -209,6 +209,28 @@ type NavigationMenuListProps = Omit<NavigationMenuPrimitive.List.Props, 'classNa
  * Carries the app source's bottom hairline (tokenised from raw grey utilities
  * to the semantic `border-border`, which already flips for dark mode) and its
  * hidden-scrollbar overflow so a long menu can pan on narrow screens.
+ *
+ * `overflow-x-auto` is what makes that panning real. The scrollbar-HIDING
+ * declarations beside it (`[scrollbar-width:none]`, the `::-webkit-scrollbar`
+ * rule) are inert on their own: an `overflow: visible` box has no scrollbar to
+ * hide, so without this the row simply overflowed its container and pushed a
+ * horizontal scrollbar onto the page. `whitespace-nowrap` plus the `shrink-0`
+ * items MainNav renders means a bar with more entries than fit is the normal
+ * case on a phone, not an edge case.
+ *
+ * Two consequences of becoming a scroll container, both handled at the call
+ * site rather than here:
+ *
+ * - Per CSS overflow, a non-visible `overflow-x` forces `overflow-y` to
+ *   compute to `auto`, so anything drawn OUTSIDE a row item's border box is
+ *   clipped. Items inside the list therefore use inset focus rings
+ *   (`-outline-offset-*`) — see `mainNavTriggerClassName` /
+ *   `mainNavTopLinkClassName`. Links inside a `NavigationMenuContent` panel
+ *   are portalled out of this box and keep the house outward-offset ring.
+ * - `justify-center` (the default below) makes the leading overflow
+ *   unreachable in a scroll container — the well-known centred-flex overflow
+ *   trap. MainNav overrides it with `justify-start`; any future consumer that
+ *   keeps the centred default must not also rely on scrolling.
  */
 function NavigationMenuList({ className, ...props }: NavigationMenuListProps) {
   return (
@@ -216,7 +238,7 @@ function NavigationMenuList({ className, ...props }: NavigationMenuListProps) {
       data-slot='navigation-menu-list'
       className={cn(
         'group flex flex-1 list-none items-center justify-center gap-1',
-        '[scrollbar-width:none] border-b border-border whitespace-nowrap [&::-webkit-scrollbar]:hidden',
+        '[scrollbar-width:none] overflow-x-auto border-b border-border whitespace-nowrap [&::-webkit-scrollbar]:hidden',
         className,
       )}
       {...props}

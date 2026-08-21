@@ -249,6 +249,11 @@ const mainNavTriggerClassName = [
   'mb-0 h-auto min-h-14 w-auto justify-start rounded-none max-lg:px-4 py-2 text-base leading-6 font-bold text-(--main-nav-ink)',
   'lg:px-8',
   '[&_svg]:size-6',
+  // Inset focus ring: the sibling list is a horizontal scroll container, and
+  // a scroll container clips everything drawn outside a child's border box —
+  // the house outward `outline-offset-2` would simply vanish on the first and
+  // last triggers. Same reasoning (and same fix) as push-menu.tsx's rows.
+  'focus-visible:-outline-offset-2',
   'data-popup-open:shadow-[inset_0_-4px_0_0_currentColor]',
   'data-current:shadow-[inset_0_-4px_0_0_currentColor]',
 ].join(' ')
@@ -261,6 +266,9 @@ const mainNavTopLinkClassName = [
   mainNavItemInk,
   'inline-flex min-h-14 flex-row items-center justify-start gap-1 rounded-none max-lg:px-4 py-2 text-base leading-6 font-bold whitespace-nowrap text-(--main-nav-ink)',
   'lg:px-8',
+  // Inset for the same reason as the trigger above — these sit in the
+  // scrolling list, not in a portalled panel.
+  'focus-visible:-outline-offset-2',
   'data-active:shadow-[inset_0_-4px_0_0_currentColor]',
 ].join(' ')
 
@@ -474,6 +482,17 @@ type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children'> &
     shadow?: boolean
     /** Classes applied to the inner width-constraining wrapper. */
     containerClassName?: string
+    /**
+     * Shown in the bar when `navigation` is empty. Defaults to
+     * "No navigation items available."; pass `null` to render an empty bar.
+     *
+     * An empty `navigation` array is a legitimate runtime state, not a data
+     * mistake — a CMS with nothing published, a menu filtered down to nothing
+     * by the reader's permissions, or a failed nav fetch all produce it. The
+     * bar keeps its themed surface either way, so with no message it reads as
+     * an unexplained coloured strip.
+     */
+    emptyMessage?: React.ReactNode
     ref?: React.Ref<HTMLElement>
   }
 
@@ -529,6 +548,7 @@ function MainNav({
   currentHref,
   sticky = false,
   shadow = true,
+  emptyMessage = 'No navigation items available.',
   'aria-label': ariaLabel = 'Main navigation',
   ref,
   ...props
@@ -601,43 +621,59 @@ function MainNav({
         data-slot='main-nav-container'
         className={cn(mainNavContainerVariants({ container }), containerClassName)}
       >
-        {/* render={<div/>}: Base UI's root is itself a <nav>; demoting it
+        {navigation.length === 0 ? (
+          // No items: render the message directly rather than an empty
+          // NavigationMenu, which would still mount the portal, positioner and
+          // popup surface for a menubar that can never open.
+          emptyMessage != null && (
+            <p
+              data-slot='main-nav-empty'
+              className='flex min-h-14 items-center py-2 text-base leading-6 text-(--main-nav-ink)'
+            >
+              {emptyMessage}
+            </p>
+          )
+        ) : (
+          <>
+            {/* render={<div/>}: Base UI's root is itself a <nav>; demoting it
             keeps this component to ONE navigation landmark. sideOffset 0
             seats the panel flush under the bar; collision handling is off
             because alignOffset/width already pin the panel inside the
             viewport. closeDelay 220 = the app's PANEL_CLOSE_DELAY_MS. */}
-        <NavigationMenu
-          render={<div />}
-          className='w-full max-w-none justify-start'
-          side='bottom'
-          sideOffset={0}
-          align='start'
-          alignOffset={alignOffset}
-          collisionPadding={0}
-          collisionAvoidance={{ side: 'none', align: 'none' }}
-          closeDelay={220}
-          // Square corners (the full-width panel meets the bar edge-to-edge)
-          // and no --available-width cap — see mainNavPanelVariants.
-          popupClassName='max-w-none rounded-none'
-          // The popup itself must follow the measured width too: Base UI
-          // sizes it from --popup-width, measured once when a section
-          // activates, so a panel opened before the first measurement lands
-          // (or resized while open) would keep a stale popup width and clip
-          // the full-width panel to a sliver. An inline width stays reactive.
-          popupStyle={panelWidth === null ? undefined : { width: panelWidth }}
-        >
-          <NavigationMenuList className='w-full justify-start gap-0 border-b-0'>
-            {navigation.map((item) => (
-              <MainNavMenuItem
-                key={`${item.title}-${item.href ?? 'section'}`}
-                item={item}
-                color={color ?? DEFAULT_MAIN_NAV_COLOR}
-                currentHref={currentHref}
-                panelWidth={panelWidth}
-              />
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
+            <NavigationMenu
+              render={<div />}
+              className='w-full max-w-none justify-start'
+              side='bottom'
+              sideOffset={0}
+              align='start'
+              alignOffset={alignOffset}
+              collisionPadding={0}
+              collisionAvoidance={{ side: 'none', align: 'none' }}
+              closeDelay={220}
+              // Square corners (the full-width panel meets the bar edge-to-edge)
+              // and no --available-width cap — see mainNavPanelVariants.
+              popupClassName='max-w-none rounded-none'
+              // The popup itself must follow the measured width too: Base UI
+              // sizes it from --popup-width, measured once when a section
+              // activates, so a panel opened before the first measurement lands
+              // (or resized while open) would keep a stale popup width and clip
+              // the full-width panel to a sliver. An inline width stays reactive.
+              popupStyle={panelWidth === null ? undefined : { width: panelWidth }}
+            >
+              <NavigationMenuList className='w-full justify-start gap-0 border-b-0'>
+                {navigation.map((item) => (
+                  <MainNavMenuItem
+                    key={`${item.title}-${item.href ?? 'section'}`}
+                    item={item}
+                    color={color ?? DEFAULT_MAIN_NAV_COLOR}
+                    currentHref={currentHref}
+                    panelWidth={panelWidth}
+                  />
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
+          </>
+        )}
       </div>
     </nav>
   )

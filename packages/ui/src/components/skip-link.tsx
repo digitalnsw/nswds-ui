@@ -26,7 +26,13 @@ const skipLinkVariants = cva(
     'motion-safe:transition-transform',
     'focus:translate-y-0',
     // min-h-11 keeps the revealed bar at ≥44px — 2.5.5 Target Size (AAA).
-    'group flex min-h-11 items-center px-4 py-2 text-xs font-medium no-underline',
+    //
+    // text-base, not the legacy text-xs: this is the first thing a keyboard or
+    // screen-magnifier user meets on the page, and 12px is below the smallest
+    // step DESIGN.md names for running copy. font-medium keeps it in the
+    // system's label voice. The bar is min-h-11, and 16px text on py-2 comes
+    // to 40px, so the floor still governs the height — nothing moves.
+    'group flex min-h-11 items-center px-4 py-2 text-base font-medium no-underline',
     // The visible focus indicator is the ring around the label span
     // (2.4.13 Focus Appearance): outline-current guarantees it contrasts with
     // the bar on every colour variant. outline-hidden (not outline-none) on

@@ -13,6 +13,20 @@ import { Header, HeaderBrand } from './header.js'
 import { MainNav, type MainNavItem } from './main-nav.js'
 import { Masthead } from './masthead.js'
 
+/**
+ * Seven top-level items — a realistic NSW cluster site — which cannot fit a
+ * phone-width bar at the trigger's 16px bold type and 16/32px gutters.
+ */
+const manyItemsNavigation: MainNavItem[] = [
+  { title: 'Services', href: '#services', links: [{ title: 'All services', href: '#all' }] },
+  { title: 'Housing', href: '#housing' },
+  { title: 'Education', href: '#education' },
+  { title: 'Transport', href: '#transport' },
+  { title: 'Health', href: '#health' },
+  { title: 'Business', href: '#business' },
+  { title: 'Contact us', href: '#contact' },
+]
+
 const meta = {
   title: 'Components/MainNav',
   component: MainNav,
@@ -617,6 +631,106 @@ export const Sticky: Story = {
       throw new Error(
         `Expected the nav's top (${top}px) to equal the header height (${header.getBoundingClientRect().height}px).`,
       )
+    }
+  },
+}
+
+/**
+ * More top-level items than fit. The item row is a horizontal scroll
+ * container, so an overlong bar pans instead of overflowing its container and
+ * pushing a horizontal scrollbar onto the whole page.
+ *
+ * This is a safety net, not the mobile pattern: items scrolled out of view are
+ * close to undiscoverable. Hide the bar below `lg` and render `MobileNav`
+ * instead — see the Wrap-Don't-Clip note in DESIGN.md's Navigation section.
+ */
+export const ManyItems: Story = {
+  name: 'Many items (overflow)',
+  args: {
+    navigation: manyItemsNavigation,
+    color: 'primary-800',
+  },
+  render: (args) => (
+    // Deliberately narrower than the bar needs, to force the overflow case.
+    <div className='w-96 overflow-hidden'>
+      <MainNav {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = getNav(canvasElement)
+    const list = nav.querySelector<HTMLElement>('[data-slot="navigation-menu-list"]')
+    if (!list) {
+      throw new Error('Expected the menubar list to render.')
+    }
+
+    // The scrollbar-hiding declarations beside it only mean something if an
+    // overflow value actually establishes a scroll container.
+    const overflowX = getComputedStyle(list).overflowX
+    if (overflowX !== 'auto' && overflowX !== 'scroll') {
+      throw new Error(
+        `Expected the item row to be a horizontal scroll container, got overflow-x: "${overflowX}".`,
+      )
+    }
+
+    if (list.scrollWidth <= list.clientWidth) {
+      throw new Error(
+        'Expected this fixture to actually overflow — the story proves nothing otherwise.',
+      )
+    }
+
+    // It genuinely pans rather than merely reporting an overflow.
+    list.scrollLeft = 40
+    if (list.scrollLeft === 0) {
+      throw new Error('Expected the overflowing item row to scroll horizontally.')
+    }
+    list.scrollLeft = 0
+
+    // Focus rings must be inset, or the scroll container clips them on the
+    // first and last items.
+    const trigger = nav.querySelector<HTMLElement>('[data-slot="navigation-menu-trigger"]')
+    if (!trigger) {
+      throw new Error('Expected at least one trigger.')
+    }
+    trigger.focus()
+    const offset = parseFloat(getComputedStyle(trigger).outlineOffset)
+    if (!(offset < 0)) {
+      throw new Error(
+        `Expected an inset focus ring inside the scroll container, got outline-offset ${offset}px.`,
+      )
+    }
+  },
+}
+
+/**
+ * Empty navigation data renders a message, not an unexplained coloured strip.
+ * Empty is a runtime state — unpublished content, permission filtering, a
+ * failed fetch — as distinct from malformed data, which stays a dev-only
+ * console warning.
+ */
+export const Empty: Story = {
+  args: {
+    navigation: [],
+    color: 'primary-800',
+  },
+  play: async ({ canvasElement }) => {
+    const nav = getNav(canvasElement)
+
+    const empty = nav.querySelector<HTMLElement>('[data-slot="main-nav-empty"]')
+    if (!empty) {
+      throw new Error('Expected an empty-state message when navigation is empty.')
+    }
+    if (!empty.textContent?.trim()) {
+      throw new Error('Expected the empty state to carry visible text.')
+    }
+
+    // No menubar is mounted for a bar that can never open.
+    if (nav.querySelector('[data-slot="navigation-menu-list"]')) {
+      throw new Error('Expected no menubar list to render for an empty navigation.')
+    }
+
+    // The landmark survives, so page structure is unchanged.
+    if (nav.tagName !== 'NAV' || !nav.getAttribute('aria-label')) {
+      throw new Error('Expected the named nav landmark to render even when empty.')
     }
   },
 }

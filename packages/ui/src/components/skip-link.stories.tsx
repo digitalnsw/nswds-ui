@@ -281,5 +281,18 @@ export const CssCheck: Story = {
         'Expected the unfocused skip link to be translated above the viewport. Is globals.css loaded?',
       )
     }
+
+    // The bypass link is the first thing a keyboard or screen-magnifier user
+    // meets, so it sits at the body size rather than the legacy 12px.
+    const fontSize = parseFloat(getComputedStyle(link).fontSize)
+    if (fontSize < 16) {
+      throw new Error(`Expected the skip link to render at the 16px body size, got ${fontSize}px.`)
+    }
+
+    // Raising the type must not have disturbed the 44px revealed-bar floor.
+    const minHeight = parseFloat(getComputedStyle(link).minHeight)
+    if (minHeight < 44) {
+      throw new Error(`Expected the skip link to hold a 44px minimum height, got ${minHeight}px.`)
+    }
   },
 }

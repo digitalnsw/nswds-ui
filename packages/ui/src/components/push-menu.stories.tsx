@@ -41,6 +41,35 @@ const sampleNavigation: PushMenuItem[] = [
   { id: 'contact', title: 'Contact', href: '/contact' },
 ]
 
+/**
+ * Real NSW service names, chosen because they exceed the ~25-character budget
+ * a `w-3/4` drawer has on a 375px viewport — the case that used to clip.
+ */
+const longLabelNavigation: PushMenuItem[] = [
+  {
+    id: 'wwcc',
+    title: 'Working with children check renewal and verification',
+    href: '/services/working-with-children-check',
+  },
+  {
+    id: 'bdm',
+    title: 'Births, deaths and marriages certificate applications',
+    links: [
+      {
+        id: 'birth',
+        title: 'Apply for a commemorative birth certificate',
+        href: '/services/bdm/birth',
+      },
+      {
+        id: 'death',
+        title: 'Register a death and obtain a certificate',
+        href: '/services/bdm/death',
+      },
+    ],
+  },
+  { id: 'short', title: 'Contact', href: '/contact' },
+]
+
 const meta = {
   title: 'Components/PushMenu',
   component: PushMenu,
@@ -488,6 +517,162 @@ export const WithinSheet: Story = {
       () => document.querySelector('[data-slot="push-menu"]') === null,
       'Expected the Sheet (and the menu) to close via the menu close button.',
     )
+  },
+}
+
+/**
+ * Long labels wrap instead of clipping. Real NSW service names run past the
+ * ~25-character budget a drawer has on a small phone, and a clipped label is
+ * unrecoverable on a touch device where there is no hover to reveal a title.
+ */
+export const LongLabels: Story = {
+  args: {
+    navigation: longLabelNavigation,
+    title: 'Births, deaths, marriages and relationships',
+    currentHref: '/services/working-with-children-check',
+  },
+  play: async ({ canvasElement }) => {
+    const menu = getMenu(canvasElement)
+
+    const row = menu.querySelector<HTMLElement>('[data-item-id="wwcc"]')
+    if (!row) {
+      throw new Error('Expected a row for the "wwcc" item.')
+    }
+
+    const label = row.querySelector<HTMLElement>('span')
+    if (!label) {
+      throw new Error('Expected the row label span.')
+    }
+    if (label.classList.contains('truncate')) {
+      throw new Error("Row labels must wrap, not truncate — see the Wrap-Don't-Clip Rule.")
+    }
+
+    // The proof that it really wrapped: the label box is taller than one line.
+    // scrollWidth <= clientWidth additionally proves nothing is clipped
+    // horizontally, which is what a stray `truncate` would produce.
+    const lineHeight = parseFloat(getComputedStyle(label).lineHeight)
+    if (!(label.getBoundingClientRect().height > lineHeight * 1.5)) {
+      throw new Error(
+        `Expected the long label to wrap to more than one line (height ${label.getBoundingClientRect().height}, line-height ${lineHeight}).`,
+      )
+    }
+    if (label.scrollWidth > label.clientWidth + 1) {
+      throw new Error('Expected the wrapped label to be fully visible, not horizontally clipped.')
+    }
+
+    // The row grows with its label rather than clipping it, and still clears
+    // the 44px floor.
+    if (row.getBoundingClientRect().height < 44) {
+      throw new Error(
+        `Expected the row to hold the 44px floor, got ${row.getBoundingClientRect().height}px.`,
+      )
+    }
+
+    // The level heading is the documented exception: it shares a fixed-height
+    // header row, so it still truncates — but must carry the full string in a
+    // title attribute so nothing is lost.
+    const heading = menu.querySelector<HTMLElement>('[data-slot="push-menu-title"]')
+    if (!heading?.classList.contains('truncate')) {
+      throw new Error('Expected the level heading to keep its single-line truncation.')
+    }
+    if (heading.getAttribute('title') !== 'Births, deaths, marriages and relationships') {
+      throw new Error('Expected the truncated heading to carry the full title attribute.')
+    }
+  },
+}
+
+/**
+ * An empty tree is a runtime state, not a data mistake: unpublished content, a
+ * permission-filtered menu, or a failed fetch all produce it. It renders a
+ * message rather than a blank panel whose only affordance is the close button.
+ */
+export const Empty: Story = {
+  args: {
+    navigation: [],
+    title: 'Menu',
+    currentHref: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const menu = getMenu(canvasElement)
+
+    const empty = menu.querySelector<HTMLElement>('[data-slot="push-menu-empty"]')
+    if (!empty) {
+      throw new Error('Expected an empty-state message when navigation is empty.')
+    }
+    if (!empty.textContent?.trim()) {
+      throw new Error('Expected the empty state to carry visible text.')
+    }
+
+    // The landmark and its heading survive, so the drawer is still navigable
+    // and still announces itself.
+    if (!menu.querySelector('[data-slot="push-menu-title"]')) {
+      throw new Error('Expected the level heading to render alongside the empty state.')
+    }
+  },
+}
+
+/**
+ * Escape below the root pops one level; Escape at the root is left alone so an
+ * enclosing dialog can close as a dialog should.
+ */
+export const EscapeGoesBack: Story = {
+  args: {
+    navigation: sampleNavigation,
+    title: 'Menu',
+  },
+  play: async ({ canvasElement }) => {
+    const menu = getMenu(canvasElement)
+
+    const branch = menu.querySelector<HTMLButtonElement>('[data-item-id="services"]')
+    if (!branch) {
+      throw new Error('Expected a drill-in button for the "services" item.')
+    }
+    branch.click()
+    // Order matters: wait for the new level to EXIST before waiting for the
+    // slide to settle. Checking `!data-animating` first passes instantly
+    // against the pre-flush DOM — React has not committed the attribute yet —
+    // and the rest of the play then runs mid-slide, where the menu
+    // deliberately drops navigation and this story would fail for the wrong
+    // reason.
+    await waitFor(
+      () => menu.querySelectorAll('[data-slot="push-menu-level"]').length === 2,
+      'Expected drilling in to mount a second level.',
+    )
+    await waitFor(
+      () => !menu.hasAttribute('data-animating'),
+      'Expected the forward slide to settle.',
+    )
+
+    // Dispatched on the focused element so it travels the real capture path
+    // the component listens on, and bubbles like a genuine keypress.
+    function pressEscape() {
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+      ;(document.activeElement ?? menu).dispatchEvent(event)
+      return event
+    }
+
+    const deepEvent = pressEscape()
+    if (!deepEvent.defaultPrevented) {
+      throw new Error('Expected Escape below the root level to be handled by the menu.')
+    }
+    await waitFor(
+      () => menu.querySelectorAll('[data-slot="push-menu-level"]').length === 1,
+      'Expected Escape to pop one level rather than closing the whole menu.',
+    )
+    await waitFor(() => !menu.hasAttribute('data-animating'), 'Expected the back slide to settle.')
+
+    // At the root the key is left alone, so a Sheet wrapping this can still
+    // dismiss on Escape.
+    const rootEvent = pressEscape()
+    if (rootEvent.defaultPrevented) {
+      throw new Error(
+        'Expected Escape at the root level to pass through so an enclosing dialog can close.',
+      )
+    }
   },
 }
 

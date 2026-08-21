@@ -396,6 +396,82 @@ export const WithOnNavigate: Story = {
   },
 }
 
+/**
+ * Rows are laid out to hold the system's 44px touch floor on coarse pointers,
+ * and hover no longer changes font weight.
+ *
+ * The floor itself is applied under `@media (pointer: coarse)`, which a
+ * desktop test runner never matches — so this story asserts the contract that
+ * makes it work: the row is a centred flex box (an `inline-block` would grow
+ * downward instead of centring its text) and carries the coarse-pointer
+ * min-height utility. It also pins the Derived State Rule: rest and hover must
+ * agree on font-weight, because a weight jump reflows the label under the
+ * pointer.
+ */
+export const RowMetrics: Story = {
+  name: 'Row metrics',
+  play: async ({ canvasElement }) => {
+    const nav = getNav(canvasElement)
+
+    const row = nav.querySelector<HTMLElement>('[data-slot="side-nav-link"]:not([aria-current])')
+    if (!row) {
+      throw new Error('Expected at least one non-current rail link.')
+    }
+
+    const styles = getComputedStyle(row)
+    if (styles.display !== 'flex') {
+      throw new Error(
+        `Expected rail rows to be flex so the coarse-pointer min-height centres its label, got display: "${styles.display}".`,
+      )
+    }
+    if (styles.alignItems !== 'center') {
+      throw new Error(`Expected rail rows to centre their label, got "${styles.alignItems}".`)
+    }
+
+    // The floor is declared even though this runner reports a fine pointer.
+    const declaresFloor = Array.from(row.classList).some((name) => name.includes('pointer:coarse'))
+    if (!declaresFloor) {
+      throw new Error('Expected rail rows to declare a coarse-pointer minimum height.')
+    }
+
+    // Derived State Rule: hover changes colour, never metrics.
+    if (Array.from(row.classList).some((name) => name.startsWith('hover:font-'))) {
+      throw new Error(
+        'Rail rows must not change font-weight on hover — it reflows the label under the pointer.',
+      )
+    }
+  },
+}
+
+/**
+ * An empty tree renders a message rather than a bare `<ul>`. Empty is a
+ * runtime state (unpublished content, permission filtering, a failed fetch),
+ * not a data mistake.
+ */
+export const Empty: Story = {
+  args: {
+    sections: [],
+    currentHref: undefined,
+  },
+  play: async ({ canvasElement }) => {
+    const nav = getNav(canvasElement)
+
+    const empty = nav.querySelector<HTMLElement>('[data-slot="side-nav-empty"]')
+    if (!empty) {
+      throw new Error('Expected an empty-state message when sections is empty.')
+    }
+    if (!empty.textContent?.trim()) {
+      throw new Error('Expected the empty state to carry visible text.')
+    }
+    if (nav.querySelector('[data-slot="side-nav-sections"]')) {
+      throw new Error('Expected no section list to render for an empty tree.')
+    }
+    if (nav.tagName !== 'NAV' || !nav.getAttribute('aria-label')) {
+      throw new Error('Expected the named nav landmark to render even when empty.')
+    }
+  },
+}
+
 export const CssCheck: Story = {
   name: 'CSS Check',
   play: async ({ canvasElement }) => {
