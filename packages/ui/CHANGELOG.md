@@ -1,3 +1,9 @@
+## [5.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.7...@nswds/ui-v5.1.0) (2026-08-21)
+
+### Features
+
+* **ui:** close ten navigation defects across the nav family ([#143](https://github.com/digitalnsw/nswds-ui/issues/143)) ([382d5fb](https://github.com/digitalnsw/nswds-ui/commit/382d5fb6b30351143eda0c4706b49774fc07b105)), closes [#named-rules-3](https://github.com/digitalnsw/nswds-ui/issues/named-rules-3) [#named-rules-4](https://github.com/digitalnsw/nswds-ui/issues/named-rules-4)
+
 ## [5.0.7](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.6...@nswds/ui-v5.0.7) (2026-08-20)
 
 ### Bug Fixes
