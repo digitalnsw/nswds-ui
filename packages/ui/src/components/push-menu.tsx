@@ -141,7 +141,9 @@ function warnIfNavigationMalformed(navigation: PushMenuItem[]) {
     return
   }
   if (!Array.isArray(navigation) || navigation.length === 0) {
-    console.warn('[nswds/ui] PushMenu received no navigation items — the menu renders empty.')
+    console.warn(
+      '[nswds/ui] PushMenu received no navigation items — it renders the `emptyMessage` state. If that is expected (unpublished content, a permission-filtered menu), this warning is safe to ignore; it is compiled out in production.',
+    )
     return
   }
   const seen = new Set<string>()
@@ -233,6 +235,40 @@ type PushMenuProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 't
    * title is never the page's own title.
    */
   headingLevel?: 2 | 3 | 4 | 5 | 6
+  /**
+   * Visually-hidden suffix appended to the accessible name of a row that
+   * drills into a submenu. Defaults to `'submenu'`.
+   *
+   * The chevron is `aria-hidden`, so without this a drill-in row and a leaf
+   * link are indistinguishable to a screen reader: both announce as
+   * "<title>, button"/"link" with no hint that one replaces the panel and the
+   * other leaves the page. Pass `null` to suppress it.
+   */
+  submenuLabel?: React.ReactNode
+  /**
+   * Shown in place of the row list when a level has no items. Defaults to
+   * "No navigation items available."; pass `null` to render an empty level.
+   *
+   * An empty `navigation` array is a legitimate runtime state — unpublished
+   * content, a permission-filtered menu, a failed fetch — as distinct from the
+   * malformed data `warnIfNavigationMalformed` reports to the console, which
+   * is compiled out in production. Without a message the drawer opens onto a
+   * blank panel whose only affordance is the close button.
+   */
+  emptyMessage?: React.ReactNode
+  /**
+   * When the menu is below its root level, let Escape pop one level instead of
+   * bubbling to an enclosing dialog. Defaults to `true`.
+   *
+   * A drill-down nested in a `Sheet` inherits the dialog's Escape-to-dismiss,
+   * so a reader three levels deep loses both their position AND the drawer
+   * from one keypress — and `navigateBack` is the only route back up (the
+   * breadcrumb is decorative, and there is no swipe gesture). Popping one
+   * level matches the back-out affordance the component actually offers.
+   * Escape at the ROOT level always bubbles, so the drawer still closes the
+   * way a dialog should. Set `false` for plain dialog semantics.
+   */
+  escapeGoesBack?: boolean
   ref?: React.Ref<HTMLElement>
 }
 
@@ -256,9 +292,21 @@ type PushMenuProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 't
  *   new level's Back button; going back focuses the item that opened the
  *   level just left, tracked by item id and restored after the slide settles.
  *   Without this, `inert` on the old level would silently drop focus to
- *   `<body>`. The Back button is the only route back (the breadcrumb is
- *   decorative), so it always renders on sub-levels — hiding it would make
+ *   `<body>`. The Back button is the only POINTER route back (the breadcrumb
+ *   is decorative), so it always renders on sub-levels — hiding it would make
  *   drill-down one-way.
+ * - Escape below the root level pops ONE level rather than dismissing an
+ *   enclosing dialog (`escapeGoesBack`, default true). Nested in a `Sheet` the
+ *   inherited dialog behaviour discarded both the reader's position and the
+ *   drawer on a single keypress; Escape at the root still closes normally.
+ * - Row labels WRAP rather than truncate. Rows are `min-h-11` with
+ *   `items-center`, so a long label grows its row instead of losing its tail —
+ *   in a `w-3/4` drawer on a small phone the budget is roughly 25 characters,
+ *   which real government labels ("Births, deaths and marriages") exceed. The
+ *   level heading is the one exception (fixed-height header row) and carries a
+ *   `title` attribute instead.
+ * - Drill-in rows append a visually-hidden `submenuLabel` to their accessible
+ *   name, so they no longer sound identical to leaf links.
  * - A single visually-hidden `aria-live="polite"` region at the root announces
  *   the current level's title, suffixed with the level number below the root.
  *   A live attribute on the per-level headings would not work: each level's
@@ -281,9 +329,12 @@ type PushMenuProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 't
  *   icons) is cut, along with its `showStats`/`showFooter` props: it was demo
  *   chrome for the sandbox, not part of a navigation component's job. The
  *   breadcrumb trail it hosted moves under the header row.
- * - The rendered "Navigation Error" fallback for malformed data is replaced
+ * - The rendered "Navigation Error" fallback for MALFORMED data is replaced
  *   by a dev-only console warning (`warnIfNavigationMalformed`), mirroring
- *   button.tsx's `warnIfIconButtonUnlabelled`.
+ *   button.tsx's `warnIfIconButtonUnlabelled`. An EMPTY level is a different
+ *   case and does render — see `emptyMessage`. Empty is a legitimate runtime
+ *   state rather than a programming error, and the console warning is compiled
+ *   out in production regardless.
  * - The breadcrumb trail is `aria-hidden`: it repeats what the heading and
  *   live region already announce, and "›" separators read poorly in AT.
  *
@@ -302,6 +353,9 @@ function PushMenu({
   backLabel = 'Back',
   closeLabel = 'Close menu',
   headingLevel = 2,
+  submenuLabel = 'submenu',
+  emptyMessage = 'No navigation items available.',
+  escapeGoesBack = true,
   className,
   style,
   'aria-label': ariaLabel,
@@ -449,6 +503,65 @@ function PushMenu({
     }, durationMs)
   }
 
+  // Escape pops one level instead of dismissing an enclosing dialog.
+  //
+  // The listener is attached NATIVELY, in the CAPTURE phase, on the menu root.
+  // Base UI's dismiss hook listens for Escape with a BUBBLE-phase listener on
+  // `document`, which sits above both this element and React's own delegated
+  // root container, so a React `onKeyDown` cannot reliably get in front of it
+  // (and when the menu is portalled into a Sheet, React's root container may
+  // not even be an ancestor of the event target). A capture listener on this
+  // node runs before the event reaches the focused row and long before it
+  // reaches `document`, so stopping propagation here is what actually keeps
+  // the drawer open.
+  //
+  // It reads its state from a ref rather than closing over it, and that ref is
+  // written in a LAYOUT effect. React commits DOM mutations — including the
+  // `data-animating` attribute below — before it flushes passive effects, so a
+  // listener re-attached inside a `useEffect` lags the rendered state by one
+  // flush. Escape pressed in that window would be judged against the previous
+  // animation state and silently do nothing, which is exactly the moment a
+  // reader is most likely to press it: right as a slide finishes. Layout
+  // effects run before paint, so by the time anyone can see the settled level
+  // the ref already describes it.
+  const escapeStateRef = React.useRef({
+    depth: navigationHistory.length,
+    animationState,
+    navigateBack,
+  })
+  React.useLayoutEffect(() => {
+    escapeStateRef.current = { depth: navigationHistory.length, animationState, navigateBack }
+  })
+
+  React.useEffect(() => {
+    const element = containerRef.current
+    if (!element || !escapeGoesBack) {
+      return
+    }
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key !== 'Escape') {
+        return
+      }
+      const current = escapeStateRef.current
+      // At the root the key is left alone, so an enclosing dialog still closes
+      // as a dialog should.
+      if (current.depth <= 1) {
+        return
+      }
+      event.stopPropagation()
+      event.preventDefault()
+      // Mid-slide the key is swallowed rather than queued, matching the
+      // component's existing policy of dropping re-entrant navigation. It is
+      // never passed through: closing the whole drawer because a keypress
+      // landed during a 300ms animation would be the worst of both outcomes.
+      if (current.animationState === 'idle') {
+        current.navigateBack()
+      }
+    }
+    element.addEventListener('keydown', handleEscape, true)
+    return () => element.removeEventListener('keydown', handleEscape, true)
+  }, [escapeGoesBack])
+
   const currentLevel = navigationHistory.at(-1)
   if (!currentLevel) {
     return null
@@ -569,8 +682,13 @@ function PushMenu({
                   {backLabel}
                 </Button>
               )}
+              {/* Still truncated: this sits in a fixed-height header row
+                  between the back and close buttons, so it cannot wrap. The
+                  title attribute makes the full string recoverable on hover,
+                  and the live region below announces it in full regardless. */}
               <HeadingTag
                 data-slot='push-menu-title'
+                title={level.title}
                 className='min-w-0 flex-1 truncate px-2 text-base font-semibold'
               >
                 {level.title}
@@ -601,6 +719,11 @@ function PushMenu({
             )}
 
             <div data-slot='push-menu-items' className='flex-1 overflow-y-auto'>
+              {level.items.length === 0 && emptyMessage != null && (
+                <p data-slot='push-menu-empty' className='p-4 text-base text-muted-foreground'>
+                  {emptyMessage}
+                </p>
+              )}
               {/* role='list' restores list semantics stripped by list-none. */}
               <ul role='list' className='m-0 list-none divide-y divide-border p-0'>
                 {level.items.map((item) => {
@@ -621,7 +744,14 @@ function PushMenu({
                             isAnimating && 'pointer-events-none',
                           )}
                         >
-                          <span className='min-w-0 flex-1 truncate'>{item.title}</span>
+                          <span className='min-w-0 flex-1'>
+                            {item.title}
+                            {/* The chevron is aria-hidden, so without this a
+                                drill-in row and a leaf link sound identical. */}
+                            {submenuLabel != null && (
+                              <span className='sr-only'> {submenuLabel}</span>
+                            )}
+                          </span>
                           <IconChevronRight aria-hidden='true' className='size-5 shrink-0' />
                         </button>
                       ) : item.href ? (
@@ -638,7 +768,7 @@ function PushMenu({
                             isAnimating && 'pointer-events-none',
                           )}
                         >
-                          <span className='min-w-0 flex-1 truncate'>{item.title}</span>
+                          <span className='min-w-0 flex-1'>{item.title}</span>
                         </Link>
                       ) : (
                         <button
@@ -652,7 +782,7 @@ function PushMenu({
                             isAnimating && 'pointer-events-none',
                           )}
                         >
-                          <span className='min-w-0 flex-1 truncate'>{item.title}</span>
+                          <span className='min-w-0 flex-1'>{item.title}</span>
                         </button>
                       )}
                     </li>

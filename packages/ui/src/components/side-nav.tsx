@@ -43,8 +43,22 @@ type SideNavItem = {
  *   `dark:bg-white/20` highlight is both low-contrast and cascade-order
  *   dependent; bold white ink clears WCAG 2.2 AA (1.4.3) on that overlay.
  *
- * The hover font-weight change (`hover:font-semibold`) is source parity; it
- * reflows the row's own text only, never the rail.
+ * The source's hover font-weight change (`hover:font-semibold`) is NOT ported.
+ * DESIGN.md's Derived State Rule has hover, active and focus deriving from one
+ * ink via `color-mix`, and a weight jump is not a derivation: it changes glyph
+ * advance widths, so a label sitting near its wrap point can reflow — and grow
+ * the row — under the pointer. The remaining hover treatment (rail colour,
+ * 10% ink tint, ink shift) already distinguishes the state without moving
+ * anything. The persistent `current` row keeps `font-bold`: that is a resting
+ * state, so it never reflows on interaction.
+ *
+ * Rows are floored at 44px on coarse pointers. DESIGN.md commits the system to
+ * "44px+ touch floors", and the sibling PushMenu enforces it with `min-h-11` —
+ * but the rail's own metrics (`py-1` over a 24px line box from `sm:` up) come
+ * to 32px, so a tablet reader was tapping targets a third under the stated
+ * floor. This clears WCAG 2.2 AA 2.5.8 either way (24px); the floor is the
+ * design system's own promise, held here the same way `Button` holds it, on
+ * pointer type rather than breakpoint so a desktop rail stays dense.
  *
  * Focus uses the house visible-focus pattern (outline-current, offset 2), so
  * the indicator always contrasts with whatever text colour the row currently
@@ -52,9 +66,10 @@ type SideNavItem = {
  */
 const sideNavRowVariants = cva(
   [
-    'w-full cursor-pointer rounded-r-sm border-l border-transparent py-1 pr-2 pl-4 text-left max-sm:text-base/8 sm:text-sm/6',
+    'flex w-full cursor-pointer items-center rounded-r-sm border-l border-transparent py-1 pr-2 pl-4 text-left max-sm:text-base/8 sm:text-sm/6',
+    '[@media(pointer:coarse)]:min-h-11',
     'motion-safe:transition-colors',
-    'hover:border-grey-950 hover:bg-primary-800/10 hover:font-semibold hover:text-grey-950',
+    'hover:border-grey-950 hover:bg-primary-800/10 hover:text-grey-950',
     'dark:text-grey-400 dark:hover:border-grey-400 dark:hover:text-white',
     'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current',
   ],
@@ -203,10 +218,7 @@ function SideNavRow({ item, currentHref, onNavigate }: SideNavRowProps) {
     // dev-only warning above names the item.
     return (
       <li data-slot='side-nav-item' className='-ml-px flex w-full flex-col items-start gap-1'>
-        <span
-          data-slot='side-nav-text'
-          className={cn(sideNavRowVariants(), 'inline-block cursor-default')}
-        >
+        <span data-slot='side-nav-text' className={cn(sideNavRowVariants(), 'cursor-default')}>
           {item.title}
         </span>
       </li>
@@ -225,7 +237,7 @@ function SideNavRow({ item, currentHref, onNavigate }: SideNavRowProps) {
         href={item.href}
         onClick={onNavigate}
         aria-current={isCurrent ? 'page' : undefined}
-        className={cn(sideNavRowVariants({ current: isCurrent }), 'inline-block')}
+        className={cn(sideNavRowVariants({ current: isCurrent }))}
       >
         {item.title}
       </Link>
@@ -267,6 +279,16 @@ type SideNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children'> & {
    * `FooterNavColumn`.
    */
   headingLevel?: 2 | 3 | 4 | 5 | 6
+  /**
+   * Shown when `sections` is empty. Defaults to "No navigation items
+   * available."; pass `null` to render nothing.
+   *
+   * An empty tree is a legitimate runtime state (unpublished content,
+   * permission-filtered menus, a failed fetch), not a data mistake — without a
+   * message the rail renders an empty `<ul>` and the reader is left with a
+   * blank column and no explanation.
+   */
+  emptyMessage?: React.ReactNode
   ref?: React.Ref<HTMLElement>
 }
 
@@ -304,6 +326,7 @@ function SideNav({
   currentHref,
   onNavigate,
   headingLevel = 2,
+  emptyMessage = 'No navigation items available.',
   'aria-label': ariaLabel = 'Section navigation',
   ref,
   ...props
@@ -320,34 +343,42 @@ function SideNav({
       className={cn('text-grey-800 max-lg:text-base lg:text-sm dark:text-grey-400', className)}
       ref={ref}
     >
-      <ul role='list' data-slot='side-nav-sections' className='flex flex-col gap-9'>
-        {sections.map((section) => (
-          <li key={section.href ?? section.title} data-slot='side-nav-section'>
-            {section.links ? (
-              <>
-                {/* font-display resolves through @nswds/tokens' Tailwind
+      {sections.length === 0 ? (
+        emptyMessage != null && (
+          <p data-slot='side-nav-empty' className='text-muted-foreground'>
+            {emptyMessage}
+          </p>
+        )
+      ) : (
+        <ul role='list' data-slot='side-nav-sections' className='flex flex-col gap-9'>
+          {sections.map((section) => (
+            <li key={section.href ?? section.title} data-slot='side-nav-section'>
+              {section.links ? (
+                <>
+                  {/* font-display resolves through @nswds/tokens' Tailwind
                     preset (--font-display, Public Sans stack) — the same
                     utility the source used. */}
-                <Heading
-                  data-slot='side-nav-heading'
-                  className='font-display font-medium text-grey-800 dark:text-white'
-                >
-                  {section.title}
-                </Heading>
-                <SideNavList
-                  items={section.links}
-                  currentHref={currentHref}
-                  onNavigate={onNavigate}
-                />
-              </>
-            ) : (
-              // A link-less section is a single rail link (Navigation.tsx
-              // parity) — reuse the rail so the border/offset stay identical.
-              <SideNavList items={[section]} currentHref={currentHref} onNavigate={onNavigate} />
-            )}
-          </li>
-        ))}
-      </ul>
+                  <Heading
+                    data-slot='side-nav-heading'
+                    className='font-display font-medium text-grey-800 dark:text-white'
+                  >
+                    {section.title}
+                  </Heading>
+                  <SideNavList
+                    items={section.links}
+                    currentHref={currentHref}
+                    onNavigate={onNavigate}
+                  />
+                </>
+              ) : (
+                // A link-less section is a single rail link (Navigation.tsx
+                // parity) — reuse the rail so the border/offset stay identical.
+                <SideNavList items={[section]} currentHref={currentHref} onNavigate={onNavigate} />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </nav>
   )
 }
