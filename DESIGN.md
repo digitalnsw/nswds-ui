@@ -191,6 +191,10 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 
 ### Named Rules
 
+**The Derived State Rule.** A component's hover, active, halo, and focus colours are `color-mix` derivatives of one ink variable — never independently chosen colours. Change the ink and every state follows.
+
+**The Inherited Interaction Rule.** All interactive behaviour wraps a `@base-ui/react` primitive. No hand-rolled ARIA, focus traps, or keyboard handlers, ever.
+
 **The 44px Floor Rule.** Every navigation row is at least 44px on a coarse pointer. `PushMenu` holds it with `min-h-11` at every width; `SideNav` holds it with `[@media(pointer:coarse)]:min-h-11` so a desktop rail can stay dense; `Button`-based chrome inherits its `TouchTarget` expansion layer. A nav row whose height is only the sum of its line box and padding has not been checked.
 
 **The Wrap-Don't-Clip Rule.** Navigation labels wrap. Real government labels ("Births, deaths and marriages") run past 25 characters, which is roughly the budget in a drawer on a small phone, and a clipped label is unrecoverable on a touch device with no hover. Truncation is allowed only where the row genuinely cannot grow — a fixed-height header sharing space with controls — and there it must carry a `title` so the full string survives somewhere.
@@ -198,12 +202,6 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 **The Empty-Is-Not-Broken Rule.** Empty navigation data renders a message, not a blank surface. Empty is a runtime state (unpublished content, permission filtering, a failed fetch), distinct from malformed data, which stays a dev-only console warning that compiles out in production. Every nav component takes an `emptyMessage` and defaults it; `null` opts out.
 
 **The Escape-Pops-One Rule.** In a drill-down, Escape below the root level goes up one level; only Escape at the root dismisses the enclosing dialog. Inheriting plain dialog semantics costs a reader their position and the drawer in a single keypress, and the Back button is the only other route up.
-
-### Named Rules
-
-**The Derived State Rule.** A component's hover, active, halo, and focus colours are `color-mix` derivatives of one ink variable — never independently chosen colours. Change the ink and every state follows.
-
-**The Inherited Interaction Rule.** All interactive behaviour wraps a `@base-ui/react` primitive. No hand-rolled ARIA, focus traps, or keyboard handlers, ever.
 
 ## Do's and Don'ts
 
