@@ -179,7 +179,25 @@ GOV.UK-lineage halo links: medium-weight text in the link ink (`primary-800` lig
 
 ### Navigation
 
-Masthead + header + main-nav compose the government page frame; navigation typography is the 500-weight label voice. Icon-only chrome actions use the flat 40×40 icon square. (Full nav behaviour is documented in Storybook; it follows the same token, focus, and halo rules as above.)
+Masthead + header + main-nav compose the government page frame; navigation typography is the 500-weight label voice. Icon-only chrome actions use the flat 40×40 icon square.
+
+**Three surfaces, one job each.** `MainNav` is the horizontal bar with mega panels (desktop). `SideNav` is the left rail for within-section wayfinding. `PushMenu` — usually via the `MobileNav` block, inside a left `Sheet` — is the drill-down drawer for small viewports. They are alternatives, not layers: a page picks the bar or the drawer at a given width, never both at once.
+
+- **Character:** structure over decoration. The bar marks position with a 4px inset underline, the rail with a coloured segment of its own left hairline, the drawer with a left border plus a 10% ink tint. No shadows, no pills, no chips.
+- **The handoff is the consumer's call, and it is explicit.** `MainNav` does not hide itself below a breakpoint — pass `className="hidden lg:block"` and render `MobileNav` beside it. The bar degrades safely if you forget (its item row is a horizontal scroll container), but scrolled-off nav items are close to undiscoverable, so treat that as a safety net rather than a mobile pattern.
+- **Current location:** the exact match carries `aria-current="page"`; the ancestor that contains it carries the visual "you are here" mark. A mega-panel trigger is a button and cannot take `aria-current`, so it uses `data-current` for the underline while the announcement stays on the matching link inside the panel.
+- **Hover / Focus:** halos and rings derive from one ink variable per surface, exactly as for buttons and links. Rings are 2px in the ink colour, offset 2px onto the page — **except inside a scroll container**, where they invert to `-outline-offset-2` because a scroll container clips anything drawn outside a child's border box.
+- **Depth is capped by shape.** Mega panels are one level of flat links. The rail nests to any depth but collapses. The drawer drills without limit but is the only surface with a breadcrumb, and that breadcrumb is `aria-hidden` decoration — the heading and the live region carry the real announcement.
+
+### Named Rules
+
+**The 44px Floor Rule.** Every navigation row is at least 44px on a coarse pointer. `PushMenu` holds it with `min-h-11` at every width; `SideNav` holds it with `[@media(pointer:coarse)]:min-h-11` so a desktop rail can stay dense; `Button`-based chrome inherits its `TouchTarget` expansion layer. A nav row whose height is only the sum of its line box and padding has not been checked.
+
+**The Wrap-Don't-Clip Rule.** Navigation labels wrap. Real government labels ("Births, deaths and marriages") run past 25 characters, which is roughly the budget in a drawer on a small phone, and a clipped label is unrecoverable on a touch device with no hover. Truncation is allowed only where the row genuinely cannot grow — a fixed-height header sharing space with controls — and there it must carry a `title` so the full string survives somewhere.
+
+**The Empty-Is-Not-Broken Rule.** Empty navigation data renders a message, not a blank surface. Empty is a runtime state (unpublished content, permission filtering, a failed fetch), distinct from malformed data, which stays a dev-only console warning that compiles out in production. Every nav component takes an `emptyMessage` and defaults it; `null` opts out.
+
+**The Escape-Pops-One Rule.** In a drill-down, Escape below the root level goes up one level; only Escape at the root dismisses the enclosing dialog. Inheriting plain dialog semantics costs a reader their position and the drawer in a single keypress, and the Back button is the only other route up.
 
 ### Named Rules
 
