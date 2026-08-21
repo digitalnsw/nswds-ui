@@ -26,8 +26,8 @@
  * keeps a hypothetical future firefox/webkit instance from crashing here —
  * they don't have the Chromium bug, so skipping is correct, not a gap.
  */
-import { cdp, server } from '@vitest/browser/context'
 import { afterAll } from 'vitest'
+import { cdp, server } from 'vitest/browser'
 
 // Runs once per STORY FILE, not once per suite: vitest evaluates setup files
 // inside each test file's tester iframe, so this afterAll registers afresh in
