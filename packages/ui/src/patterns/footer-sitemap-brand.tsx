@@ -1,6 +1,6 @@
 import type * as React from 'react'
 
-import { Footer, FooterNav, FooterNavColumn } from '../components/footer.js'
+import { Footer, FooterNav, FooterNavColumn, footerLogoType } from '../components/footer.js'
 import { Logo } from '../components/logo.js'
 
 // ── Sample content — replace with your service's own ────────────────────────
@@ -47,6 +47,13 @@ type FooterSitemapBrandProps = Omit<React.ComponentProps<typeof Footer>, 'childr
   columns?: typeof columnsSample
   /** Short statement of what the agency or service does. Two lines at most. */
   mission?: string
+  /**
+   * `Logo` treatment. Defaults to whatever stays visible on the chosen
+   * `color` (see `footerLogoType`) — the full-colour brand mark on a light
+   * surface, `mono-white` on one that is dark in both themes. Override only
+   * for a surface this block does not own.
+   */
+  logoType?: React.ComponentProps<typeof Logo>['logoType']
 }
 
 /**
@@ -54,21 +61,26 @@ type FooterSitemapBrandProps = Omit<React.ComponentProps<typeof Footer>, 'childr
  * columns. Use when the footer is the first place a visitor learns who runs
  * the service — a standalone product site, or an agency's front door.
  *
- * See `FooterSimpleCentred` for the note on choosing `logoType` per surface:
- * `default` here, because it inverts correctly with the theme.
+ * The logo treatment is derived from `color` (see `footerLogoType`). This note
+ * previously claimed `default` was safe here "because it inverts correctly with
+ * the theme" — true only of a surface that is light in light mode. On one dark
+ * in BOTH themes the wordmark paints nsw-blue-800, which IS `primary-800`, so
+ * it vanished at 1:1 contrast on the most likely branded footer colour.
  */
 export function FooterSitemapBrand({
   columns = columnsSample,
   mission = missionSample,
   legalLinks = legalLinksSample,
   department = departmentSample,
+  color,
+  logoType,
   ...props
 }: FooterSitemapBrandProps) {
   return (
-    <Footer legalLinks={legalLinks} department={department} {...props}>
+    <Footer legalLinks={legalLinks} department={department} color={color} {...props}>
       <div className='grid py-4 max-lg:gap-8 lg:grid-cols-[minmax(0,20rem)_1fr] lg:gap-16'>
         <div className='flex flex-col gap-4'>
-          <Logo className='h-14 w-auto self-start' />
+          <Logo logoType={logoType ?? footerLogoType(color)} className='h-14 w-auto self-start' />
           <p className='text-sm text-pretty text-(--footer-ink)'>{mission}</p>
         </div>
         <FooterNav className='py-0 lg:grid-cols-3'>

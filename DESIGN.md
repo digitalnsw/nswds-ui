@@ -189,6 +189,16 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 - **Hover / Focus:** halos and rings derive from one ink variable per surface, exactly as for buttons and links. Rings are 2px in the ink colour, offset 2px onto the page — **except inside a scroll container**, where they invert to `-outline-offset-2` because a scroll container clips anything drawn outside a child's border box.
 - **Depth is capped by shape.** Mega panels are one level of flat links. The rail nests to any depth but collapses. The drawer drills without limit but is the only surface with a breadcrumb, and that breadcrumb is `aria-hidden` decoration — the heading and the live region carry the real announcement.
 
+### Footers
+
+The end-of-page `contentinfo` landmark: acknowledgement of Country, supporting links, ownership, social channels. One `Footer` component with thirteen surface colours, plus eight composed blocks that differ in what sits _above_ the standard rows — a site map, contact details, a subscription form, a call to action.
+
+- **Character:** quiet and dense. The footer is the one region allowed to be information-rich, because people arrive there looking for something specific (privacy, contact, accessibility) rather than browsing. Type steps down to 14px; everything else stays on the system's rules.
+- **One ink, everything derived.** `--footer-ink` is the surface's contrasting colour, and links, borders, halos, focus rings and button tokens all `color-mix` from it. A coloured footer never restates a colour — which is why `text-muted-foreground` and the `danger` ramp are both wrong inside one: they are theme-driven, not surface-driven, and wash out on a coloured surface.
+- **Choosing a colour:** all thirteen clear WCAG 2.2 AA in light mode and AAA in dark. `primary-600` and `accent-600` are AA-only (4.57:1 and 5.18:1); prefer the `-800` steps for a service held to AAA.
+- **The blocks are templates, not components.** They ship sample links and a sample department on purpose — a registry block is copied and edited, so it renders complete on arrival rather than crashing on missing props. Replace the samples; do not ship `#privacy`.
+- **Acknowledgement of Country is default-on.** Seven of the eight blocks carry it. `FooterCompact` is the exception, and only because a one-line bar cannot present it respectfully — a service using that block owes the acknowledgement somewhere else on the page.
+
 ### Named Rules
 
 **The Derived State Rule.** A component's hover, active, halo, and focus colours are `color-mix` derivatives of one ink variable — never independently chosen colours. Change the ink and every state follows.
@@ -202,6 +212,12 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 **The Empty-Is-Not-Broken Rule.** Empty navigation data renders a message, not a blank surface. Empty is a runtime state (unpublished content, permission filtering, a failed fetch), distinct from malformed data, which stays a dev-only console warning that compiles out in production. Every nav component takes an `emptyMessage` and defaults it; `null` opts out.
 
 **The Escape-Pops-One Rule.** In a drill-down, Escape below the root level goes up one level; only Escape at the root dismisses the enclosing dialog. Inheriting plain dialog semantics costs a reader their position and the drawer in a single keypress, and the Back button is the only other route up.
+
+**The Fixed-Mark Rule.** The NSW Government logo does not inherit. Its wordmark and waratah are painted from fixed palette values, so no ink chain reaches them, and `logoType` must be chosen against the surface — `mono-white` on the six colours that are dark in both themes, `default` (the full-colour mark) everywhere else. Never leave it to the caller: `--primary-800` and `--nsw-blue-800` are the same value, so the default treatment on a `primary-800` footer paints the mark in exactly its own background at 1:1 contrast. Derive it with `footerLogoType`.
+
+**The Same-Floor Rule.** Every link in a region gets the same touch floor, whether it is text or an icon. A footer's icon links route through `ButtonLink` and inherit its 44px expansion layer; its text links are 28px unless given the same layer, and a region where one kind of link is comfortably tappable and the other is not is worse than one where both are small — the reader cannot tell them apart by looking. Expand the hit area with `TouchTarget`, never by growing the box: growing it pushes a mobile site map ~300px taller and breaks alignment wherever a link sits beside an icon.
+
+**The Report-The-Outcome Rule.** A form in a footer reports what happened. Pending disables the control, success confirms and clears the field, failure says so and _keeps_ what was typed. The live region announcing it must already be in the tree while empty — one mounted with its message is not reliably announced — and it stays polite: a failed newsletter signup is not worth interrupting the reader for.
 
 ## Do's and Don'ts
 

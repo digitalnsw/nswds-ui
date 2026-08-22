@@ -654,6 +654,66 @@ export const HeadingLevels: Story = {
   },
 }
 
+/**
+ * Footer text links carry the same 44px touch expansion the social icon links
+ * already got for free through `ButtonLink`.
+ *
+ * The expansion is applied under `@media (pointer: coarse)`, which a desktop
+ * test runner never matches, so this asserts the contract that makes it work:
+ * the link is a positioned inline-flex box (an inline `<a>` that wraps has no
+ * single box for the layer to measure 100% against) and it renders the layer.
+ */
+export const LinkTargets: Story = {
+  name: 'Link touch targets',
+  play: async ({ canvasElement }) => {
+    const footer = getFooter(canvasElement)
+
+    const links = [
+      ...footer.querySelectorAll<HTMLElement>(
+        '[data-slot="footer-legal-links"] a, [data-slot="footer-nav-link"]',
+      ),
+    ]
+    if (links.length === 0) {
+      throw new Error('Expected footer text links to render.')
+    }
+
+    for (const link of links) {
+      const styles = getComputedStyle(link)
+      if (styles.position !== 'relative') {
+        throw new Error(
+          `Footer links must be positioned so the expansion layer anchors to them, got "${styles.position}".`,
+        )
+      }
+      // Either is fine, and both establish the single box the layer measures.
+      // The legal row is itself a flex container, and CSS blockifies flex
+      // items — so `inline-flex` computes to `flex` there and `inline-flex`
+      // inside the site-map columns. What must never appear is a bare
+      // `inline`, which is what an unstyled <a> would give.
+      if (styles.display !== 'inline-flex' && styles.display !== 'flex') {
+        throw new Error(
+          `Footer links must establish a flex box for the expansion layer, got "${styles.display}".`,
+        )
+      }
+      const layer = link.querySelector('span[aria-hidden="true"]')
+      if (!layer) {
+        throw new Error(`Footer link "${link.textContent}" is missing its touch expansion layer.`)
+      }
+      if (!layer.className.includes('2.75rem')) {
+        throw new Error(
+          `Expected the expansion layer to floor at 2.75rem (44px), got "${layer.className}".`,
+        )
+      }
+    }
+
+    // The icon links already had this. The point of the change is that both
+    // kinds of footer link now agree.
+    const social = footer.querySelector<HTMLElement>('[data-slot="footer-social-link"]')
+    if (social && !social.querySelector('span[aria-hidden="true"]')) {
+      throw new Error('Expected social links to keep their expansion layer.')
+    }
+  },
+}
+
 export const CssCheck: Story = {
   name: 'CSS Check',
   args: { color: 'primary-800' },

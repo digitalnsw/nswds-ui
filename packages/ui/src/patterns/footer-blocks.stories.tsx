@@ -166,6 +166,32 @@ function BlockCard({ block }: { block: Block }) {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 /** All eight side by side — the story to open when picking one. */
+/**
+ * Yield without `setTimeout`: the Vitest browser pool runs story files in
+ * parallel tabs and Chromium throttles background-tab timers to ~1s ticks, so
+ * a timer-based poll sleep blows the test budget. MessageChannel messages are
+ * not throttled. Same helper, same reason, as push-menu.stories.tsx.
+ */
+function yieldToBrowser() {
+  return new Promise<void>((resolve) => {
+    const channel = new MessageChannel()
+    channel.port1.onmessage = () => resolve()
+    channel.port2.postMessage(0)
+  })
+}
+
+/** Poll until `predicate` holds, so async submission state has time to settle. */
+async function waitFor(predicate: () => boolean, message: string, timeout = 2000) {
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    if (predicate()) {
+      return
+    }
+    await yieldToBrowser()
+  }
+  throw new Error(message)
+}
+
 export const Chooser: Story = {
   render: () => (
     <div className='space-y-6 p-4'>
@@ -237,6 +263,130 @@ export const Sitemap: Story = {
 export const SitemapBrand: Story = {
   name: 'Site map with brand',
   render: () => <FooterSitemapBrand {...shared} color='grey-200' />,
+}
+
+/**
+ * The three logo-bearing blocks on a surface that is dark in BOTH themes.
+ *
+ * This story exists because its absence is what hid the bug: every logo block
+ * was only ever rendered on `white` or `grey-200`, and the one block shown on
+ * `primary-800` (the CTA) has no logo — so a wordmark painted in its own
+ * background colour was unreachable from Storybook and from Chromatic.
+ */
+export const BrandOnDark: Story = {
+  name: 'Brand on a dark surface',
+  render: () => (
+    <div className='flex flex-col gap-8'>
+      <FooterSimpleCentred {...shared} color='primary-800' />
+      <FooterCompact {...shared} color='grey-800' />
+      <FooterSitemapBrand {...shared} color='accent-800' />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const footers = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')]
+    if (footers.length !== 3) {
+      throw new Error(`Expected three footers, got ${footers.length}.`)
+    }
+
+    for (const footer of footers) {
+      const surface = getComputedStyle(footer).backgroundColor
+      const svg = footer.querySelector('svg')
+      if (!svg) {
+        throw new Error(`Expected a logo in the ${footer.dataset.color} footer.`)
+      }
+
+      const paths = [...svg.querySelectorAll('path')]
+      if (paths.length === 0) {
+        throw new Error('Expected the logo to render paths.')
+      }
+
+      for (const path of paths) {
+        const fill = getComputedStyle(path).fill
+        // The actual defect, asserted directly rather than via a class name:
+        // the mark must not be painted in its own background. On primary-800
+        // the default treatment resolved to exactly the surface colour.
+        if (fill === surface) {
+          throw new Error(
+            `Logo path is painted in the footer's own background (${fill}) on color="${footer.dataset.color}" — the mark is invisible.`,
+          )
+        }
+        if (fill === '' || fill === 'none') {
+          throw new Error(`Expected the logo path to resolve a fill, got "${fill}".`)
+        }
+      }
+    }
+  },
+}
+
+/**
+ * The subscription form reports what happened. Submitting used to call
+ * `onSubscribe` and change nothing on screen.
+ */
+export const NewsletterStates: Story = {
+  name: 'Newsletter — success and failure',
+  render: () => (
+    <div className='flex flex-col gap-8'>
+      <FooterNewsletter {...shared} onSubscribe={() => Promise.resolve()} />
+      <FooterNewsletter {...shared} onSubscribe={() => Promise.reject(new Error('nope'))} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const forms = [...canvasElement.querySelectorAll('form')]
+    if (forms.length !== 2) {
+      throw new Error(`Expected two subscription forms, got ${forms.length}.`)
+    }
+
+    for (const [index, form] of forms.entries()) {
+      const input = form.querySelector<HTMLInputElement>('input[name="email"]')
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')
+      const status = form.querySelector<HTMLElement>('[role="status"]')
+      if (!input || !button || !status) {
+        throw new Error('Expected an email input, a submit button and a live region.')
+      }
+
+      // The live region must already exist while empty — a region mounted at
+      // the same moment as its text is not reliably announced.
+      if (status.textContent?.trim()) {
+        throw new Error('Expected the live region to start empty.')
+      }
+      if (status.getAttribute('aria-live') !== 'polite') {
+        throw new Error('Expected a polite live region.')
+      }
+
+      // The form reads FormData off the DOM, so setting value directly is
+      // enough — no React state to sync.
+      input.value = 'someone@example.com'
+      button.click()
+
+      await waitFor(
+        () => Boolean(status.textContent?.trim()),
+        `Expected form ${index + 1} to report an outcome.`,
+      )
+
+      const text = status.textContent ?? ''
+      if (index === 0) {
+        if (!/check your inbox/i.test(text)) {
+          throw new Error(`Expected a success message, got "${text}".`)
+        }
+        if (input.value !== '') {
+          throw new Error('Expected the field to be cleared after a successful submit.')
+        }
+      } else {
+        if (!/did not go through/i.test(text)) {
+          throw new Error(`Expected a failure message, got "${text}".`)
+        }
+        // The address survives a failure the reader did not cause.
+        if (input.value !== 'someone@example.com') {
+          throw new Error('Expected the address to be preserved after a failure.')
+        }
+      }
+
+      // The button must not be left disabled once the attempt settles.
+      if (button.disabled) {
+        throw new Error('Expected the submit button to be re-enabled after the attempt.')
+      }
+    }
+  },
 }
 
 export const Newsletter: Story = {
@@ -317,9 +467,23 @@ export const Accordion: Story = {
     // Every link must be present and reachable on desktop — this is what the
     // "render open, collapse in an effect" approach buys, and what a no-JS
     // visitor gets.
-    const links = canvasElement.querySelectorAll('[data-slot="footer-nav-link"]')
+    const links = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer-nav-link"]')]
     if (links.length !== 20) {
       throw new Error(`Expected all 20 site-map links to be rendered, got ${links.length}.`)
+    }
+
+    // Rendered is not enough: they must be VISIBLE. This is the guard on
+    // DESKTOP_QUERY, which restates Tailwind's `lg` breakpoint in JS with
+    // nothing keeping the two in step. If the theme's breakpoint moved, CSS
+    // would hide the disclosure buttons (asserted above) while matchMedia
+    // still reported mobile, leaving the columns collapsed and every link
+    // unreachable with no way to expand them. Asserting the behaviour catches
+    // that; asserting the constant would not.
+    const visibleLinks = links.filter((link) => link.checkVisibility())
+    if (visibleLinks.length !== 20) {
+      throw new Error(
+        `Expected all 20 links visible at desktop width, got ${visibleLinks.length} — DESKTOP_QUERY and the lg breakpoint have drifted apart.`,
+      )
     }
   },
 }

@@ -3,7 +3,7 @@ import React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-import { ButtonLink, type IconSlot } from '../components/button.js'
+import { ButtonLink, type IconSlot, TouchTarget } from '../components/button.js'
 import { Link } from '../components/link.js'
 import { Separator } from '../components/separator.js'
 
@@ -44,6 +44,47 @@ type FooterColor = (typeof footerColors)[number]
 // Shared by cva's defaultVariants and the data-color attribute, so the two
 // can't drift apart.
 const DEFAULT_FOOTER_COLOR: FooterColor = 'white'
+
+/**
+ * The colour variants whose surface is dark in BOTH themes — the `-600` and
+ * `-800` steps of all three families. They are exactly the variants that
+ * declare a bare `text-white` below (the others declare `dark:text-white`, so
+ * their light-mode surface is light), and that correspondence is the invariant
+ * to preserve if a variant is ever added or retuned.
+ */
+const footerDarkSurfaceColors = new Set<FooterColor>([
+  'primary-800',
+  'primary-600',
+  'grey-800',
+  'grey-600',
+  'accent-800',
+  'accent-600',
+])
+
+/**
+ * The `Logo` treatment that stays visible on a given footer surface.
+ *
+ * The brand mark is two-tone and its colours are FIXED, not inherited: the
+ * wordmark paints `fill-nsw-blue-800` and the waratah `fill-nsw-red-600` under
+ * `logoType='default'`. Nothing in the footer's ink chain reaches it. On a
+ * surface that is dark in both themes that default is wrong in light mode, and
+ * on `primary-800` it is invisible — `--primary-800` and `--nsw-blue-800` are
+ * the same value (`oklch(0.289999 0.117296 259.841938)`), so the wordmark is
+ * painted in exactly its own background at 1:1 contrast.
+ *
+ * `mono-white` rather than `reversed` for the dark set: `reversed` keeps the
+ * waratah red, which reads well on navy but disappears on the `accent-*`
+ * surfaces, and one rule that holds for all six beats three family-specific
+ * ones. Light surfaces keep `default`, which is the full-colour brand mark —
+ * deriving the logo from `--footer-ink` instead would have flattened it to
+ * monochrome grey there, losing the waratah for no reason.
+ *
+ * Exported because the blocks that render a logo each need it, and registry
+ * consumers copy those blocks as source.
+ */
+function footerLogoType(color?: FooterColor | null): 'default' | 'mono-white' {
+  return footerDarkSurfaceColors.has(color ?? DEFAULT_FOOTER_COLOR) ? 'mono-white' : 'default'
+}
 
 const footerVariants = cva(
   [
@@ -173,6 +214,27 @@ type FooterSocialLinkItem = {
 const footerLinkClassName = [
   // Negative margin + padding keeps the hover/focus halo from shifting layout.
   '-m-1 rounded-sm p-1 text-(--footer-ink)',
+  // relative + inline-flex position the TouchTarget expansion layer these links
+  // render (see FooterNavLink / FooterLegalLinks). At text-sm the visible box is
+  // 28px — 20px line box plus the 8px of padding above — which clears WCAG 2.2
+  // AA 2.5.8 (24px) but sits well under the 44px floor DESIGN.md commits the
+  // system to, and which the sibling FooterSocialLink already gets for free by
+  // going through ButtonLink. Growing the box instead would have pushed a
+  // mobile site map roughly 300px taller and broken the icon alignment in
+  // FooterContact, so the hit area grows and the layout does not. inline-flex
+  // (not inline) gives the absolutely-positioned layer a predictable box to
+  // measure 100% against — an inline <a> that wraps has no single box.
+  //
+  // The list gaps are deliberately NOT widened to stop adjacent expansions
+  // overlapping. In a site-map column the 28px boxes sit 8px apart, so 44px
+  // layers overlap by 8px and each link's exclusive area is the 36px between
+  // midpoints — still better than 28px boxes separated by 8px of dead gap,
+  // and it leaves no unclickable band at all. Widening the gap under
+  // `pointer:coarse` would also mean pairing a bare utility with a conditional
+  // override of the same property, which check:cascade rejects, and guarding
+  // it with `pointer:fine` instead would drop the gap to zero on `pointer:none`
+  // devices.
+  'relative inline-flex items-center',
   'underline decoration-current underline-offset-4',
   'motion-safe:transition-colors',
   'hover:bg-(--footer-halo) hover:decoration-2',
@@ -290,7 +352,7 @@ function FooterLegalLinks({
         // variants are pinned to the primary palette (and flip in dark mode),
         // which would break on a coloured footer.
         <Link key={item.name} variant='unstyled' href={item.href} className={footerLinkClassName}>
-          {item.name}
+          <TouchTarget>{item.name}</TouchTarget>
         </Link>
       ))}
     </nav>
@@ -304,14 +366,16 @@ type FooterNavLinkProps = Omit<React.ComponentPropsWithoutRef<typeof Link>, 'var
  * row. Exposed so a bespoke column layout (a mobile accordion, say) can match
  * the built-in columns without copying class strings.
  */
-function FooterNavLink({ className, ...props }: FooterNavLinkProps) {
+function FooterNavLink({ className, children, ...props }: FooterNavLinkProps) {
   return (
     <Link
       data-slot='footer-nav-link'
       variant='unstyled'
       {...props}
       className={cn(footerLinkClassName, className)}
-    />
+    >
+      <TouchTarget>{children}</TouchTarget>
+    </Link>
   )
 }
 
@@ -571,6 +635,7 @@ export {
   footerColors,
   footerContainerVariants,
   FooterLegalLinks,
+  footerLogoType,
   FooterNav,
   FooterNavColumn,
   FooterNavLink,
