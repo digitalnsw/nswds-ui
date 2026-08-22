@@ -4,27 +4,43 @@ import React from 'react'
 import { cn } from '../lib/utils.js'
 
 // Colour pairs are curated for WCAG 2.2 AAA (1.4.6 Contrast Enhanced): every
-// text/background combination below resolves to at least 7:1. This is why the
-// Masthead does not accept the full Button colour palette — accent/danger/
-// warning backgrounds with white text sit under 7:1 and would silently break
-// the AAA guarantee. Add new colours only with a verified pair.
+// text/background combination below resolves to at least 7:1, in BOTH themes.
+// This is why the Masthead does not accept the full Button colour palette —
+// accent/danger/warning backgrounds with white text sit under 7:1 and would
+// silently break the AAA guarantee. Add new colours only with a verified pair.
+//
+// Light mode: 14.4 (dark), 17.4 (light), 19.0 (white), 15.1 (grey).
+// Dark mode:  20.0 (dark), 17.2 (light), 19.0 (white), 20.2 (grey).
+//
+// Every variant deepens in dark mode, on the same ramp steps `Header` uses —
+// -100→-850, white→-900, -800→-950 — because the two are designed to be themed
+// together and sit flush against each other. Only `dark` used to flip: a
+// `white` masthead stayed pure white above a `grey-900` header, an 18.9:1 band
+// across the top of a dark page, and `light` did the same at 15.8:1. The
+// asymmetry was the tell that this was an omission rather than a policy — a
+// deliberately theme-invariant set would not have flipped one of its four.
 const mastheadColors = {
-  // Legacy .nsw-masthead (brand dark). Deepens in dark mode, matching the
-  // original nswds-app implementation.
+  // Legacy .nsw-masthead (brand dark).
   dark: 'bg-primary-800 text-white dark:bg-primary-950',
   // Legacy .nsw-masthead--light (off-white). grey-100 is the same value as
   // the legacy --nsw-off-white (#f2f2f2).
-  light: 'bg-grey-100 text-grey-900',
-  white: 'bg-white text-grey-900',
-  grey: 'bg-grey-800 text-white',
+  light: 'bg-grey-100 text-grey-900 dark:bg-grey-850 dark:text-white',
+  white: 'bg-white text-grey-900 dark:bg-grey-900 dark:text-white',
+  grey: 'bg-grey-800 text-white dark:bg-grey-950',
 }
+
+type MastheadColor = keyof typeof mastheadColors
+
+// Shared by cva's defaultVariants and the data-color attribute, so the two
+// can't drift apart — the same arrangement as Header, Footer and MainNav.
+const DEFAULT_MASTHEAD_COLOR: MastheadColor = 'dark'
 
 const mastheadVariants = cva('w-full text-xs', {
   variants: {
     color: mastheadColors,
   },
   defaultVariants: {
-    color: 'dark',
+    color: DEFAULT_MASTHEAD_COLOR,
   },
 })
 
@@ -91,6 +107,9 @@ function Masthead({
     <div
       id='nsw-masthead'
       data-slot='masthead'
+      // Named surface, exposed for styling hooks and test diagnostics — the
+      // convention Header, Footer and MainNav already follow.
+      data-color={color ?? DEFAULT_MASTHEAD_COLOR}
       {...props}
       className={cn(mastheadVariants({ color }), className)}
       ref={ref}
@@ -106,4 +125,4 @@ function Masthead({
 }
 
 export { Masthead, mastheadContainerVariants, mastheadVariants }
-export type { MastheadProps }
+export type { MastheadColor, MastheadProps }
