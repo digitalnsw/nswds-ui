@@ -1,3 +1,9 @@
+## [5.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.0...@nswds/ui-v5.1.1) (2026-08-22)
+
+### Bug Fixes
+
+* **ui:** let every masthead and skip-link colour flip in dark mode ([#145](https://github.com/digitalnsw/nswds-ui/issues/145)) ([83e7071](https://github.com/digitalnsw/nswds-ui/commit/83e7071ef953c07979fa80d70dc9c628830438a6))
+
 ## [5.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.0.7...@nswds/ui-v5.1.0) (2026-08-21)
 
 ### Features
