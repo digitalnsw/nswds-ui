@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "description-list",
+  "title": "Description List",
+  "description": "Term and detail pairs in stacked, two-column or inline layouts, for metadata strips and summary rows.",
+  "dependencies": [
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/description-list.tsx",
+      "content": "import type * as React from 'react'\n\nimport { cva, type VariantProps } from 'class-variance-authority'\n\nimport { cn } from '@/lib/utils'\n\n/**\n * Term/detail pairs — metadata strips, summary rows, key–value facts.\n *\n * **This name shipped once before and was removed.** `DescriptionList` was\n * dropped from the public API as a BREAKING CHANGE in v3 (commit 09d6db3),\n * incidentally, inside a commit whose subject was adding ten unrelated\n * components; its registry item then outlived it by three releases until\n * `check:registry-resolves` caught the orphan. Consumers were told to migrate\n * off it, so this is a deliberate re-introduction rather than a revert, and it\n * is not source-compatible with the old one:\n *\n * - The old markup was a single hardcoded grid\n *   (`sm:grid-cols-[min(50%,--spacing(80))_auto]`) with no way to opt out.\n *   Layout is now a variant.\n * - The old classes were cascade-unsafe in exactly the way `check:cascade`\n *   now fails a build for — `text-base/6 sm:text-sm/6` and\n *   `border-t … sm:border-t` are bare utilities paired with responsive\n *   overrides of the same property, so an npm consumer's own Tailwind build\n *   could outrank them. Every responsive step here is a mutually exclusive\n *   range instead.\n * - The old type ramp dropped to 14px from `sm` up. Body copy holds at 16px.\n */\nconst descriptionListVariants = cva('', {\n  variants: {\n    layout: {\n      /**\n       * Terms above details, stacked in one column at every width. The safe\n       * default: it never truncates a long term and needs no width assumptions.\n       */\n      stacked: 'flex flex-col gap-4',\n      /**\n       * Two columns from `sm` up — term in the first, detail in the second —\n       * collapsing to `stacked` below it. The classic definition-list\n       * treatment for short terms.\n       */\n      columns:\n        'grid gap-x-8 gap-y-4 max-sm:grid-cols-1 sm:grid-cols-[minmax(0,--spacing(60))_minmax(0,1fr)]',\n      /**\n       * Facts side by side, wrapping as they run out of room — the strip\n       * under a page banner. Terms sit above their details within each cell.\n       */\n      inline: 'grid gap-x-8 gap-y-6 max-sm:grid-cols-2 sm:grid-cols-4',\n    },\n  },\n  defaultVariants: {\n    layout: 'stacked',\n  },\n})\n\ntype DescriptionListProps = React.ComponentPropsWithoutRef<'dl'> &\n  VariantProps<typeof descriptionListVariants> & {\n    ref?: React.Ref<HTMLDListElement>\n  }\n\n/**\n * A `<dl>` of term/detail pairs.\n *\n * **`columns` and `inline` place their own children, so each pair must be\n * wrapped in a single element.** A `<dl>` may contain `<div>` wrappers around\n * `<dt>`/`<dd>` groups — that is valid HTML and preserves the list semantics —\n * and it is what keeps a term with its detail when the grid wraps. Without the\n * wrapper the grid places every `<dt>` and `<dd>` independently and pairs come\n * apart at the wrap point:\n *\n * ```tsx\n * <DescriptionList layout='inline'>\n *   <div>\n *     <DescriptionTerm>Version</DescriptionTerm>\n *     <DescriptionDetails>2.001</DescriptionDetails>\n *   </div>\n * </DescriptionList>\n * ```\n *\n * `stacked` has no such requirement — wrap or don't, it reads the same.\n */\nfunction DescriptionList({ className, layout, ref, ...props }: DescriptionListProps) {\n  return (\n    <dl\n      ref={ref}\n      data-slot='description-list'\n      data-layout={layout ?? 'stacked'}\n      className={cn(descriptionListVariants({ layout, className }))}\n      {...props}\n    />\n  )\n}\n\ntype DescriptionTermProps = React.ComponentPropsWithoutRef<'dt'> & {\n  ref?: React.Ref<HTMLElement>\n}\n\n/** The term half of a pair — the label. */\nfunction DescriptionTerm({ className, ref, ...props }: DescriptionTermProps) {\n  return (\n    <dt\n      ref={ref}\n      data-slot='description-term'\n      className={cn('text-base/relaxed text-muted-foreground', className)}\n      {...props}\n    />\n  )\n}\n\ntype DescriptionDetailsProps = React.ComponentPropsWithoutRef<'dd'> & {\n  ref?: React.Ref<HTMLElement>\n}\n\n/**\n * The detail half of a pair — the value.\n *\n * `ms-0` is deliberate: browsers give `<dd>` a 40px `margin-inline-start` by\n * default, which the grid layouts would otherwise indent every value by. It is\n * an unconditional reset, so it does not fight the responsive ramp.\n */\nfunction DescriptionDetails({ className, ref, ...props }: DescriptionDetailsProps) {\n  return (\n    <dd\n      ref={ref}\n      data-slot='description-details'\n      className={cn('ms-0 text-base/relaxed text-foreground', className)}\n      {...props}\n    />\n  )\n}\n\nexport { DescriptionDetails, DescriptionList, descriptionListVariants, DescriptionTerm }\nexport type { DescriptionDetailsProps, DescriptionListProps, DescriptionTermProps }\n",
+      "type": "registry:ui",
+      "target": "components/description-list.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "5.1.2"
+  }
+}

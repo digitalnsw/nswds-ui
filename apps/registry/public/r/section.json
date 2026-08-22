@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "section",
+  "title": "Section",
+  "description": "Top-level page section with the house vertical rhythm, an optional divider, and the aria-labelledby wiring that makes it a named region landmark.",
+  "dependencies": [
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/section.tsx",
+      "content": "import type * as React from 'react'\n\nimport { cva, type VariantProps } from 'class-variance-authority'\n\nimport { cn } from '@/lib/utils'\n\n/**\n * Vertical rhythm for a top-level page section.\n *\n * Every step is written as a set of MUTUALLY EXCLUSIVE breakpoint ranges\n * (`max-sm:` / `sm:max-lg:` / `lg:`) rather than a bare utility plus responsive\n * overrides. `py-16 sm:py-20 lg:py-28` renders identically here but is\n * order-dependent across two Tailwind builds: an npm consumer's own build\n * re-emits any utility they also use, a media query carries no extra\n * specificity, and their plain `.py-16` would then outrank our `.lg:py-28` on\n * an element they never referenced. `check:cascade` fails the build on the\n * unsafe form — see its script header, and AGENTS.md §4 Step 1.\n */\nconst sectionVariants = cva('', {\n  variants: {\n    spacing: {\n      default: 'max-sm:py-16 sm:max-lg:py-20 lg:py-28',\n      tight: 'max-sm:py-10 sm:max-lg:py-12 lg:py-16',\n      loose: 'max-sm:py-20 sm:max-lg:py-28 lg:py-36',\n      // For a section that supplies its own padding, or one butted against a\n      // neighbour that already carries the gap.\n      none: '',\n    },\n    /**\n     * Hairline rule along the bottom edge, for stacking sections on one\n     * surface without alternating background colours.\n     */\n    divider: {\n      true: 'border-b border-border',\n      false: '',\n    },\n  },\n  defaultVariants: {\n    spacing: 'default',\n    divider: false,\n  },\n})\n\ntype SectionProps = React.ComponentPropsWithoutRef<'section'> &\n  VariantProps<typeof sectionVariants> & {\n    /**\n     * `id` of the heading that names this section. Required for the section to\n     * be exposed as a `region` landmark — see the note on the component.\n     */\n    labelledBy?: string\n    ref?: React.Ref<HTMLElement>\n  }\n\n/**\n * A top-level page section with the house vertical rhythm.\n *\n * **Naming is what makes it a landmark.** A bare `<section>` is a generic\n * container in the accessibility tree; it is only exposed as a `region` — and\n * so only reachable by landmark navigation — once it has an accessible name.\n * Pass `labelledBy` pointing at the `id` of the section's own heading, or\n * `aria-label` where there is no visible heading to point at. This component\n * deliberately does NOT invent a fallback name: an auto-generated label would\n * put an unhelpful entry in the landmark list (WCAG 2.2, 1.3.1) and hide the\n * omission from review.\n *\n * Pair with `Container` for the lateral rhythm:\n *\n * ```tsx\n * <Section id='specimen' labelledBy='specimen-heading' divider>\n *   <Container>\n *     <h2 id='specimen-heading'>Nine weights, one file</h2>\n *   </Container>\n * </Section>\n * ```\n */\nfunction Section({ className, spacing, divider, labelledBy, ref, ...props }: SectionProps) {\n  return (\n    <section\n      ref={ref}\n      data-slot='section'\n      aria-labelledby={labelledBy}\n      className={cn(sectionVariants({ spacing, divider, className }))}\n      {...props}\n    />\n  )\n}\n\nexport { Section, sectionVariants }\nexport type { SectionProps }\n",
+      "type": "registry:ui",
+      "target": "components/section.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "5.1.2"
+  }
+}
