@@ -341,6 +341,16 @@ export const LogoColourways: Story = {
 
       const distinct = new Set(fills)
       const want = expected[colour]
+      // Without this the story can quietly stop testing: an unmapped colour
+      // falls through to the two-tone branch, where both the `reversed` and
+      // `full-colour` assertions are no-ops, so only the weak "has 2 colours"
+      // check runs. The footer count above catches an ADDED footer; this
+      // catches a CHANGED colour, which keeps the count intact.
+      if (!want) {
+        throw new Error(
+          `No expected colourway mapped for color="${colour}" — add it to \`expected\` rather than letting the assertions silently weaken.`,
+        )
+      }
 
       if (want === 'mono') {
         // Mono is one colour throughout — the waratah gives up its red.
@@ -478,6 +488,18 @@ export const NewsletterStates: Story = {
         throw new Error('Expected an email input, a submit button and a live region.')
       }
 
+      // Stand in for the extended form this block invites consumers to build.
+      // Its defaultValue is empty, so `form.reset()` would wipe it on success
+      // — only clearing the email control specifically leaves it alone.
+      const extra = document.createElement('input')
+      extra.type = 'text'
+      extra.name = 'extra'
+      extra.value = 'keep me'
+      // Named: the story runs the a11y checks too, and an unlabelled input is
+      // a violation regardless of it being a test fixture.
+      extra.setAttribute('aria-label', 'Extra control')
+      form.append(extra)
+
       // The live region must already exist while empty — a region mounted at
       // the same moment as its text is not reliably announced.
       if (status.textContent?.trim()) {
@@ -526,13 +548,22 @@ export const NewsletterStates: Story = {
         if (input.value !== '') {
           throw new Error('Expected the field to be cleared after a successful submit.')
         }
+        if (extra.value !== 'keep me') {
+          throw new Error(
+            'A successful submit cleared an unrelated control — clear the email field specifically, not the whole form.',
+          )
+        }
       } else {
         if (!/did not go through/i.test(text)) {
           throw new Error(`Expected a failure message, got "${text}".`)
         }
-        // The address survives a failure the reader did not cause.
+        // The address survives a failure the reader did not cause, and so
+        // does everything else on the form.
         if (input.value !== 'someone@example.com') {
           throw new Error('Expected the address to be preserved after a failure.')
+        }
+        if (extra.value !== 'keep me') {
+          throw new Error('Expected unrelated controls to be untouched after a failure.')
         }
       }
 

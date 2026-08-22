@@ -120,9 +120,19 @@ export function FooterNewsletter({
     try {
       await onSubscribe?.(email)
       setStatus('success')
-      // Clear the field so the confirmation is not sitting under the address
+      // Clear the address so the confirmation is not sitting under the one
       // that produced it, which reads as "not sent yet".
-      form.reset()
+      //
+      // Targeted rather than `form.reset()`. Today this form holds only the
+      // email, so the two are equivalent — but this is a block consumers copy
+      // and extend, and `reset()` restores every control to its DEFAULT rather
+      // than clearing it. On an extended form that would wipe a segmentation
+      // choice and put a consent checkbox back to its default-checked state
+      // after a successful submit, which is worse than leaving it alone.
+      const field = form.elements.namedItem('email')
+      if (field instanceof HTMLInputElement) {
+        field.value = ''
+      }
     } catch {
       // The address is deliberately left in the field — making someone retype
       // it after a failure they did not cause is the wrong side of the
