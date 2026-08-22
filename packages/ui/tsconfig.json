@@ -8,6 +8,11 @@
       "@/*": ["./src/*"],
       "@nswds/ui/components/*": ["./src/components/*.tsx"],
       "@nswds/ui/icons": ["./src/icons/index.ts"],
+      // Hand-authored, so neither matches the generated-module pattern below
+      // (a .ts file, and a subdirectory index). Both are listed ahead of it
+      // because TypeScript prefers the longest literal match.
+      "@nswds/ui/icons/client": ["./src/icons/client.ts"],
+      "@nswds/ui/icons/brands": ["./src/icons/brands/index.tsx"],
       "@nswds/ui/icons/*": ["./src/icons/*.tsx"],
       "@nswds/ui/postcss.config": ["./postcss.config.mjs"],
       "@nswds/ui/*": ["./src/*"]

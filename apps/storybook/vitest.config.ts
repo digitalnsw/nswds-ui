@@ -71,6 +71,7 @@ export default defineConfig({
       '@base-ui/react/preview-card',
       '@base-ui/react/scroll-area',
       '@base-ui/react/separator',
+      '@base-ui/react/slider',
       '@base-ui/react/tooltip',
       '@tabler/icons-react',
       'class-variance-authority',

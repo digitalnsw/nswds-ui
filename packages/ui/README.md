@@ -112,9 +112,44 @@ Passing the component itself (`leadingVisual={IconDownload}`) throws there:
 
 `Button`, `ButtonLink` and `FooterSocialLink` are client components; the icon modules deliberately are not, so they stay server-renderable and a `<IconDownload />` on a server page ships no JavaScript. That means a bare icon function is just a function value, and functions do not serialise across the RSC boundary — an element does. Client components ("use client") can use either form.
 
+When you genuinely need the **component** form on a server page — an icon chosen from a lookup table, a prop typed as `ElementType`, a config object shared between server and client code — import from `@nswds/ui/icons/client`, which re-exports the same set as client references:
+
+```tsx
+// app/page.tsx — a server component, no 'use client'
+import { ButtonLink } from '@nswds/ui'
+import { IconDownload } from '@nswds/ui/icons/client'
+
+export default function Page() {
+  return (
+    <ButtonLink href='/report.pdf' leadingVisual={IconDownload}>
+      Download
+    </ButtonLink>
+  )
+}
+```
+
+That gives up the zero-JavaScript property above — the icon module is sent to the browser — so prefer the element form where it fits.
+
+### Brand icons
+
+The icon set is Material Symbols and contains no third-party brand marks, but `Footer`'s `socialLinks[].icon` needs one per channel. The six the NSW Government uses ship under their own subpath, already client-safe, so either form works from a server component:
+
+```tsx
+import {
+  IconFacebook,
+  IconGitHub,
+  IconInstagram,
+  IconLinkedIn,
+  IconX,
+  IconYouTube,
+} from '@nswds/ui/icons/brands'
+```
+
 ## Components
 
-Badge, Button, ButtonLink, Card, Field, Input, Label, LabeledSeparator, Link, Logo (NSW Government logo), Separator, Spinner — plus the icon set under `@nswds/ui/icons`.
+AspectRatio, Badge, Button, ButtonLink, Callout, Card, Collapsible, Container, DescriptionList, Drawer, ExpandableSearch, Field, Footer, Header, HoverCard, Input, Label, LabeledSeparator, Link, LinkCard, Logo (NSW Government logo), MainNav, Masthead, OnThisPage, Popover, PushMenu, Resizable, ScrollArea, Section, Separator, Sheet, SideNav, SiteSearch, SkipLink, Slider, Spinner, StepIndicator, ThemeSwitcher, Toaster, Tooltip — plus the icon set under `@nswds/ui/icons`.
+
+Hooks: `useChromeHeight`, which measures a sticky header and publishes its height as a CSS custom property, for `scroll-padding-top`, `MainNav`'s `--main-nav-top`, and `OnThisPage`'s scroll-spy offset.
 
 Every interactive component wraps a Base UI primitive, which provides focus management, keyboard navigation, and ARIA semantics. Each component also exports its `cva` variants function (for example `buttonVariants`) so you can extend styling.
 

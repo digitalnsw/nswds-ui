@@ -110,6 +110,10 @@
       "types": "./dist/icons/index.d.ts",
       "import": "./dist/icons/index.js"
     },
+    "./icons/brands": {
+      "types": "./dist/icons/brands/index.d.ts",
+      "import": "./dist/icons/brands/index.js"
+    },
     "./icons/*": {
       "types": "./dist/icons/*.d.ts",
       "import": "./dist/icons/*.js"

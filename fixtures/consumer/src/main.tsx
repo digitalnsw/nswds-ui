@@ -25,6 +25,7 @@ import type {
   BadgeProps,
   ButtonLinkProps,
   ButtonProps,
+  CalloutProps,
   CardActionProps,
   CardContentProps,
   CardDescriptionProps,
@@ -32,6 +33,10 @@ import type {
   CardHeaderProps,
   CardProps,
   CardTitleProps,
+  ContainerProps,
+  DescriptionDetailsProps,
+  DescriptionListProps,
+  DescriptionTermProps,
   ExternalLinkProps,
   FieldContentProps,
   FieldDescriptionProps,
@@ -46,12 +51,18 @@ import type {
   InputProps,
   LabelProps,
   LabeledSeparatorProps,
+  LinkCardProps,
   LinkComponent,
   LinkProps,
   LinkUrlObject,
   LogoProps,
+  OnThisPageItem,
+  OnThisPageProps,
+  SectionProps,
   SeparatorProps,
+  SliderProps,
   SpinnerProps,
+  UseChromeHeightOptions,
 } from '@nswds/ui'
 import {
   AspectRatio,
@@ -60,6 +71,7 @@ import {
   BadgeLink,
   Button,
   ButtonLink,
+  Callout,
   Card,
   CardAction,
   CardContent,
@@ -70,6 +82,10 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+  Container,
+  DescriptionDetails,
+  DescriptionList,
+  DescriptionTerm,
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -92,6 +108,7 @@ import {
   FieldSet,
   FieldTitle,
   Footer,
+  FooterSocialLink,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -99,8 +116,10 @@ import {
   Label,
   LabeledSeparator,
   Link,
+  LinkCard,
   LinkProvider,
   Logo,
+  OnThisPage,
   Popover,
   PopoverContent,
   PopoverDescription,
@@ -112,6 +131,7 @@ import {
   ResizablePanelGroup,
   ScrollArea,
   ScrollBar,
+  Section,
   Separator,
   Sheet,
   SheetClose,
@@ -121,6 +141,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  Slider,
+  SliderControl,
+  SliderIndicator,
+  SliderLabel,
+  SliderRoot,
+  SliderThumb,
+  SliderTrack,
+  SliderValue,
   Spinner,
   Toaster,
   Tooltip,
@@ -130,11 +158,21 @@ import {
   TouchTarget,
   badgeVariants,
   buttonVariants,
+  calloutVariants,
   cn,
+  containerVariants,
+  descriptionListVariants,
   linkVariants,
+  sectionVariants,
+  useChromeHeight,
 } from '@nswds/ui'
 import { IconSearch } from '@nswds/ui/icons'
 import { IconAdd } from '@nswds/ui/icons/add'
+// The client-reference entry points. Both exist so an icon can be passed as a
+// PROP from a server component; importing them here proves the subpaths
+// resolve and are typed for a cold-installed consumer.
+import { IconLinkedIn } from '@nswds/ui/icons/brands'
+import { IconDownload } from '@nswds/ui/icons/client'
 import { useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 
@@ -172,6 +210,17 @@ type PublicPropTypes = [
   LogoProps,
   SeparatorProps,
   SpinnerProps,
+  ContainerProps,
+  SectionProps,
+  CalloutProps,
+  DescriptionListProps,
+  DescriptionTermProps,
+  DescriptionDetailsProps,
+  LinkCardProps,
+  OnThisPageProps,
+  OnThisPageItem,
+  SliderProps,
+  UseChromeHeightOptions,
 ]
 // Reference the tuple so it isn't elided, without emitting runtime code.
 export type __AssertPublicPropTypes = PublicPropTypes
@@ -182,12 +231,21 @@ const _classNames: string = cn(
   buttonVariants({ variant: 'solid', color: 'primary', size: 'default' }),
   badgeVariants({ variant: 'soft', color: 'primary', size: 'default' }),
   linkVariants({ variant: 'primary' }),
+  containerVariants({ size: 'contained' }),
+  sectionVariants({ spacing: 'tight', divider: true }),
+  calloutVariants({ status: 'warning' }),
+  descriptionListVariants({ layout: 'columns' }),
 )
 
 // `href` accepts a string or a url-object shape (LinkUrlObject), not arbitrary
 // objects — exercise both forms.
 const stringHref: ButtonLinkProps['href'] = '/docs'
 const objectHref: LinkUrlObject = { pathname: '/search', query: { q: 'nsw' } }
+
+const onThisPageItems: OnThisPageItem[] = [
+  { id: 'specimen', title: 'Specimen' },
+  { id: 'download', title: 'Download' },
+]
 
 function App() {
   // React 19 ref-as-prop: each component must accept a correctly-typed ref to
@@ -197,6 +255,11 @@ function App() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const buttonProps: ButtonProps = { color: 'primary', size: 'default' }
+
+  // Hooks are public API too. The returned ref must be assignable to the
+  // element it is attached to, and `height` must be a number.
+  const chrome = useChromeHeight<HTMLDivElement>({ property: '--fixture-chrome-height' })
+  const chromeOffset: number = chrome.height
 
   return (
     <main className={cn('space-y-6 p-8')}>
@@ -209,6 +272,7 @@ function App() {
         Search
       </Button>
       <Button leadingVisual={IconAdd}>Add</Button>
+      <Button leadingVisual={IconDownload}>Download</Button>
       <ButtonLink href={stringHref} variant='outline' ref={linkRef}>
         Documentation
       </ButtonLink>
@@ -262,6 +326,65 @@ function App() {
         <Link href={objectHref}>Search</Link>
       </LinkProvider>
       <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
+
+      {/* Page composition: chrome measurement feeding the in-page nav's spy
+          line, then the layout primitives around real content. */}
+      <div ref={chrome.ref}>
+        <OnThisPage
+          items={onThisPageItems}
+          orientation='horizontal'
+          offset={chromeOffset}
+          onActiveChange={(id: string | null) => id}
+        />
+      </div>
+
+      <Section spacing='tight' divider labelledBy='fixture-heading'>
+        <Container size='contained'>
+          <h2 id='fixture-heading'>Specimen</h2>
+
+          <Callout status='info' title='Not seeing it in the font menu?'>
+            Quit the application completely and reopen it.
+          </Callout>
+
+          <DescriptionList layout='inline'>
+            <div>
+              <DescriptionTerm>Version</DescriptionTerm>
+              <DescriptionDetails>2.001</DescriptionDetails>
+            </div>
+          </DescriptionList>
+
+          <LinkCard
+            href='https://public-sans.digital.gov/'
+            external
+            label='Upstream'
+            title='Public Sans project site'
+            description='The full character set.'
+          />
+
+          {/* Composed form, then the same control built from its parts — both
+              are public API and the generic parameter must flow through both. */}
+          <Slider label='Size' defaultValue={56} min={16} max={140} suffix='px' />
+          <SliderRoot defaultValue={40} aria-label='Built from parts'>
+            <SliderLabel>Weight</SliderLabel>
+            <SliderValue />
+            <SliderControl>
+              <SliderTrack>
+                <SliderIndicator />
+                <SliderThumb />
+              </SliderTrack>
+            </SliderControl>
+          </SliderRoot>
+        </Container>
+      </Section>
+
+      {/* Brand marks: the Material Symbols set has none, so they ship from
+          their own subpath. Exercised as a PROP, which is the case that needs
+          them to be client references. */}
+      <FooterSocialLink
+        href='https://www.linkedin.com'
+        label='Follow us on LinkedIn'
+        icon={IconLinkedIn}
+      />
 
       {/* Touch target + spinner + logo */}
       <Button size='icon' aria-label='Search'>

@@ -304,6 +304,11 @@
           "target": "icons/arrow-forward.tsx"
         },
         {
+          "path": "src/icons/arrow-outward.tsx",
+          "type": "registry:ui",
+          "target": "icons/arrow-outward.tsx"
+        },
+        {
           "path": "src/icons/call.tsx",
           "type": "registry:ui",
           "target": "icons/call.tsx"
@@ -1080,6 +1085,223 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "container",
+      "type": "registry:ui",
+      "title": "Container",
+      "description": "Page-width column carrying the same lateral rhythm the Masthead, Header, MainNav and Footer apply to their own inner wrappers.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/container.tsx",
+          "type": "registry:ui",
+          "target": "components/container.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "section",
+      "type": "registry:ui",
+      "title": "Section",
+      "description": "Top-level page section with the house vertical rhythm, an optional divider, and the aria-labelledby wiring that makes it a named region landmark.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/section.tsx",
+          "type": "registry:ui",
+          "target": "components/section.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "callout",
+      "type": "registry:ui",
+      "title": "Callout",
+      "description": "Bordered notice marking page content as informational, confirming, cautionary or dangerous, using the NSW semantic role tokens.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/callout.tsx",
+          "type": "registry:ui",
+          "target": "components/callout.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "description-list",
+      "type": "registry:ui",
+      "title": "Description List",
+      "description": "Term and detail pairs in stacked, two-column or inline layouts, for metadata strips and summary rows.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/description-list.tsx",
+          "type": "registry:ui",
+          "target": "components/description-list.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "link-card",
+      "type": "registry:ui",
+      "title": "Link Card",
+      "description": "A card whose entire surface is a single link, with one tab stop and one accessible name.",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/card.json",
+        "https://ui.digital.nsw.gov.au/registry/r/link.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/link-card.tsx",
+          "type": "registry:ui",
+          "target": "components/link-card.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "on-this-page",
+      "type": "registry:ui",
+      "title": "On This Page",
+      "description": "In-page anchor navigation that tracks which section the reader has reached and marks it aria-current=\"location\".",
+      "dependencies": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/on-this-page.tsx",
+          "type": "registry:ui",
+          "target": "components/on-this-page.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "slider",
+      "type": "registry:ui",
+      "title": "Slider",
+      "description": "A slider for choosing a number from a range, built on the Base UI Slider primitive, with a label and live value readout.",
+      "dependencies": [
+        "@base-ui/react",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/slider.tsx",
+          "type": "registry:ui",
+          "target": "components/slider.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "use-chrome-height",
+      "type": "registry:hook",
+      "title": "Use Chrome Height",
+      "description": "Measures a sticky chrome element and publishes its height as a CSS custom property, keeping it current as the element resizes.",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "src/hooks/use-chrome-height.ts",
+          "type": "registry:hook",
+          "target": "hooks/use-chrome-height.ts"
+        }
+      ]
+    },
+    {
+      "name": "icon-brands",
+      "type": "registry:ui",
+      "title": "Brand Icons",
+      "description": "Third-party brand marks (Facebook, X, YouTube, LinkedIn, Instagram, GitHub) for the footer social row, which the Material Symbols set does not include.",
+      "dependencies": [],
+      "files": [
+        {
+          "path": "src/icons/types.ts",
+          "type": "registry:ui",
+          "target": "icons/types.ts"
+        },
+        {
+          "path": "src/icons/brands/index.tsx",
+          "type": "registry:ui",
+          "target": "icons/brands/index.tsx"
         }
       ]
     },

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "container",
+  "title": "Container",
+  "description": "Page-width column carrying the same lateral rhythm the Masthead, Header, MainNav and Footer apply to their own inner wrappers.",
+  "dependencies": [
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/container.tsx",
+      "content": "import type * as React from 'react'\n\nimport { cva, type VariantProps } from 'class-variance-authority'\n\nimport { cn } from '@/lib/utils'\n\n/**\n * The page-width column, carrying the same lateral rhythm the chrome\n * components apply to their own inner wrappers.\n *\n * `Masthead`, `Header`, `MainNav` and `Footer` each declare a private\n * `*ContainerVariants` with an identical `16px → 24px → 48px` padding ramp\n * funnelled through a `--<name>-padding-x` custom property. Nothing exposed\n * that rhythm to page CONTENT, so every consuming app retyped it — and any\n * app that retyped it slightly differently got content that failed to line up\n * with the header above it at one breakpoint but not the others, which is the\n * hardest kind of misalignment to notice in review.\n *\n * The variant names (`fluid` / `contained`) and the `--container-max-width`\n * escape hatch deliberately mirror the chrome's vocabulary, so a shell that\n * themes its `Header` writes the same word here.\n */\nconst containerVariants = cva(\n  [\n    'mx-auto w-full',\n    // Lateral padding funnels through --container-padding-x so an app can\n    // retune it once (via the `style` prop or a utility class) without a new\n    // variant. Same mechanism, and the same 16px → 24px → 48px rhythm, as\n    // Masthead, Header, MainNav and Footer.\n    'px-(--container-padding-x)',\n    '[--container-padding-x:--spacing(4)] sm:[--container-padding-x:--spacing(6)] lg:[--container-padding-x:--spacing(12)]',\n  ],\n  {\n    variants: {\n      size: {\n        // Full-bleed. Matches the chrome components' own default, so page\n        // content and the header line up without either side being\n        // reconfigured — the case that has to be right by default.\n        // --container-max-width is still read so a shell app can constrain the\n        // column without switching variants.\n        fluid: 'max-w-[var(--container-max-width,none)]',\n        // Centred content column, legacy nsw-container parity (1200px). The\n        // counterpart to the chrome's `container=\"contained\"`.\n        contained: 'max-w-[var(--container-max-width,75rem)]',\n        // A wider editorial column for landing and specimen pages that want\n        // more than 1200px without going full-bleed.\n        wide: 'max-w-[var(--container-max-width,90rem)]',\n        // Reading measure — roughly 65–75 characters at the body size, for\n        // long-form prose that should not span a full-width page.\n        narrow: 'max-w-[var(--container-max-width,45rem)]',\n      },\n    },\n    defaultVariants: {\n      size: 'fluid',\n    },\n  },\n)\n\ntype ContainerProps = React.ComponentPropsWithoutRef<'div'> &\n  VariantProps<typeof containerVariants> & {\n    ref?: React.Ref<HTMLDivElement>\n  }\n\n/**\n * Width-constraining page column with the NSW lateral rhythm.\n *\n * Purely presentational — it renders a `<div>` and adds no semantics, so it\n * can sit inside any landmark without affecting the document outline. Pair it\n * with `Section` for vertical rhythm.\n */\nfunction Container({ className, size, ref, ...props }: ContainerProps) {\n  return (\n    <div\n      ref={ref}\n      data-slot='container'\n      className={cn(containerVariants({ size, className }))}\n      {...props}\n    />\n  )\n}\n\nexport { Container, containerVariants }\nexport type { ContainerProps }\n",
+      "type": "registry:ui",
+      "target": "components/container.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "5.1.2"
+  }
+}

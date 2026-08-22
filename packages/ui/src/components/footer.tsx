@@ -226,14 +226,18 @@ type FooterSocialLinkItem = {
   href: string
   /**
    * Icon for the channel — the component (`IconLinkedIn`) or an element
-   * (`<IconLinkedIn />`). Brand marks (LinkedIn, X, Facebook…) are not part of
-   * the NSWDS icon set — which is Material Symbols — so the mark is supplied by
-   * the consuming app. It is rendered through `ButtonLink`'s `leadingVisual`
-   * slot, which sizes and colours it.
+   * (`<IconLinkedIn />`). Rendered through `ButtonLink`'s `leadingVisual` slot,
+   * which sizes and colours it.
+   *
+   * Brand marks are not in the NSWDS icon set — which is Material Symbols — but
+   * the six the NSW Government uses ship in the package's own `icons/brands`
+   * subpath, already client-safe. (Registry consumers copy source, so they get
+   * them from the `icon-brands` registry item instead; see the README.)
    *
    * `Footer` is server-compatible but `ButtonLink` is not, so a React Server
-   * Component assembling `socialLinks` must use the element form; the component
-   * form cannot cross the RSC boundary. See `IconSlot`.
+   * Component assembling `socialLinks` from its OWN plain icon modules must use
+   * the element form — a bare function cannot cross the RSC boundary. The marks
+   * above are client references, so either form works for them. See `IconSlot`.
    */
   icon: IconSlot
   /**
