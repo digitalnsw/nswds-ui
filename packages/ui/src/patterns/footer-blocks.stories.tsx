@@ -377,6 +377,85 @@ export const LogoColourways: Story = {
  * The subscription form reports what happened. Submitting used to call
  * `onSubscribe` and change nothing on screen.
  */
+/**
+ * A submit that lands while one is already in flight is dropped.
+ *
+ * The disabled submit button already covers the keyboard route — Enter while
+ * pending fires no second call, because implicit submission runs the default
+ * button's activation behaviour and a disabled button has none. It does not
+ * cover `form.requestSubmit()`, which ignores the button entirely; without the
+ * guard in `handleSubmit` that starts a second overlapping `onSubscribe`.
+ */
+export const NewsletterReentrancy: Story = {
+  name: 'Newsletter — concurrent submits',
+  render: () => {
+    let calls = 0
+    return (
+      <div
+        data-calls-probe=''
+        ref={(node) => {
+          if (node) {
+            ;(node as HTMLElement & { __calls?: () => number }).__calls = () => calls
+          }
+        }}
+      >
+        <FooterNewsletter
+          {...shared}
+          onSubscribe={() => {
+            calls += 1
+            return new Promise<void>((resolve) => {
+              setTimeout(resolve, 400)
+            })
+          }}
+        />
+      </div>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const probe = canvasElement.querySelector('[data-calls-probe]') as HTMLElement & {
+      __calls: () => number
+    }
+    const form = canvasElement.querySelector('form')
+    const input = canvasElement.querySelector<HTMLInputElement>('input[name="email"]')
+    const button = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
+    if (!probe || !form || !input || !button) {
+      throw new Error('Expected the newsletter form, its email input and its submit button.')
+    }
+
+    input.value = 'someone@example.com'
+    button.click()
+
+    await waitFor(() => probe.__calls() === 1, 'Expected the first submit to reach onSubscribe.')
+    if (!button.disabled) {
+      throw new Error('Expected the submit button to be disabled while the attempt is pending.')
+    }
+
+    // The route the disabled button cannot block.
+    form.requestSubmit()
+    form.requestSubmit()
+
+    // Give any second call a chance to land before asserting it did not.
+    await waitFor(() => probe.__calls() > 1, 'settle', 150).then(
+      () => {
+        throw new Error(
+          `Expected concurrent submits to be dropped, but onSubscribe ran ${probe.__calls()} times.`,
+        )
+      },
+      () => undefined,
+    )
+
+    // And the form recovers: once the attempt settles, a new submit works.
+    await waitFor(
+      () => !button.disabled,
+      'Expected the form to accept submissions again once the attempt settled.',
+      2000,
+    )
+    input.value = 'another@example.com'
+    button.click()
+    await waitFor(() => probe.__calls() === 2, 'Expected a later submit to be accepted.')
+  },
+}
+
 export const NewsletterStates: Story = {
   name: 'Newsletter — success and failure',
   render: () => (

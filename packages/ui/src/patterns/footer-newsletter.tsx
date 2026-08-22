@@ -74,10 +74,31 @@ export function FooterNewsletter({
 }: FooterNewsletterProps) {
   const [status, setStatus] = React.useState<SubscribeStatus>('idle')
 
+  // Re-entrancy guard. A ref rather than a `status` check because it is written
+  // and read synchronously: two submits dispatched in the same tick both close
+  // over the status from the render that attached the handler, so a state read
+  // cannot see the first one land.
+  //
+  // The disabled submit button already blocks the keyboard route — measured,
+  // Enter while pending fires no second call, because implicit submission runs
+  // the default button's activation behaviour and a disabled button has none.
+  // `form.requestSubmit()` ignores the button entirely and did start a second
+  // overlapping call. That route matters here: this is a registry block that
+  // consumers copy and add their own controls to, so the invariant belongs in
+  // the handler rather than in one particular button's disabled state.
+  const pendingRef = React.useRef(false)
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    // Captured BEFORE the await: React nulls `currentTarget` once the handler
-    // returns, so reading it afterwards would throw.
+    if (pendingRef.current) {
+      return
+    }
+    // Captured BEFORE the await. React's dispatch loop assigns
+    // `event.currentTarget` for the listener and clears it the moment the
+    // listener returns — and an async function returns at its first `await`,
+    // so by the time the promise settles it is already null. This is that
+    // per-dispatch cleanup, not the SyntheticEvent pooling React removed in
+    // v17; pooling is gone, but the currentTarget reset is not.
     const form = event.currentTarget
     const email = new FormData(form).get('email')
     if (typeof email !== 'string') {
@@ -94,6 +115,7 @@ export function FooterNewsletter({
         '[nswds/ui] FooterNewsletter has no `onSubscribe` handler — the form reports success without sending anything. Wire it to your subscription service.',
       )
     }
+    pendingRef.current = true
     setStatus('pending')
     try {
       await onSubscribe?.(email)
@@ -106,6 +128,10 @@ export function FooterNewsletter({
       // it after a failure they did not cause is the wrong side of the
       // goodwill ledger.
       setStatus('error')
+    } finally {
+      // Both paths: a rejection that left this set would wedge the form for
+      // the rest of the session.
+      pendingRef.current = false
     }
   }
 
