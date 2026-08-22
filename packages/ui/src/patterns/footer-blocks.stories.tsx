@@ -487,6 +487,27 @@ export const NewsletterStates: Story = {
         throw new Error('Expected a polite live region.')
       }
 
+      // Staying mounted must not cost layout. The Field is `flex-col gap-2`,
+      // so an always-present child adds 8px of dead trailing space unless the
+      // gap is cancelled while it is empty. Measured rather than asserted on a
+      // class name, because the safe fix (a negative margin) and the unsafe one
+      // (`empty:hidden`, which removes the region from the accessibility tree)
+      // both make the space go away — only one keeps the region announceable.
+      const description = form.querySelector<HTMLElement>('[data-slot="field-description"]')
+      if (description) {
+        const gap = status.getBoundingClientRect().top - description.getBoundingClientRect().bottom
+        if (gap > 0.5) {
+          throw new Error(
+            `The empty live region adds ${gap.toFixed(1)}px of dead space above it — cancel the Field gap while it is empty.`,
+          )
+        }
+      }
+      if (getComputedStyle(status).display === 'none') {
+        throw new Error(
+          'The live region must stay displayed while empty — display:none removes it from the accessibility tree, and a region that re-enters the tree with its text is not reliably announced.',
+        )
+      }
+
       // The form reads FormData off the DOM, so setting value directly is
       // enough — no React state to sync.
       input.value = 'someone@example.com'

@@ -188,7 +188,18 @@ export function FooterNewsletter({
                 `primary-800` or `accent-800` would be the low-contrast trap the
                 FieldDescription note above avoids. Weight and wording carry the
                 distinction visually; the live region carries it for AT. */}
-            <p role='status' aria-live='polite' className='text-sm font-bold text-(--footer-ink)'>
+            {/* empty:-mt-2 cancels the Field's own gap-2 while there is
+                nothing to announce, so the idle form does not carry 8px of
+                dead trailing space. NOT `empty:hidden`: display:none takes the
+                element out of the accessibility tree, and a live region that
+                re-enters the tree together with its text is the unreliable
+                case this arrangement exists to avoid. Negative margin keeps it
+                rendered and announceable while occupying nothing. */}
+            <p
+              role='status'
+              aria-live='polite'
+              className='text-sm font-bold text-(--footer-ink) empty:-mt-2'
+            >
               {status === 'success'
                 ? 'Thanks — check your inbox to confirm your subscription.'
                 : status === 'error'
