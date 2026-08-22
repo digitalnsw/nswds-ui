@@ -438,13 +438,13 @@ function App() {
   const [theme, setTheme] = useState<ThemeSwitcherTheme>('light')
 
   return (
-    <main className={cn('space-y-6 p-8')}>
-      {/* Variant helpers are public API; render their output so the calls above
-          stay referenced and their signatures are checked. */}
-      <span hidden className={_classNames} />
-
-      {/* Site chrome — the banner landmark, its brand lockup and the trailing
-          control cluster that owns search and theme switching. */}
+    <>
+      {/* Site chrome. Header and MainNav sit OUTSIDE <main>: a native
+          `<header>` only maps to the banner landmark when it is not inside
+          main/article/aside/nav/section (HTML-AAM), which is the rule
+          header.tsx documents. Footer is after </main> for the same reason —
+          `<footer>` in <main> is sectionfooter, not contentinfo. The in-page
+          navs stay inside: `<nav>` carries its landmark wherever it sits. */}
       <Header color={headerColor} container='contained' sticky={false} border shadow={false}>
         <HeaderBrand sitename='Consumer fixture' version='0.0.0' versionLabel='Version' />
         <HeaderActions>
@@ -472,277 +472,283 @@ function App() {
         sticky={false}
       />
 
-      {/* Buttons */}
-      <Button {...buttonProps} ref={buttonRef} leadingVisual={IconSearch}>
-        Search
-      </Button>
-      <Button leadingVisual={IconAdd}>Add</Button>
-      <Button leadingVisual={IconDownload}>Download</Button>
-      <ButtonLink href={stringHref} variant='outline' ref={linkRef}>
-        Documentation
-      </ButtonLink>
+      <main className={cn('space-y-6 p-8')}>
+        {/* Variant helpers are public API; render their output so the calls above
+            stay referenced and their signatures are checked. */}
+        <span hidden className={_classNames} />
 
-      {/* Badges */}
-      <Badge color='primary'>New</Badge>
-      <BadgeButton color='primary'>Filter</BadgeButton>
-      <BadgeLink href='/tag/news' color='primary'>
-        News
-      </BadgeLink>
+        {/* Buttons */}
+        <Button {...buttonProps} ref={buttonRef} leadingVisual={IconSearch}>
+          Search
+        </Button>
+        <Button leadingVisual={IconAdd}>Add</Button>
+        <Button leadingVisual={IconDownload}>Download</Button>
+        <ButtonLink href={stringHref} variant='outline' ref={linkRef}>
+          Documentation
+        </ButtonLink>
 
-      {/* Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Card title</CardTitle>
-          <CardDescription>Card description</CardDescription>
-          <CardAction>
-            <Button size='sm'>Action</Button>
-          </CardAction>
-        </CardHeader>
-        <CardContent>Body content</CardContent>
-        <CardFooter>Footer</CardFooter>
-      </Card>
+        {/* Badges */}
+        <Badge color='primary'>New</Badge>
+        <BadgeButton color='primary'>Filter</BadgeButton>
+        <BadgeLink href='/tag/news' color='primary'>
+          News
+        </BadgeLink>
 
-      {/* Form field composition */}
-      <FieldSet>
-        <FieldLegend>Contact</FieldLegend>
-        <FieldGroup>
-          <Field>
-            <FieldLabel>Email</FieldLabel>
-            <Input ref={inputRef} type='email' aria-label='Email' />
-            <FieldDescription>We&apos;ll only use this to reply.</FieldDescription>
-            <FieldError>Enter a valid email.</FieldError>
-          </Field>
-          <FieldSeparator />
-          <Field orientation='horizontal'>
-            <FieldContent>
-              <FieldTitle>Notifications</FieldTitle>
-            </FieldContent>
-          </Field>
-        </FieldGroup>
-      </FieldSet>
+        {/* Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Card title</CardTitle>
+            <CardDescription>Card description</CardDescription>
+            <CardAction>
+              <Button size='sm'>Action</Button>
+            </CardAction>
+          </CardHeader>
+          <CardContent>Body content</CardContent>
+          <CardFooter>Footer</CardFooter>
+        </Card>
 
-      {/* Label + separators */}
-      <Label>Standalone label</Label>
-      <LabeledSeparator>or</LabeledSeparator>
-      <Separator />
+        {/* Form field composition */}
+        <FieldSet>
+          <FieldLegend>Contact</FieldLegend>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Email</FieldLabel>
+              <Input ref={inputRef} type='email' aria-label='Email' />
+              <FieldDescription>We&apos;ll only use this to reply.</FieldDescription>
+              <FieldError>Enter a valid email.</FieldError>
+            </Field>
+            <FieldSeparator />
+            <Field orientation='horizontal'>
+              <FieldContent>
+                <FieldTitle>Notifications</FieldTitle>
+              </FieldContent>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
 
-      {/* Links */}
-      <LinkProvider component={'a' satisfies LinkComponent}>
-        <Link href={objectHref}>Search</Link>
-      </LinkProvider>
-      <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
+        {/* Label + separators */}
+        <Label>Standalone label</Label>
+        <LabeledSeparator>or</LabeledSeparator>
+        <Separator />
 
-      {/* Page composition: chrome measurement feeding the in-page nav's spy
-          line, then the layout primitives around real content. */}
-      <div ref={chromeRef}>
-        <OnThisPage
-          items={onThisPageItems}
-          orientation='horizontal'
-          offset={chromeOffset}
-          onActiveChange={(id: string | null) => id}
-        />
-      </div>
+        {/* Links */}
+        <LinkProvider component={'a' satisfies LinkComponent}>
+          <Link href={objectHref}>Search</Link>
+        </LinkProvider>
+        <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
 
-      <Section spacing='tight' divider labelledBy='fixture-heading'>
-        <Container size='contained'>
-          <h2 id='fixture-heading'>Specimen</h2>
-
-          <Callout status='info' title='Not seeing it in the font menu?'>
-            Quit the application completely and reopen it.
-          </Callout>
-
-          <DescriptionList layout='inline'>
-            <div>
-              <DescriptionTerm>Version</DescriptionTerm>
-              <DescriptionDetails>2.001</DescriptionDetails>
-            </div>
-          </DescriptionList>
-
-          <LinkCard
-            href='https://public-sans.digital.gov/'
-            external
-            label='Upstream'
-            title='Public Sans project site'
-            description='The full character set.'
+        {/* Page composition: chrome measurement feeding the in-page nav's spy
+            line, then the layout primitives around real content. */}
+        <div ref={chromeRef}>
+          <OnThisPage
+            items={onThisPageItems}
+            orientation='horizontal'
+            offset={chromeOffset}
+            onActiveChange={(id: string | null) => id}
           />
-
-          {/* Composed form, then the same control built from its parts — both
-              are public API and the generic parameter must flow through both. */}
-          <Slider label='Size' defaultValue={56} min={16} max={140} suffix='px' />
-          <SliderRoot defaultValue={40} aria-label='Built from parts'>
-            <SliderLabel>Weight</SliderLabel>
-            <SliderValue />
-            <SliderControl>
-              <SliderTrack>
-                <SliderIndicator />
-                <SliderThumb />
-              </SliderTrack>
-            </SliderControl>
-          </SliderRoot>
-        </Container>
-      </Section>
-
-      {/* Brand marks: the Material Symbols set has none, so they ship from
-          their own subpath. Exercised as a PROP, which is the case that needs
-          them to be client references. */}
-      <FooterSocialLink
-        href='https://www.linkedin.com'
-        label='Follow us on LinkedIn'
-        icon={IconLinkedIn}
-      />
-
-      {/* Touch target + spinner + logo */}
-      <Button size='icon' aria-label='Search'>
-        <TouchTarget>
-          <IconSearch />
-        </TouchTarget>
-      </Button>
-      <Spinner aria-label='Loading fixture' />
-      <Logo logoType='default' />
-
-      {/* Aspect ratio */}
-      <AspectRatio ratio={16 / 9}>
-        <div className='bg-muted' />
-      </AspectRatio>
-
-      {/* Collapsible */}
-      <Collapsible>
-        <CollapsibleTrigger>Toggle details</CollapsibleTrigger>
-        <CollapsibleContent>Collapsible content</CollapsibleContent>
-      </Collapsible>
-
-      {/* Popover */}
-      <Popover>
-        <PopoverTrigger>Open popover</PopoverTrigger>
-        <PopoverContent>
-          <PopoverHeader>
-            <PopoverTitle>Popover title</PopoverTitle>
-            <PopoverDescription>Popover description</PopoverDescription>
-          </PopoverHeader>
-        </PopoverContent>
-      </Popover>
-
-      {/* Hover card */}
-      <HoverCard>
-        <HoverCardTrigger>Hover me</HoverCardTrigger>
-        <HoverCardContent>Hover card content</HoverCardContent>
-      </HoverCard>
-
-      {/* Tooltip */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger>Hover me</TooltipTrigger>
-          <TooltipContent>Tooltip label</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Sheet */}
-      <Sheet>
-        <SheetTrigger>Open sheet</SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Sheet title</SheetTitle>
-            <SheetDescription>Sheet description</SheetDescription>
-          </SheetHeader>
-          <SheetFooter>
-            <SheetClose>Close</SheetClose>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-
-      {/* Drawer — DrawerContent renders its own Portal + Overlay, so it is
-          composed directly (no outer portal). */}
-      <Drawer>
-        <DrawerTrigger>Open drawer</DrawerTrigger>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Drawer title</DrawerTitle>
-            <DrawerDescription>Drawer description</DrawerDescription>
-          </DrawerHeader>
-          <DrawerFooter>
-            <DrawerClose>Close</DrawerClose>
-          </DrawerFooter>
-        </DrawerContent>
-      </Drawer>
-
-      {/* DrawerPortal + DrawerOverlay are exported for manual composition;
-          exercised standalone here so the type contract still covers them. */}
-      <Drawer>
-        <DrawerTrigger>Open (manual portal)</DrawerTrigger>
-        <DrawerPortal>
-          <DrawerOverlay />
-        </DrawerPortal>
-      </Drawer>
-
-      {/* Resizable */}
-      <ResizablePanelGroup orientation='horizontal'>
-        <ResizablePanel>One</ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel>Two</ResizablePanel>
-      </ResizablePanelGroup>
-
-      {/* Scroll area — ScrollBar is a standalone export */}
-      <ScrollArea>
-        <p>Scrollable content</p>
-        <ScrollBar orientation='horizontal' />
-      </ScrollArea>
-
-      {/* Sonner toaster */}
-      <Toaster />
-
-      {/* Section navigation, journey progress and the mobile drill-down. Each
-          takes its tree/list from the module-scope arrays above. */}
-      <SideNav
-        sections={sideNavSections}
-        currentHref='/docs/theming/tokens'
-        headingLevel={3}
-        onNavigate={(event) => event.currentTarget.href}
-      />
-
-      <StepIndicator
-        steps={journeySteps}
-        currentHref='/apply/documents'
-        statusLabels={stepStatusLabels}
-      />
-
-      <StepNav
-        sections={stepNavSections}
-        currentHref='/apply/documents'
-        statusLabels={stepStatusLabels}
-        headingLevel={3}
-      />
-
-      <PushMenu
-        navigation={pushMenuNavigation}
-        currentHref='/services/support'
-        title='Menu'
-        durationMs={pushMenuDuration}
-        onItemClick={(item: PushMenuItem) => item.id}
-        onNavigate={(level: PushMenuLevel, history: PushMenuLevel[]) => history.indexOf(level)}
-      />
-      {/* PushMenu draws its own trail; this renders the exported helper's
-          output so the call above cannot be elided. */}
-      <p hidden>{pushMenuBreadcrumb}</p>
-
-      {/* The consumer's OWN markup. Every class here is a bare utility that
-          Footer's rows also depend on at some breakpoint, so the app's Tailwind
-          build emits its own copy of each into the second half of the
-          stylesheet — after ours, where it can outrank a responsive rule of
-          ours that carries no extra specificity. Keeping them here is what
-          makes the fixture's cascade assertion meaningful. */}
-      <section className='flex flex-col justify-center gap-3 py-6 text-center text-base'>
-        <p className='mt-2 px-4 text-lg'>Consumer-owned markup</p>
-        <div className='grid grid-cols-1 gap-8 pb-4'>
-          <span className='flex h-10 flex-row items-center gap-2 border-b py-3'>Row</span>
         </div>
-        {/* `justify-evenly` is the marker the fixture script uses to prove this
-            Tailwind build actually ran. It has to be a class @nswds/ui never
-            emits — every class above is one the package emits too, so none of
-            them can tell the two halves apart. The script re-checks that
-            against the installed stylesheet on every run, so the marker cannot
-            quietly stop being app-only. */}
-        <div className='flex justify-evenly'>Marker</div>
-      </section>
+
+        <Section spacing='tight' divider labelledBy='fixture-heading'>
+          <Container size='contained'>
+            <h2 id='fixture-heading'>Specimen</h2>
+
+            <Callout status='info' title='Not seeing it in the font menu?'>
+              Quit the application completely and reopen it.
+            </Callout>
+
+            <DescriptionList layout='inline'>
+              <div>
+                <DescriptionTerm>Version</DescriptionTerm>
+                <DescriptionDetails>2.001</DescriptionDetails>
+              </div>
+            </DescriptionList>
+
+            <LinkCard
+              href='https://public-sans.digital.gov/'
+              external
+              label='Upstream'
+              title='Public Sans project site'
+              description='The full character set.'
+            />
+
+            {/* Composed form, then the same control built from its parts — both
+                are public API and the generic parameter must flow through both. */}
+            <Slider label='Size' defaultValue={56} min={16} max={140} suffix='px' />
+            <SliderRoot defaultValue={40} aria-label='Built from parts'>
+              <SliderLabel>Weight</SliderLabel>
+              <SliderValue />
+              <SliderControl>
+                <SliderTrack>
+                  <SliderIndicator />
+                  <SliderThumb />
+                </SliderTrack>
+              </SliderControl>
+            </SliderRoot>
+          </Container>
+        </Section>
+
+        {/* Brand marks: the Material Symbols set has none, so they ship from
+            their own subpath. Exercised as a PROP, which is the case that needs
+            them to be client references. */}
+        <FooterSocialLink
+          href='https://www.linkedin.com'
+          label='Follow us on LinkedIn'
+          icon={IconLinkedIn}
+        />
+
+        {/* Touch target + spinner + logo */}
+        <Button size='icon' aria-label='Search'>
+          <TouchTarget>
+            <IconSearch />
+          </TouchTarget>
+        </Button>
+        <Spinner aria-label='Loading fixture' />
+        <Logo logoType='default' />
+
+        {/* Aspect ratio */}
+        <AspectRatio ratio={16 / 9}>
+          <div className='bg-muted' />
+        </AspectRatio>
+
+        {/* Collapsible */}
+        <Collapsible>
+          <CollapsibleTrigger>Toggle details</CollapsibleTrigger>
+          <CollapsibleContent>Collapsible content</CollapsibleContent>
+        </Collapsible>
+
+        {/* Popover */}
+        <Popover>
+          <PopoverTrigger>Open popover</PopoverTrigger>
+          <PopoverContent>
+            <PopoverHeader>
+              <PopoverTitle>Popover title</PopoverTitle>
+              <PopoverDescription>Popover description</PopoverDescription>
+            </PopoverHeader>
+          </PopoverContent>
+        </Popover>
+
+        {/* Hover card */}
+        <HoverCard>
+          <HoverCardTrigger>Hover me</HoverCardTrigger>
+          <HoverCardContent>Hover card content</HoverCardContent>
+        </HoverCard>
+
+        {/* Tooltip */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>Hover me</TooltipTrigger>
+            <TooltipContent>Tooltip label</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Sheet */}
+        <Sheet>
+          <SheetTrigger>Open sheet</SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Sheet title</SheetTitle>
+              <SheetDescription>Sheet description</SheetDescription>
+            </SheetHeader>
+            <SheetFooter>
+              <SheetClose>Close</SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+
+        {/* Drawer — DrawerContent renders its own Portal + Overlay, so it is
+            composed directly (no outer portal). */}
+        <Drawer>
+          <DrawerTrigger>Open drawer</DrawerTrigger>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Drawer title</DrawerTitle>
+              <DrawerDescription>Drawer description</DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter>
+              <DrawerClose>Close</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
+
+        {/* DrawerPortal + DrawerOverlay are exported for manual composition;
+            exercised standalone here so the type contract still covers them. */}
+        <Drawer>
+          <DrawerTrigger>Open (manual portal)</DrawerTrigger>
+          <DrawerPortal>
+            <DrawerOverlay />
+          </DrawerPortal>
+        </Drawer>
+
+        {/* Resizable */}
+        <ResizablePanelGroup orientation='horizontal'>
+          <ResizablePanel>One</ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel>Two</ResizablePanel>
+        </ResizablePanelGroup>
+
+        {/* Scroll area — ScrollBar is a standalone export */}
+        <ScrollArea>
+          <p>Scrollable content</p>
+          <ScrollBar orientation='horizontal' />
+        </ScrollArea>
+
+        {/* Sonner toaster */}
+        <Toaster />
+
+        {/* Section navigation, journey progress and the mobile drill-down. Each
+            takes its tree/list from the module-scope arrays above. */}
+        <SideNav
+          sections={sideNavSections}
+          currentHref='/docs/theming/tokens'
+          headingLevel={3}
+          onNavigate={(event) => event.currentTarget.href}
+        />
+
+        <StepIndicator
+          steps={journeySteps}
+          currentHref='/apply/documents'
+          statusLabels={stepStatusLabels}
+        />
+
+        <StepNav
+          sections={stepNavSections}
+          currentHref='/apply/documents'
+          statusLabels={stepStatusLabels}
+          headingLevel={3}
+        />
+
+        <PushMenu
+          navigation={pushMenuNavigation}
+          currentHref='/services/support'
+          title='Menu'
+          durationMs={pushMenuDuration}
+          onItemClick={(item: PushMenuItem) => item.id}
+          onNavigate={(level: PushMenuLevel, history: PushMenuLevel[]) => history.indexOf(level)}
+        />
+        {/* PushMenu draws its own trail; this renders the exported helper's
+            output so the call above cannot be elided. */}
+        <p hidden>{pushMenuBreadcrumb}</p>
+
+        {/* The consumer's OWN markup. Every class here is a bare utility that
+            Footer's rows also depend on at some breakpoint, so the app's Tailwind
+            build emits its own copy of each into the second half of the
+            stylesheet — after ours, where it can outrank a responsive rule of
+            ours that carries no extra specificity. Keeping them here is what
+            makes the fixture's cascade assertion meaningful. */}
+        <section className='flex flex-col justify-center gap-3 py-6 text-center text-base'>
+          <p className='mt-2 px-4 text-lg'>Consumer-owned markup</p>
+          <div className='grid grid-cols-1 gap-8 pb-4'>
+            <span className='flex h-10 flex-row items-center gap-2 border-b py-3'>Row</span>
+          </div>
+          {/* `justify-evenly` is the marker the fixture script uses to prove this
+              Tailwind build actually ran. It has to be a class @nswds/ui never
+              emits — every class above is one the package emits too, so none of
+              them can tell the two halves apart. The script re-checks that
+              against the installed stylesheet on every run, so the marker cannot
+              quietly stop being app-only. */}
+          <div className='flex justify-evenly'>Marker</div>
+        </section>
+      </main>
 
       {/* Footer is the component the hazard was reported against: its legal-link
           and social rows split left/right from `lg`, and an app's plain
@@ -755,7 +761,7 @@ function App() {
         ]}
         socialLinks={[{ name: 'LinkedIn', href: 'https://www.linkedin.com', icon: IconSearch }]}
       />
-    </main>
+    </>
   )
 }
 
