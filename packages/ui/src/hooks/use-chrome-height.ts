@@ -16,8 +16,19 @@ type UseChromeHeightOptions = {
 }
 
 type UseChromeHeightResult<T extends HTMLElement> = {
-  /** Attach to the element whose height should be tracked. */
-  ref: React.RefObject<T | null>
+  /**
+   * Attach to the element whose height should be tracked.
+   *
+   * A CALLBACK ref, not a ref object, for two reasons. It re-attaches the
+   * observer when the element itself changes — a chrome wrapper that unmounts
+   * and remounts, or swaps between two elements, would otherwise leave the
+   * observer watching the detached node, because an effect keyed on a ref
+   * object never re-runs when only `.current` changes. And it keeps the
+   * returned value readable during render: React Compiler's lint rejects
+   * reading a ref there, which a consumer doing `ref={chrome.ref}` would
+   * otherwise trip on every use.
+   */
+  ref: React.RefCallback<T>
   /** Live measured height in CSS pixels. `0` until the first measurement. */
   height: number
 }
@@ -55,12 +66,19 @@ type UseChromeHeightResult<T extends HTMLElement> = {
  *
  * Notes:
  *
+ * - **Destructure the result, as above — do not hold it as one object.**
+ *   `const chrome = useChromeHeight(); chrome.height` fails React Compiler's
+ *   lint with *"Cannot access refs during render"*: the returned object carries
+ *   a `ref`, so the compiler treats reading any property off it as reading a
+ *   ref. Destructuring at the call site gives two plain bindings and the rule
+ *   does not apply. Projects without that lint are unaffected either way.
  * - **The number is `0` until after mount.** It is measured in an effect, so
  *   the server render and the first client render agree — reading the DOM
  *   during render would be a hydration mismatch. Give the custom property a
  *   fallback in CSS (`var(--site-chrome-height, 0px)`) for that first paint.
- * - **The property is removed on unmount**, so a chrome element that unmounts
- *   does not leave a stale offset behind for whatever renders next.
+ * - **The property is removed on unmount**, and whenever the tracked element
+ *   changes, so a chrome element that goes away does not leave a stale offset
+ *   behind for whatever renders next.
  * - Height comes from `borderBoxSize`, not `getBoundingClientRect()`: the
  *   latter reports the *transformed* size, so a chrome element that animates
  *   with a transform would publish a height that does not match the space it
@@ -69,11 +87,21 @@ type UseChromeHeightResult<T extends HTMLElement> = {
 function useChromeHeight<T extends HTMLElement = HTMLElement>({
   property = DEFAULT_PROPERTY,
 }: UseChromeHeightOptions = {}): UseChromeHeightResult<T> {
-  const ref = React.useRef<T>(null)
+  // The measured element is STATE, not a ref: the effect below has to re-run
+  // when it changes, and a ref mutation does not re-render or re-run anything.
+  const [element, setElement] = React.useState<T | null>(null)
   const [height, setHeight] = React.useState(0)
 
+  // Wrapped rather than handing back `setElement` directly. A state setter also
+  // accepts an updater FUNCTION, so its type is wider than a ref callback's and
+  // its contract subtly different; this is exactly `RefCallback<T>` and nothing
+  // more. `useCallback` keeps it stable, so React does not detach and reattach
+  // the ref on every render.
+  const ref = React.useCallback<React.RefCallback<T>>((node) => {
+    setElement(node)
+  }, [])
+
   React.useEffect(() => {
-    const element = ref.current
     if (!element) {
       return
     }
@@ -109,7 +137,7 @@ function useChromeHeight<T extends HTMLElement = HTMLElement>({
         root.style.removeProperty(property)
       }
     }
-  }, [property])
+  }, [element, property])
 
   return { ref, height }
 }

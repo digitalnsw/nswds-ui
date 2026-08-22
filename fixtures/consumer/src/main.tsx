@@ -258,8 +258,12 @@ function App() {
 
   // Hooks are public API too. The returned ref must be assignable to the
   // element it is attached to, and `height` must be a number.
-  const chrome = useChromeHeight<HTMLDivElement>({ property: '--fixture-chrome-height' })
-  const chromeOffset: number = chrome.height
+  // Destructured, as the hook documents: holding the result as one object and
+  // reading a property off it during render trips React Compiler's ref rule.
+  const { ref: chromeRef, height: chromeHeight } = useChromeHeight<HTMLDivElement>({
+    property: '--fixture-chrome-height',
+  })
+  const chromeOffset: number = chromeHeight
 
   return (
     <main className={cn('space-y-6 p-8')}>
@@ -329,7 +333,7 @@ function App() {
 
       {/* Page composition: chrome measurement feeding the in-page nav's spy
           line, then the layout primitives around real content. */}
-      <div ref={chrome.ref}>
+      <div ref={chromeRef}>
         <OnThisPage
           items={onThisPageItems}
           orientation='horizontal'
