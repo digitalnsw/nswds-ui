@@ -48,6 +48,10 @@ import type {
   FieldSeparatorProps,
   FieldSetProps,
   FieldTitleProps,
+  HeaderActionsProps,
+  HeaderBrandProps,
+  HeaderColor,
+  HeaderProps,
   InputProps,
   LabelProps,
   LabeledSeparatorProps,
@@ -56,12 +60,32 @@ import type {
   LinkProps,
   LinkUrlObject,
   LogoProps,
+  MainNavColor,
+  MainNavItem,
+  MainNavLinkItem,
+  MainNavProps,
   OnThisPageItem,
   OnThisPageProps,
+  PushMenuItem,
+  PushMenuLevel,
+  PushMenuProps,
   SectionProps,
   SeparatorProps,
+  SideNavItem,
+  SideNavProps,
+  SideNavRowVariantProps,
+  SiteSearchGroup,
+  SiteSearchItem,
+  SiteSearchProps,
   SliderProps,
   SpinnerProps,
+  Step,
+  StepIndicatorProps,
+  StepNavProps,
+  StepNavSection,
+  StepStatus,
+  ThemeSwitcherProps,
+  ThemeSwitcherTheme,
   UseChromeHeightOptions,
 } from '@nswds/ui'
 import {
@@ -109,6 +133,9 @@ import {
   FieldTitle,
   Footer,
   FooterSocialLink,
+  Header,
+  HeaderActions,
+  HeaderBrand,
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -119,13 +146,16 @@ import {
   LinkCard,
   LinkProvider,
   Logo,
+  MainNav,
   OnThisPage,
+  PUSH_MENU_DURATION_MS,
   Popover,
   PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
+  PushMenu,
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
@@ -141,6 +171,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SideNav,
+  SiteSearch,
   Slider,
   SliderControl,
   SliderIndicator,
@@ -150,6 +182,9 @@ import {
   SliderTrack,
   SliderValue,
   Spinner,
+  StepIndicator,
+  StepNav,
+  ThemeSwitcher,
   Toaster,
   Tooltip,
   TooltipContent,
@@ -162,8 +197,18 @@ import {
   cn,
   containerVariants,
   descriptionListVariants,
+  generatePushMenuBreadcrumb,
+  headerColors,
+  headerContainerVariants,
+  headerVariants,
   linkVariants,
+  mainNavColors,
+  mainNavContainerVariants,
+  mainNavPanelVariants,
+  mainNavVariants,
   sectionVariants,
+  sideNavRowVariants,
+  stepStatusStyles,
   useChromeHeight,
 } from '@nswds/ui'
 import { IconSearch } from '@nswds/ui/icons'
@@ -173,7 +218,7 @@ import { IconAdd } from '@nswds/ui/icons/add'
 // resolve and are typed for a cold-installed consumer.
 import { IconLinkedIn } from '@nswds/ui/icons/brands'
 import { IconDownload } from '@nswds/ui/icons/client'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 
 // Every exported prop type must remain resolvable. A removed/renamed type
@@ -221,9 +266,44 @@ type PublicPropTypes = [
   OnThisPageItem,
   SliderProps,
   UseChromeHeightOptions,
+  HeaderProps,
+  HeaderBrandProps,
+  HeaderActionsProps,
+  HeaderColor,
+  MainNavProps,
+  MainNavItem,
+  MainNavLinkItem,
+  MainNavColor,
+  SideNavProps,
+  SideNavItem,
+  SideNavRowVariantProps,
+  StepIndicatorProps,
+  StepNavProps,
+  Step,
+  StepNavSection,
+  StepStatus,
+  PushMenuProps,
+  PushMenuItem,
+  PushMenuLevel,
+  SiteSearchProps,
+  SiteSearchGroup,
+  SiteSearchItem,
+  ThemeSwitcherProps,
+  ThemeSwitcherTheme,
 ]
 // Reference the tuple so it isn't elided, without emitting runtime code.
 export type __AssertPublicPropTypes = PublicPropTypes
+
+// Header and MainNav ship their colour vocabularies as DATA beside the union
+// types derived from them — `headerColors` maps a name to its class string,
+// `mainNavColors` is the ordered tuple `MainNavColor` is derived from — so a
+// consumer building its own colour picker reads them directly. SideNav
+// likewise exports the props of its row variant so consumers can type their
+// own row wrappers. Naming each one here means a rename breaks at compile
+// time instead of widening to `any` at the call site.
+const headerColor: HeaderColor = 'dark'
+const mainNavColor: MainNavColor = mainNavColors[0]
+const currentSideNavRow: SideNavRowVariantProps = { current: true }
 
 // Variant helpers are part of the public API (consumers extend styling with
 // them). Calling them checks their signatures.
@@ -235,6 +315,17 @@ const _classNames: string = cn(
   sectionVariants({ spacing: 'tight', divider: true }),
   calloutVariants({ status: 'warning' }),
   descriptionListVariants({ layout: 'columns' }),
+  headerVariants({ color: headerColor }),
+  headerContainerVariants({ container: 'contained' }),
+  mainNavVariants({ color: mainNavColor, border: 'bottom' }),
+  mainNavContainerVariants({ container: 'contained' }),
+  mainNavPanelVariants({ color: mainNavColor }),
+  sideNavRowVariants(currentSideNavRow),
+  // headerColors and stepStatusStyles are plain records rather than cva
+  // helpers — a name→classes map and one entry per StepStatus — but they are
+  // published for the same reason, so index into both.
+  headerColors[headerColor],
+  stepStatusStyles['in-progress'].ink,
 )
 
 // `href` accepts a string or a url-object shape (LinkUrlObject), not arbitrary
@@ -245,6 +336,82 @@ const objectHref: LinkUrlObject = { pathname: '/search', query: { q: 'nsw' } }
 const onThisPageItems: OnThisPageItem[] = [
   { id: 'specimen', title: 'Specimen' },
   { id: 'download', title: 'Download' },
+]
+
+// MainNav, SideNav, StepIndicator/StepNav, PushMenu and SiteSearch are all
+// data-driven: the tree/list shape is the API. Declaring each array with its
+// exported item type is what puts those types under compile-time contract —
+// passing an object literal inline would let a widened field pass unnoticed.
+const mainNavPanelLinks: MainNavLinkItem[] = [
+  { title: 'Find support near you', href: '/services/support' },
+  { title: 'Apply for a licence', href: '/services/licences' },
+]
+
+const mainNavigation: MainNavItem[] = [
+  { title: 'Home', href: '/' },
+  { title: 'Services', href: '/services', links: mainNavPanelLinks },
+]
+
+const sideNavSections: SideNavItem[] = [
+  {
+    title: 'Getting started',
+    links: [
+      { title: 'Installation', href: '/docs/installation' },
+      {
+        title: 'Theming',
+        links: [{ title: 'Tokens', href: '/docs/theming/tokens' }],
+      },
+    ],
+  },
+]
+
+const journeySteps: Step[] = [
+  { title: 'Your details', href: '/apply/details', status: 'completed' },
+  {
+    title: 'Upload documents',
+    description: 'Proof of identity and address',
+    href: '/apply/documents',
+    status: 'in-progress',
+  },
+  { title: 'Review and submit', href: '/apply/review', status: 'cannot-start' },
+]
+
+const stepNavSections: StepNavSection[] = [{ title: 'Before you start', steps: journeySteps }]
+
+// Partial<Record<StepStatus, …>> is the prop's own shape, so this covers the
+// StepStatus union by key rather than by a single sample value.
+const stepStatusLabels: Partial<Record<StepStatus, string>> = {
+  completed: 'Completed',
+  'in-progress': 'In progress',
+  'cannot-start': 'Cannot start yet',
+}
+
+const pushMenuNavigation: PushMenuItem[] = [
+  { id: 'home', title: 'Home', href: '/' },
+  {
+    id: 'services',
+    title: 'Services',
+    links: [{ id: 'services-support', title: 'Find support near you', href: '/services/support' }],
+  },
+]
+
+// Both ship beside PushMenu. `generatePushMenuBreadcrumb`'s behaviour is
+// covered by packages/ui/tests/, but only this file proves the export still
+// exists on the published surface and still takes `{ title }[]` and a length.
+const pushMenuBreadcrumb: string = generatePushMenuBreadcrumb(
+  [{ title: 'Home' }, { title: 'Services' }],
+  40,
+)
+const pushMenuDuration: number = PUSH_MENU_DURATION_MS
+
+const siteSearchGroups: SiteSearchGroup[] = [
+  {
+    title: 'Components',
+    items: [
+      { title: 'Button', href: '/docs/button', keywords: ['action', 'cta'] },
+      { title: 'Card', href: '/docs/card' },
+    ],
+  },
 ]
 
 function App() {
@@ -265,11 +432,45 @@ function App() {
   })
   const chromeOffset: number = chromeHeight
 
+  // ThemeSwitcher is controlled/uncontrolled; the controlled form is the one
+  // that pins ThemeSwitcherTheme into the contract, on the way in (`theme`)
+  // and back out (`onThemeChange`).
+  const [theme, setTheme] = useState<ThemeSwitcherTheme>('light')
+
   return (
     <main className={cn('space-y-6 p-8')}>
       {/* Variant helpers are public API; render their output so the calls above
           stay referenced and their signatures are checked. */}
       <span hidden className={_classNames} />
+
+      {/* Site chrome — the banner landmark, its brand lockup and the trailing
+          control cluster that owns search and theme switching. */}
+      <Header color={headerColor} container='contained' sticky={false} border shadow={false}>
+        <HeaderBrand sitename='Consumer fixture' version='0.0.0' versionLabel='Version' />
+        <HeaderActions>
+          <SiteSearch
+            groups={siteSearchGroups}
+            onSelect={(item: SiteSearchItem) => item.href}
+            label='Search the design system'
+            placeholder='Search components'
+            emptyMessage='No components match that search.'
+            // Only one shortcut-enabled palette may be mounted per page, and
+            // the fixture is a page.
+            shortcut={false}
+          />
+          <ThemeSwitcher theme={theme} onThemeChange={setTheme} />
+        </HeaderActions>
+      </Header>
+
+      {/* Main navigation bar — items with `links` open a mega panel. */}
+      <MainNav
+        navigation={mainNavigation}
+        color={mainNavColor}
+        container='contained'
+        border='bottom'
+        currentHref='/services/support'
+        sticky={false}
+      />
 
       {/* Buttons */}
       <Button {...buttonProps} ref={buttonRef} leadingVisual={IconSearch}>
@@ -488,6 +689,40 @@ function App() {
 
       {/* Sonner toaster */}
       <Toaster />
+
+      {/* Section navigation, journey progress and the mobile drill-down. Each
+          takes its tree/list from the module-scope arrays above. */}
+      <SideNav
+        sections={sideNavSections}
+        currentHref='/docs/theming/tokens'
+        headingLevel={3}
+        onNavigate={(event) => event.currentTarget.href}
+      />
+
+      <StepIndicator
+        steps={journeySteps}
+        currentHref='/apply/documents'
+        statusLabels={stepStatusLabels}
+      />
+
+      <StepNav
+        sections={stepNavSections}
+        currentHref='/apply/documents'
+        statusLabels={stepStatusLabels}
+        headingLevel={3}
+      />
+
+      <PushMenu
+        navigation={pushMenuNavigation}
+        currentHref='/services/support'
+        title='Menu'
+        durationMs={pushMenuDuration}
+        onItemClick={(item: PushMenuItem) => item.id}
+        onNavigate={(level: PushMenuLevel, history: PushMenuLevel[]) => history.indexOf(level)}
+      />
+      {/* PushMenu draws its own trail; this renders the exported helper's
+          output so the call above cannot be elided. */}
+      <p hidden>{pushMenuBreadcrumb}</p>
 
       {/* The consumer's OWN markup. Every class here is a bare utility that
           Footer's rows also depend on at some breakpoint, so the app's Tailwind
