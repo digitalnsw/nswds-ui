@@ -189,6 +189,14 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 - **Hover / Focus:** halos and rings derive from one ink variable per surface, exactly as for buttons and links. Rings are 2px in the ink colour, offset 2px onto the page — **except inside a scroll container**, where they invert to `-outline-offset-2` because a scroll container clips anything drawn outside a child's border box.
 - **Depth is capped by shape.** Mega panels are one level of flat links. The rail nests to any depth but collapses. The drawer drills without limit but is the only surface with a breadcrumb, and that breadcrumb is `aria-hidden` decoration — the heading and the live region carry the real announcement.
 
+### Page chrome
+
+`Masthead`, `SkipLinks` and `Header` compose the top of every NSW Government page: the "A NSW Government website" strip, the bypass links parked above the viewport, and the brand lockup below them.
+
+- **They share a curated four-colour vocabulary** — `dark`, `light`, `white`, `grey` — not the thirteen-name palette `Footer` and `MainNav` accept. That restriction is deliberate and load-bearing. Every pair is verified WCAG 2.2 AAA (1.4.6, 7:1) in **both** themes, and the set contains no mid-tone `-600` step, which is what keeps the brand mark legible: the `-600` band is where neither masterbrand colourway reads (see The Fixed-Mark Rule). Add a colour only with a verified pair.
+- **The three are themed together and sit flush.** A masthead renders directly above a header with no gap, so they deepen onto the same ramp steps: `-100`→`-850`, `white`→`-900`, `-800`→`-950`. A surface that flips in one and not the other draws a seam across the top of the page.
+- **The masthead is de-emphasised on purpose.** It carries mandated identification, not content, so it sits at the 12px step — the one place in the system that size is right. The skip link does not follow it: that bar is revealed at the moment a keyboard user takes focus and has to be readable immediately, so it stays at the 16px body size.
+
 ### Named Rules
 
 **The Derived State Rule.** A component's hover, active, halo, and focus colours are `color-mix` derivatives of one ink variable — never independently chosen colours. Change the ink and every state follows.
@@ -202,6 +210,8 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 **The Empty-Is-Not-Broken Rule.** Empty navigation data renders a message, not a blank surface. Empty is a runtime state (unpublished content, permission filtering, a failed fetch), distinct from malformed data, which stays a dev-only console warning that compiles out in production. Every nav component takes an `emptyMessage` and defaults it; `null` opts out.
 
 **The Escape-Pops-One Rule.** In a drill-down, Escape below the root level goes up one level; only Escape at the root dismisses the enclosing dialog. Inheriting plain dialog semantics costs a reader their position and the drawer in a single keypress, and the Back button is the only other route up.
+
+**The Whole-Set Flip Rule.** If one variant of a themed surface flips in dark mode, all of them do. A partial set is always an omission rather than a policy — a genuinely theme-invariant palette would not have flipped one of its members — and it is invisible in review because the flipping variant is usually the default, so the component looks correct until someone picks another. `Masthead` and `SkipLinks` flipped only `dark` for four releases: a `white` masthead stayed pure white above a `grey-900` header, an 18.9:1 band across the top of a dark page, and `light` did the same at 15.8:1. Any component offering a themed colour set needs one dark-mode story covering **every** member, not the default.
 
 ## Do's and Don'ts
 

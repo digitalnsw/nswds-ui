@@ -116,6 +116,9 @@ type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+/** The four curated colours, matching Masthead's set. */
+const SKIP_LINK_COLORS = ['dark', 'light', 'white', 'grey'] as const
+
 function getSkipLinks(canvasElement: HTMLElement) {
   const nav = canvasElement.querySelector<HTMLElement>('[data-slot="skip-links"]')
   if (!nav) {
@@ -258,6 +261,80 @@ export const CustomLinks: Story = {
       </div>
     </div>
   ),
+}
+
+/**
+ * Every colour deepens in dark mode, matching `Masthead` step for step.
+ *
+ * Worse here than on the Masthead if it is wrong: the bar is revealed at the
+ * moment a keyboard user takes focus, so a pure-white surface on a dark page
+ * arrives without warning rather than sitting statically at the top. Three of
+ * the four colours used to render identically in both themes, and there was no
+ * dark-mode story to show it.
+ *
+ * The background applies whether or not the bar is revealed, so this asserts
+ * the surface directly without needing to move focus.
+ */
+export const DarkMode: Story = {
+  name: 'Dark Mode',
+  render: () => (
+    <div className='space-y-4'>
+      {SKIP_LINK_COLORS.map((color) => (
+        <div
+          key={color}
+          data-surface-pair=''
+          className='overflow-hidden rounded-sm border border-border'
+        >
+          <div className='border-b border-border bg-muted px-4 py-2 text-sm font-medium'>
+            {color}
+          </div>
+          {/* relative: SkipLink is absolutely positioned and needs a
+              positioned ancestor when it is not inside SkipLinks. */}
+          <div className='relative h-16 overflow-hidden'>
+            <SkipLink color={color} href='#content'>
+              Skip to content
+            </SkipLink>
+          </div>
+          <div className='dark relative h-16 overflow-hidden'>
+            <SkipLink color={color} href='#content'>
+              Skip to content
+            </SkipLink>
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const cards = canvasElement.querySelectorAll<HTMLElement>('[data-surface-pair]')
+    if (cards.length !== SKIP_LINK_COLORS.length) {
+      throw new Error(`Expected ${SKIP_LINK_COLORS.length} colour cards, got ${cards.length}.`)
+    }
+
+    for (const card of cards) {
+      const links = card.querySelectorAll<HTMLElement>('[data-slot="skip-link"]')
+      const [ambient, nested] = links
+      if (!ambient || !nested) {
+        throw new Error(`Expected 2 skip links per card, got ${links.length}.`)
+      }
+      const light = getComputedStyle(ambient).backgroundColor
+      const dark = getComputedStyle(nested).backgroundColor
+
+      if (ambient.closest('.dark, [data-theme="dark"]')) {
+        if (light !== dark) {
+          throw new Error(
+            `With the page already dark, the nested .dark changed the surface (${dark} vs ${light}) — a .dark inside a .dark must not compound.`,
+          )
+        }
+        continue
+      }
+
+      if (light === dark) {
+        throw new Error(
+          `A skip link renders the same surface (${light}) in both themes — it is not participating in dark mode.`,
+        )
+      }
+    }
+  },
 }
 
 export const CssCheck: Story = {

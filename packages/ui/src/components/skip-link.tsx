@@ -5,16 +5,23 @@ import React from 'react'
 
 import { cn } from '../lib/utils.js'
 
-// Same curated WCAG 2.2 AAA (7:1) pairs as the Masthead — the two components
-// are designed to be themed together, mirroring how the legacy
+// Same curated WCAG 2.2 AAA (7:1) pairs as the Masthead, in both themes — the
+// two components are designed to be themed together, mirroring how the legacy
 // `masthead-theme` option drove both `.nsw-masthead--light` and
 // `.nsw-skip--light`. Kept as a local map (not imported from masthead.tsx) so
-// each file stays standalone for registry distribution.
+// each file stays standalone for registry distribution; the duplication is the
+// cost of that, so a change here belongs in masthead.tsx too.
+//
+// The dark-mode steps match Masthead's exactly (-100→-850, white→-900,
+// -800→-950). Previously only `dark` flipped, so a revealed `white` skip link
+// was a pure-white bar on a dark page — worse here than on the Masthead,
+// because this bar appears without warning at the moment a keyboard user takes
+// focus, rather than sitting statically at the top of the page.
 const skipLinkColors = {
   dark: 'bg-primary-800 text-white dark:bg-primary-950',
-  light: 'bg-grey-100 text-grey-900',
-  white: 'bg-white text-grey-900',
-  grey: 'bg-grey-800 text-white',
+  light: 'bg-grey-100 text-grey-900 dark:bg-grey-850 dark:text-white',
+  white: 'bg-white text-grey-900 dark:bg-grey-900 dark:text-white',
+  grey: 'bg-grey-800 text-white dark:bg-grey-950',
 }
 
 const skipLinkVariants = cva(
