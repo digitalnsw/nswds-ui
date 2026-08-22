@@ -26,6 +26,7 @@ import type {
   ButtonLinkProps,
   ButtonProps,
   CalloutProps,
+  CalloutStatus,
   CardActionProps,
   CardContentProps,
   CardDescriptionProps,
@@ -37,6 +38,10 @@ import type {
   DescriptionDetailsProps,
   DescriptionListProps,
   DescriptionTermProps,
+  ExpandableSearchButtonProps,
+  ExpandableSearchFieldProps,
+  ExpandableSearchProps,
+  ExpandableSearchVariant,
   ExternalLinkProps,
   FieldContentProps,
   FieldDescriptionProps,
@@ -48,10 +53,23 @@ import type {
   FieldSeparatorProps,
   FieldSetProps,
   FieldTitleProps,
+  FooterAcknowledgementProps,
+  FooterColor,
+  FooterLegalLinkItem,
+  FooterLegalLinksProps,
+  FooterLinkItem,
+  FooterNavColumnProps,
+  FooterNavLinkProps,
+  FooterNavProps,
+  FooterProps,
+  FooterSmallPrintProps,
+  FooterSocialLinkItem,
+  FooterSocialLinkProps,
   HeaderActionsProps,
   HeaderBrandProps,
   HeaderColor,
   HeaderProps,
+  IconSlot,
   InputProps,
   LabelProps,
   LabeledSeparatorProps,
@@ -64,6 +82,8 @@ import type {
   MainNavItem,
   MainNavLinkItem,
   MainNavProps,
+  MastheadColor,
+  MastheadProps,
   OnThisPageItem,
   OnThisPageProps,
   PushMenuItem,
@@ -77,6 +97,8 @@ import type {
   SiteSearchGroup,
   SiteSearchItem,
   SiteSearchProps,
+  SkipLinkProps,
+  SkipLinksProps,
   SliderProps,
   SpinnerProps,
   Step,
@@ -87,6 +109,7 @@ import type {
   ThemeSwitcherProps,
   ThemeSwitcherTheme,
   UseChromeHeightOptions,
+  UseChromeHeightResult,
 } from '@nswds/ui'
 import {
   AspectRatio,
@@ -120,6 +143,8 @@ import {
   DrawerPortal,
   DrawerTitle,
   DrawerTrigger,
+  ExpandableSearch,
+  ExpandableSearchField,
   ExternalLink,
   Field,
   FieldContent,
@@ -132,6 +157,12 @@ import {
   FieldSet,
   FieldTitle,
   Footer,
+  FooterAcknowledgement,
+  FooterLegalLinks,
+  FooterNav,
+  FooterNavColumn,
+  FooterNavLink,
+  FooterSmallPrint,
   FooterSocialLink,
   Header,
   HeaderActions,
@@ -147,6 +178,7 @@ import {
   LinkProvider,
   Logo,
   MainNav,
+  Masthead,
   OnThisPage,
   PUSH_MENU_DURATION_MS,
   Popover,
@@ -173,6 +205,8 @@ import {
   SheetTrigger,
   SideNav,
   SiteSearch,
+  SkipLink,
+  SkipLinks,
   Slider,
   SliderControl,
   SliderIndicator,
@@ -197,6 +231,11 @@ import {
   cn,
   containerVariants,
   descriptionListVariants,
+  expandableSearchVariants,
+  footerColors,
+  footerContainerVariants,
+  footerLogoType,
+  footerVariants,
   generatePushMenuBreadcrumb,
   headerColors,
   headerContainerVariants,
@@ -206,8 +245,11 @@ import {
   mainNavContainerVariants,
   mainNavPanelVariants,
   mainNavVariants,
+  mastheadContainerVariants,
+  mastheadVariants,
   sectionVariants,
   sideNavRowVariants,
+  skipLinkVariants,
   stepStatusStyles,
   useChromeHeight,
 } from '@nswds/ui'
@@ -229,6 +271,7 @@ type PublicPropTypes = [
   BadgeLinkProps,
   ButtonProps,
   ButtonLinkProps,
+  IconSlot,
   CardProps,
   CardActionProps,
   CardContentProps,
@@ -258,6 +301,7 @@ type PublicPropTypes = [
   ContainerProps,
   SectionProps,
   CalloutProps,
+  CalloutStatus,
   DescriptionListProps,
   DescriptionTermProps,
   DescriptionDetailsProps,
@@ -266,6 +310,7 @@ type PublicPropTypes = [
   OnThisPageItem,
   SliderProps,
   UseChromeHeightOptions,
+  UseChromeHeightResult<HTMLDivElement>,
   HeaderProps,
   HeaderBrandProps,
   HeaderActionsProps,
@@ -290,6 +335,26 @@ type PublicPropTypes = [
   SiteSearchItem,
   ThemeSwitcherProps,
   ThemeSwitcherTheme,
+  MastheadProps,
+  MastheadColor,
+  SkipLinkProps,
+  SkipLinksProps,
+  ExpandableSearchProps,
+  ExpandableSearchFieldProps,
+  ExpandableSearchButtonProps,
+  ExpandableSearchVariant,
+  FooterProps,
+  FooterColor,
+  FooterAcknowledgementProps,
+  FooterLegalLinksProps,
+  FooterLegalLinkItem,
+  FooterLinkItem,
+  FooterNavProps,
+  FooterNavColumnProps,
+  FooterNavLinkProps,
+  FooterSmallPrintProps,
+  FooterSocialLinkProps,
+  FooterSocialLinkItem,
 ]
 // Reference the tuple so it isn't elided, without emitting runtime code.
 export type __AssertPublicPropTypes = PublicPropTypes
@@ -304,6 +369,19 @@ export type __AssertPublicPropTypes = PublicPropTypes
 const headerColor: HeaderColor = 'dark'
 const mainNavColor: MainNavColor = mainNavColors[0]
 const currentSideNavRow: SideNavRowVariantProps = { current: true }
+// Callout's status union, named so the variant call and the rendered component
+// cannot drift apart — and so a member removed from the union is a compile
+// error rather than a literal that quietly stops matching.
+const calloutStatus: CalloutStatus = 'warning'
+
+// Masthead, ExpandableSearch and Footer each take their surface as a union.
+// Only Footer publishes the vocabulary the union is derived from, so index
+// `footerColors` the way `mainNavColors` is indexed above and pin the other
+// two against their own type — an inline literal at the call site would still
+// compile if a member were dropped from the union.
+const mastheadColor: MastheadColor = 'dark'
+const expandableSearchVariant: ExpandableSearchVariant = 'default'
+const footerColor: FooterColor = footerColors[0]
 
 // Variant helpers are part of the public API (consumers extend styling with
 // them). Calling them checks their signatures.
@@ -313,7 +391,7 @@ const _classNames: string = cn(
   linkVariants({ variant: 'primary' }),
   containerVariants({ size: 'contained' }),
   sectionVariants({ spacing: 'tight', divider: true }),
-  calloutVariants({ status: 'warning' }),
+  calloutVariants({ status: calloutStatus }),
   descriptionListVariants({ layout: 'columns' }),
   headerVariants({ color: headerColor }),
   headerContainerVariants({ container: 'contained' }),
@@ -321,6 +399,14 @@ const _classNames: string = cn(
   mainNavContainerVariants({ container: 'contained' }),
   mainNavPanelVariants({ color: mainNavColor }),
   sideNavRowVariants(currentSideNavRow),
+  mastheadVariants({ color: mastheadColor }),
+  mastheadContainerVariants({ container: 'contained' }),
+  // SkipLink and SkipLinks share one helper — it themes the nav and the links
+  // inside it — so it is named once. Its colour vocabulary matches Masthead's
+  // by design, but the two are separate unions, so this stays a literal rather
+  // than borrowing `mastheadColor` and coupling them at compile time.
+  skipLinkVariants({ color: 'dark' }),
+  expandableSearchVariants({ variant: expandableSearchVariant }),
   // headerColors and stepStatusStyles are plain records rather than cva
   // helpers — a name→classes map and one entry per StepStatus — but they are
   // published for the same reason, so index into both.
@@ -414,6 +500,60 @@ const siteSearchGroups: SiteSearchGroup[] = [
   },
 ]
 
+// Footer's rows are data-driven like the navigation trees above, so each array
+// is declared with its exported item type. `FooterLegalLinkItem` is an alias of
+// `FooterLinkItem` kept for the legal row; naming both is what keeps the alias
+// itself under contract rather than silently collapsing into one name.
+const footerLegalLinks: FooterLegalLinkItem[] = [
+  { name: 'Privacy', href: '/privacy' },
+  { name: 'Accessibility', href: '/accessibility' },
+]
+
+const footerSiteMapLinks: FooterLinkItem[] = [
+  { name: 'Find support near you', href: '/services/support' },
+  { name: 'Apply for a licence', href: '/services/licences' },
+]
+
+const footerHelpLinks: FooterLinkItem[] = [
+  { name: 'Contact us', href: '/contact' },
+  { name: 'Give feedback', href: '/feedback' },
+]
+
+// `IconSlot` is the union every icon-taking prop accepts — a component OR an
+// element — and both arms carry weight: `Footer` is server-compatible but the
+// `ButtonLink` behind each social link is not, so a React Server Component
+// assembling `socialLinks` can only pass the element form. Naming one of each
+// keeps both arms of the union under contract.
+const brandMarkComponent: IconSlot = IconSearch
+const brandMarkElement: IconSlot = <IconSearch />
+
+const footerSocialLinks: FooterSocialLinkItem[] = [
+  { name: 'LinkedIn', href: 'https://www.linkedin.com', icon: brandMarkComponent },
+  { name: 'X', href: 'https://x.com', icon: brandMarkElement, label: 'Follow us on X' },
+]
+
+// The rest of `FooterProps` — the section switches and the layout knobs — spread
+// onto the packaged Footer below. Declared as the prop type, so a removed or
+// renamed switch is a compile error rather than an ignored extra key. `year` is
+// pinned rather than left to default: the default reads the render-time year,
+// which is the SERVER's year on an SSR page.
+const footerProps: FooterProps = {
+  color: footerColor,
+  container: 'contained',
+  containerClassName: 'px-4',
+  acknowledgement: true,
+  smallPrint: true,
+  topBorder: true,
+  year: 2026,
+}
+
+// Extra props for the expandable search's submit button. Its type carries a
+// `data-*` index signature on top of the button props, so an analytics hook is
+// the shape that actually exercises it.
+const expandableSearchButtonProps: ExpandableSearchButtonProps = {
+  'data-analytics-id': 'fixture-site-search',
+}
+
 function App() {
   // React 19 ref-as-prop: each component must accept a correctly-typed ref to
   // its underlying DOM node. A regression is a compile error here.
@@ -427,9 +567,12 @@ function App() {
   // element it is attached to, and `height` must be a number.
   // Destructured, as the hook documents: holding the result as one object and
   // reading a property off it during render trips React Compiler's ref rule.
-  const { ref: chromeRef, height: chromeHeight } = useChromeHeight<HTMLDivElement>({
-    property: '--fixture-chrome-height',
-  })
+  // The annotation sits on the PATTERN for that reason — it keeps
+  // UseChromeHeightResult under contract without holding the object.
+  const { ref: chromeRef, height: chromeHeight }: UseChromeHeightResult<HTMLDivElement> =
+    useChromeHeight<HTMLDivElement>({
+      property: '--fixture-chrome-height',
+    })
   const chromeOffset: number = chromeHeight
 
   // ThemeSwitcher is controlled/uncontrolled; the controlled form is the one
@@ -439,12 +582,29 @@ function App() {
 
   return (
     <>
-      {/* Site chrome. Header and MainNav sit OUTSIDE <main>: a native
-          `<header>` only maps to the banner landmark when it is not inside
-          main/article/aside/nav/section (HTML-AAM), which is the rule
-          header.tsx documents. Footer is after </main> for the same reason —
-          `<footer>` in <main> is sectionfooter, not contentinfo. The in-page
-          navs stay inside: `<nav>` carries its landmark wherever it sits. */}
+      {/* Page chrome, in the order a real NSW page renders it: the bypass-block
+          links first (they must be the first focusable thing on the page), then
+          the "A NSW Government website" strip, then the banner and the nav bar.
+          None of it sits inside <main>: a native `<header>` only maps to the
+          banner landmark when it is NOT inside main/article/aside/nav/section
+          (HTML-AAM), which is the rule header.tsx documents, and both footers
+          are after </main> for the same reason — `<footer>` inside <main> is
+          sectionfooter, not contentinfo. The in-page navs stay inside: `<nav>`
+          carries its landmark wherever it sits.
+
+          Explicit `SkipLink` children rather than the default pair, because the
+          targets below are the fixture's own. */}
+      <SkipLinks color='dark'>
+        {/* Both fragments must resolve: SkipLink looks the target up with
+            getElementById and bails when it misses, so a stale href is a
+            silently dead bypass link. `nsw-main-navigation` is MainNav's
+            documented default id. */}
+        <SkipLink href='#nsw-main-navigation'>Skip to navigation</SkipLink>
+        <SkipLink href='#content'>Skip to content</SkipLink>
+      </SkipLinks>
+
+      <Masthead color={mastheadColor} container='contained' containerClassName='px-4' />
+
       <Header color={headerColor} container='contained' sticky={false} border shadow={false}>
         <HeaderBrand sitename='Consumer fixture' version='0.0.0' versionLabel='Version' />
         <HeaderActions>
@@ -458,6 +618,20 @@ function App() {
             // the fixture is a page.
             shortcut={false}
           />
+          {/* The other search this package ships: a chip that expands into a
+              field on focus. Composed as root + field, which is the only
+              supported arrangement — the field reads the root's context. */}
+          <ExpandableSearch
+            variant={expandableSearchVariant}
+            defaultValue=''
+            onAction={(value: string) => value}
+          >
+            <ExpandableSearchField
+              label='Search this site'
+              buttonLabel='Search'
+              buttonProps={expandableSearchButtonProps}
+            />
+          </ExpandableSearch>
           <ThemeSwitcher theme={theme} onThemeChange={setTheme} />
         </HeaderActions>
       </Header>
@@ -472,7 +646,7 @@ function App() {
         sticky={false}
       />
 
-      <main className={cn('space-y-6 p-8')}>
+      <main id='content' className={cn('space-y-6 p-8')}>
         {/* Variant helpers are public API; render their output so the calls above
             stay referenced and their signatures are checked. */}
         <span hidden className={_classNames} />
@@ -552,7 +726,7 @@ function App() {
           <Container size='contained'>
             <h2 id='fixture-heading'>Specimen</h2>
 
-            <Callout status='info' title='Not seeing it in the font menu?'>
+            <Callout status={calloutStatus} title='Not seeing it in the font menu?'>
               Quit the application completely and reopen it.
             </Callout>
 
@@ -754,13 +928,54 @@ function App() {
           and social rows split left/right from `lg`, and an app's plain
           `justify-center` used to hold them centred at every width. */}
       <Footer
+        {...footerProps}
         department='Department of Customer Service'
-        legalLinks={[
-          { name: 'Privacy', href: '/privacy' },
-          { name: 'Accessibility', href: '/accessibility' },
-        ]}
-        socialLinks={[{ name: 'LinkedIn', href: 'https://www.linkedin.com', icon: IconSearch }]}
+        legalLinks={footerLegalLinks}
+        socialLinks={footerSocialLinks}
       />
+
+      {/* Every part the packaged Footer assembles is also exported on its own,
+          for the layouts its props do not cover — the escape hatch its docstring
+          points at is to compose them inside your own `<footer>`, which is what
+          this block does. `footerVariants` paints the surface,
+          `footerContainerVariants` constrains the width, and `footerLogoType`
+          picks the brand treatment that stays legible on the chosen surface
+          (the mark's wordmark is painted from fixed palette values, so it does
+          not inherit the footer's ink and has to be chosen against it).
+
+          Two `contentinfo` landmarks is not something a real page should ship;
+          the fixture renders both for the same reason it composes two `Drawer`s
+          above — each is a separate part of the published surface. */}
+      <footer aria-label='Composed footer' className={footerVariants({ color: footerColor })}>
+        <div className={footerContainerVariants({ container: 'contained' })}>
+          <Logo logoType={footerLogoType(footerColor)} />
+          <FooterAcknowledgement />
+          {/* Both columns take the same `headingLevel`: they are siblings in one
+              outline, and this footer sits at the top level of the document, so
+              `2` is the level that keeps the outline in order (WCAG 1.3.1). */}
+          <FooterNav aria-label='Site map'>
+            <FooterNavColumn heading='Services' links={footerSiteMapLinks} headingLevel={2} />
+            <FooterNavColumn heading='Help' links={footerHelpLinks} headingLevel={2} />
+          </FooterNav>
+          {/* FooterNavLink is exported so a bespoke column — a mobile accordion,
+              say — can match the built-in ones without copying class strings. */}
+          <FooterNavLink href='/contact'>Contact us</FooterNavLink>
+          <FooterLegalLinks legalLinks={footerLegalLinks} aria-label='Legal' />
+          <FooterSmallPrint
+            department='Digital NSW, Department of Customer Service'
+            socialLinks={footerSocialLinks}
+            year={2026}
+          />
+          {/* FooterSmallPrint renders these from `socialLinks`; FooterSocialLink
+              is exported for direct composition too, so it is named standalone
+              here the same way DrawerPortal and DrawerOverlay are above. */}
+          <FooterSocialLink
+            href='https://www.linkedin.com'
+            icon={brandMarkComponent}
+            label='Follow us on LinkedIn'
+          />
+        </div>
+      </footer>
     </>
   )
 }
