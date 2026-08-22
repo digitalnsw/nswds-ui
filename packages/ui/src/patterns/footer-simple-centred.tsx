@@ -4,6 +4,7 @@ import {
   Footer,
   FooterAcknowledgement,
   FooterLegalLinks,
+  footerLogoType,
   FooterSmallPrint,
 } from '../components/footer.js'
 import { Logo } from '../components/logo.js'
@@ -22,7 +23,15 @@ const departmentSample = 'Digital NSW, Department of Customer Service'
 type FooterSimpleCentredProps = Omit<
   React.ComponentProps<typeof Footer>,
   'acknowledgement' | 'children' | 'smallPrint'
->
+> & {
+  /**
+   * `Logo` treatment. Defaults to the colourway the masterbrand guidelines
+   * call for on the chosen `color` (see `footerLogoType`): full colour on a
+   * light surface, reversed on a `-800`, and the restricted mono only where
+   * neither reads. Override only for a surface this block does not own.
+   */
+  logoType?: React.ComponentProps<typeof Logo>['logoType']
+}
 
 /**
  * Everything centred under the NSW Government logo — the smallest footer that
@@ -33,22 +42,26 @@ type FooterSimpleCentredProps = Omit<
  * `legalLinks` prop) because the built-in link row left-aligns from `lg` up,
  * and this layout stays centred at every width.
  *
- * `logoType='default'` is correct for any surface that is light in light mode
- * and dark in dark mode — the logo is blue-800 on light, white on dark. On a
- * surface that is dark in BOTH themes (`-600`/`-800` colours) switch to
- * `logoType='mono-white'`, or the mark disappears into the background.
+ * The logo treatment is DERIVED from `color` (see `footerLogoType`) rather than
+ * left to the caller: `default` is blue-800 on light and white on dark, which
+ * is right for a surface that is light in light mode, but on one that is dark
+ * in BOTH themes (`-600`/`-800`) it paints the wordmark in nsw-blue-800 — the
+ * same value as `primary-800`, so the mark vanished at 1:1 contrast. Pass
+ * `logoType` explicitly only for a surface this block does not own.
  */
 export function FooterSimpleCentred({
   legalLinks = legalLinksSample,
   socialLinks,
   department = departmentSample,
   year,
+  color,
+  logoType,
   ...props
 }: FooterSimpleCentredProps) {
   return (
-    <Footer {...props} acknowledgement={false} smallPrint={false}>
+    <Footer {...props} color={color} acknowledgement={false} smallPrint={false}>
       <div className='flex justify-center py-4'>
-        <Logo className='h-14 w-auto' />
+        <Logo logoType={logoType ?? footerLogoType(color)} className='h-14 w-auto' />
       </div>
       <FooterAcknowledgement className='justify-center'>
         <span className='mx-auto block max-w-2xl text-center'>

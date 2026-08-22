@@ -166,6 +166,32 @@ function BlockCard({ block }: { block: Block }) {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 /** All eight side by side — the story to open when picking one. */
+/**
+ * Yield without `setTimeout`: the Vitest browser pool runs story files in
+ * parallel tabs and Chromium throttles background-tab timers to ~1s ticks, so
+ * a timer-based poll sleep blows the test budget. MessageChannel messages are
+ * not throttled. Same helper, same reason, as push-menu.stories.tsx.
+ */
+function yieldToBrowser() {
+  return new Promise<void>((resolve) => {
+    const channel = new MessageChannel()
+    channel.port1.onmessage = () => resolve()
+    channel.port2.postMessage(0)
+  })
+}
+
+/** Poll until `predicate` holds, so async submission state has time to settle. */
+async function waitFor(predicate: () => boolean, message: string, timeout = 2000) {
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    if (predicate()) {
+      return
+    }
+    await yieldToBrowser()
+  }
+  throw new Error(message)
+}
+
 export const Chooser: Story = {
   render: () => (
     <div className='space-y-6 p-4'>
@@ -237,6 +263,316 @@ export const Sitemap: Story = {
 export const SitemapBrand: Story = {
   name: 'Site map with brand',
   render: () => <FooterSitemapBrand {...shared} color='grey-200' />,
+}
+
+/**
+ * The logo colourway on every surface class, checked against the masterbrand
+ * guidelines' order of preference: full colour preferred, reversed where the
+ * primary mark is illegible, mono restricted to where neither reads.
+ *
+ * This story exists because its absence is what hid the original bug: every
+ * logo block was only ever rendered on `white` or `grey-200`, and the one block
+ * shown on `primary-800` (the CTA) has no logo — so a wordmark painted in its
+ * own background colour was unreachable from Storybook and from Chromatic.
+ */
+export const LogoColourways: Story = {
+  name: 'Logo colourways by surface',
+  render: () => (
+    <div className='flex flex-col gap-8'>
+      {/* Light: full colour. Dark -800: reversed. Mid -600: mono. */}
+      <FooterSimpleCentred {...shared} color='white' />
+      <FooterSimpleCentred {...shared} color='primary-800' />
+      <FooterCompact {...shared} color='grey-800' />
+      <FooterSitemapBrand {...shared} color='accent-800' />
+      <FooterCompact {...shared} color='accent-600' />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Chromium serialises computed colours in whatever space the value was
+    // authored in — these resolve as `oklch(...)`, not `rgb(...)` — so the
+    // reference is read back through the same pipeline rather than hardcoded.
+    const probe = document.createElement('div')
+    probe.className = 'bg-white'
+    canvasElement.append(probe)
+    const WHITE = getComputedStyle(probe).backgroundColor
+    probe.remove()
+    if (!WHITE) {
+      throw new Error('Could not resolve a white reference colour.')
+    }
+    // Which colourway each surface must resolve to, per the guidelines.
+    const expected: Record<string, 'full-colour' | 'reversed' | 'mono'> = {
+      white: 'full-colour',
+      'primary-800': 'reversed',
+      'grey-800': 'reversed',
+      'accent-800': 'reversed',
+      'accent-600': 'mono',
+    }
+
+    const footers = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')]
+    if (footers.length !== Object.keys(expected).length) {
+      throw new Error(`Expected ${Object.keys(expected).length} footers, got ${footers.length}.`)
+    }
+
+    for (const footer of footers) {
+      const colour = footer.dataset.color ?? '(none)'
+      const surface = getComputedStyle(footer).backgroundColor
+      const svg = footer.querySelector('svg')
+      if (!svg) {
+        throw new Error(`Expected a logo in the ${colour} footer.`)
+      }
+
+      const fills = [...svg.querySelectorAll('path')].map((path) => getComputedStyle(path).fill)
+      if (fills.length === 0) {
+        throw new Error('Expected the logo to render paths.')
+      }
+
+      // The defect itself, asserted directly rather than via a class name: no
+      // part of the mark may be painted in its own background.
+      for (const fill of fills) {
+        if (fill === surface) {
+          throw new Error(
+            `Logo path is painted in the footer's own background (${fill}) on color="${colour}" — the mark is invisible.`,
+          )
+        }
+        if (fill === '' || fill === 'none') {
+          throw new Error(`Expected the logo path to resolve a fill on ${colour}, got "${fill}".`)
+        }
+      }
+
+      const distinct = new Set(fills)
+      const want = expected[colour]
+      // Without this the story can quietly stop testing: an unmapped colour
+      // falls through to the two-tone branch, where both the `reversed` and
+      // `full-colour` assertions are no-ops, so only the weak "has 2 colours"
+      // check runs. The footer count above catches an ADDED footer; this
+      // catches a CHANGED colour, which keeps the count intact.
+      if (!want) {
+        throw new Error(
+          `No expected colourway mapped for color="${colour}" — add it to \`expected\` rather than letting the assertions silently weaken.`,
+        )
+      }
+
+      if (want === 'mono') {
+        // Mono is one colour throughout — the waratah gives up its red.
+        if (distinct.size !== 1 || !distinct.has(WHITE)) {
+          throw new Error(
+            `Expected the restricted mono logo (white throughout) on ${colour}, got ${[...distinct].join(', ')}.`,
+          )
+        }
+      } else {
+        // Full colour and reversed are both two-tone: the waratah keeps its
+        // red. That is the whole reason mono is a last resort.
+        if (distinct.size !== 2) {
+          throw new Error(
+            `Expected a two-tone mark on ${colour} (${want}), got ${distinct.size} colour(s): ${[...distinct].join(', ')}.`,
+          )
+        }
+        const hasWhite = distinct.has(WHITE)
+        if (want === 'reversed' && !hasWhite) {
+          throw new Error(
+            `Expected the reversed mark's wordmark to be white (${WHITE}) on ${colour}, got ${[...distinct].join(', ')}.`,
+          )
+        }
+        if (want === 'full-colour' && hasWhite) {
+          throw new Error(
+            `Expected the full-colour mark on ${colour}, but a path is white — that is the reversed treatment.`,
+          )
+        }
+      }
+    }
+  },
+}
+
+/**
+ * The subscription form reports what happened. Submitting used to call
+ * `onSubscribe` and change nothing on screen.
+ */
+/**
+ * A submit that lands while one is already in flight is dropped.
+ *
+ * The disabled submit button already covers the keyboard route — Enter while
+ * pending fires no second call, because implicit submission runs the default
+ * button's activation behaviour and a disabled button has none. It does not
+ * cover `form.requestSubmit()`, which ignores the button entirely; without the
+ * guard in `handleSubmit` that starts a second overlapping `onSubscribe`.
+ */
+export const NewsletterReentrancy: Story = {
+  name: 'Newsletter — concurrent submits',
+  render: () => {
+    let calls = 0
+    return (
+      <div
+        data-calls-probe=''
+        ref={(node) => {
+          if (node) {
+            ;(node as HTMLElement & { __calls?: () => number }).__calls = () => calls
+          }
+        }}
+      >
+        <FooterNewsletter
+          {...shared}
+          onSubscribe={() => {
+            calls += 1
+            return new Promise<void>((resolve) => {
+              setTimeout(resolve, 400)
+            })
+          }}
+        />
+      </div>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const probe = canvasElement.querySelector('[data-calls-probe]') as HTMLElement & {
+      __calls: () => number
+    }
+    const form = canvasElement.querySelector('form')
+    const input = canvasElement.querySelector<HTMLInputElement>('input[name="email"]')
+    const button = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
+    if (!probe || !form || !input || !button) {
+      throw new Error('Expected the newsletter form, its email input and its submit button.')
+    }
+
+    input.value = 'someone@example.com'
+    button.click()
+
+    await waitFor(() => probe.__calls() === 1, 'Expected the first submit to reach onSubscribe.')
+    if (!button.disabled) {
+      throw new Error('Expected the submit button to be disabled while the attempt is pending.')
+    }
+
+    // The route the disabled button cannot block.
+    form.requestSubmit()
+    form.requestSubmit()
+
+    // Give any second call a chance to land before asserting it did not.
+    await waitFor(() => probe.__calls() > 1, 'settle', 150).then(
+      () => {
+        throw new Error(
+          `Expected concurrent submits to be dropped, but onSubscribe ran ${probe.__calls()} times.`,
+        )
+      },
+      () => undefined,
+    )
+
+    // And the form recovers: once the attempt settles, a new submit works.
+    await waitFor(
+      () => !button.disabled,
+      'Expected the form to accept submissions again once the attempt settled.',
+      2000,
+    )
+    input.value = 'another@example.com'
+    button.click()
+    await waitFor(() => probe.__calls() === 2, 'Expected a later submit to be accepted.')
+  },
+}
+
+export const NewsletterStates: Story = {
+  name: 'Newsletter — success and failure',
+  render: () => (
+    <div className='flex flex-col gap-8'>
+      <FooterNewsletter {...shared} onSubscribe={() => Promise.resolve()} />
+      <FooterNewsletter {...shared} onSubscribe={() => Promise.reject(new Error('nope'))} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const forms = [...canvasElement.querySelectorAll('form')]
+    if (forms.length !== 2) {
+      throw new Error(`Expected two subscription forms, got ${forms.length}.`)
+    }
+
+    for (const [index, form] of forms.entries()) {
+      const input = form.querySelector<HTMLInputElement>('input[name="email"]')
+      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')
+      const status = form.querySelector<HTMLElement>('[role="status"]')
+      if (!input || !button || !status) {
+        throw new Error('Expected an email input, a submit button and a live region.')
+      }
+
+      // Stand in for the extended form this block invites consumers to build.
+      // Its defaultValue is empty, so `form.reset()` would wipe it on success
+      // — only clearing the email control specifically leaves it alone.
+      const extra = document.createElement('input')
+      extra.type = 'text'
+      extra.name = 'extra'
+      extra.value = 'keep me'
+      // Named: the story runs the a11y checks too, and an unlabelled input is
+      // a violation regardless of it being a test fixture.
+      extra.setAttribute('aria-label', 'Extra control')
+      form.append(extra)
+
+      // The live region must already exist while empty — a region mounted at
+      // the same moment as its text is not reliably announced.
+      if (status.textContent?.trim()) {
+        throw new Error('Expected the live region to start empty.')
+      }
+      if (status.getAttribute('aria-live') !== 'polite') {
+        throw new Error('Expected a polite live region.')
+      }
+
+      // Staying mounted must not cost layout. The Field is `flex-col gap-2`,
+      // so an always-present child adds 8px of dead trailing space unless the
+      // gap is cancelled while it is empty. Measured rather than asserted on a
+      // class name, because the safe fix (a negative margin) and the unsafe one
+      // (`empty:hidden`, which removes the region from the accessibility tree)
+      // both make the space go away — only one keeps the region announceable.
+      const description = form.querySelector<HTMLElement>('[data-slot="field-description"]')
+      if (description) {
+        const gap = status.getBoundingClientRect().top - description.getBoundingClientRect().bottom
+        if (gap > 0.5) {
+          throw new Error(
+            `The empty live region adds ${gap.toFixed(1)}px of dead space above it — cancel the Field gap while it is empty.`,
+          )
+        }
+      }
+      if (getComputedStyle(status).display === 'none') {
+        throw new Error(
+          'The live region must stay displayed while empty — display:none removes it from the accessibility tree, and a region that re-enters the tree with its text is not reliably announced.',
+        )
+      }
+
+      // The form reads FormData off the DOM, so setting value directly is
+      // enough — no React state to sync.
+      input.value = 'someone@example.com'
+      button.click()
+
+      await waitFor(
+        () => Boolean(status.textContent?.trim()),
+        `Expected form ${index + 1} to report an outcome.`,
+      )
+
+      const text = status.textContent ?? ''
+      if (index === 0) {
+        if (!/check your inbox/i.test(text)) {
+          throw new Error(`Expected a success message, got "${text}".`)
+        }
+        if (input.value !== '') {
+          throw new Error('Expected the field to be cleared after a successful submit.')
+        }
+        if (extra.value !== 'keep me') {
+          throw new Error(
+            'A successful submit cleared an unrelated control — clear the email field specifically, not the whole form.',
+          )
+        }
+      } else {
+        if (!/did not go through/i.test(text)) {
+          throw new Error(`Expected a failure message, got "${text}".`)
+        }
+        // The address survives a failure the reader did not cause, and so
+        // does everything else on the form.
+        if (input.value !== 'someone@example.com') {
+          throw new Error('Expected the address to be preserved after a failure.')
+        }
+        if (extra.value !== 'keep me') {
+          throw new Error('Expected unrelated controls to be untouched after a failure.')
+        }
+      }
+
+      // The button must not be left disabled once the attempt settles.
+      if (button.disabled) {
+        throw new Error('Expected the submit button to be re-enabled after the attempt.')
+      }
+    }
+  },
 }
 
 export const Newsletter: Story = {
@@ -317,9 +653,23 @@ export const Accordion: Story = {
     // Every link must be present and reachable on desktop — this is what the
     // "render open, collapse in an effect" approach buys, and what a no-JS
     // visitor gets.
-    const links = canvasElement.querySelectorAll('[data-slot="footer-nav-link"]')
+    const links = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer-nav-link"]')]
     if (links.length !== 20) {
       throw new Error(`Expected all 20 site-map links to be rendered, got ${links.length}.`)
+    }
+
+    // Rendered is not enough: they must be VISIBLE. This is the guard on
+    // DESKTOP_QUERY, which restates Tailwind's `lg` breakpoint in JS with
+    // nothing keeping the two in step. If the theme's breakpoint moved, CSS
+    // would hide the disclosure buttons (asserted above) while matchMedia
+    // still reported mobile, leaving the columns collapsed and every link
+    // unreachable with no way to expand them. Asserting the behaviour catches
+    // that; asserting the constant would not.
+    const visibleLinks = links.filter((link) => link.checkVisibility())
+    if (visibleLinks.length !== 20) {
+      throw new Error(
+        `Expected all 20 links visible at desktop width, got ${visibleLinks.length} — DESKTOP_QUERY and the lg breakpoint have drifted apart.`,
+      )
     }
   },
 }
