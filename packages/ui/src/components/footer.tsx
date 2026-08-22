@@ -46,44 +46,77 @@ type FooterColor = (typeof footerColors)[number]
 const DEFAULT_FOOTER_COLOR: FooterColor = 'white'
 
 /**
- * The colour variants whose surface is dark in BOTH themes — the `-600` and
- * `-800` steps of all three families. They are exactly the variants that
- * declare a bare `text-white` below (the others declare `dark:text-white`, so
- * their light-mode surface is light), and that correspondence is the invariant
- * to preserve if a variant is ever added or retuned.
+ * Surfaces dark enough that the full-colour mark is illegible but the waratah
+ * still reads — the `-800` steps. These take the masterbrand's "full colour
+ * reversed" logo: white wordmark, red waratah.
  */
-const footerDarkSurfaceColors = new Set<FooterColor>([
-  'primary-800',
-  'primary-600',
-  'grey-800',
-  'grey-600',
-  'accent-800',
-  'accent-600',
-])
+const footerReversedLogoColors = new Set<FooterColor>(['primary-800', 'grey-800', 'accent-800'])
 
 /**
- * The `Logo` treatment that stays visible on a given footer surface.
- *
- * The brand mark is two-tone and its colours are FIXED, not inherited: the
- * wordmark paints `fill-nsw-blue-800` and the waratah `fill-nsw-red-600` under
- * `logoType='default'`. Nothing in the footer's ink chain reaches it. On a
- * surface that is dark in both themes that default is wrong in light mode, and
- * on `primary-800` it is invisible — `--primary-800` and `--nsw-blue-800` are
- * the same value (`oklch(0.289999 0.117296 259.841938)`), so the wordmark is
- * painted in exactly its own background at 1:1 contrast.
- *
- * `mono-white` rather than `reversed` for the dark set: `reversed` keeps the
- * waratah red, which reads well on navy but disappears on the `accent-*`
- * surfaces, and one rule that holds for all six beats three family-specific
- * ones. Light surfaces keep `default`, which is the full-colour brand mark —
- * deriving the logo from `--footer-ink` instead would have flattened it to
- * monochrome grey there, losing the waratah for no reason.
- *
- * Exported because the blocks that render a logo each need it, and registry
- * consumers copy those blocks as source.
+ * Mid-tone surfaces — the `-600` steps — where NEITHER masterbrand colourway is
+ * legible, so the restricted mono logo is the only option left. See
+ * `footerLogoType` for the approval this carries.
  */
-function footerLogoType(color?: FooterColor | null): 'default' | 'mono-white' {
-  return footerDarkSurfaceColors.has(color ?? DEFAULT_FOOTER_COLOR) ? 'mono-white' : 'default'
+const footerMonoLogoColors = new Set<FooterColor>(['primary-600', 'grey-600', 'accent-600'])
+
+/**
+ * Dev-only notice that a surface has forced the mark onto the mono logo. The
+ * masterbrand guidelines class mono as RESTRICTED USE ONLY — "only when a
+ * design cannot accommodate for the full colour or reverse (red waratah)
+ * logos" — and require approval from the NSW Government Brand Team before it
+ * is used. A design system cannot grant that approval, so it says so rather
+ * than applying the treatment silently. No-op in production.
+ */
+function warnIfMonoLogoRequired(color: FooterColor) {
+  if (process.env.NODE_ENV === 'production') {
+    return
+  }
+  console.warn(
+    `[nswds/ui] Footer color="${color}" leaves the NSW Government logo no legible masterbrand colourway, so the RESTRICTED mono logo is used. The guidelines require NSW Government Brand Team approval for mono. Prefer the "-800" step of this family, which takes the sanctioned reversed logo.`,
+  )
+}
+
+/**
+ * The `Logo` treatment the masterbrand guidelines call for on a given footer
+ * surface.
+ *
+ * The brand mark does not inherit: its wordmark and waratah are painted from
+ * fixed palette values under `logoType='default'`, so nothing in the footer's
+ * ink chain reaches them and the treatment has to be chosen against the
+ * surface. Getting it wrong is not subtle — `--primary-800` and
+ * `--nsw-blue-800` are the same value, so `default` on a `primary-800` footer
+ * paints the wordmark in exactly its own background at 1:1 contrast.
+ *
+ * The guidelines rank the colourways, and this follows that order:
+ *
+ * - **Full colour (`default`)** "must be given preference over all other
+ *   versions". Used on every light surface.
+ * - **Full colour reversed (`reversed`)** is the sanctioned alternative "where
+ *   the primary logo is illegible" — the `-800` steps. Measured against those
+ *   three surfaces the white wordmark runs 13.6–15.1:1 and the waratah
+ *   2.6–2.9:1, so both halves of the mark read.
+ * - **Mono is RESTRICTED USE ONLY** and needs Brand Team approval. It is the
+ *   last resort here, not the default, and only the `-600` steps reach it:
+ *   against those the waratah measures 1.00, 1.13 and 1.59:1 — on
+ *   `accent-600` it is literally the same value as the surface
+ *   (`--accent-600` IS `--nsw-red-600`), so a reversed mark would lose its
+ *   flower exactly the way `default` lost its wordmark. That matches the
+ *   guidelines' own accessibility table, where the mid-tone row is crossed
+ *   for full colour AND for reversed.
+ *
+ * Light mode only, in every case: under `.dark` the mark's waratah flips to
+ * white and every surface deepens, so all thirteen render an all-white logo.
+ */
+function footerLogoType(color?: FooterColor | null): 'default' | 'reversed' | 'mono-white' {
+  const resolved = color ?? DEFAULT_FOOTER_COLOR
+  if (footerReversedLogoColors.has(resolved)) {
+    return 'reversed'
+  }
+  if (footerMonoLogoColors.has(resolved)) {
+    warnIfMonoLogoRequired(resolved)
+    return 'mono-white'
+  }
+  return 'default'
 }
 
 const footerVariants = cva(

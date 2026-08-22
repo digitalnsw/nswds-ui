@@ -266,52 +266,107 @@ export const SitemapBrand: Story = {
 }
 
 /**
- * The three logo-bearing blocks on a surface that is dark in BOTH themes.
+ * The logo colourway on every surface class, checked against the masterbrand
+ * guidelines' order of preference: full colour preferred, reversed where the
+ * primary mark is illegible, mono restricted to where neither reads.
  *
- * This story exists because its absence is what hid the bug: every logo block
- * was only ever rendered on `white` or `grey-200`, and the one block shown on
- * `primary-800` (the CTA) has no logo — so a wordmark painted in its own
- * background colour was unreachable from Storybook and from Chromatic.
+ * This story exists because its absence is what hid the original bug: every
+ * logo block was only ever rendered on `white` or `grey-200`, and the one block
+ * shown on `primary-800` (the CTA) has no logo — so a wordmark painted in its
+ * own background colour was unreachable from Storybook and from Chromatic.
  */
-export const BrandOnDark: Story = {
-  name: 'Brand on a dark surface',
+export const LogoColourways: Story = {
+  name: 'Logo colourways by surface',
   render: () => (
     <div className='flex flex-col gap-8'>
+      {/* Light: full colour. Dark -800: reversed. Mid -600: mono. */}
+      <FooterSimpleCentred {...shared} color='white' />
       <FooterSimpleCentred {...shared} color='primary-800' />
       <FooterCompact {...shared} color='grey-800' />
       <FooterSitemapBrand {...shared} color='accent-800' />
+      <FooterCompact {...shared} color='accent-600' />
     </div>
   ),
   play: async ({ canvasElement }) => {
+    // Chromium serialises computed colours in whatever space the value was
+    // authored in — these resolve as `oklch(...)`, not `rgb(...)` — so the
+    // reference is read back through the same pipeline rather than hardcoded.
+    const probe = document.createElement('div')
+    probe.className = 'bg-white'
+    canvasElement.append(probe)
+    const WHITE = getComputedStyle(probe).backgroundColor
+    probe.remove()
+    if (!WHITE) {
+      throw new Error('Could not resolve a white reference colour.')
+    }
+    // Which colourway each surface must resolve to, per the guidelines.
+    const expected: Record<string, 'full-colour' | 'reversed' | 'mono'> = {
+      white: 'full-colour',
+      'primary-800': 'reversed',
+      'grey-800': 'reversed',
+      'accent-800': 'reversed',
+      'accent-600': 'mono',
+    }
+
     const footers = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')]
-    if (footers.length !== 3) {
-      throw new Error(`Expected three footers, got ${footers.length}.`)
+    if (footers.length !== Object.keys(expected).length) {
+      throw new Error(`Expected ${Object.keys(expected).length} footers, got ${footers.length}.`)
     }
 
     for (const footer of footers) {
+      const colour = footer.dataset.color ?? '(none)'
       const surface = getComputedStyle(footer).backgroundColor
       const svg = footer.querySelector('svg')
       if (!svg) {
-        throw new Error(`Expected a logo in the ${footer.dataset.color} footer.`)
+        throw new Error(`Expected a logo in the ${colour} footer.`)
       }
 
-      const paths = [...svg.querySelectorAll('path')]
-      if (paths.length === 0) {
+      const fills = [...svg.querySelectorAll('path')].map((path) => getComputedStyle(path).fill)
+      if (fills.length === 0) {
         throw new Error('Expected the logo to render paths.')
       }
 
-      for (const path of paths) {
-        const fill = getComputedStyle(path).fill
-        // The actual defect, asserted directly rather than via a class name:
-        // the mark must not be painted in its own background. On primary-800
-        // the default treatment resolved to exactly the surface colour.
+      // The defect itself, asserted directly rather than via a class name: no
+      // part of the mark may be painted in its own background.
+      for (const fill of fills) {
         if (fill === surface) {
           throw new Error(
-            `Logo path is painted in the footer's own background (${fill}) on color="${footer.dataset.color}" — the mark is invisible.`,
+            `Logo path is painted in the footer's own background (${fill}) on color="${colour}" — the mark is invisible.`,
           )
         }
         if (fill === '' || fill === 'none') {
-          throw new Error(`Expected the logo path to resolve a fill, got "${fill}".`)
+          throw new Error(`Expected the logo path to resolve a fill on ${colour}, got "${fill}".`)
+        }
+      }
+
+      const distinct = new Set(fills)
+      const want = expected[colour]
+
+      if (want === 'mono') {
+        // Mono is one colour throughout — the waratah gives up its red.
+        if (distinct.size !== 1 || !distinct.has(WHITE)) {
+          throw new Error(
+            `Expected the restricted mono logo (white throughout) on ${colour}, got ${[...distinct].join(', ')}.`,
+          )
+        }
+      } else {
+        // Full colour and reversed are both two-tone: the waratah keeps its
+        // red. That is the whole reason mono is a last resort.
+        if (distinct.size !== 2) {
+          throw new Error(
+            `Expected a two-tone mark on ${colour} (${want}), got ${distinct.size} colour(s): ${[...distinct].join(', ')}.`,
+          )
+        }
+        const hasWhite = distinct.has(WHITE)
+        if (want === 'reversed' && !hasWhite) {
+          throw new Error(
+            `Expected the reversed mark's wordmark to be white (${WHITE}) on ${colour}, got ${[...distinct].join(', ')}.`,
+          )
+        }
+        if (want === 'full-colour' && hasWhite) {
+          throw new Error(
+            `Expected the full-colour mark on ${colour}, but a path is white — that is the reversed treatment.`,
+          )
         }
       }
     }

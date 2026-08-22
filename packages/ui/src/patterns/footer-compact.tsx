@@ -17,10 +17,10 @@ type FooterCompactProps = Omit<
   'acknowledgement' | 'children' | 'smallPrint'
 > & {
   /**
-   * `Logo` treatment. Defaults to whatever stays visible on the chosen
-   * `color` (see `footerLogoType`) — the full-colour brand mark on a light
-   * surface, `mono-white` on one that is dark in both themes. Override only
-   * for a surface this block does not own.
+   * `Logo` treatment. Defaults to the colourway the masterbrand guidelines
+   * call for on the chosen `color` (see `footerLogoType`): full colour on a
+   * light surface, reversed on a `-800`, and the restricted mono only where
+   * neither reads. Override only for a surface this block does not own.
    */
   logoType?: React.ComponentProps<typeof Logo>['logoType']
 }
@@ -30,9 +30,9 @@ type FooterCompactProps = Omit<
  * shortest footer in the set, for embedded tools, dashboards and admin screens
  * where the footer should take almost no vertical space.
  *
- * The logo tracks `color` automatically (see `footerLogoType`): the full-colour
- * brand mark on a light surface, `mono-white` on one that is dark in both
- * themes, where the default treatment would paint the wordmark in nsw-blue-800
+ * The logo tracks `color` automatically (see `footerLogoType`), following the
+ * masterbrand's order of preference: full colour on a light surface, reversed
+ * on a `-800`. The default treatment would paint the wordmark in nsw-blue-800
  * — invisible on `primary-800`, which is that exact colour.
  *
  * NOTE — this is the one block that omits acknowledgement of Country: it

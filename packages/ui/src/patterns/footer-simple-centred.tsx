@@ -25,10 +25,10 @@ type FooterSimpleCentredProps = Omit<
   'acknowledgement' | 'children' | 'smallPrint'
 > & {
   /**
-   * `Logo` treatment. Defaults to whatever stays visible on the chosen
-   * `color` (see `footerLogoType`) — the full-colour brand mark on a light
-   * surface, `mono-white` on one that is dark in both themes. Override only
-   * for a surface this block does not own.
+   * `Logo` treatment. Defaults to the colourway the masterbrand guidelines
+   * call for on the chosen `color` (see `footerLogoType`): full colour on a
+   * light surface, reversed on a `-800`, and the restricted mono only where
+   * neither reads. Override only for a surface this block does not own.
    */
   logoType?: React.ComponentProps<typeof Logo>['logoType']
 }
