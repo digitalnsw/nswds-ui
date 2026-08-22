@@ -1,3 +1,9 @@
+## [5.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.2...@nswds/ui-v5.2.0) (2026-08-22)
+
+### Features
+
+* **ui:** add page-composition components and icon entry points ([#146](https://github.com/digitalnsw/nswds-ui/issues/146)) ([358d626](https://github.com/digitalnsw/nswds-ui/commit/358d62610c163bba3ac7f4332571e72255a1057f))
+
 ## [5.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.1...@nswds/ui-v5.1.2) (2026-08-22)
 
 ### Bug Fixes
