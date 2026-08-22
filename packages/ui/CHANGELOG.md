@@ -1,3 +1,9 @@
+## [5.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.1...@nswds/ui-v5.1.2) (2026-08-22)
+
+### Bug Fixes
+
+* **ui:** restore footer brand visibility and link touch targets ([#144](https://github.com/digitalnsw/nswds-ui/issues/144)) ([a2cf78f](https://github.com/digitalnsw/nswds-ui/commit/a2cf78fe7ea4ad60847c7fb2cc618adb85fa3011))
+
 ## [5.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.0...@nswds/ui-v5.1.1) (2026-08-22)
 
 ### Bug Fixes
