@@ -5,7 +5,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent } from 'storybook/test'
 
-import { IconFormatSize } from '../icons/format-size.js'
+import { Field, FieldLabel } from './field.js'
 import { Slider } from './slider.js'
 
 const meta = {
@@ -18,34 +18,25 @@ const meta = {
     docs: {
       description: {
         component:
-          'Slider selects a number from a range, built on the Base UI Slider primitive — all keyboard stepping (arrows, Home/End, PageUp/PageDown), pointer handling, ARIA and RTL come from there. Inside a Field it needs no label of its own: Base UI reads the surrounding Field context, so FieldLabel associates with it the same way it does for Input.',
+          'Slider selects a number from a range, built on the Base UI Slider primitive — all keyboard stepping (arrows, Home/End, PageUp/PageDown), pointer handling, ARIA and RTL come from there. It takes its accessible name from the surrounding Field: wrap it in a Field with a FieldLabel and Base UI associates the two, the same way Input is labelled.',
       },
     },
   },
   args: {
-    label: 'Size',
     defaultValue: 56,
     min: 16,
     max: 140,
     step: 1,
-    suffix: 'px',
-    showValue: true,
   },
   argTypes: {
-    label: { control: 'text', table: { category: 'Content' } },
-    suffix: {
-      control: 'text',
-      description: 'Visual unit appended to the readout. Use `format` for a unit AT should hear.',
-      table: { category: 'Content' },
-    },
-    showValue: { control: 'boolean', table: { category: 'Appearance' } },
     disabled: { control: 'boolean', table: { category: 'Behaviour' } },
     className: { table: { disable: true, category: 'Advanced' } },
   },
   render: (args) => (
-    <div className='max-w-md'>
+    <Field className='max-w-md'>
+      <FieldLabel>Size</FieldLabel>
       <Slider {...args} />
-    </div>
+    </Field>
   ),
 } satisfies Meta<typeof Slider>
 
@@ -86,8 +77,8 @@ export const Default: Story = {
     await expect(input).toHaveAttribute('min', String(args.min))
     await expect(input).toHaveAttribute('max', String(args.max))
 
-    // The visible label must actually name the control, or the slider is
-    // unnamed to a screen reader (WCAG 2.2, 4.1.2).
+    // The FieldLabel must actually name the control, or the slider is
+    // unnamed to a screen reader (WCAG 2.1 AA, 4.1.2).
     await expect(input).toHaveAccessibleName('Size')
 
     // Keyboard stepping is inherited, not hand-rolled — prove it works with a
@@ -103,10 +94,22 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <div className='flex max-w-md flex-col gap-8'>
-      <Slider label='Size' defaultValue={56} min={16} max={140} suffix='px' icon={IconFormatSize} />
-      <Slider label='Weight' defaultValue={700} min={100} max={900} step={100} />
-      <Slider label='No readout' defaultValue={40} showValue={false} />
-      <Slider label='Disabled' defaultValue={25} disabled />
+      <Field>
+        <FieldLabel>Size</FieldLabel>
+        <Slider defaultValue={56} min={16} max={140} />
+      </Field>
+      <Field>
+        <FieldLabel>Weight</FieldLabel>
+        <Slider defaultValue={700} min={100} max={900} step={100} />
+      </Field>
+      <Field>
+        <FieldLabel>Volume</FieldLabel>
+        <Slider defaultValue={40} />
+      </Field>
+      <Field>
+        <FieldLabel>Disabled</FieldLabel>
+        <Slider defaultValue={25} disabled />
+      </Field>
     </div>
   ),
 }
@@ -114,9 +117,9 @@ export const Variants: Story = {
 export const CssCheck: Story = {
   name: 'CssCheck',
   play: async ({ canvasElement }) => {
-    const indicator = canvasElement.querySelector<HTMLElement>('[data-slot="slider-indicator"]')
+    const indicator = canvasElement.querySelector<HTMLElement>('[data-slot="slider-range"]')
     if (!indicator) {
-      throw new Error('Could not find [data-slot="slider-indicator"].')
+      throw new Error('Could not find [data-slot="slider-range"].')
     }
 
     // Proves globals.css loaded: bg-primary resolves to a real colour rather
