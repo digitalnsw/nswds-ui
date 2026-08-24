@@ -67,19 +67,21 @@ export const Default: Story = {
 export const Variants: Story = {
   name: 'Variants',
   render: () => (
-    <div className='flex flex-col gap-8'>
+    <div className='flex max-w-2xl flex-col gap-10'>
+      {/* default — segmented control */}
       <Tabs defaultValue='one' className='max-w-md'>
         <TabsList>
           <TabsTrigger value='one'>Eligibility</TabsTrigger>
           <TabsTrigger value='two'>How to apply</TabsTrigger>
           <TabsTrigger value='three'>Fees</TabsTrigger>
         </TabsList>
-        <TabsContent value='one'>Who can apply for this service.</TabsContent>
+        <TabsContent value='one'>The default variant is a segmented control.</TabsContent>
         <TabsContent value='two'>The steps to submit an application.</TabsContent>
         <TabsContent value='three'>What the service costs.</TabsContent>
       </Tabs>
 
-      <Tabs defaultValue='one' className='max-w-md'>
+      {/* line — underline, left-aligned */}
+      <Tabs defaultValue='one'>
         <TabsList variant='line'>
           <TabsTrigger value='one'>Eligibility</TabsTrigger>
           <TabsTrigger value='two'>How to apply</TabsTrigger>
@@ -88,6 +90,34 @@ export const Variants: Story = {
         <TabsContent value='one'>The line variant underlines the active tab.</TabsContent>
         <TabsContent value='two'>The steps to submit an application.</TabsContent>
         <TabsContent value='three'>What the service costs.</TabsContent>
+      </Tabs>
+
+      {/* fullwidth — underline stretched to equal columns */}
+      <Tabs defaultValue='team'>
+        <TabsList variant='fullwidth'>
+          <TabsTrigger value='account'>My Account</TabsTrigger>
+          <TabsTrigger value='company'>Company</TabsTrigger>
+          <TabsTrigger value='team'>Team Members</TabsTrigger>
+          <TabsTrigger value='billing'>Billing</TabsTrigger>
+        </TabsList>
+        <TabsContent value='account'>Your personal details.</TabsContent>
+        <TabsContent value='company'>Organisation settings.</TabsContent>
+        <TabsContent value='team'>The fullwidth variant fills equal columns.</TabsContent>
+        <TabsContent value='billing'>Payment and invoices.</TabsContent>
+      </Tabs>
+
+      {/* bordered — divided cells in an enclosed card */}
+      <Tabs defaultValue='team'>
+        <TabsList variant='bordered'>
+          <TabsTrigger value='account'>My Account</TabsTrigger>
+          <TabsTrigger value='company'>Company</TabsTrigger>
+          <TabsTrigger value='team'>Team Members</TabsTrigger>
+          <TabsTrigger value='billing'>Billing</TabsTrigger>
+        </TabsList>
+        <TabsContent value='account'>Your personal details.</TabsContent>
+        <TabsContent value='company'>Organisation settings.</TabsContent>
+        <TabsContent value='team'>The bordered variant divides equal cells.</TabsContent>
+        <TabsContent value='billing'>Payment and invoices.</TabsContent>
       </Tabs>
     </div>
   ),
