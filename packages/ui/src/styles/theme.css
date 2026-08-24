@@ -196,3 +196,41 @@
     cursor: pointer;
   }
 }
+
+/* ── System-level reduced-motion guard ──
+   The @nswds/tokens motion layer collapses --duration-* under
+   `prefers-reduced-motion: reduce`, which zeroes every transition routed through
+   --default-transition-duration. Two things it CANNOT reach, by construction:
+
+     1. Keyframe animations. `animate-accordion-down`, `data-open:animate-in`,
+        the select's slide/zoom — their animation-duration is baked into
+        tw-animate-css's shorthand, not derived from --duration-*. So the height
+        tween and the dropdown zoom keep running for a reader who asked for less
+        motion, contradicting DESIGN.md ("motion-safe: transitions on the token
+        durations") and WCAG 2.3.3.
+     2. Utility-set transition-duration. `duration-300` writes --tw-duration, not
+        --duration-*, so the token collapse leaves it at 300ms.
+
+   Both need one property zeroed globally, which a component class string cannot
+   do safely: pairing `animate-*` with `motion-reduce:animate-none` on the same
+   `animation` property is exactly the two-build cascade hazard check:cascade
+   forbids — a media query adds no specificity, so a consumer's own Tailwind
+   rebuild can re-emit the loser after ours. Hence a single unlayered rule here.
+
+   Unlayered + `!important` so it outranks every layered utility regardless of a
+   consumer's import order. `*, ::before, ::after` are ignored by check:cascade
+   (it only tokenises class strings and `.`-prefixed utility selectors), so this
+   introduces no cascade-unsafe pair. `.01ms` rather than `0` keeps the
+   animationend/transitionend events firing, which Base UI's accordion and select
+   state machines wait on to settle open/closed — the panel still OPENS, just
+   without the tween. iteration-count:1 stops any looping animation after one
+   pass instead of freezing it mid-cycle. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
