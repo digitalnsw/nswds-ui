@@ -1,3 +1,9 @@
+## [5.5.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.2...@nswds/ui-v5.5.3) (2026-08-24)
+
+### Bug Fixes
+
+* **ui:** restyle accordion to NSW line-system with accent and band variants ([#156](https://github.com/digitalnsw/nswds-ui/issues/156)) ([060d8e1](https://github.com/digitalnsw/nswds-ui/commit/060d8e1e25f883ee328a763adb52c6a444285ecd))
+
 ## [5.5.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.1...@nswds/ui-v5.5.2) (2026-08-24)
 
 ### Bug Fixes
