@@ -1,3 +1,9 @@
+## [5.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.3.0...@nswds/ui-v5.4.0) (2026-08-24)
+
+### Features
+
+* **ui:** responsive header brand — larger desktop site name and a compact NSW logo on mobile ([#151](https://github.com/digitalnsw/nswds-ui/issues/151)) ([2c1b858](https://github.com/digitalnsw/nswds-ui/commit/2c1b8583b1b6183a033ff0845847af0d7237dba5))
+
 ## [5.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.2.0...@nswds/ui-v5.3.0) (2026-08-24)
 
 ### Features
