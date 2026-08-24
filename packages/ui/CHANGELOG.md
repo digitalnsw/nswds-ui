@@ -1,3 +1,9 @@
+## [5.5.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.0...@nswds/ui-v5.5.1) (2026-08-24)
+
+### Bug Fixes
+
+* **ui:** focus textarea from input-group addon and drop dead ellipsis labels ([#153](https://github.com/digitalnsw/nswds-ui/issues/153)) ([c22f2f7](https://github.com/digitalnsw/nswds-ui/commit/c22f2f7c9fee41ba8a3b9aa86788e677112d9ef2))
+
 ## [5.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.4.0...@nswds/ui-v5.5.0) (2026-08-24)
 
 ### Features
