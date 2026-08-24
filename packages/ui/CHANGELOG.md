@@ -1,3 +1,9 @@
+## [5.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.4.0...@nswds/ui-v5.5.0) (2026-08-24)
+
+### Features
+
+* **ui:** add the core component library (22 components) with stories ([#152](https://github.com/digitalnsw/nswds-ui/issues/152)) ([6d5d4c7](https://github.com/digitalnsw/nswds-ui/commit/6d5d4c7448fcdcf6ee0983a1d54a679ff8bb7cb1))
+
 ## [5.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.3.0...@nswds/ui-v5.4.0) (2026-08-24)
 
 ### Features
