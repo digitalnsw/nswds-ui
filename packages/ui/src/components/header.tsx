@@ -220,16 +220,43 @@ function HeaderBrand({
 
   const logoNode =
     logo === true ? (
-      <Logo
-        logoType={onDarkSurface ? 'reversed' : 'default'}
-        // 64px from lg, 56px below it — 56px is the floor, so the lockup stays
-        // legible on a phone. Written as mutually exclusive breakpoint ranges
-        // rather than `h-14 lg:h-16`: a bare `h-14` a consumer also uses is
-        // re-emitted after ours by their own Tailwind build, and a media query
-        // adds no specificity, so it would outrank the lg step and freeze the
-        // logo at 56px.
-        className='w-auto max-lg:h-14 lg:h-16'
-      />
+      // Two lockups, one shown per breakpoint. Below sm the phone has no room
+      // for the full three-row mark, so it takes the compact `wordmark='nsw'`
+      // lockup (waratah + "NSW", no "Government"); sm and up take the full mark.
+      //
+      // Each is wrapped in a span carrying the show/hide, not the Logo itself,
+      // because Logo emits a visually-hidden "NSW Government" span beside its
+      // (aria-hidden) svg. Hiding only the svg would leave that label in the
+      // tree twice, so the home link's accessible name would read "NSW
+      // Government NSW Government …". Toggling the wrapper drops the hidden
+      // variant's label with it, leaving exactly one.
+      //
+      // The wrappers hide with a single conditional utility each (`sm:hidden` /
+      // `max-sm:hidden`) rather than a `hidden`/`sm:block` pair: a bare `hidden`
+      // a consumer also uses is re-emitted after ours by their own Tailwind
+      // build and a media query carries no extra specificity, so the pair is
+      // not cascade-safe (see AGENTS.md §4) — one conditional is.
+      <>
+        <span className='sm:hidden'>
+          <Logo
+            logoType={onDarkSurface ? 'reversed' : 'default'}
+            wordmark='nsw'
+            className='block h-14 w-auto'
+          />
+        </span>
+        <span className='max-sm:hidden'>
+          <Logo
+            logoType={onDarkSurface ? 'reversed' : 'default'}
+            // 64px from lg, 56px below it — 56px is the floor, so the lockup
+            // stays legible. Written as mutually exclusive breakpoint ranges
+            // rather than `h-14 lg:h-16`: a bare `h-14` a consumer also uses is
+            // re-emitted after ours by their own Tailwind build, and a media
+            // query adds no specificity, so it would outrank the lg step and
+            // freeze the logo at 56px.
+            className='block w-auto max-lg:h-14 lg:h-16'
+          />
+        </span>
+      </>
     ) : (
       // `false` / `null` fall through as the falsy nodes they are; anything
       // else is the consumer's own lockup.

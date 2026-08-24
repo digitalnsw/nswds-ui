@@ -209,3 +209,53 @@ export const OnImage: Story = {
     </div>
   ),
 }
+
+export const Wordmark: Story = {
+  name: 'Wordmark',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'The two wordmark lockups side by side: the full mark (waratah + "NSW" + "Government") and the compact `wordmark="nsw"` mark, which drops the "Government" row.',
+          why: 'The compact mark suits tight horizontal space — a mobile header, for one — where the full three-row lockup would crowd the site name. The Header component swaps to it automatically below the sm breakpoint.',
+          how: 'Both are set to the same rendered height; confirm the nsw mark drops the "Government" row and sits flush to its box (its viewBox crops from 280 to 247) while the waratah and "NSW" stay identical in proportion.',
+          caveat:
+            'The visually-hidden accessible name stays "NSW Government" for both lockups, so screen readers announce them identically regardless of which rows are drawn.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='flex flex-wrap items-end gap-8'>
+      <div className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <Logo className='h-20 w-auto' />
+        <p className='text-sm text-muted-foreground'>full (default)</p>
+      </div>
+      <div className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <Logo wordmark='nsw' className='h-20 w-auto' />
+        <p className='text-sm text-muted-foreground'>nsw</p>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const svgs = canvasElement.querySelectorAll('svg')
+    const nsw = [...svgs].find((s) => s.getAttribute('viewBox') === '0 0 259 247')
+    if (!nsw) {
+      throw new Error('Expected an nsw-wordmark Logo with viewBox "0 0 259 247".')
+    }
+    // The full mark draws four paths; the nsw mark drops the "Government" row,
+    // so it must draw exactly three.
+    const pathCount = nsw.querySelectorAll('path').length
+    if (pathCount !== 3) {
+      throw new Error(`Expected the nsw wordmark to draw 3 paths, found ${pathCount}.`)
+    }
+    const srOnly = canvasElement.querySelectorAll('span.sr-only')
+    for (const span of srOnly) {
+      if (span.textContent !== 'NSW Government') {
+        throw new Error(
+          `Expected every Logo accessible name to stay "NSW Government", received "${span.textContent}".`,
+        )
+      }
+    }
+  },
+}
