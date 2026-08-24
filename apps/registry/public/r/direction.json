@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "direction",
+  "title": "Direction Provider",
+  "description": "Provides text direction (LTR/RTL) to descendant components.",
+  "dependencies": [
+    "@base-ui/react"
+  ],
+  "files": [
+    {
+      "path": "src/components/direction.tsx",
+      "content": "'use client'\n\nexport { DirectionProvider, useDirection } from '@base-ui/react/direction-provider'\n",
+      "type": "registry:ui",
+      "target": "components/direction.tsx"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "5.4.0"
+  }
+}

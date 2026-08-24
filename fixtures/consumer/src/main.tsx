@@ -99,7 +99,6 @@ import type {
   SiteSearchProps,
   SkipLinkProps,
   SkipLinksProps,
-  SliderProps,
   SpinnerProps,
   Step,
   StepIndicatorProps,
@@ -208,13 +207,6 @@ import {
   SkipLink,
   SkipLinks,
   Slider,
-  SliderControl,
-  SliderIndicator,
-  SliderLabel,
-  SliderRoot,
-  SliderThumb,
-  SliderTrack,
-  SliderValue,
   Spinner,
   StepIndicator,
   StepNav,
@@ -308,7 +300,6 @@ type PublicPropTypes = [
   LinkCardProps,
   OnThisPageProps,
   OnThisPageItem,
-  SliderProps,
   UseChromeHeightOptions,
   UseChromeHeightResult<HTMLDivElement>,
   HeaderProps,
@@ -745,19 +736,9 @@ function App() {
               description='The full character set.'
             />
 
-            {/* Composed form, then the same control built from its parts — both
-                are public API and the generic parameter must flow through both. */}
-            <Slider label='Size' defaultValue={56} min={16} max={140} suffix='px' />
-            <SliderRoot defaultValue={40} aria-label='Built from parts'>
-              <SliderLabel>Weight</SliderLabel>
-              <SliderValue />
-              <SliderControl>
-                <SliderTrack>
-                  <SliderIndicator />
-                  <SliderThumb />
-                </SliderTrack>
-              </SliderControl>
-            </SliderRoot>
+            {/* Slider is a single composed component in the current API. */}
+            <Slider defaultValue={56} min={16} max={140} />
+            <Slider defaultValue={40} />
           </Container>
         </Section>
 
