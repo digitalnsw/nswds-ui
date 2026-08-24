@@ -252,7 +252,7 @@ function HeaderBrand({
         variant='unstyled'
         href={href}
         aria-label={label}
-        className='-m-1 flex items-center rounded-sm p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current max-sm:gap-3 sm:gap-4'
+        className='-m-1 flex items-center gap-4 rounded-sm p-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current'
       >
         {logoNode}
         {sitename ? (
@@ -263,7 +263,7 @@ function HeaderBrand({
           // light/white variants already set on the surface.
           <Sitename
             className={cn(
-              'font-bold text-balance max-sm:text-lg sm:text-xl',
+              'font-bold text-balance max-sm:text-lg sm:max-lg:text-xl lg:text-2xl',
               !onDarkSurface && 'text-primary-800 dark:text-white',
             )}
           >
