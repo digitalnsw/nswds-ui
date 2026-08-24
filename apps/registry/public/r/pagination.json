@@ -1,0 +1,33 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "pagination",
+  "title": "Pagination",
+  "description": "Navigation controls for paginated content.",
+  "dependencies": [
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+    "https://ui.digital.nsw.gov.au/registry/r/button.json",
+    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/pagination.tsx",
+      "content": "import * as React from 'react'\n\nimport { IconChevronLeft } from '@/icons/chevron-left'\nimport { IconChevronRight } from '@/icons/chevron-right'\nimport { IconMoreHoriz } from '@/icons/more-horiz'\nimport { cn } from '@/lib/utils'\nimport { Button } from '@/components/button'\n\nfunction Pagination({ className, ...props }: React.ComponentProps<'nav'>) {\n  return (\n    <nav\n      role='navigation'\n      aria-label='pagination'\n      data-slot='pagination'\n      className={cn('mx-auto flex w-full justify-center', className)}\n      {...props}\n    />\n  )\n}\n\nfunction PaginationContent({ className, ...props }: React.ComponentProps<'ul'>) {\n  return (\n    <ul\n      data-slot='pagination-content'\n      className={cn('flex items-center gap-0.5', className)}\n      {...props}\n    />\n  )\n}\n\nfunction PaginationItem({ ...props }: React.ComponentProps<'li'>) {\n  return <li data-slot='pagination-item' {...props} />\n}\n\ntype PaginationLinkProps = {\n  isActive?: boolean\n} & Pick<React.ComponentProps<typeof Button>, 'size'> &\n  React.ComponentProps<'a'>\n\nfunction PaginationLink({ className, isActive, size = 'icon', ...props }: PaginationLinkProps) {\n  return (\n    <Button\n      variant={isActive ? 'outline' : 'ghost'}\n      size={size}\n      className={cn(className)}\n      nativeButton={false}\n      render={\n        <a\n          aria-current={isActive ? 'page' : undefined}\n          data-slot='pagination-link'\n          data-active={isActive}\n          {...props}\n        />\n      }\n    />\n  )\n}\n\nfunction PaginationPrevious({\n  className,\n  text = 'Previous',\n  ...props\n}: React.ComponentProps<typeof PaginationLink> & { text?: string }) {\n  return (\n    <PaginationLink\n      aria-label='Go to previous page'\n      size='default'\n      className={cn('ps-2!', className)}\n      {...props}\n    >\n      <IconChevronLeft data-icon='inline-start' className='rtl:rotate-180' />\n      <span className='max-sm:hidden sm:block'>{text}</span>\n    </PaginationLink>\n  )\n}\n\nfunction PaginationNext({\n  className,\n  text = 'Next',\n  ...props\n}: React.ComponentProps<typeof PaginationLink> & { text?: string }) {\n  return (\n    <PaginationLink\n      aria-label='Go to next page'\n      size='default'\n      className={cn('pe-2!', className)}\n      {...props}\n    >\n      <span className='max-sm:hidden sm:block'>{text}</span>\n      <IconChevronRight data-icon='inline-end' className='rtl:rotate-180' />\n    </PaginationLink>\n  )\n}\n\nfunction PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'>) {\n  return (\n    <span\n      aria-hidden\n      data-slot='pagination-ellipsis'\n      className={cn(\n        \"flex size-7 items-center justify-center [&_svg:not([class*='size-'])]:size-3.5\",\n        className,\n      )}\n      {...props}\n    >\n      <IconMoreHoriz />\n      <span className='sr-only'>More pages</span>\n    </span>\n  )\n}\n\nexport {\n  Pagination,\n  PaginationContent,\n  PaginationEllipsis,\n  PaginationItem,\n  PaginationLink,\n  PaginationNext,\n  PaginationPrevious,\n}\n",
+      "type": "registry:ui",
+      "target": "components/pagination.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "5.4.0"
+  }
+}
