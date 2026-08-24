@@ -170,7 +170,7 @@ function NavigationMenu({
             data-slot='navigation-menu-popup'
             className={cn(
               // House popup surface (see popover.tsx / sheet.tsx).
-              'relative rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10',
+              'relative rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10',
               // Width/height track the active Content's size (Base UI measures
               // it into --popup-*), so switching sections morphs the surface
               // instead of jump-cutting.
@@ -187,7 +187,7 @@ function NavigationMenu({
               data-slot='navigation-menu-viewport'
               // Clips the outgoing/incoming Content pair during a section
               // switch; rounded to match the popup so corners don't leak.
-              className='relative size-full overflow-hidden rounded-lg'
+              className='relative size-full overflow-hidden rounded-md'
             />
           </NavigationMenuPrimitive.Popup>
         </NavigationMenuPrimitive.Positioner>
