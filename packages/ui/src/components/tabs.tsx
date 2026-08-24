@@ -29,14 +29,23 @@ const tabsListVariants = cva('group/tabs-list flex items-center text-muted-foreg
       // Underline stretched to equal columns — the settings-bar idiom. Each
       // cell carries its own bottom rule so the bar can scroll (rather than clip
       // an unreachable tab) once the labels stop fitting, matching TabNav.
-      fullwidth: 'w-full [scrollbar-width:none] overflow-x-auto [&::-webkit-scrollbar]:hidden',
+      //
+      // Horizontal-only: an equal-column bar has no vertical form — use `line`
+      // or `default` for `orientation="vertical"`. The `group-data-vertical`
+      // `w-fit` is a guard so a stray vertical usage shrinks the list instead of
+      // consuming the row and collapsing the panel.
+      fullwidth:
+        'w-full [scrollbar-width:none] overflow-x-auto group-data-vertical/tabs:w-fit [&::-webkit-scrollbar]:hidden',
       // Enclosed control — equal cells split by dividers inside a bordered card.
       // `overflow-x-auto` both clips each cell's underline to the 4px corner (so
       // the active marker follows the curve) and lets the bar scroll on narrow
-      // viewports; the trigger pairs it with an inset focus ring so neither
+      // viewports; the trigger pairs it with a negative outline offset so neither
       // hides focus.
+      //
+      // Horizontal-only, like `fullwidth` — the `w-fit` guard keeps a stray
+      // vertical usage from collapsing the panel.
       bordered:
-        'w-full [scrollbar-width:none] overflow-x-auto rounded-sm border border-border bg-background [&::-webkit-scrollbar]:hidden',
+        'w-full [scrollbar-width:none] overflow-x-auto rounded-sm border border-border bg-background group-data-vertical/tabs:w-fit [&::-webkit-scrollbar]:hidden',
     },
   },
   defaultVariants: {
