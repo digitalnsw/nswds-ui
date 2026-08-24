@@ -1,3 +1,9 @@
+## [5.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.2.0...@nswds/ui-v5.3.0) (2026-08-24)
+
+### Features
+
+* **ui:** add TabNav for navigating between the pages of a section ([#150](https://github.com/digitalnsw/nswds-ui/issues/150)) ([9252172](https://github.com/digitalnsw/nswds-ui/commit/9252172475bf1f3606ab79d7471cd12da484ad7e))
+
 ## [5.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.1.2...@nswds/ui-v5.2.0) (2026-08-22)
 
 ### Features
