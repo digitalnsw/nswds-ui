@@ -1,3 +1,9 @@
+## [5.5.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.1...@nswds/ui-v5.5.2) (2026-08-24)
+
+### Bug Fixes
+
+* **ui:** put every component on one radius scale ([#154](https://github.com/digitalnsw/nswds-ui/issues/154)) ([a9ee849](https://github.com/digitalnsw/nswds-ui/commit/a9ee849fa4b00189979ee34dd6f0db4eb8a1e4d0))
+
 ## [5.5.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.0...@nswds/ui-v5.5.1) (2026-08-24)
 
 ### Bug Fixes
