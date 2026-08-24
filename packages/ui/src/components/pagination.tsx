@@ -104,7 +104,6 @@ function PaginationEllipsis({ className, ...props }: React.ComponentProps<'span'
       {...props}
     >
       <IconMoreHoriz />
-      <span className='sr-only'>More pages</span>
     </span>
   )
 }
