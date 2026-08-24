@@ -66,6 +66,8 @@ jobs:
       # allowlisted as internal in the script.
       - name: Component drift check
         run: npm run check:drift -w @nswds/ui
+      - name: Radius scale
+        run: npm run check:radius -w @nswds/ui
 
       # The generated src/icons/ modules are lint/format-exempt, so this is
       # their only structural guard: every module exports its expected

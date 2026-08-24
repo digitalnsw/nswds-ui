@@ -142,11 +142,28 @@ Flat-first, hairline-built. Depth in this system is _drawn_, not cast: container
 
 ### Named Rules
 
+**The One Scale Rule.** Components use four radii — 4px controls, 8px containers, pill, square — and nothing else. The scale ships more steps than that, and the extras are for consumers, not for us. This drifts silently because scaffolding brings its own radii: the `shadcn add` cleanup in AGENTS.md §4 catches imports, primitives and colours, but not corners, so a scaffolded 16px popup passes review looking deliberate. Six popup surfaces built from the same three classes had drifted to three different radii before `check:radius` existed.
+
 **The Hairline Rule.** If a boundary is needed, draw it: `ring-1 ring-foreground/10` or `border-default`. Never reach for a drop shadow to do a hairline's job.
 
 ## Shapes
 
-Crisp, small-radius geometry — the screen dialect of the masterbrand's square print panels. Controls (buttons, inputs) use gently eased corners (4px, `rounded-sm`); containers (cards, popovers) step up to 8px (`rounded-md`, the system's base `--radius`); 16px (`lg`) and pill exist in the scale for the few components that need them. Nothing is sharper than 0 or softer than a pill, and oversized "friendly" radii are off-brand. Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box.
+Crisp, small-radius geometry — the screen dialect of the masterbrand's square print panels. The masterbrand itself is flat: "no rounded-corner cards, no drop shadows, no gradients". Screens need affordance cues paper does not, so the translation allows a radius, but a small one — oversized "friendly" radii are off-brand.
+
+Components use **four values and no others**:
+
+| tier                  | value              | what it covers                                                                   |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------- |
+| Controls              | `rounded-sm` (4px) | buttons, inputs, rows, badges                                                    |
+| Containers and popups | `rounded-md` (8px) | cards, popovers, tooltips, menus, drawers, sheets — the system's base `--radius` |
+| Pills and circles     | `rounded-full`     | avatars, switches, step dots, drag handles                                       |
+| Full-bleed chrome     | `rounded-none`     | masthead, main nav                                                               |
+
+`lg` (16px), `xl` (12px) and `xs` (2px) remain in the token scale — they ship from `@nswds/tokens` and a consuming app may want them — but **no component in this package uses them**. `check:radius` enforces that.
+
+The control/container split is the point, not decoration: a 4px input inside an 8px card reads as a distinct element within a container. Collapse the two and that hierarchy goes with it.
+
+Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box, and the inner radius is `calc(var(--radius-sm) - 1px)` so the two curves stay concentric. Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box.
 
 ## Components
 
