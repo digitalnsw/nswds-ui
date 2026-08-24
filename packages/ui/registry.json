@@ -821,6 +821,29 @@
       ]
     },
     {
+      "name": "tab-nav",
+      "type": "registry:ui",
+      "title": "Tab Navigation",
+      "description": "Flat horizontal navigation between the pages of one section, marking the current page with aria-current=\"page\".",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/link.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/tab-nav.tsx",
+          "type": "registry:ui",
+          "target": "components/tab-nav.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "step-indicator",
       "type": "registry:ui",
       "title": "Step Indicator",
