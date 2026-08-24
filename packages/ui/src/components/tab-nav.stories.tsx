@@ -120,6 +120,18 @@ export const Default: Story = {
     if (nav.querySelector('[role="tab"], [role="tablist"]')) {
       throw new Error('Expected no ARIA tab roles — TabNav is a nav landmark over links.')
     }
+
+    // Every tab is a real anchor. The nav-over-links contract is what lets the
+    // bar claim aria-current="page" at all: a non-anchor tab would announce
+    // itself as the current page while being unable to navigate to one (WCAG
+    // 2.2, 4.1.2). Checked at runtime as well as in the types, so the invariant
+    // survives a consumer reaching past the type surface.
+    for (const item of nav.querySelectorAll('[data-slot="tab-nav-item"]')) {
+      const tab = item.firstElementChild
+      if (tab?.tagName !== 'A') {
+        throw new Error(`Expected every tab to render as an anchor, received <${tab?.tagName}>.`)
+      }
+    }
   },
 }
 
@@ -247,3 +259,29 @@ export const CssCheck: Story = {
     }
   },
 }
+
+// ─── Type guards ──────────────────────────────────────────────────────────────
+
+/**
+ * `TabNavLink` must not accept `as`. `Link` strips `href` from any non-anchor
+ * intrinsic, so `as='button'` typechecked and rendered
+ * `<button href=null aria-current='page'>` — a control that could not navigate
+ * while announcing itself as the current page (WCAG 2.2, 4.1.2).
+ *
+ * Not a story: it is never exported, so Storybook does not collect it. Stories
+ * are covered by `tsc --noEmit`, so if `as` is ever re-added to the props the
+ * directive below stops suppressing anything and the build fails on the unused
+ * `@ts-expect-error` — which is the point of writing it this way.
+ */
+function assertAsIsNotAccepted() {
+  return (
+    <TabNav>
+      {/* @ts-expect-error `as` is deliberately omitted from TabNavLinkProps. */}
+      <TabNavLink href='/a' as='button'>
+        Never rendered
+      </TabNavLink>
+    </TabNav>
+  )
+}
+
+void assertAsIsNotAccepted

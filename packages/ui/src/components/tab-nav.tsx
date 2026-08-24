@@ -224,7 +224,21 @@ function TabNav({
   )
 }
 
-type TabNavLinkProps = Omit<LinkProps, 'variant'> & {
+/**
+ * `as` is omitted deliberately, not by oversight.
+ *
+ * `Link` strips `href` from any non-anchor intrinsic element, so `as='button'`
+ * typechecked and rendered `<button href=null aria-current='page'>` — a control
+ * that cannot navigate, announcing itself as the current *page*. That is a
+ * name/role/value mismatch (WCAG 2.2, 4.1.2), not merely a dead link, and it
+ * contradicts the nav-over-links contract this component documents.
+ *
+ * Nothing is lost. A bar whose tabs render as different element types is
+ * incoherent by construction, and framework links still arrive the documented
+ * way — wrap the bar in `<LinkProvider component={NextLink}>`. `SideNav` sets
+ * the same precedent: it renders `Link` internally and never forwards `as`.
+ */
+type TabNavLinkProps = Omit<LinkProps, 'variant' | 'as'> & {
   /**
    * Force the current state, overriding the bar's `currentHref` comparison.
    *
@@ -241,15 +255,21 @@ type TabNavLinkProps = Omit<LinkProps, 'variant'> & {
 
 /**
  * Dev-only guard, mirroring the misshapen-item check in `SideNav`: a link
- * outside a `TabNav` gets no context, so it can never be marked current and the
- * bar's whole purpose silently fails. No-op in production.
+ * outside a `TabNav` gets no context and renders an `<li>` with no list around
+ * it. No-op in production.
+ *
+ * The message is careful about what is actually lost. An orphan can still be
+ * marked by passing `current` directly — `current ?? …` short-circuits before
+ * the context is read — so claiming no tab will be marked would be false
+ * exactly when a caller has reached for that escape hatch. What an orphan
+ * cannot do is derive the current tab from `currentHref`.
  */
 function warnIfOrphaned(hasContext: boolean) {
   if (process.env.NODE_ENV === 'production' || hasContext) {
     return
   }
   console.warn(
-    '[nswds/ui] TabNavLink rendered outside a TabNav — it cannot read currentHref, so no tab will be marked as the current page. Wrap the links in <TabNav>.',
+    '[nswds/ui] TabNavLink rendered outside a TabNav — it cannot read currentHref, so the current tab is never derived automatically (only an explicit `current` still applies), and its <li> sits outside any list. Wrap the links in <TabNav>.',
   )
 }
 
