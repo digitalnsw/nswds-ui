@@ -1,8 +1,8 @@
 // Radius guard for src/components/ and src/patterns/.
 //
-// DESIGN.md ("Shapes") gives the system three radii and no others:
+// DESIGN.md ("Shapes") gives the system four values and no others:
 //
-//   rounded-sm   (4px)  controls — buttons, inputs, rows
+//   rounded-sm   (4px)  controls and labels — buttons, inputs, rows, tooltips
 //   rounded-md   (8px)  containers and popups — cards, popovers, menus, drawers
 //   rounded-full        pills and circles
 //   rounded-none        full-bleed chrome (masthead, main-nav)
