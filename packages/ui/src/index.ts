@@ -36,6 +36,7 @@ export * from './components/slider.js'
 export * from './components/sonner.js'
 export * from './components/spinner.js'
 export * from './components/step-indicator.js'
+export * from './components/tab-nav.js'
 export * from './components/theme-switcher.js'
 export * from './components/tooltip.js'
 
