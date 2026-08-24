@@ -35,9 +35,12 @@ const BANNED = /\brounded-(?:[tblrse]|[xy]|(?:tl|tr|bl|br|ss|se|es|ee))?-?(lg|xl
 
 // Arbitrary values are allowed only where the system already explains them.
 const SANCTIONED_ARBITRARY = new Set([
-  // Button/Badge optical inner border: the visible radius minus the border
-  // width, so the inner and outer curves stay concentric (DESIGN.md, Shapes).
+  // Optical inner border: the visible radius minus the border width, so the
+  // inner and outer curves stay concentric (DESIGN.md, Shapes). One variant per
+  // border width — 1px on Button/Badge, 2px where the control draws a heavier
+  // stroke (InputGroup, Combobox).
   'rounded-[calc(var(--radius-sm)-1px)]',
+  'rounded-[calc(var(--radius-sm)-2px)]',
   // Inherit the parent's radius — carries whatever the container decided.
   'rounded-[inherit]',
   // Tooltip arrow: a rotated 10px square whose tip is softened. Not a
