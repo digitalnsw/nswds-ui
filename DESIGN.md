@@ -152,16 +152,18 @@ Crisp, small-radius geometry — the screen dialect of the masterbrand's square 
 
 Components use **four values and no others**:
 
-| tier                  | value              | what it covers                                                                   |
-| --------------------- | ------------------ | -------------------------------------------------------------------------------- |
-| Controls              | `rounded-sm` (4px) | buttons, inputs, rows, badges                                                    |
-| Containers and popups | `rounded-md` (8px) | cards, popovers, tooltips, menus, drawers, sheets — the system's base `--radius` |
-| Pills and circles     | `rounded-full`     | avatars, switches, step dots, drag handles                                       |
-| Full-bleed chrome     | `rounded-none`     | masthead, main nav                                                               |
+| tier                  | value              | what it covers                                                                                     |
+| --------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| Controls and labels   | `rounded-sm` (4px) | buttons, inputs, rows, badges, tooltips                                                            |
+| Containers and popups | `rounded-md` (8px) | cards, popovers, menus, drawers, sheets — surfaces that hold content. The system's base `--radius` |
+| Pills and circles     | `rounded-full`     | avatars, switches, step dots, drag handles                                                         |
+| Full-bleed chrome     | `rounded-none`     | masthead, main nav                                                                                 |
 
 `lg` (16px), `xl` (12px) and `xs` (2px) remain in the token scale — they ship from `@nswds/tokens` and a consuming app may want them — but **no component in this package uses them**. `check:radius` enforces that.
 
 The control/container split is the point, not decoration: a 4px input inside an 8px card reads as a distinct element within a container. Collapse the two and that hierarchy goes with it.
+
+The tier is decided by what an element **is**, not by whether it floats. A popover and a hover card are fixed 288px surfaces that hold content, so they take the container radius. A tooltip is a label that shrinks to its text — 27px tall in practice — so it takes the control radius, like the button it describes. Radius reads proportionally: 8px on a 27px-tall label is nearly a third of its height, and lands far rounder than the same 8px on a card. A tooltip rounder than its own trigger inverts the hierarchy.
 
 Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box, and the inner radius is `calc(var(--radius-sm) - 1px)` so the two curves stay concentric. Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for outline/surface variants) subtracted from the padding, so every variant occupies an identical outer box.
 
