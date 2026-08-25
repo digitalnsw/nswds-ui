@@ -1,3 +1,9 @@
+## [5.5.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.3...@nswds/ui-v5.5.4) (2026-08-25)
+
+### Bug Fixes
+
+* **ui:** honour prefers-reduced-motion for keyframe animations ([#155](https://github.com/digitalnsw/nswds-ui/issues/155)) ([b023cbe](https://github.com/digitalnsw/nswds-ui/commit/b023cbe3422a8e57679eccd0fbc1f25132587602))
+
 ## [5.5.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.2...@nswds/ui-v5.5.3) (2026-08-24)
 
 ### Bug Fixes
