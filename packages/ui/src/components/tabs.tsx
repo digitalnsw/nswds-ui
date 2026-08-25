@@ -84,9 +84,11 @@ const tabsTriggerVariants = cva(
   [
     'relative inline-flex items-center justify-center gap-2 text-sm font-medium whitespace-nowrap text-foreground/60 motion-safe:transition-[color,background-color,border-color,box-shadow]',
     'hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground',
-    // House focus: a 2px outline in the ring colour, offset onto the page. The
-    // scroll variants override to a negative offset so the clip can't hide it.
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+    // House focus: a 2px outline in the ring colour. Each variant sets its own
+    // offset — positive (onto the page) for default/line, negative for the
+    // scroll variants so the overflow clip can't hide it — so exactly one
+    // outline-offset utility lands on any element.
+    'focus-visible:outline-2 focus-visible:outline-ring',
     'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     'has-data-[icon=inline-end]:pe-1 has-data-[icon=inline-start]:ps-1',
@@ -97,7 +99,7 @@ const tabsTriggerVariants = cva(
         // Pill that lifts to a surface card when active. `h-[calc(100%-1px)]`
         // keeps it inside the list's inset padding.
         default: cn(
-          'h-[calc(100%-1px)] flex-1 rounded-sm border border-transparent px-3 py-1',
+          'h-[calc(100%-1px)] flex-1 rounded-sm border border-transparent px-3 py-1 focus-visible:outline-offset-2',
           'group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:py-2',
           'data-active:bg-background data-active:text-foreground data-active:shadow-sm',
           'dark:data-active:border-input dark:data-active:bg-input/30 dark:data-active:text-foreground dark:data-active:shadow-none',
@@ -106,7 +108,7 @@ const tabsTriggerVariants = cva(
         // present (transparent when idle) so activating a tab never reflows the
         // bar, and `-mb-px` merges the marker with the list's 1px rule.
         line: cn(
-          '-mb-px shrink-0 border-b-2 border-transparent px-1 pt-2 pb-3',
+          '-mb-px shrink-0 border-b-2 border-transparent px-1 pt-2 pb-3 focus-visible:outline-offset-2',
           'group-data-vertical/tabs:-me-px group-data-vertical/tabs:mb-0 group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start group-data-vertical/tabs:border-e-2 group-data-vertical/tabs:border-b-0 group-data-vertical/tabs:px-3 group-data-vertical/tabs:py-2',
           'data-active:border-primary data-active:text-primary',
         ),
