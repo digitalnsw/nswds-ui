@@ -44,8 +44,26 @@ Registry: https://ui.digital.nsw.gov.au/registry
 
 **Upgrading from 1.x:** see [docs/migrating-to-v2.md](docs/migrating-to-v2.md).
 
+## Documentation
+
+Full documentation is in **[docs/](docs/README.md)**. The short version:
+
+| I want to…                                      | Read                                                                 |
+| ----------------------------------------------- | -------------------------------------------------------------------- |
+| Get something working                           | [Build your first NSW page](docs/tutorial-build-your-first-page.md)  |
+| Look up a component or its props                | [Component reference](docs/reference-components.md)                  |
+| Look up a token, or fix dark mode               | [Design token reference](docs/reference-tokens.md)                   |
+| Use my agency's colours                         | [Theme and re-brand](docs/howto-theme-and-rebrand.md)                |
+| Copy the source instead of installing a package | [Installing from the registry](docs/installing-from-the-registry.md) |
+| Understand why it's built this way              | [Architecture](docs/explanation-architecture.md)                     |
+
 ## Developing the system
 
 See [AGENTS.md](AGENTS.md) for architecture, conventions, how to add a component, and the
 release pipeline. Storybook (`npm run dev -w @workspace/storybook`) is the component
 workbench; every component ships with interaction and axe WCAG 2.1 AA tests that run in CI.
+
+For contributors specifically:
+
+- [Add a component](docs/tutorial-add-a-component.md) — a walkthrough onto both channels
+- [CI gates reference](docs/reference-ci-gates.md) — every merge check and what its failure means

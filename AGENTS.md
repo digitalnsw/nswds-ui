@@ -3,6 +3,12 @@
 > **Primary goal of every decision:** is this reusable and consumable by external projects?
 > Judge every component, token, or API choice against that question first.
 
+> **Prose documentation lives in [`docs/`](docs/README.md)** and is organised by Diátaxis. This
+> file stays the canonical operational reference; the docs explain and teach rather than restate
+> it. Most relevant here: [add a component](docs/tutorial-add-a-component.md) (§4 as a
+> walkthrough), [CI gates](docs/reference-ci-gates.md) (§5 as a lookup table), and
+> [architecture](docs/explanation-architecture.md) (the reasoning behind §2, §3 and §6).
+
 ---
 
 ## 1. Purpose & Philosophy
