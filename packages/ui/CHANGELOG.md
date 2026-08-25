@@ -1,3 +1,9 @@
+## [5.6.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.4...@nswds/ui-v5.6.0) (2026-08-25)
+
+### Features
+
+* **ui:** add fullwidth and bordered tab variants ([#157](https://github.com/digitalnsw/nswds-ui/issues/157)) ([28316f2](https://github.com/digitalnsw/nswds-ui/commit/28316f2ed1a1394722d155661fc9bd328c014d71))
+
 ## [5.5.4](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.3...@nswds/ui-v5.5.4) (2026-08-25)
 
 ### Bug Fixes
