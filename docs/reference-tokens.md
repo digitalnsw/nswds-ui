@@ -199,15 +199,17 @@ Toggle **either** `class="dark"` or `data-theme="dark"` on a root element:
 <html lang='en' className='dark'>
 ```
 
-Both markers work, and both match the element carrying them _and_ its descendants — so a scoped
-`<div class="dark">` darkens just that subtree. The `dark:` variant is defined as:
+Both markers work. The `dark:` variant is defined as:
 
 ```css
 @custom-variant dark (&:is(.dark, .dark *, [data-theme='dark'], [data-theme='dark'] *));
 ```
 
-The `.dark *` half matters: `.dark` alone never matches the element the class sits on, which is
-normally `<html>` — exactly where `next-themes` puts it.
+Both halves of each pair are load-bearing. `.dark` matches the element **carrying** the class —
+normally `<html>`, exactly where `next-themes` puts it — while `.dark *` matches its
+**descendants**. Drop the first and `dark:` utilities on the root element silently do nothing;
+drop the second and nothing inside it responds. The `[data-theme='dark']` pair does the same job
+for the attribute form.
 
 > **Scoped dark is partial.** A nested `.dark` flips `dark:` utilities, but `:root`-anchored token
 > values do not re-resolve for a subtree. For a genuinely dark page, put the marker on the root.
