@@ -47,7 +47,9 @@ if (newLocation === oldLocation) {
 const docs = [
   'README.md',
   'packages/ui/README.md',
+  'docs/README.md',
   'docs/installing-from-the-registry.md',
+  'docs/explanation-architecture.md',
   'apps/registry/index.html',
 ]
 

@@ -64,11 +64,13 @@ If you do hit a conflict, a call-site override outranks both halves:
 
 ### Dark mode
 
-Toggle `class="dark"` or `data-theme="dark"` on a root element (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). Semantic tokens and `dark:` utilities both key off either marker, and both match the element carrying it as well as its descendants — so a scoped `<div class="dark">` darkens just that subtree.
+Toggle `class="dark"` or `data-theme="dark"` on a **root element** (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). Semantic tokens and `dark:` utilities both key off either marker, and both match the element carrying it as well as its descendants.
 
 ```tsx
 <html lang='en' className='dark'>
 ```
+
+**A scoped `<div class="dark">` gives you only a partial dark mode.** The semantic tokens are declared on `:root` in terms of mode-aware role tokens (`--primary: var(--action-default)`), and a `var()` is substituted where it is declared — so on a nested element the role token changes too late. The `dark:` utilities flip (those are compiled classes) while the semantic colours stay light. Put the marker on the root element.
 
 ### Icons
 
@@ -147,15 +149,54 @@ import {
 
 ## Components
 
-AspectRatio, Badge, Button, ButtonLink, Callout, Card, Collapsible, Container, DescriptionList, Drawer, ExpandableSearch, Field, Footer, Header, HoverCard, Input, Label, LabeledSeparator, Link, LinkCard, Logo (NSW Government logo), MainNav, Masthead, OnThisPage, Popover, PushMenu, Resizable, ScrollArea, Section, Separator, Sheet, SideNav, SiteSearch, SkipLink, Slider, Spinner, StepIndicator, ThemeSwitcher, Toaster, Tooltip — plus the icon set under `@nswds/ui/icons`.
+62 components, plus 12 copy-and-adapt blocks on the registry channel. The complete catalogue —
+with every export and a description per item — is in the
+[component reference](https://github.com/digitalnsw/nswds-ui/blob/main/docs/reference-components.md).
 
-Hooks: `useChromeHeight`, which measures a sticky header and publishes its height as a CSS custom property, for `scroll-padding-top`, `MainNav`'s `--main-nav-top`, and `OnThisPage`'s scroll-spy offset.
+**NSW-original** (no upstream equivalent — the reference is their only documentation):
+Callout, Container, DescriptionList, ExpandableSearch, Footer, Header, LabeledSeparator, Link,
+LinkCard, Logo, MainNav, Masthead, OnThisPage, PushMenu, Section, SideNav, SiteSearch, SkipLink,
+StepIndicator, TabNav, ThemeSwitcher.
 
-Every interactive component wraps a Base UI primitive, which provides focus management, keyboard navigation, and ARIA semantics. Each component also exports its `cva` variants function (for example `buttonVariants`) so you can extend styling.
+**Shadcn shapes on Base UI primitives, NSW-styled:**
+Accordion, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Card, Carousel, Checkbox,
+Collapsible, Combobox, DirectionProvider, Drawer, Field, HoverCard, Input, InputGroup, InputOTP,
+Kbd, Label, NativeSelect, Pagination, Popover, Progress, RadioGroup, ResizablePanelGroup, ScrollArea, Select,
+Separator, Sheet, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup,
+Tooltip.
+
+Plus the icon set under `@nswds/ui/icons` and the brand marks under `@nswds/ui/icons/brands`.
+
+Hooks: `useChromeHeight`, which measures a sticky header and publishes its height as a CSS custom
+property, for `scroll-padding-top`, `MainNav`'s `--main-nav-top`, and `OnThisPage`'s scroll-spy
+offset.
+
+Every interactive component wraps a Base UI primitive, which provides focus management, keyboard
+navigation, and ARIA semantics. Each component also exports its `cva` variants function (for
+example `buttonVariants`) so you can extend styling.
 
 ## Theming
 
-Every visual property traces back to a CSS custom property token. Components reference semantic tokens (`--primary`, `--background`, `--border`, …), which resolve through the NSW masterbrand theme to the NSW primitive palette. To re-brand, override the semantic tokens in a scoped selector and toggle that class on your root element.
+Every visual property traces back to a CSS custom property token, in four layers: Tailwind
+utilities → shadcn semantic tokens (`--primary`, `--background`, `--border`) → NSW role tokens
+(`--action-default`, `--text-default`) → the NSW primitive palette.
+
+To re-brand, **override the masterbrand ramps at `:root`**, after importing the stylesheet:
+
+```css
+:root {
+  --primary-800: oklch(0.29 0.12 150);
+  /* …the remaining steps of the ramp… */
+}
+```
+
+Supply the whole ramp — components draw on different steps for fills, borders and hover states.
+
+> Overriding tokens in a **scoped** selector mostly does not work, because a `var()` is substituted
+> where it is declared and every layer is declared at `:root`. In particular `Button`'s primary
+> colour resolves to the masterbrand ramp (`--color-primary-800`), not to `--primary`. See
+> [Theme and re-brand](https://github.com/digitalnsw/nswds-ui/blob/main/docs/howto-theme-and-rebrand.md)
+> for the rule and the working escape hatch.
 
 ## Prefer the source in your repo?
 
