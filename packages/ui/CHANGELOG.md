@@ -1,3 +1,9 @@
+## [5.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.6.0...@nswds/ui-v5.7.0) (2026-08-31)
+
+### Features
+
+* **ui:** add translatable control labels and fix carousel, breadcrumb and chrome-height defects ([#162](https://github.com/digitalnsw/nswds-ui/issues/162)) ([3051c7d](https://github.com/digitalnsw/nswds-ui/commit/3051c7dbcf5377e94ea616bde32dfd609417ce07))
+
 ## [5.6.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.5.4...@nswds/ui-v5.6.0) (2026-08-25)
 
 ### Features
