@@ -9,6 +9,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import React from 'react'
 
+import { DirectionProvider } from './direction.js'
 import { Header, HeaderBrand } from './header.js'
 import { MainNav, type MainNavItem } from './main-nav.js'
 import { Masthead } from './masthead.js'
@@ -362,6 +363,95 @@ export const Default: Story = {
     // UI keeps the popup (and its focusable focus-guard sentinels) mounted
     // through the exit animation, and the a11y addon's after-play axe pass
     // would flag the guards (aria-hidden-focus) if it ran mid-exit.
+    await waitFor(
+      () => !trigger.hasAttribute('data-popup-open') && queryPopup() === null,
+      'Expected Escape to close and unmount the menu.',
+    )
+  },
+}
+
+/**
+ * Under RTL the mega panel must still span the nav container edge-to-edge.
+ * `align='start'` anchors the popup's inline-start edge — the RIGHT one in RTL
+ * — so `alignOffset` has to mirror; get the sign wrong and the panel flies off
+ * the opposite side of the bar rather than failing loudly. Asserting the right
+ * edge as well as the width is what catches it: a width-only check passes on a
+ * panel positioned entirely off-screen.
+ *
+ * BOTH halves of RTL are set here, and both are load-bearing. `dir` drives the
+ * CSS (logical properties, the `rtl:` variant); DirectionProvider drives Base
+ * UI's positioner, which is what decides the physical edge `align='start'`
+ * resolves to and therefore what `alignOffset` has to correct. With `dir`
+ * alone the positioner still anchors LTR and the mirrored offset pushes the
+ * panel ~962px off the bar — measured, not hypothetical. See
+ * direction.stories.tsx.
+ */
+export const RightToLeft: Story = {
+  name: 'Right to left',
+  args: {
+    navigation: demoNavigation,
+    currentHref: '#find-support',
+  },
+  render: (args) => (
+    <div dir='rtl' className='min-h-[520px]'>
+      <DirectionProvider direction='rtl'>
+        <MainNav {...args} />
+      </DirectionProvider>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = getNav(canvasElement)
+    const container = nav.querySelector<HTMLElement>('[data-slot="main-nav-container"]')!
+
+    // Guard the premise: if the container did not actually lay out RTL, the
+    // assertions below would pass for the wrong reason.
+    if (getComputedStyle(container).direction !== 'rtl') {
+      throw new Error('Expected the nav container to compute direction: rtl.')
+    }
+
+    const trigger = nav.querySelector<HTMLButtonElement>('[data-slot="navigation-menu-trigger"]')!
+    trigger.focus()
+    trigger.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+    )
+    await waitFor(() => queryPopup() !== null, 'Expected ArrowDown to open the popup in RTL.')
+
+    // Same edge-to-edge contract as Default, checked on BOTH edges so a
+    // mirrored-but-wrong offset cannot satisfy it.
+    const containerRect = container.getBoundingClientRect()
+    const spansContainer = () => {
+      const rect = queryPopup()?.getBoundingClientRect()
+      return (
+        !!rect &&
+        Math.abs(rect.width - containerRect.width) < 2 &&
+        Math.abs(rect.right - containerRect.right) < 2 &&
+        Math.abs(rect.left - containerRect.left) < 2
+      )
+    }
+    try {
+      await waitFor(spansContainer, 'timeout', 4000)
+    } catch {
+      // Report the geometry, not just "it did not match". A misplaced panel is
+      // off by a specific number of pixels, and that number says which term of
+      // the offset is wrong — the trigger edge, the container edge, or the sign.
+      const rect = queryPopup()?.getBoundingClientRect()
+      const box = (r?: DOMRect) =>
+        r
+          ? `left=${r.left.toFixed(1)} right=${r.right.toFixed(1)} width=${r.width.toFixed(1)}`
+          : 'absent'
+      throw new Error(
+        'Expected the RTL panel to span the nav container edge-to-edge.\n' +
+          `  container: ${box(containerRect)}\n` +
+          `  panel:     ${box(rect)}\n` +
+          `  trigger:   ${box(trigger.getBoundingClientRect())}`,
+      )
+    }
+
+    const escapeTarget =
+      document.activeElement instanceof HTMLElement ? document.activeElement : trigger
+    escapeTarget.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+    )
     await waitFor(
       () => !trigger.hasAttribute('data-popup-open') && queryPopup() === null,
       'Expected Escape to close and unmount the menu.',

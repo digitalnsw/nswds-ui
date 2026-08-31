@@ -71,6 +71,12 @@ export const Default: Story = {
 
     const current = canvasElement.querySelector('[data-slot="breadcrumb-page"]')
     await expect(current).toHaveAttribute('aria-current', 'page')
+    // The current page is plain text, not a disabled link. axe cannot see the
+    // difference, so assert it here — upstream shadcn ships
+    // `role='link' aria-disabled='true'` on this span and a re-scaffold would
+    // quietly bring it back.
+    await expect(current).not.toHaveAttribute('role')
+    await expect(current).not.toHaveAttribute('aria-disabled')
   },
 }
 

@@ -222,3 +222,135 @@ export function wcagStoryMeta({
   const what = `Demonstrates compliance with WCAG 2.2: ${refs.join(', ')}.`
   return docsTemplate({ what, why, how, caveat })
 }
+
+// ─── Contrast measurement ─────────────────────────────────────────────────────
+
+/**
+ * WCAG relative-luminance / contrast utilities for story assertions.
+ *
+ * Why these exist: axe-core's `color-contrast` rule does NOT evaluate
+ * `::placeholder` text, or any colour that is not painted as an element's own
+ * foreground. So the most delicate colour decisions in the package — the
+ * `--search-placeholder` composite in expandable-search, whose variants set
+ * `--search-placeholder-pct` to 100% precisely because the 70% mix fails AA —
+ * sit entirely outside the a11y gate. Before this helper those ratios existed
+ * only as arithmetic written in a source comment, and a token retune that broke
+ * one of them was undetectable.
+ */
+
+/**
+ * Resolve any CSS colour string to sRGB bytes, by PAINTING it.
+ *
+ * Not by parsing it. `getComputedStyle` does not normalise modern colours to
+ * `rgb()` — CSS Color 4 says a colour computes to a value in its own space, so
+ * Chromium hands back the authored `oklch(0.575 0.229 260.756)` verbatim, and
+ * this package authors every colour in oklch. A regex scrape of that string
+ * reads `0.575 0.229 260` as 8-bit channels and reports a confidently wrong
+ * ratio (this helper's first version did exactly that, and "failed" a variant
+ * that is fine).
+ *
+ * Filling a 1×1 canvas delegates the whole problem — oklch, color-mix, custom
+ * property substitution, any future colour syntax — to the same engine that
+ * paints the real pixels, which is the only thing guaranteed to agree with what
+ * a user sees.
+ */
+export function resolveColor(value: string): { r: number; g: number; b: number; a: number } {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1
+  canvas.height = 1
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })
+  if (!ctx) {
+    throw new Error('Could not get a 2D context to resolve a colour.')
+  }
+
+  // An unparseable value leaves fillStyle at its previous value rather than
+  // throwing, which would silently measure the wrong colour. Assigning over two
+  // different sentinels turns that into a real failure: a parsed value lands on
+  // the same result both times, an unparsed one keeps whichever sentinel it
+  // followed.
+  //
+  // The two hex literals are canvas PARSER SENTINELS, not styling — they are
+  // never painted and never reach a rendered surface — so the no-hardcoded-
+  // colour rule (AGENTS.md §3) does not apply. They must be literal, opaque
+  // and distinct from each other for the probe to work; a token would defeat
+  // the point, because the whole test is whether `value` overwrote them.
+  /* eslint-disable no-restricted-syntax */
+  ctx.fillStyle = '#000000'
+  ctx.fillStyle = value
+  const first = ctx.fillStyle
+  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = value
+  /* eslint-enable no-restricted-syntax */
+  if (first !== ctx.fillStyle) {
+    throw new Error(`The browser could not parse the colour "${value}".`)
+  }
+
+  ctx.clearRect(0, 0, 1, 1)
+  ctx.fillRect(0, 0, 1, 1)
+  const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data
+  return { r: r!, g: g!, b: b!, a: a! / 255 }
+}
+
+/** WCAG 2.x relative luminance for an 8-bit sRGB triple. */
+export function relativeLuminance({ r, g, b }: { r: number; g: number; b: number }): number {
+  const linear = (c: number) => {
+    const s = c / 255
+    return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
+  }
+  return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
+}
+
+/**
+ * Composite a possibly-translucent foreground over an opaque backdrop.
+ *
+ * Required, not optional: several of these colours are `color-mix(…,
+ * transparent)` composites, and measuring one without flattening it against its
+ * backdrop first silently overstates the ratio.
+ */
+export function compositeOver(
+  foreground: { r: number; g: number; b: number; a: number },
+  backdrop: { r: number; g: number; b: number },
+): { r: number; g: number; b: number } {
+  const mix = (f: number, b: number) => f * foreground.a + b * (1 - foreground.a)
+  return {
+    r: mix(foreground.r, backdrop.r),
+    g: mix(foreground.g, backdrop.g),
+    b: mix(foreground.b, backdrop.b),
+  }
+}
+
+/** WCAG contrast ratio (1–21) between two CSS colour strings. */
+export function contrastRatio(foreground: string, background: string): number {
+  const back = resolveColor(background)
+  if (back.a < 1) {
+    throw new Error(
+      `The background "${background}" is translucent; resolve it against an opaque surface before measuring.`,
+    )
+  }
+  const front = compositeOver(resolveColor(foreground), back)
+  const lighter = Math.max(relativeLuminance(front), relativeLuminance(back))
+  const darker = Math.min(relativeLuminance(front), relativeLuminance(back))
+  return (lighter + 0.05) / (darker + 0.05)
+}
+
+/**
+ * Assert a WCAG contrast ratio, with a message naming the measured value — a
+ * bare boolean failure here is close to undebuggable.
+ *
+ * `minimum` defaults to 4.5 (AA, normal text). Use 3 for large text and for
+ * non-text UI components (1.4.11).
+ */
+export function expectContrast(
+  foreground: string,
+  background: string,
+  { minimum = 4.5, label }: { minimum?: number; label: string },
+): number {
+  const ratio = contrastRatio(foreground, background)
+  if (ratio < minimum) {
+    throw new Error(
+      `${label}: contrast ${ratio.toFixed(2)}:1 is below the required ${minimum}:1 ` +
+        `(foreground "${foreground}" on background "${background}").`,
+    )
+  }
+  return ratio
+}

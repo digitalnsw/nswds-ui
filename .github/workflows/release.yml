@@ -19,6 +19,12 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # Bounded deliberately. This job contains two polling loops (~2 min for
+    # npm, ~10 min for the registry deploy) and an npm ci, and it is the one
+    # job in the repo nobody is watching when it runs. Without a timeout a
+    # wedged poll or a hung install sits on GitHub's 6-hour default before
+    # alert-on-failure can fire — which defeats the point of alert-on-failure.
+    timeout-minutes: 30
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
       # commit over SSH as a deploy key that's a bypass actor on the ruleset
@@ -173,15 +179,34 @@ jobs:
           - Check whether a git tag was pushed without a matching npm version (\`npm view @nswds/ui version\`).
 
           _Filed automatically by the alert-on-failure job in release.yml._"
+          # Assign to the actor ONLY when the actor is assignable. A push to
+          # main can come from a bot (renovate[bot] on auto-merge, the
+          # nswds-devops file-sync bot), and `gh issue create --assignee` fails
+          # outright on a name it cannot resolve — which would lose the very
+          # alert this job exists to raise. The issue is worth more than the
+          # assignment, so the assignment is what gets dropped.
+          assign=()
+          case "$GITHUB_ACTOR" in
+            *'[bot]') echo "Actor '$GITHUB_ACTOR' is a bot — filing unassigned." ;;
+            *) assign=(--assignee "$GITHUB_ACTOR") ;;
+          esac
+
           existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[0].number // empty')"
           if [ -n "$existing" ]; then
             gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
             echo "Commented on existing issue #$existing"
           else
+            # Retry unassigned if the assignment is rejected for any other
+            # reason (the actor left the org, lost access, and so on).
             gh issue create \
               --repo "$GITHUB_REPOSITORY" \
               --title "Release workflow failed — npm publish may be broken" \
               --label release-failure \
-              --assignee "$GITHUB_ACTOR" \
+              "${assign[@]}" \
+              --body "$body" \
+            || gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Release workflow failed — npm publish may be broken" \
+              --label release-failure \
               --body "$body"
           fi

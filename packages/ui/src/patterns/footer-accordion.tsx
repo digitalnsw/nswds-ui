@@ -59,9 +59,6 @@ const legalLinksSample = [
 
 const departmentSample = 'Digital NSW, Department of Customer Service'
 
-/** Matches Tailwind's `lg` breakpoint (64rem). Keep the two in step. */
-const DESKTOP_QUERY = '(min-width: 64rem)'
-
 type FooterAccordionProps = Omit<React.ComponentProps<typeof Footer>, 'children'> & {
   columns?: typeof columnsSample
 }
@@ -78,10 +75,22 @@ type FooterAccordionProps = Omit<React.ComponentProps<typeof Footer>, 'children'
  *   identical on both sides of hydration — no mismatch — and a visitor with
  *   JavaScript disabled gets every link, because the collapse only ever
  *   happens in an effect.
- * - After mount, a `matchMedia` listener collapses them below `lg` and forces
- *   them open at or above it. The disclosure buttons are hidden from `lg` up,
- *   so on desktop there is nothing to toggle and nothing extra in the tab
- *   order.
+ * - After mount, the block collapses them below `lg` and forces them open at
+ *   or above it. The disclosure buttons are hidden from `lg` up, so on desktop
+ *   there is nothing to toggle and nothing extra in the tab order.
+ * - Which layout is active is read from a zero-size PROBE element carrying the
+ *   same `lg:hidden` utility as the disclosure buttons, not from a `matchMedia`
+ *   query restating the breakpoint in JS. Tailwind v4 lets a consumer retheme
+ *   `--breakpoint-lg`, and a hardcoded `(min-width: 64rem)` would then disagree
+ *   with the layout it is supposed to describe — collapsing columns whose
+ *   triggers are hidden, leaving links unreachable. Reading the probe makes
+ *   that impossible by construction: the CSS is the only definition.
+ *
+ * Known trade-off: because the server render is open, a mobile visitor sees the
+ * expanded site map for one frame before the collapse lands. That is accepted
+ * deliberately — the alternative is a collapsed server render, which would put
+ * every footer link behind a button that does not work without JavaScript. The
+ * flash costs a moment of layout shift; the alternative costs the links.
  *
  * Base UI's Collapsible owns the `aria-expanded` / `aria-controls` wiring and
  * the keyboard behaviour — the block only decides which columns are open.
@@ -97,18 +106,33 @@ export function FooterAccordion({
   // `window` — that is what would desync hydration.
   const [isDesktop, setIsDesktop] = React.useState(true)
   const [openColumns, setOpenColumns] = React.useState<string[]>([])
+  const probeRef = React.useRef<HTMLSpanElement>(null)
 
   React.useEffect(() => {
-    const query = window.matchMedia(DESKTOP_QUERY)
-    const sync = () => setIsDesktop(query.matches)
+    const probe = probeRef.current
+    const view = probe?.ownerDocument.defaultView
+    if (!probe || !view) {
+      return
+    }
+    // The probe carries `lg:hidden`, the same utility that hides the
+    // disclosure buttons, so "the probe computes to display:none" IS "the
+    // desktop layout is active" — by construction, with the breakpoint stated
+    // once, in CSS. `resize` covers viewport changes and browser zoom, which
+    // is every way this can flip.
+    const sync = () => setIsDesktop(view.getComputedStyle(probe).display === 'none')
 
     sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
+    view.addEventListener('resize', sync)
+    return () => view.removeEventListener('resize', sync)
   }, [])
 
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
+      {/* Layout probe — see the effect above. Out of flow and zero-size, so it
+          cannot affect layout, and aria-hidden so it cannot reach AT. Not
+          `sr-only`: that utility exists to EXPOSE content to screen readers,
+          which is the opposite of this element's job. */}
+      <span ref={probeRef} aria-hidden='true' className='absolute size-0 lg:hidden' />
       <nav aria-label='Site map' className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'>
         {columns.map((column) => (
           <Collapsible

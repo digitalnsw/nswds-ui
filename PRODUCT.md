@@ -34,7 +34,7 @@ An **independent rebuild** — not (yet) officially sanctioned as the NSW Design
 - Every visual property traces to a CSS custom-property token (four layers: NSW palette → masterbrand theme → shadcn semantic tokens → Tailwind bridges). Components reference semantic tokens only.
 - Class strings must be cascade-safe (consumers run their own Tailwind build alongside the precompiled stylesheet); enforced by `check:cascade`.
 - Terminology: **primitive** (wraps one Base UI element), **component** (self-contained composition), **pattern** (composed UI pattern, registry-only `registry:block`).
-- Undecided product facts: official endorsement path/timeline; `ui.digital.nsw.gov.au` DNS is not yet live.
+- Undecided product facts: official endorsement path/timeline. (`ui.digital.nsw.gov.au` DNS **is** live and serving — it is the canonical `location` in registry.config.json and the URL release verification polls. The docs site behind it is still a stub, which is TODO #1 in AGENTS.md §9, not a DNS problem.)
 
 ## Brand Commitments
 

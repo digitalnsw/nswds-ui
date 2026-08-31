@@ -38,6 +38,16 @@ if (!registryOrigin) {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // babel-plugin-react-compiler is a devDependency here, but installing it does
+  // nothing on its own — Next only runs the compiler when this flag is set
+  // (node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/reactCompiler.md).
+  // It was installed and never enabled, so the dependency was inert while the
+  // package source was already being written to the compiler's constraints:
+  // eslint-plugin-react-hooks' compiler-era rules are active through
+  // @workspace/eslint-config, and packages/ui carries deliberate workarounds
+  // for them (the destructure note on useChromeHeight, the
+  // set-state-in-effect disable in push-menu).
+  reactCompiler: true,
   transpilePackages: ['@nswds/ui'],
   async rewrites() {
     // Serve the registry project under /registry on this domain.

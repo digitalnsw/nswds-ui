@@ -1,5 +1,9 @@
 # @nswds/ui 2.0 plan
 
+> **Archived.** This is a historical design document, not current guidance — the package is
+> long past 2.0. It is kept for the reasoning behind the v2 API split (per-icon exports, the
+> `@workspace/theme-tools` extraction), which is still the reasoning the code follows.
+
 > **Status: implemented.** All six items below landed on the `release/v2` branch (one commit
 > per item, each with a `BREAKING CHANGE` footer). Consumer-facing changes are documented in
 > [migrating-to-v2.md](migrating-to-v2.md); this file remains as the design rationale.

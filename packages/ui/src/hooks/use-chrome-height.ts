@@ -5,6 +5,26 @@ import * as React from 'react'
 /** Default custom property the measured height is published to. */
 const DEFAULT_PROPERTY = '--chrome-height'
 
+/**
+ * Which hook instance currently owns each published property, keyed by
+ * `<html>` element and then by property name.
+ *
+ * Two instances CAN legitimately share a property name — the default one, most
+ * obviously, on a page with a sticky header and a sticky sub-nav that both
+ * want to publish. Without an owner check the first to unmount removes the
+ * property out from under the survivor, and no ResizeObserver fires on the
+ * survivor afterwards to put it back: the offset silently reverts to the CSS
+ * fallback and anchor targets start landing behind the chrome. Removing only
+ * when THIS instance is the last writer keeps the JSDoc promise ("a chrome
+ * element that goes away does not leave a stale offset behind") true without
+ * breaking the other instance.
+ *
+ * Keyed by document so an instance rendered into a portal in another document
+ * (a popped-out window) does not collide with the main one. A WeakMap because
+ * a torn-down document must stay collectable.
+ */
+const propertyOwners = new WeakMap<HTMLElement, Map<string, symbol>>()
+
 type UseChromeHeightOptions = {
   /**
    * Custom property to publish the measured height to, on `<html>`. Pass
@@ -78,7 +98,9 @@ type UseChromeHeightResult<T extends HTMLElement> = {
  *   fallback in CSS (`var(--site-chrome-height, 0px)`) for that first paint.
  * - **The property is removed on unmount**, and whenever the tracked element
  *   changes, so a chrome element that goes away does not leave a stale offset
- *   behind for whatever renders next.
+ *   behind for whatever renders next. Two instances may safely share one
+ *   property name: the removal is skipped unless this instance was the last to
+ *   publish, so unmounting one never blanks the value the other still owns.
  * - Height comes from `borderBoxSize`, not `getBoundingClientRect()`: the
  *   latter reports the *transformed* size, so a chrome element that animates
  *   with a transform would publish a height that does not match the space it
@@ -101,16 +123,32 @@ function useChromeHeight<T extends HTMLElement = HTMLElement>({
     setElement(node)
   }, [])
 
+  // Identity for this hook instance, used to decide whether it is still the
+  // property's owner at cleanup time. Created lazily INSIDE the effect, not
+  // during render: it is only ever read there, and a render-phase ref write
+  // would be a side effect in render for no benefit. `??=` keeps the same
+  // symbol across the effect's re-runs (a changed element or property), which
+  // is what makes ownership survive them.
+  const instanceRef = React.useRef<symbol | null>(null)
+
   React.useEffect(() => {
     if (!element) {
       return
     }
 
     const root = element.ownerDocument.documentElement
+    const instance = (instanceRef.current ??= Symbol('useChromeHeight'))
 
     function publish(next: number) {
       setHeight(next)
       if (property) {
+        let owners = propertyOwners.get(root)
+        if (!owners) {
+          owners = new Map()
+          propertyOwners.set(root, owners)
+        }
+        // Last writer wins, matching what the CSS custom property itself does.
+        owners.set(property, instance)
         root.style.setProperty(property, `${next}px`)
       }
     }
@@ -124,16 +162,31 @@ function useChromeHeight<T extends HTMLElement = HTMLElement>({
       // `borderBoxSize` is the layout size, unaffected by any transform on the
       // element. It is an array to allow for fragmented boxes; the first entry
       // is the whole box for everything this hook is used on. The fallback
-      // covers the (now historical) browsers that reported only contentRect.
+      // covers the (now historical) browsers that reported only contentRect —
+      // and reads `offsetHeight`, NOT `contentRect.height`, because the latter
+      // is the CONTENT box: on a chrome element with padding or a border the
+      // two disagree by exactly that amount, so the fallback would publish a
+      // height smaller than the space the element occupies. offsetHeight is
+      // border-box and untransformed, which is what borderBoxSize reports.
       const box = entry.borderBoxSize?.[0]
-      publish(box ? box.blockSize : entry.contentRect.height)
+      publish(box ? box.blockSize : element.offsetHeight)
     })
 
     observer.observe(element)
 
     return () => {
       observer.disconnect()
-      if (property) {
+      if (!property) {
+        return
+      }
+      const owners = propertyOwners.get(root)
+      // Only the last writer clears the property. Another instance publishing
+      // to the same name has already taken ownership, and its value is the one
+      // on the element — tearing it down here would strand that instance with
+      // no way to republish (its element has not resized, so no observer
+      // callback is coming).
+      if (owners?.get(property) === instance) {
+        owners.delete(property)
         root.style.removeProperty(property)
       }
     }

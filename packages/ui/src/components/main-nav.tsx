@@ -518,7 +518,10 @@ type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children'> &
  *   shifts Base UI's trigger-anchored positioner back to the container's left
  *   edge (measured at position time from the open trigger, so it is exact for
  *   every trigger — this replaces the app source's panelMetrics state).
- *   Assumes LTR; see the class comments.
+ *   The offset is physical and correct in BOTH directions: Base UI passes
+ *   `align` to floating-ui as a physical placement and only mirrors a logical
+ *   `side`, so nothing about this anchoring flips under RTL. See the comment
+ *   on `alignOffset`, and the RightToLeft story that pins it.
  * - `container`, `border`, `shadow`, `sticky` mirror the house chrome
  *   components; the app's deprecated `showTopBorder`/`showBottomBorder` and
  *   `responsive` props are not ported (use `border` and
@@ -574,8 +577,23 @@ function MainNav({
   // Shifts the popup from Base UI's anchor (the open trigger) to the
   // container's left edge. Called by the positioner at position time, when
   // the open trigger is findable via data-popup-open — so the offset is exact
-  // per trigger with no per-trigger state. Assumes LTR (`align='start'` maps
-  // to the left edge); RTL would need the mirrored calculation.
+  // per trigger with no per-trigger state.
+  //
+  // PHYSICAL, and correct in both directions — this is deliberate, and the
+  // opposite of what the comment here used to claim ("Assumes LTR; RTL would
+  // need the mirrored calculation"). Base UI's useAnchorPositioning consults
+  // the direction ONLY to map a logical `side` (`inline-start`/`inline-end`);
+  // `align` is passed through to floating-ui as a physical placement, so
+  // `side='bottom' align='start'` anchors the popup's LEFT edge to the
+  // trigger's left in RTL exactly as in LTR, and `alignOffset` is applied on
+  // floating-ui's physical cross axis. Nothing mirrors, so neither should this.
+  //
+  // Verified, not assumed: adding the mirror (trigger.right - container.right)
+  // and rendering the bar under `dir='rtl'` WITH a DirectionProvider put the
+  // panel at left=914 against a container at left=0 — the mirror moved an
+  // already-left-anchored panel. The RightToLeft story pins the correct
+  // geometry so a future Base UI release that starts mirroring `align` fails
+  // here instead of in a consumer's RTL site.
   //
   // The ref caches the last successful offset for the windows when NO trigger
   // carries data-popup-open — chiefly the ~300ms close fade, when a recompute

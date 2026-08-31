@@ -658,17 +658,20 @@ export const Accordion: Story = {
       throw new Error(`Expected all 20 site-map links to be rendered, got ${links.length}.`)
     }
 
-    // Rendered is not enough: they must be VISIBLE. This is the guard on
-    // DESKTOP_QUERY, which restates Tailwind's `lg` breakpoint in JS with
-    // nothing keeping the two in step. If the theme's breakpoint moved, CSS
-    // would hide the disclosure buttons (asserted above) while matchMedia
-    // still reported mobile, leaving the columns collapsed and every link
-    // unreachable with no way to expand them. Asserting the behaviour catches
-    // that; asserting the constant would not.
+    // Rendered is not enough: they must be VISIBLE. This is the guard on the
+    // block's breakpoint detection. It used to restate Tailwind's `lg` in JS
+    // as a matchMedia string with nothing keeping the two in step: if the
+    // theme's breakpoint moved, CSS would hide the disclosure buttons
+    // (asserted above) while matchMedia still reported mobile, leaving the
+    // columns collapsed and every link unreachable with no way to expand
+    // them. The block now reads a probe element carrying the same `lg:hidden`
+    // utility, so the two cannot drift — but this assertion stays, because it
+    // tests the BEHAVIOUR (are the links reachable?) rather than the
+    // mechanism, and would catch a regression in either.
     const visibleLinks = links.filter((link) => link.checkVisibility())
     if (visibleLinks.length !== 20) {
       throw new Error(
-        `Expected all 20 links visible at desktop width, got ${visibleLinks.length} — DESKTOP_QUERY and the lg breakpoint have drifted apart.`,
+        `Expected all 20 links visible at desktop width, got ${visibleLinks.length} — the layout probe and the lg breakpoint disagree, so the columns collapsed while their disclosure buttons are hidden.`,
       )
     }
   },

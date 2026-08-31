@@ -11,6 +11,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { ExpandableSearch, ExpandableSearchField } from './expandable-search.js'
+import { expectContrast } from './story-helpers.js'
 
 const meta = {
   title: 'Components/ExpandableSearch',
@@ -399,6 +400,35 @@ export const PlaceholderContrast: Story = {
     const fallback = getComputedStyle(roots[3]!).getPropertyValue('--search-placeholder')
     if (!fallback.includes('70%')) {
       throw new Error(`Expected grey-800's --search-placeholder to mix at 70%, got "${fallback}".`)
+    }
+
+    // ── The ratio itself ─────────────────────────────────────────────────────
+    //
+    // Everything above checks the PLUMBING — that the percentage token is set,
+    // and that the color-mix consumes it. None of it checks the thing the
+    // percentages exist for: that the resulting placeholder actually clears
+    // WCAG 1.4.3 against its chip.
+    //
+    // Nothing else can. axe-core does not evaluate ::placeholder, so this
+    // colour sits outside the a11y gate entirely, and before this block the
+    // ratios lived only as arithmetic in a source comment — a token retune
+    // that broke one was undetectable. Measuring here closes that.
+    //
+    // A custom property does not compute to rgb() on its own (it is not
+    // registered via @property), so the value is resolved by painting it: a
+    // probe element taking `color: var(--search-placeholder)` computes to the
+    // real, substituted colour.
+    for (const root of roots) {
+      const probe = root.ownerDocument.createElement('span')
+      probe.style.color = 'var(--search-placeholder)'
+      root.append(probe)
+      const placeholder = getComputedStyle(probe).color
+      probe.remove()
+
+      expectContrast(placeholder, getComputedStyle(root).backgroundColor, {
+        minimum: 4.5,
+        label: `${root.dataset.variant ?? 'unknown'} placeholder`,
+      })
     }
   },
 }

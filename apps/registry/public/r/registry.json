@@ -1472,6 +1472,7 @@
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
         "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/direction.json",
         "https://ui.digital.nsw.gov.au/registry/r/icons.json"
       ],
       "files": [

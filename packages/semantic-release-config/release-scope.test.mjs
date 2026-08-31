@@ -185,3 +185,37 @@ describe('generateNotes', () => {
     assert.doesNotMatch(notes, /next to v16\.3\.2/)
   })
 })
+
+describe('scope memoisation', () => {
+  // analyzeCommits and generateNotes are called with the SAME commits array in
+  // one release run and both need the same filtered list, so the walk is
+  // memoised. Two things have to hold, and neither is visible from the
+  // behavioural tests above.
+  test('the two entry points agree on one commit list', async () => {
+    // The property the cache must preserve. analyzeCommits decides WHETHER to
+    // release and generateNotes decides what the changelog CLAIMS shipped, so
+    // the two disagreeing is the failure that matters — a release whose notes
+    // describe a different set of commits than the one that triggered it.
+    // (The saving itself is not asserted: proving a child process did not run
+    // would need to instrument execFile, which is more harness than the perf
+    // fix is worth. This pins the behaviour the optimisation must not break.)
+    const inScope = commit('fix: memo', { 'packages/ui/src/memo.ts': 'export {}\n' })
+    const commits = [inScope]
+
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor(commits)), 'patch')
+    assert.match(await generateNotes(PLUGIN_CONFIG, contextFor(commits)), /memo/)
+  })
+
+  test('does not serve a cached answer to a different `paths` scope', async () => {
+    const outside = commit('fix: elsewhere', { 'apps/web/src/page.tsx': 'export {}\n' })
+    const commits = [outside]
+
+    // packages/ui/ — out of scope, so no release.
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor(commits)), null)
+
+    // apps/web/ — the SAME commits array, a different scope. If the cache were
+    // keyed on the array alone, this would wrongly return null.
+    const webScoped = { ...PLUGIN_CONFIG, paths: ['apps/web/'] }
+    assert.equal(await analyzeCommits(webScoped, contextFor(commits)), 'patch')
+  })
+})

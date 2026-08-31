@@ -1,11 +1,16 @@
 /**
- * Carousel — Default, Variants, CssCheck
+ * Carousel — Default, Variants, Keyboard, Vertical, RightToLeft, CssCheck
  *
  * A slide carousel built on embla-carousel-react. CarouselContent owns the
  * embla viewport and must wrap the CarouselItems; CarouselPrevious/CarouselNext
- * render real Buttons wired to embla's scroll API. Embla initialises
- * asynchronously, so interactions here stay minimal — asserting the controls
- * render is enough to prove the composition mounts.
+ * render real Buttons wired to embla's scroll API.
+ *
+ * Embla initialises asynchronously, so every assertion about scroll state has
+ * to poll rather than read once — `waitFor` below. Asserting only that the
+ * controls RENDER (which is all this file used to do) leaves the whole
+ * interactive surface untested: the arrow-key mapping, the enabled/disabled
+ * transitions, the vertical axis and the RTL mapping were all silently wrong
+ * or untested behind a passing suite.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -18,6 +23,28 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from './carousel.js'
+import { DirectionProvider } from './direction.js'
+
+/**
+ * Poll until `predicate` holds. Embla settles its scroll state over a few
+ * frames and its `select` event drives the control's disabled state, so a
+ * synchronous read straight after an interaction is a race.
+ */
+async function waitFor(predicate: () => boolean, message: string, timeout = 2000) {
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    if (predicate()) {
+      return
+    }
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+  }
+  throw new Error(message)
+}
+
+/** Dispatch a real keydown from `target` so it bubbles to the carousel region. */
+function pressKey(target: Element, key: string) {
+  target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+}
 
 // Annotated (not `satisfies`) so the inferred meta type does not surface
 // embla-carousel's internal Options/Plugins modules (TS2742 portability error).
@@ -65,12 +92,244 @@ export const Default: Story = {
 
     // The navigation controls render as real, named buttons.
     const next = canvas.getByRole('button', { name: /next slide/i })
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
     await expect(next).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: /previous slide/i })).toBeInTheDocument()
+    await expect(previous).toBeInTheDocument()
 
     // Three slides mounted inside the embla viewport.
     const slides = canvasElement.querySelectorAll('[data-slot="carousel-item"]')
     await expect(slides).toHaveLength(3)
+
+    // Control state is seeded from embla on mount, not left until the first
+    // scroll: at slide one there is nothing behind and something ahead.
+    await waitFor(
+      () => !next.hasAttribute('disabled') && previous.hasAttribute('disabled'),
+      'Expected the initial state to enable Next and disable Previous.',
+    )
+
+    // Clicking Next actually advances, and the state follows.
+    next.click()
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected Previous to become enabled after advancing a slide.',
+    )
+
+    // …and back again, returning to the seeded state.
+    previous.click()
+    await waitFor(
+      () => previous.hasAttribute('disabled'),
+      'Expected Previous to disable again on returning to the first slide.',
+    )
+  },
+}
+
+/**
+ * Arrow keys drive the carousel — but ONLY when the key was not meant for a
+ * control inside a slide. The handler runs on the region, so without the
+ * `ownsArrowKeys` guard it would take ArrowLeft/ArrowRight off every text
+ * field in a slide and scroll the carousel instead of moving the caret. Slides
+ * carrying form controls are ordinary (a filter row, a step in a form), which
+ * is why this is a first-class story rather than an edge case.
+ */
+export const Keyboard: Story = {
+  name: 'Keyboard',
+  render: () => (
+    <div className='w-64'>
+      <Carousel>
+        <CarouselContent>
+          {[1, 2, 3].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-32 flex-col items-center justify-center gap-2 rounded-md bg-muted text-muted-foreground'>
+                <span className='text-2xl font-semibold'>{n}</span>
+                <input
+                  aria-label={`Note for slide ${n}`}
+                  defaultValue='abc'
+                  className='w-24 rounded-sm border border-input bg-background px-1 text-sm text-foreground'
+                />
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // ArrowRight on the region advances (LTR, horizontal).
+    pressKey(region, 'ArrowRight')
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected ArrowRight to advance the carousel.',
+    )
+
+    // ArrowLeft goes back.
+    pressKey(region, 'ArrowLeft')
+    await waitFor(
+      () => previous.hasAttribute('disabled'),
+      'Expected ArrowLeft to move the carousel back.',
+    )
+
+    // The guard: an arrow key from an input inside a slide belongs to the
+    // input. The carousel must not move, and must not preventDefault.
+    const input = canvasElement.querySelector<HTMLInputElement>('input')!
+    input.focus()
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    })
+    input.dispatchEvent(event)
+    await expect(event.defaultPrevented).toBe(false)
+    // Give embla the frames it would have needed had it (wrongly) scrolled.
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    await expect(previous.hasAttribute('disabled')).toBe(true)
+  },
+}
+
+/**
+ * A vertical carousel moves on the block axis, so Up/Down drive it and
+ * Left/Right must not. Pointer support for `orientation='vertical'` has always
+ * been there; the keyboard half was mapped to Left/Right regardless, which
+ * left the axis unreachable from the keyboard.
+ */
+export const Vertical: Story = {
+  name: 'Vertical',
+  render: () => (
+    <div className='h-48 w-64'>
+      <Carousel orientation='vertical' className='h-full'>
+        <CarouselContent className='h-48'>
+          {[1, 2, 3].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-40 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                {n}
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // Left/Right belong to the inline axis and must be inert here.
+    pressKey(region, 'ArrowRight')
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    await expect(previous.hasAttribute('disabled')).toBe(true)
+
+    // ArrowDown is this orientation's "next".
+    pressKey(region, 'ArrowDown')
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected ArrowDown to advance a vertical carousel.',
+    )
+
+    pressKey(region, 'ArrowUp')
+    await waitFor(
+      () => previous.hasAttribute('disabled'),
+      'Expected ArrowUp to move a vertical carousel back.',
+    )
+  },
+}
+
+/**
+ * In RTL the first slide sits on the RIGHT, so ArrowRight goes BACK and
+ * ArrowLeft goes forward — the keys have to agree with the logical properties
+ * (`-ms-4`, `ps-4`, `-start-12`) the rest of the component already uses.
+ *
+ * Both halves of RTL are set here: `dir` for the CSS, DirectionProvider for
+ * the JS. See direction.stories.tsx for why one without the other is not RTL.
+ */
+export const RightToLeft: Story = {
+  name: 'Right to left',
+  render: () => (
+    <div dir='rtl'>
+      <DirectionProvider direction='rtl'>
+        <div className='w-64'>
+          <Carousel opts={{ direction: 'rtl' }}>
+            <CarouselContent>
+              {[1, 2, 3].map((n) => (
+                <CarouselItem key={n}>
+                  <div className='flex h-32 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                    {n}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
+      </DirectionProvider>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+
+    // Guard the premise — a story that quietly laid out LTR would pass the
+    // assertions below for the wrong reason.
+    await expect(getComputedStyle(region).direction).toBe('rtl')
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // ArrowLeft is "next" in RTL.
+    pressKey(region, 'ArrowLeft')
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected ArrowLeft to advance an RTL carousel.',
+    )
+
+    // ArrowRight is "previous" in RTL.
+    pressKey(region, 'ArrowRight')
+    await waitFor(
+      () => previous.hasAttribute('disabled'),
+      'Expected ArrowRight to move an RTL carousel back.',
+    )
+  },
+}
+
+/**
+ * The controls are icon-only, so their `label` prop is the only accessible
+ * name AT ever hears — and the only way a consumer can translate them. It used
+ * to be hardcoded English rendered after the props spread, i.e. unreachable.
+ */
+export const TranslatedLabels: Story = {
+  name: 'Translated labels',
+  render: () => (
+    <div className='w-64'>
+      <Carousel>
+        <CarouselContent>
+          {[1, 2].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-32 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                {n}
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious label='Diapositiva anterior' />
+        <CarouselNext label='Diapositiva siguiente' />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Diapositiva anterior' })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Diapositiva siguiente' })).toBeInTheDocument()
   },
 }
 
