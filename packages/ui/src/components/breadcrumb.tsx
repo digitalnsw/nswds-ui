@@ -49,12 +49,20 @@ function BreadcrumbLink({ className, render, ...props }: useRender.ComponentProp
   })
 }
 
+/**
+ * The current page's entry in the trail — plain text, not a link.
+ *
+ * Carries `aria-current='page'` and nothing else. The upstream shadcn version
+ * adds `role='link' aria-disabled='true'` to a `<span>` that has no `href` and
+ * no `tabIndex`, which makes AT announce "link, dimmed, current page" for
+ * something that is neither a link nor operable, and puts a hand-rolled ARIA
+ * role on an element that needs none. axe-core does not flag it, so it
+ * survives an a11y gate set to `error`; it is removed deliberately here.
+ */
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot='breadcrumb-page'
-      role='link'
-      aria-disabled='true'
       aria-current='page'
       className={cn('font-normal text-foreground', className)}
       {...props}

@@ -55,7 +55,12 @@ nswds-ui/                        ← private monorepo root (name: "design")
 │   ├── eslint-config/           ← @workspace/eslint-config
 │   ├── prettier-config/         ← @workspace/prettier-config
 │   ├── typescript-config/       ← @workspace/typescript-config
-│   └── semantic-release-config/ ← @workspace/semantic-release-config
+│   ├── semantic-release-config/ ← @workspace/semantic-release-config
+│   └── theme-tools/             ← @workspace/theme-tools (private; colour/theme
+│                                   helpers consumed as TS source by Storybook's
+│                                   preview + manager. Not published, not part of
+│                                   the @nswds/ui API — see docs/archive/v2-plan.md
+│                                   §2 for why it was pulled out of the barrel.)
 │
 ├── turbo.json                   pipeline orchestration
 ├── release.config.cjs           extends @workspace/semantic-release-config
@@ -402,6 +407,7 @@ Run from the **repo root** unless noted.
 | Check formatting                | `npm run format:check`                                         |
 | Type check all                  | `npm run typecheck`                                            |
 | Check component drift           | `npm run check:drift -w @nswds/ui`                             |
+| Check radius scale              | `npm run check:radius -w @nswds/ui`                            |
 | Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
@@ -419,7 +425,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
-`format:check`, `check:drift`, `check:icons`, the release-config tests,
+`format:check`, `check:drift`, `check:radius`, `check:icons`, the
+release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
 `scripts/test-consumer-fixture.sh`, a
 registry-freshness rebuild, `check:registry-resolves`, `check:optimize-deps`, a
@@ -465,6 +472,9 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   survived three releases that way — removed from the npm barrel as a breaking
   change, still served on the registry, still advertised in three docs. When you
   delete an item, delete `apps/registry/public/r/<name>.json` by hand.
+- **`check:radius`** (`packages/ui/scripts/check-radius.mjs`) holds every
+  component to the `sm` / `md` / `full` / `none` radius scale, so a component
+  cannot invent a one-off corner. See docs/reference-tokens.md for the scale.
 - **`check:icons`** regenerates the icon barrel and fails on any difference —
   see §4 and the icon generator for the regeneration command.
 - **the release-config tests** (`npm test -w @workspace/semantic-release-config`)
@@ -493,6 +503,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   npm consumer's own Tailwind build can re-emit the loser after ours. See §4
   Step 1 for the authoring rule and the script header for why cascade layers
   cannot fix it instead.
+- **`verify:dist`** runs inside `build` (like `check:cascade`) and catches the
+  build's two SILENT failure modes, both of which live in `tsup.config.ts`
+  `onSuccess` hooks that sit outside tsup's own accounting — so when either
+  stops running, the build still exits 0. One is missing icon declarations
+  (which once reached CI as an intermittent publint failure); the other is a
+  stripped `'use client'` directive, which still builds, imports and renders,
+  and only fails when a CONSUMER's server component passes one of those
+  exports as a prop.
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.
@@ -585,7 +603,8 @@ So the effective floor is the strictest `engines` range anywhere in the tree,
 which is **`^22.22.2 || >=24.15.0`** (set by `@nswds/tokens` and by
 `@semantic-release/{changelog,git}`). Use `.nvmrc` (24.16.0) and this never
 comes up. CI already does: `pr-checks.yml` and `chromatic.yml` read `.nvmrc`,
-and `release.yml` pins 24.19.0.
+and `release.yml` pins 24.20.0 (a hard pin — it is the one workflow that does
+not read `.nvmrc`, so it needs checking whenever the floor moves).
 
 Two rules follow, and they pull in opposite directions:
 
@@ -651,7 +670,12 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
 `.github/workflows/release.yml` runs automatically:
 
 1. Checks out full git history (`fetch-depth: 0`).
-2. Sets up Node 22.14.0 and ensures npm ≥ 11.5.1 (required for Trusted Publishing OIDC).
+2. Sets up Node 24.20.0 (a hard pin, unlike the other workflows which read
+   `.nvmrc`) and ensures npm ≥ 11.5.1 (required for Trusted Publishing OIDC).
+   Keep the pin inside the root `engines.node` range — with `engine-strict=true`
+   a Node outside it fails `npm ci` outright. This line previously claimed
+   22.14.0, which the tree's real floor (`^22.22.2 || >=24.15.0`) has excluded
+   since the floor last moved.
 3. Runs `npm ci`.
 4. Builds `@nswds/ui` (`npm run build -w @nswds/ui`).
 5. Runs `npm run release` (semantic-release):
@@ -758,11 +782,17 @@ Three separate Vercel projects, each linked to `github.com/digitalnsw/nswds-ui`.
 detects npm from `package-lock.json` and runs `npm install` from the git root regardless of
 which project's Root Directory is set.
 
-| Vercel project       | Root Directory   | URL purpose                    |
-| -------------------- | ---------------- | ------------------------------ |
-| `nswds-ui-web`       | `apps/web`       | Dev sandbox / design docs site |
-| `nswds-ui-storybook` | `apps/storybook` | Component catalogue            |
-| `nswds-ui-registry`  | `apps/registry`  | shadcn registry JSON endpoint  |
+| Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
+| -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
+| `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
+| `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
+| `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
+
+Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
+`.vercel.app` hostnames resolve but do not serve these projects
+(`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
+docs/README.md pointed at the wrong host for Storybook on the strength of the
+`.vercel.app` name.
 
 ### The registry's two URLs — `location` vs `origin`
 

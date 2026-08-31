@@ -59,9 +59,6 @@ const legalLinksSample = [
 
 const departmentSample = 'Digital NSW, Department of Customer Service'
 
-/** Matches Tailwind's `lg` breakpoint (64rem). Keep the two in step. */
-const DESKTOP_QUERY = '(min-width: 64rem)'
-
 type FooterAccordionProps = Omit<React.ComponentProps<typeof Footer>, 'children'> & {
   columns?: typeof columnsSample
 }
@@ -78,10 +75,22 @@ type FooterAccordionProps = Omit<React.ComponentProps<typeof Footer>, 'children'
  *   identical on both sides of hydration — no mismatch — and a visitor with
  *   JavaScript disabled gets every link, because the collapse only ever
  *   happens in an effect.
- * - After mount, a `matchMedia` listener collapses them below `lg` and forces
- *   them open at or above it. The disclosure buttons are hidden from `lg` up,
- *   so on desktop there is nothing to toggle and nothing extra in the tab
- *   order.
+ * - After mount, the block collapses them below `lg` and forces them open at
+ *   or above it. The disclosure buttons are hidden from `lg` up, so on desktop
+ *   there is nothing to toggle and nothing extra in the tab order.
+ * - Which layout is active is read from a zero-size PROBE element carrying the
+ *   same `lg:hidden` utility as the disclosure buttons, not from a `matchMedia`
+ *   query restating the breakpoint in JS. Tailwind v4 lets a consumer retheme
+ *   `--breakpoint-lg`, and a hardcoded `(min-width: 64rem)` would then disagree
+ *   with the layout it is supposed to describe — collapsing columns whose
+ *   triggers are hidden, leaving links unreachable. Reading the probe makes
+ *   that impossible by construction: the CSS is the only definition.
+ *
+ * Known trade-off: because the server render is open, a mobile visitor sees the
+ * expanded site map for one frame before the collapse lands. That is accepted
+ * deliberately — the alternative is a collapsed server render, which would put
+ * every footer link behind a button that does not work without JavaScript. The
+ * flash costs a moment of layout shift; the alternative costs the links.
  *
  * Base UI's Collapsible owns the `aria-expanded` / `aria-controls` wiring and
  * the keyboard behaviour — the block only decides which columns are open.
@@ -97,19 +106,54 @@ export function FooterAccordion({
   // `window` — that is what would desync hydration.
   const [isDesktop, setIsDesktop] = React.useState(true)
   const [openColumns, setOpenColumns] = React.useState<string[]>([])
+  const probeRef = React.useRef<HTMLSpanElement>(null)
+  const navRef = React.useRef<HTMLElement>(null)
 
   React.useEffect(() => {
-    const query = window.matchMedia(DESKTOP_QUERY)
-    const sync = () => setIsDesktop(query.matches)
+    const probe = probeRef.current
+    const nav = navRef.current
+    const view = probe?.ownerDocument.defaultView
+    if (!probe || !nav || !view) {
+      return
+    }
+    // The probe carries `lg:hidden`, the same utility that hides the
+    // disclosure buttons, so "the probe computes to display:none" IS "the
+    // desktop layout is active" — by construction, with the breakpoint stated
+    // once, in CSS.
+    const sync = () => setIsDesktop(view.getComputedStyle(probe).display === 'none')
+
+    // Observed on the NAV, not a `resize` listener on the window. `resize`
+    // fires only when the viewport's pixel dimensions change, and this
+    // breakpoint is defined in REM: a reader who raises their browser's default
+    // font size flips it with the viewport unchanged, so no resize event is
+    // coming. The nav's own box changes on every such reflow — the grid goes
+    // between one column and four — so observing it catches the font-size case
+    // as well as ordinary resizes and zoom. (The `matchMedia` version this
+    // replaced also caught it, via `change`; the intermediate `resize` version
+    // did not.)
+    //
+    // No feedback loop: sync() only calls setIsDesktop with a value read from
+    // CSS, so once the layout settles the state stops changing and React bails
+    // out of the identical update.
+    const observer = new ResizeObserver(sync)
 
     sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
+    observer.observe(nav)
+    return () => observer.disconnect()
   }, [])
 
   return (
     <Footer legalLinks={legalLinks} department={department} {...props}>
-      <nav aria-label='Site map' className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'>
+      {/* Layout probe — see the effect above. Out of flow and zero-size, so it
+          cannot affect layout, and aria-hidden so it cannot reach AT. Not
+          `sr-only`: that utility exists to EXPOSE content to screen readers,
+          which is the opposite of this element's job. */}
+      <span ref={probeRef} aria-hidden='true' className='absolute size-0 lg:hidden' />
+      <nav
+        ref={navRef}
+        aria-label='Site map'
+        className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'
+      >
         {columns.map((column) => (
           <Collapsible
             key={column.heading}

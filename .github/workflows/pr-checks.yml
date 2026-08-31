@@ -165,6 +165,18 @@ jobs:
   # type so the change actually reaches consumers. (Assumes squash-merge using
   # the PR title — the repo's convention, enforced by the PR-title commitlint
   # check; the title drives semantic-release's analysis on main.)
+  #
+  # A @nswds/tokens BUMP counts as a token change for exactly the same reason.
+  # Its values are inlined into dist/styles.css at build time, so raising the
+  # version repaints every consumer just as surely as editing theme.css — but
+  # it is a devDependency of packages/ui, which Renovate's
+  # :semanticPrefixFixDepsChoreOthers types `chore(deps)`, i.e. no release.
+  # The two bumps that have happened (#76, #114) came through as `fix(deps)`
+  # ONLY because @nswds/tokens is also a PRODUCTION dependency of
+  # fixtures/consumer and Renovate grouped them. That is an accident of a test
+  # fixture, not a policy: move it to the fixture's devDependencies, or let
+  # Renovate split the group, and tokens bumps silently stop shipping. Watch
+  # the version line directly so the guard does not depend on that coincidence.
   visual-change-release-guard:
     name: Token/style change triggers a release
     runs-on: ubuntu-latest
@@ -189,12 +201,57 @@ jobs:
             exit 1
           fi
           changed="$(printf '%s\n' "$files" | grep '^packages/ui/src/styles/' || true)"
-          if [ -z "$changed" ]; then
-            echo "No token/theme CSS changed under packages/ui/src/styles/ — guard not applicable."
+
+          # A @nswds/tokens version change in the published package's manifest
+          # repaints consumers as surely as a theme.css edit — see the comment
+          # on this job. Only the version line counts: an unrelated edit to
+          # packages/ui/package.json (scripts, keywords) must not trip this.
+          tokens_bump=""
+          if printf '%s\n' "$files" | grep -qx 'packages/ui/package.json'; then
+            # The per-file patch comes from the API, NOT from `gh pr diff <n> --
+            # <path>`: gh pr diff takes no pathspec and rejects one outright
+            # ("accepts at most 1 arg(s), received 2"), which under the `if !`
+            # below would fail this job on every PR that touches the published
+            # package's manifest — every Renovate bump into packages/ui.
+            if ! patch="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate \
+              --jq '.[] | select(.filename == "packages/ui/package.json") | .patch // ""')"; then
+              echo "::error::Could not fetch the packages/ui/package.json patch (gh api failed — auth, rate limit, or transient error). The token/style release guard cannot evaluate the change; re-run this check."
+              exit 1
+            fi
+            # The file is in the changed list, so an empty patch means GitHub
+            # withheld it (it does that for very large diffs). Fail rather than
+            # read "no patch" as "no tokens bump" — silently passing is the one
+            # outcome this guard must never produce.
+            if [ -z "$patch" ]; then
+              echo "::error::GitHub returned no patch for packages/ui/package.json, so the guard cannot tell whether @nswds/tokens moved. Re-run this check; if it persists, inspect the version line by hand and merge only under a releasable type."
+              exit 1
+            fi
+            # Compare the VERSIONS, not merely the presence of the line on both
+            # sides of the diff. A reindent, a key reorder or a trailing-comma
+            # change rewrites the line without changing what it pins, and
+            # tripping the guard there would block a maintenance PR under the
+            # very rule this job documents ("only a version change counts").
+            # Either side may legitimately be empty: adding or removing the
+            # dependency is a real change and must still trip.
+            tokens_before="$(printf '%s\n' "$patch" | sed -nE 's/^-[[:space:]]*"@nswds\/tokens":[[:space:]]*"([^"]*)".*/\1/p' | head -1)"
+            tokens_after="$(printf '%s\n' "$patch" | sed -nE 's/^\+[[:space:]]*"@nswds\/tokens":[[:space:]]*"([^"]*)".*/\1/p' | head -1)"
+            if [ "$tokens_before" != "$tokens_after" ]; then
+              tokens_bump="@nswds/tokens: ${tokens_before:-(absent)} -> ${tokens_after:-(absent)}"
+            fi
+          fi
+
+          if [ -z "$changed" ] && [ -z "$tokens_bump" ]; then
+            echo "No token/theme CSS changed under packages/ui/src/styles/ and no @nswds/tokens bump — guard not applicable."
             exit 0
           fi
-          echo "Token/theme CSS changed by this PR:"
-          echo "$changed"
+          if [ -n "$changed" ]; then
+            echo "Token/theme CSS changed by this PR:"
+            echo "$changed"
+          fi
+          if [ -n "$tokens_bump" ]; then
+            echo "@nswds/tokens version changed by this PR:"
+            echo "$tokens_bump"
+          fi
 
           # Conventional type from the PR title (e.g. "feat(ui): …" -> feat).
           type="$(printf '%s' "$PR_TITLE" | sed -nE 's/^([a-z]+)(\([^)]*\))?!?:.*/\1/p')"
@@ -208,5 +265,5 @@ jobs:
             exit 0
           fi
 
-          echo "::error::This PR changes token/theme CSS under packages/ui/src/styles/ but its title type ('${type:-unknown}') does not trigger a release, so the visual change would ship to nobody. Use feat:/fix:/perf: (or add a BREAKING CHANGE footer for a token removal or value change that alters rendered output). See AGENTS.md §6 on versioning visual/token changes."
+          echo "::error::This PR changes token/theme CSS under packages/ui/src/styles/ or bumps @nswds/tokens in packages/ui/package.json, but its title type ('${type:-unknown}') does not trigger a release, so the visual change would ship to nobody. Use feat:/fix:/perf: (or add a BREAKING CHANGE footer for a token removal or value change that alters rendered output). See AGENTS.md §6 on versioning visual/token changes."
           exit 1

@@ -190,11 +190,23 @@ suite that actually proves the components work. Takes roughly 80–170s.
 
 ### `visual-change-release-guard`
 
-A PR touching `packages/ui/src/styles/**` must carry a **releasable** title type. Those files change
-what every consumer renders, so a `style:`/`chore:`/`refactor:` change there would ship to nobody.
+A PR touching `packages/ui/src/styles/**` — **or bumping `@nswds/tokens` in
+`packages/ui/package.json`** — must carry a **releasable** title type. Both change what every
+consumer renders, so a `style:`/`chore:`/`refactor:` change there would ship to nobody.
 
 Use `fix:` for a tweak, `feat:` for a new or retuned token, and a `BREAKING CHANGE` footer for a
 token removal or a value change that alters rendered output.
+
+The `@nswds/tokens` half is easy to miss, because the dependency looks harmless: it is a
+**devDependency**, so Renovate's `:semanticPrefixFixDepsChoreOthers` types its updates
+`chore(deps)` — no release. Its values are nonetheless inlined into `dist/styles.css` at build
+time, so the bump repaints every consumer. The two bumps that have happened arrived as
+`fix(deps)` only because `@nswds/tokens` is also a _production_ dependency of
+`fixtures/consumer` and Renovate grouped them — an accident of a test fixture, not a policy.
+The guard watches the version line directly so it does not depend on that coincidence.
+
+Only the `@nswds/tokens` line counts: an unrelated edit to `packages/ui/package.json` (scripts,
+keywords, description) does not trip it.
 
 ---
 

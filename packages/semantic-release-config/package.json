@@ -4,6 +4,7 @@
   "private": true,
   "main": "index.cjs",
   "scripts": {
+    "lint": "eslint --max-warnings 0",
     "test": "node --test release-scope.test.mjs"
   },
   "files": [
@@ -19,5 +20,9 @@
     "@semantic-release/npm": "^13.1.5",
     "@semantic-release/release-notes-generator": "^14.1.1",
     "conventional-changelog-conventionalcommits": "^9.3.1"
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "*",
+    "eslint": "^9.39.2"
   }
 }

@@ -1,10 +1,21 @@
 /**
  * Direction — Default, Variants, CssCheck
  *
- * DirectionProvider sets the LTR/RTL text-direction context that direction-aware
- * Base UI components and logical CSS properties read. useDirection returns the
- * nearest provider's direction. This is a re-export of the Base UI primitive; we
- * add no styling of our own.
+ * DirectionProvider supplies the LTR/RTL direction as REACT CONTEXT, read by
+ * direction-aware components via useDirection. It renders no DOM element of its
+ * own, so it does NOT set `dir` and it does NOT drive CSS: logical properties
+ * (`ps-*`, `-ms-*`, `start-*`) and the `rtl:` variant follow the DOM `dir`
+ * attribute, which is a separate thing entirely.
+ *
+ * RTL therefore needs BOTH halves — see the RtlNeedsDirAttribute story:
+ *
+ *     <html dir='rtl'>                        ← the CSS half
+ *       <DirectionProvider direction='rtl'>   ← the JS half
+ *
+ * Setting only the provider gives you direction-aware JS behaviour on top of an
+ * LTR layout; setting only `dir` gives you a mirrored layout whose keyboard
+ * handling still moves the other way. This is a re-export of the Base UI
+ * primitive; we add no styling of our own.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -40,7 +51,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'DirectionProvider supplies the LTR/RTL text-direction context consumed by direction-aware components and logical properties. Read the current value with the useDirection hook.',
+          'DirectionProvider supplies the LTR/RTL direction as React context, read via the useDirection hook. It renders no DOM element, so it does not set `dir` and does not affect CSS — logical properties and the `rtl:` variant follow the DOM `dir` attribute. Full RTL needs both: `dir="rtl"` on an ancestor element for the CSS, and this provider for direction-aware JS.',
       },
     },
   },
@@ -81,6 +92,56 @@ export const Variants: Story = {
       </DirectionProvider>
     </div>
   ),
+}
+
+/**
+ * The provider alone does NOT mirror CSS — `dir` on a DOM ancestor does. This
+ * story asserts both halves independently so the documented split cannot drift
+ * back into the old (wrong) claim that the provider drives logical properties.
+ */
+export const RtlNeedsDirAttribute: Story = {
+  name: 'RTL needs dir as well',
+  render: () => (
+    <div className='flex flex-col gap-6'>
+      {/* Provider only — JS sees rtl, the box still has LTR padding. */}
+      <DirectionProvider direction='rtl'>
+        <div data-slot='dir-provider-only' className='bg-muted ps-8'>
+          <DirReadout />
+        </div>
+      </DirectionProvider>
+
+      {/* Both halves — this is what a consumer actually wants. */}
+      <div dir='rtl'>
+        <DirectionProvider direction='rtl'>
+          <div data-slot='dir-both' className='bg-muted ps-8'>
+            <DirReadout />
+          </div>
+        </DirectionProvider>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const providerOnly = canvasElement.querySelector<HTMLElement>('[data-slot="dir-provider-only"]')
+    const both = canvasElement.querySelector<HTMLElement>('[data-slot="dir-both"]')
+    if (!providerOnly || !both) {
+      throw new Error('Could not find the direction sample elements.')
+    }
+
+    // Both report rtl to JS — the context reaches useDirection either way.
+    await expect(providerOnly.querySelector('[data-slot="dir-readout"]')).toHaveTextContent('rtl')
+    await expect(both.querySelector('[data-slot="dir-readout"]')).toHaveTextContent('rtl')
+
+    // But only the one with `dir` mirrors the CSS. `ps-8` is padding-inline-
+    // start: it resolves to padding-LEFT without `dir`, padding-RIGHT with it.
+    const withoutDir = getComputedStyle(providerOnly)
+    const withDir = getComputedStyle(both)
+    await expect(withoutDir.direction).toBe('ltr')
+    await expect(withDir.direction).toBe('rtl')
+    await expect(parseFloat(withoutDir.paddingLeft)).toBeGreaterThan(0)
+    await expect(parseFloat(withoutDir.paddingRight)).toBe(0)
+    await expect(parseFloat(withDir.paddingRight)).toBeGreaterThan(0)
+    await expect(parseFloat(withDir.paddingLeft)).toBe(0)
+  },
 }
 
 export const CssCheck: Story = {

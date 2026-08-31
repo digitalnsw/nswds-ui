@@ -19,6 +19,12 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    # Bounded deliberately. This job contains two polling loops (~2 min for
+    # npm, ~10 min for the registry deploy) and an npm ci, and it is the one
+    # job in the repo nobody is watching when it runs. Without a timeout a
+    # wedged poll or a hung install sits on GitHub's 6-hour default before
+    # alert-on-failure can fire — which defeats the point of alert-on-failure.
+    timeout-minutes: 30
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
       # commit over SSH as a deploy key that's a bypass actor on the ruleset
@@ -173,15 +179,47 @@ jobs:
           - Check whether a git tag was pushed without a matching npm version (\`npm view @nswds/ui version\`).
 
           _Filed automatically by the alert-on-failure job in release.yml._"
-          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[0].number // empty')"
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
-            echo "Commented on existing issue #$existing"
-          else
+          # Assign to the actor ONLY when the actor is assignable. A push to
+          # main can come from a bot (renovate[bot] on auto-merge, the
+          # nswds-devops file-sync bot), and `gh issue create --assignee` fails
+          # outright on a name it cannot resolve — which would lose the very
+          # alert this job exists to raise. The issue is worth more than the
+          # assignment, so the assignment is what gets dropped.
+          assign=()
+          case "$GITHUB_ACTOR" in
+            *'[bot]') echo "Actor '$GITHUB_ACTOR' is a bot — filing unassigned." ;;
+            *) assign=(--assignee "$GITHUB_ACTOR") ;;
+          esac
+
+          open_issue() {
+            gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure \
+              --state open --json number --jq '.[0].number // empty'
+          }
+          create_issue() {
             gh issue create \
               --repo "$GITHUB_REPOSITORY" \
               --title "Release workflow failed — npm publish may be broken" \
               --label release-failure \
-              --assignee "$GITHUB_ACTOR" \
-              --body "$body"
+              --body "$body" "$@"
+          }
+
+          existing="$(open_issue)"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            echo "Commented on existing issue #$existing"
+          elif create_issue "${assign[@]}"; then
+            echo "Filed a new release-failure issue."
+          else
+            # The assignment can be rejected for reasons the bot check above
+            # does not cover (the actor left the org, lost access). Re-query
+            # before retrying: gh can fail AFTER the issue was created
+            # server-side, and a blind retry would then file a second issue for
+            # one failure — noise on exactly the signal that has to stay clear.
+            filed="$(open_issue)"
+            if [ -n "$filed" ]; then
+              echo "Issue #$filed was created despite the error — not filing a duplicate."
+            else
+              echo "Create with --assignee failed; retrying unassigned."
+              create_issue
+            fi
           fi

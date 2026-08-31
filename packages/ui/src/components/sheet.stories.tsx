@@ -4,6 +4,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, waitFor, within } from 'storybook/test'
 
 import {
   Sheet,
@@ -56,6 +57,47 @@ export const Default: Story = {
     if (!trigger) {
       throw new Error('Could not find [data-slot="sheet-trigger"].')
     }
+  },
+}
+
+/**
+ * The close button is icon-only and portaled, so `closeLabel` is the only name
+ * AT ever hears for it and the only way a consumer can translate it. Nothing
+ * opened the sheet before, so the whole path could have broken silently.
+ */
+export const TranslatedCloseLabel: Story = {
+  name: 'Translated close label',
+  render: () => (
+    <Sheet>
+      <SheetTrigger className={triggerClasses}>Open sheet</SheetTrigger>
+      <SheetContent closeLabel='Cerrar panel'>
+        <SheetHeader>
+          <SheetTitle>Editar perfil</SheetTitle>
+          <SheetDescription>Realice cambios en su perfil aquí.</SheetDescription>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="sheet-trigger"]')
+    if (!trigger) {
+      throw new Error('Could not find [data-slot="sheet-trigger"].')
+    }
+    trigger.click()
+
+    // The popup is PORTALED to the document body, so query the whole document
+    // rather than canvasElement — querying the canvas is how this assertion
+    // would silently pass on nothing.
+    const screen = within(document.body)
+    const close = await waitFor(() => screen.getByRole('button', { name: 'Cerrar panel' }))
+    await expect(close).toBeInTheDocument()
+
+    // Close again so the suite's next story starts from a clean body and the
+    // a11y pass does not run against a mounted dialog's focus guards.
+    close.click()
+    await waitFor(() =>
+      expect(document.querySelector('[data-slot="sheet-content"]')).not.toBeInTheDocument(),
+    )
   },
 }
 

@@ -1255,6 +1255,7 @@
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/direction.json",
         "{{REGISTRY_LOCATION}}/r/icons.json"
       ],
       "files": [

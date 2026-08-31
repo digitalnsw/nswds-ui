@@ -41,10 +41,16 @@ function SheetContent({
   children,
   side = 'right',
   showCloseButton = true,
+  closeLabel = 'Close',
   ...props
 }: SheetPrimitive.Popup.Props & {
   side?: 'top' | 'right' | 'bottom' | 'left'
   showCloseButton?: boolean
+  /**
+   * Screen-reader name for the close button. Override to translate it — the
+   * button is icon-only, so this string is the only name AT ever hears.
+   */
+  closeLabel?: string
 }) {
   return (
     <SheetPortal>
@@ -67,7 +73,7 @@ function SheetContent({
                 variant='ghost'
                 color='grey'
                 size='icon'
-                aria-label='Close'
+                aria-label={closeLabel}
                 className='absolute end-4 top-4'
               />
             }

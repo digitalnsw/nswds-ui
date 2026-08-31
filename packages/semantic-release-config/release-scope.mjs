@@ -95,9 +95,41 @@ function delegateConfig({ paths, ...rest }) {
   return rest
 }
 
+/**
+ * Memoises the scope computation per commit list.
+ *
+ * `analyzeCommits` and `generateNotes` both need the same filtered list and
+ * are called with the same `commits` array in one release run, so without this
+ * the whole range is walked TWICE — one `git diff-tree` child process per
+ * commit, serially, on the critical path of every release. Keyed by the array
+ * identity (semantic-release passes the same one to both) and by `paths`, so a
+ * caller that legitimately asks for a different scope is not served a stale
+ * answer. WeakMap so a finished run's commit list stays collectable.
+ */
+const scopeCache = new WeakMap()
+
+/**
+ * Test seam. NOT part of the plugin contract — semantic-release never sees it.
+ *
+ * The memoisation is invisible from the outside: the walk fails OPEN, so a
+ * cache miss produces the same answer as a hit, and its whole purpose (not
+ * spawning a second `git diff-tree` per commit) leaves no observable trace in
+ * the result. Exporting the map lets the suite assert the behaviour directly
+ * rather than asserting a proxy for it, which is the only honest way to keep a
+ * pure optimisation covered.
+ */
+export const __scopeCacheForTests = scopeCache
+
 async function commitsInScope(pluginConfig, context) {
   const paths = pluginConfig.paths ?? DEFAULT_PATHS
   const { cwd, commits, logger } = context
+
+  const cacheKey = JSON.stringify(paths)
+  let byPaths = scopeCache.get(commits)
+  if (byPaths?.has(cacheKey)) {
+    return byPaths.get(cacheKey)
+  }
+
   const kept = []
 
   for (const commit of commits) {
@@ -116,7 +148,13 @@ async function commitsInScope(pluginConfig, context) {
     if (files.length === 0 || touchesScope(files, paths)) kept.push(commit)
   }
 
-  return { kept, paths }
+  const result = { kept, paths }
+  if (!byPaths) {
+    byPaths = new Map()
+    scopeCache.set(commits, byPaths)
+  }
+  byPaths.set(cacheKey, result)
+  return result
 }
 
 export async function analyzeCommits(pluginConfig, context) {

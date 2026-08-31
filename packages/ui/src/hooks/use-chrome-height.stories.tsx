@@ -8,6 +8,8 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as React from 'react'
+import { expect } from 'storybook/test'
 
 import { Container } from '../components/container.js'
 import { Header, HeaderActions, HeaderBrand } from '../components/header.js'
@@ -135,6 +137,104 @@ export const Default: Story = {
 export const Variants: Story = {
   name: 'Without the readout',
   render: () => <StickyChromeDemo showReadout={false} />,
+}
+
+const SHARED_PROPERTY = '--story-shared-chrome-height'
+
+/** A publisher of fixed height, mountable and unmountable on demand. */
+function SharedPublisher({ height, testId }: { height: number; testId: string }) {
+  const { ref } = useChromeHeight<HTMLDivElement>({ property: SHARED_PROPERTY })
+  return <div ref={ref} data-testid={testId} style={{ height }} />
+}
+
+function SharedPropertyHarness() {
+  const [first, setFirst] = React.useState(true)
+  const [second, setSecond] = React.useState(true)
+  return (
+    <div className='flex flex-col gap-2 p-4'>
+      {first ? <SharedPublisher height={40} testId='publisher-a' /> : null}
+      {second ? <SharedPublisher height={70} testId='publisher-b' /> : null}
+      <button type='button' data-testid='drop-a' onClick={() => setFirst(false)}>
+        Unmount A
+      </button>
+      <button type='button' data-testid='drop-b' onClick={() => setSecond(false)}>
+        Unmount B
+      </button>
+    </div>
+  )
+}
+
+/**
+ * Two instances publishing to ONE property name — the case the ownership
+ * registry exists for, and the case nothing else here exercises.
+ *
+ * The failure it guards against is silent: an unmount that clears a property a
+ * surviving instance still owns leaves `var(--x, 0px)` falling back to its
+ * default, so anchor targets quietly start landing behind the chrome. Without
+ * this story the registry could be deleted outright and the whole suite would
+ * stay green.
+ *
+ * Both orders are covered, because they exercise different branches: B
+ * published last, so unmounting B is the OWNER leaving (the survivor must be
+ * asked to republish), while unmounting A first is a non-owner leaving (the
+ * property must simply be left alone).
+ */
+export const SharedProperty: Story = {
+  name: 'Two instances, one property',
+  render: () => <SharedPropertyHarness />,
+  play: async ({ canvasElement }) => {
+    const root = document.documentElement
+    const read = () => root.style.getPropertyValue(SHARED_PROPERTY).trim()
+    const click = (id: string) =>
+      canvasElement.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`)!.click()
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 60))
+
+    await settle()
+    // B mounted second, so it published last and owns the value.
+    await expect(read()).toBe('70px')
+
+    // Non-owner leaves: the owner's value must survive untouched.
+    click('drop-a')
+    await settle()
+    await expect(read()).toBe('70px')
+
+    // Owner leaves with nobody left: only now is the property cleared.
+    click('drop-b')
+    await settle()
+    await expect(read()).toBe('')
+  },
+}
+
+/**
+ * The mirror image, and the one that actually failed before the registry
+ * landed: the OWNER unmounts while another instance is still mounted. The
+ * survivor's element has not resized, so no ResizeObserver callback is coming
+ * — the value has to be restored by asking it to republish.
+ */
+export const SharedPropertyOwnerLeavesFirst: Story = {
+  name: 'Two instances, owner unmounts first',
+  render: () => <SharedPropertyHarness />,
+  play: async ({ canvasElement }) => {
+    const root = document.documentElement
+    const read = () => root.style.getPropertyValue(SHARED_PROPERTY).trim()
+    const click = (id: string) =>
+      canvasElement.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`)!.click()
+    const settle = () => new Promise((resolve) => setTimeout(resolve, 60))
+
+    await settle()
+    await expect(read()).toBe('70px')
+
+    // B owns the value. Unmounting it must NOT blank the property — A is still
+    // mounted and still needs it, so A republishes its own 40px.
+    click('drop-b')
+    await settle()
+    await expect(read()).toBe('40px')
+
+    // And the last one out does clear it.
+    click('drop-a')
+    await settle()
+    await expect(read()).toBe('')
+  },
 }
 
 export const CssCheck: Story = {

@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 
-import { analyzeCommits, generateNotes } from './release-scope.mjs'
+import { __scopeCacheForTests, analyzeCommits, generateNotes } from './release-scope.mjs'
 
 const PLUGIN_CONFIG = {
   paths: ['packages/ui/'],
@@ -183,5 +183,60 @@ describe('generateNotes', () => {
     const notes = await generateNotes(PLUGIN_CONFIG, contextFor([outOfScope, inScope]))
     assert.match(notes, /WCAG AA contrast for placeholders/)
     assert.doesNotMatch(notes, /next to v16\.3\.2/)
+  })
+})
+
+describe('scope memoisation', () => {
+  // analyzeCommits and generateNotes are called with the SAME commits array in
+  // one release run and both need the same filtered list, so the walk is
+  // memoised. Two things have to hold, and neither is visible from the
+  // behavioural tests above.
+  test('the two entry points agree on one commit list', async () => {
+    // The property the cache must preserve. analyzeCommits decides WHETHER to
+    // release and generateNotes decides what the changelog CLAIMS shipped, so
+    // the two disagreeing is the failure that matters — a release whose notes
+    // describe a different set of commits than the one that triggered it.
+    const inScope = commit('fix: memo', { 'packages/ui/src/memo.ts': 'export {}\n' })
+    const commits = [inScope]
+
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor(commits)), 'patch')
+    assert.match(await generateNotes(PLUGIN_CONFIG, contextFor(commits)), /memo/)
+  })
+
+  test('the second entry point reuses the walk rather than repeating it', async () => {
+    // Asserted directly against the cache, because the saving is invisible from
+    // the outside: the walk fails open, so a miss returns the same answer as a
+    // hit. Without this, deleting the cache entirely leaves every other test in
+    // this file green — which is exactly what a reviewer pointed out.
+    const inScope = commit('fix: reuse', { 'packages/ui/src/reuse.ts': 'export {}\n' })
+    const commits = [inScope]
+
+    assert.equal(__scopeCacheForTests.get(commits), undefined, 'expected a cold cache')
+
+    await analyzeCommits(PLUGIN_CONFIG, contextFor(commits))
+    const afterAnalyze = __scopeCacheForTests.get(commits)
+    assert.ok(afterAnalyze, 'analyzeCommits should have populated the cache')
+    const entry = afterAnalyze.get(JSON.stringify(PLUGIN_CONFIG.paths))
+    assert.ok(entry, 'expected an entry keyed by the paths scope')
+
+    await generateNotes(PLUGIN_CONFIG, contextFor(commits))
+    assert.equal(
+      __scopeCacheForTests.get(commits).get(JSON.stringify(PLUGIN_CONFIG.paths)),
+      entry,
+      'generateNotes should have reused the SAME result object, not walked again',
+    )
+  })
+
+  test('does not serve a cached answer to a different `paths` scope', async () => {
+    const outside = commit('fix: elsewhere', { 'apps/web/src/page.tsx': 'export {}\n' })
+    const commits = [outside]
+
+    // packages/ui/ — out of scope, so no release.
+    assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor(commits)), null)
+
+    // apps/web/ — the SAME commits array, a different scope. If the cache were
+    // keyed on the array alone, this would wrongly return null.
+    const webScoped = { ...PLUGIN_CONFIG, paths: ['apps/web/'] }
+    assert.equal(await analyzeCommits(webScoped, contextFor(commits)), 'patch')
   })
 })
