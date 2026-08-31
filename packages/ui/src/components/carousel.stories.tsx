@@ -221,6 +221,84 @@ export const Keyboard: Story = {
 }
 
 /**
+ * A carousel inside another carousel's slide must consume the key it acts on,
+ * or one press moves both: the outer region's role is `region`, which is not
+ * something `ownsArrowKeys` rejects, so without `stopPropagation` the event
+ * bubbles straight into the outer handler.
+ *
+ * Two mechanisms cover this and they overlap on purpose: the inner carousel
+ * calls preventDefault (which the outer one now checks) AND stopPropagation.
+ * Removing either alone leaves this story passing; removing both fails it. The
+ * redundancy is deliberate — defaultPrevented is what makes the open-ended case
+ * work (any custom widget in a slide that handles arrows itself), while
+ * stopPropagation covers non-React ancestor listeners that never consult it.
+ */
+export const Nested: Story = {
+  name: 'Nested carousels',
+  render: () => (
+    // Both carousels position their controls OUTSIDE themselves (-start-12 /
+    // -end-12), so a nested pair needs real gutters or the two sets overlap:
+    // axe fails them under WCAG 2.2 target-size (2.5.8) at 12px of clear
+    // space. The generous padding here is what a nested carousel genuinely
+    // requires, not a workaround for the test.
+    <div className='w-[34rem] px-14 py-6' data-slot='outer-wrap'>
+      <Carousel>
+        <CarouselContent>
+          {[1, 2, 3].map((n) => (
+            <CarouselItem key={n}>
+              <div className='rounded-md bg-muted px-20 py-4' data-slot={`outer-slide-${n}`}>
+                <Carousel>
+                  <CarouselContent>
+                    {['a', 'b', 'c'].map((letter) => (
+                      <CarouselItem key={letter}>
+                        <div className='flex h-20 items-center justify-center rounded-sm bg-background text-xl font-semibold text-foreground'>
+                          {n}
+                          {letter}
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious label={`Previous inner slide ${n}`} />
+                  <CarouselNext label={`Next inner slide ${n}`} />
+                </Carousel>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious label='Previous outer slide' />
+        <CarouselNext label='Next outer slide' />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const outerPrevious = canvas.getByRole('button', { name: 'Previous outer slide' })
+    const innerPrevious = canvas.getByRole('button', { name: 'Previous inner slide 1' })
+
+    // Both start at their first slide.
+    await waitFor(
+      () => outerPrevious.hasAttribute('disabled') && innerPrevious.hasAttribute('disabled'),
+      'Expected both carousels to start on their first slide.',
+    )
+
+    // Press from INSIDE the inner carousel's region. The inner one should
+    // advance; the outer one must not move at all.
+    const regions = canvasElement.querySelectorAll<HTMLElement>('[data-slot="carousel"]')
+    const innerRegion = regions[1]!
+    pressKey(innerRegion, 'ArrowRight')
+
+    await waitFor(
+      () => !innerPrevious.hasAttribute('disabled'),
+      'Expected the inner carousel to advance.',
+    )
+    // Give the outer carousel the frames it would have needed had the event
+    // reached it, then assert it stayed put.
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    await expect(outerPrevious.hasAttribute('disabled')).toBe(true)
+  },
+}
+
+/**
  * A vertical carousel moves on the block axis, so Up/Down drive it and
  * Left/Right must not. Pointer support for `orientation='vertical'` has always
  * been there; the keyboard half was mapped to Left/Right regardless, which

@@ -191,22 +191,35 @@ jobs:
             *) assign=(--assignee "$GITHUB_ACTOR") ;;
           esac
 
-          existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure --state open --json number --jq '.[0].number // empty')"
-          if [ -n "$existing" ]; then
-            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
-            echo "Commented on existing issue #$existing"
-          else
-            # Retry unassigned if the assignment is rejected for any other
-            # reason (the actor left the org, lost access, and so on).
+          open_issue() {
+            gh issue list --repo "$GITHUB_REPOSITORY" --label release-failure \
+              --state open --json number --jq '.[0].number // empty'
+          }
+          create_issue() {
             gh issue create \
               --repo "$GITHUB_REPOSITORY" \
               --title "Release workflow failed — npm publish may be broken" \
               --label release-failure \
-              "${assign[@]}" \
-              --body "$body" \
-            || gh issue create \
-              --repo "$GITHUB_REPOSITORY" \
-              --title "Release workflow failed — npm publish may be broken" \
-              --label release-failure \
-              --body "$body"
+              --body "$body" "$@"
+          }
+
+          existing="$(open_issue)"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+            echo "Commented on existing issue #$existing"
+          elif create_issue "${assign[@]}"; then
+            echo "Filed a new release-failure issue."
+          else
+            # The assignment can be rejected for reasons the bot check above
+            # does not cover (the actor left the org, lost access). Re-query
+            # before retrying: gh can fail AFTER the issue was created
+            # server-side, and a blind retry would then file a second issue for
+            # one failure — noise on exactly the signal that has to stay clear.
+            filed="$(open_issue)"
+            if [ -n "$filed" ]; then
+              echo "Issue #$filed was created despite the error — not filing a duplicate."
+            else
+              echo "Create with --assignee failed; retrying unassigned."
+              create_issue
+            fi
           fi

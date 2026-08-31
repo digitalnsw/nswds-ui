@@ -107,23 +107,39 @@ export function FooterAccordion({
   const [isDesktop, setIsDesktop] = React.useState(true)
   const [openColumns, setOpenColumns] = React.useState<string[]>([])
   const probeRef = React.useRef<HTMLSpanElement>(null)
+  const navRef = React.useRef<HTMLElement>(null)
 
   React.useEffect(() => {
     const probe = probeRef.current
+    const nav = navRef.current
     const view = probe?.ownerDocument.defaultView
-    if (!probe || !view) {
+    if (!probe || !nav || !view) {
       return
     }
     // The probe carries `lg:hidden`, the same utility that hides the
     // disclosure buttons, so "the probe computes to display:none" IS "the
     // desktop layout is active" — by construction, with the breakpoint stated
-    // once, in CSS. `resize` covers viewport changes and browser zoom, which
-    // is every way this can flip.
+    // once, in CSS.
     const sync = () => setIsDesktop(view.getComputedStyle(probe).display === 'none')
 
+    // Observed on the NAV, not a `resize` listener on the window. `resize`
+    // fires only when the viewport's pixel dimensions change, and this
+    // breakpoint is defined in REM: a reader who raises their browser's default
+    // font size flips it with the viewport unchanged, so no resize event is
+    // coming. The nav's own box changes on every such reflow — the grid goes
+    // between one column and four — so observing it catches the font-size case
+    // as well as ordinary resizes and zoom. (The `matchMedia` version this
+    // replaced also caught it, via `change`; the intermediate `resize` version
+    // did not.)
+    //
+    // No feedback loop: sync() only calls setIsDesktop with a value read from
+    // CSS, so once the layout settles the state stops changing and React bails
+    // out of the identical update.
+    const observer = new ResizeObserver(sync)
+
     sync()
-    view.addEventListener('resize', sync)
-    return () => view.removeEventListener('resize', sync)
+    observer.observe(nav)
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -133,7 +149,11 @@ export function FooterAccordion({
           `sr-only`: that utility exists to EXPOSE content to screen readers,
           which is the opposite of this element's job. */}
       <span ref={probeRef} aria-hidden='true' className='absolute size-0 lg:hidden' />
-      <nav aria-label='Site map' className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'>
+      <nav
+        ref={navRef}
+        aria-label='Site map'
+        className='grid py-4 max-lg:gap-0 lg:grid-cols-4 lg:gap-8'
+      >
         {columns.map((column) => (
           <Collapsible
             key={column.heading}

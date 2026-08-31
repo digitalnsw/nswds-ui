@@ -108,7 +108,16 @@ function collectSources(dir, found = []) {
   return found
 }
 
-if (existsSync('src')) {
+if (!existsSync('src')) {
+  // NOT a skip. A guard whose whole purpose is catching a silent success must
+  // not have a silent-success path of its own: if the source tree moves or this
+  // script is ever run from another cwd, "found nothing to check" has to read
+  // as a failure, not as a pass.
+  problems.push(
+    "src/ is missing — the 'use client' guard cannot run. This script must run " +
+      'from packages/ui; if the source directory was renamed, update collectSources.',
+  )
+} else {
   const stripped = []
   for (const source of collectSources('src')) {
     if (!DIRECTIVE.test(readFileSync(source, 'utf8'))) continue

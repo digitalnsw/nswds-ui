@@ -169,15 +169,37 @@ function Carousel({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // Somebody nearer the key already dealt with it. ownsArrowKeys below is a
+      // list of the things we know consume arrows; this is the open-ended half,
+      // covering any custom widget in a slide that handles its own keys and
+      // says so the standard way.
+      //
+      // It also covers a nested carousel, because the inner one calls
+      // preventDefault when it acts: by the time the event reaches an outer
+      // carousel's handler this test is already true. Measured — removing this
+      // OR the stopPropagation below leaves the Nested story passing, and
+      // removing both fails it. The two overlap deliberately; see below.
+      if (event.defaultPrevented) {
+        return
+      }
       // A control inside a slide gets its arrows untouched. See ownsArrowKeys.
       if (ownsArrowKeys(event.target)) {
         return
       }
       if (event.key === previousKey) {
         event.preventDefault()
+        // Keeps the press from reaching ancestors at all. For an ancestor
+        // CAROUSEL the defaultPrevented test above already handles it, so this
+        // is not what fixes nesting on its own — it is here for ancestors that
+        // are not carousels: a native keydown listener on a wrapper does not
+        // consult defaultPrevented unless its author remembered to, and a key
+        // this component has consumed should not also scroll someone's custom
+        // shell.
+        event.stopPropagation()
         scrollPrev()
       } else if (event.key === nextKey) {
         event.preventDefault()
+        event.stopPropagation()
         scrollNext()
       }
     },
