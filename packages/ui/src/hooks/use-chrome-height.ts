@@ -6,24 +6,33 @@ import * as React from 'react'
 const DEFAULT_PROPERTY = '--chrome-height'
 
 /**
- * Which hook instance currently owns each published property, keyed by
- * `<html>` element and then by property name.
+ * The live publishers of each custom property, keyed by `<html>` element, then
+ * by property name, then by hook instance. The value is a callback that
+ * re-measures and republishes.
  *
  * Two instances CAN legitimately share a property name — the default one, most
  * obviously, on a page with a sticky header and a sticky sub-nav that both
- * want to publish. Without an owner check the first to unmount removes the
- * property out from under the survivor, and no ResizeObserver fires on the
- * survivor afterwards to put it back: the offset silently reverts to the CSS
- * fallback and anchor targets start landing behind the chrome. Removing only
- * when THIS instance is the last writer keeps the JSDoc promise ("a chrome
- * element that goes away does not leave a stale offset behind") true without
- * breaking the other instance.
+ * want to publish. Without this registry, ANY unmount removes the property,
+ * and no ResizeObserver fires on the survivor afterwards to put it back
+ * (its element has not resized): the offset silently reverts to the CSS
+ * fallback and anchor targets start landing behind the chrome.
+ *
+ * Tracking only the LAST writer is not enough, and looks like it is — it fixes
+ * the case where a non-owner unmounts and leaves the owner's unmount doing the
+ * same damage as before. So the registry holds every live publisher, and an
+ * unmount removes the property only when the last one goes; while any remain,
+ * the most recent survivor is asked to republish. That is what makes the
+ * promise in the JSDoc below ("unmounting one never blanks the value another
+ * still owns") actually true rather than true half the time.
+ *
+ * Insertion order is publish recency: `publish` deletes before it sets, so the
+ * final entry is always the instance whose value is currently on the element.
  *
  * Keyed by document so an instance rendered into a portal in another document
  * (a popped-out window) does not collide with the main one. A WeakMap because
  * a torn-down document must stay collectable.
  */
-const propertyOwners = new WeakMap<HTMLElement, Map<string, symbol>>()
+const propertyPublishers = new WeakMap<HTMLElement, Map<string, Map<symbol, () => void>>>()
 
 type UseChromeHeightOptions = {
   /**
@@ -99,8 +108,9 @@ type UseChromeHeightResult<T extends HTMLElement> = {
  * - **The property is removed on unmount**, and whenever the tracked element
  *   changes, so a chrome element that goes away does not leave a stale offset
  *   behind for whatever renders next. Two instances may safely share one
- *   property name: the removal is skipped unless this instance was the last to
- *   publish, so unmounting one never blanks the value the other still owns.
+ *   property name: the property is cleared only when the LAST of them
+ *   unmounts, and while any remain a survivor republishes, so unmounting one
+ *   never blanks the value another still owns.
  * - Height comes from `borderBoxSize`, not `getBoundingClientRect()`: the
  *   latter reports the *transformed* size, so a chrome element that animates
  *   with a transform would publish a height that does not match the space it
@@ -141,16 +151,48 @@ function useChromeHeight<T extends HTMLElement = HTMLElement>({
 
     function publish(next: number) {
       setHeight(next)
-      if (property) {
-        let owners = propertyOwners.get(root)
-        if (!owners) {
-          owners = new Map()
-          propertyOwners.set(root, owners)
-        }
-        // Last writer wins, matching what the CSS custom property itself does.
-        owners.set(property, instance)
-        root.style.setProperty(property, `${next}px`)
+      if (!property) {
+        return
       }
+      let byProperty = propertyPublishers.get(root)
+      if (!byProperty) {
+        byProperty = new Map()
+        propertyPublishers.set(root, byProperty)
+      }
+      let publishers = byProperty.get(property)
+      if (!publishers) {
+        publishers = new Map()
+        byProperty.set(property, publishers)
+      }
+      // Delete before set so re-publishing moves this instance to the END of
+      // the Map's insertion order. Order is how the cleanup below identifies
+      // the instance whose value is actually on the element.
+      publishers.delete(instance)
+      publishers.set(instance, republish)
+      // Last writer wins, matching what the CSS custom property itself does.
+      root.style.setProperty(property, `${next}px`)
+    }
+
+    /**
+     * Re-measure and republish, for when a neighbour sharing this property
+     * unmounts and would otherwise leave the value cleared.
+     *
+     * Reads `offsetHeight` rather than the ResizeObserver's `borderBoxSize`,
+     * because there is no observer entry here — this runs from another
+     * instance's cleanup, not from a resize. Both describe the untransformed
+     * border box; offsetHeight is rounded to an integer where blockSize is
+     * fractional, so a republished value can differ from an observed one by
+     * under a pixel. That is the correct trade against leaving the property
+     * unset entirely.
+     */
+    function republish() {
+      // The neighbour's cleanup may run in the same commit that unmounts this
+      // instance too. A detached element measures 0, and publishing 0 would be
+      // worse than doing nothing; this instance's own cleanup is next anyway.
+      if (!element || !element.isConnected) {
+        return
+      }
+      publish(element.offsetHeight)
     }
 
     const observer = new ResizeObserver((entries) => {
@@ -179,16 +221,28 @@ function useChromeHeight<T extends HTMLElement = HTMLElement>({
       if (!property) {
         return
       }
-      const owners = propertyOwners.get(root)
-      // Only the last writer clears the property. Another instance publishing
-      // to the same name has already taken ownership, and its value is the one
-      // on the element — tearing it down here would strand that instance with
-      // no way to republish (its element has not resized, so no observer
-      // callback is coming).
-      if (owners?.get(property) === instance) {
-        owners.delete(property)
-        root.style.removeProperty(property)
+      const byProperty = propertyPublishers.get(root)
+      const publishers = byProperty?.get(property)
+      if (!publishers) {
+        return
       }
+      publishers.delete(instance)
+
+      if (publishers.size === 0) {
+        // Nobody left: this really is the "chrome element went away" case the
+        // JSDoc describes, so clear the property.
+        byProperty?.delete(property)
+        root.style.removeProperty(property)
+        return
+      }
+
+      // A live instance still publishes here. Whether the value on the element
+      // is theirs or ours we cannot clear it — and if it is OURS, theirs has to
+      // be restored, because nothing else will: their element has not resized,
+      // so no observer callback is coming. Ask the most recent survivor (the
+      // last insertion) to re-measure.
+      const survivors = [...publishers.values()]
+      survivors[survivors.length - 1]?.()
     }
   }, [element, property])
 

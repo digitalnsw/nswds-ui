@@ -113,8 +113,20 @@ function Carousel({
   children,
   ...props
 }: React.ComponentProps<'div'> & CarouselProps) {
+  // Read once, and used for BOTH halves of direction handling: embla's own
+  // scroll axis and the arrow-key mapping below. Wiring only the keys (which
+  // an earlier version of this file did) leaves the engine scrolling ltr while
+  // the keyboard and the RTL flex layout both run the other way — the two
+  // disagree on every press unless the consumer separately passes
+  // `opts.direction`, which nothing documented or enforced.
+  //
+  // `direction` sits BEFORE the spread so an explicit `opts.direction` still
+  // wins; a consumer who wants the engine mirrored independently of the
+  // ambient DirectionProvider keeps that escape hatch.
+  const direction = useDirection()
   const [carouselRef, api] = useEmblaCarousel(
     {
+      direction,
       ...opts,
       axis: orientation === 'horizontal' ? 'x' : 'y',
     },
@@ -144,10 +156,10 @@ function Carousel({
   // `ps-4`, `-start-12`) and `rtl:` variants; keys have to agree with them or
   // the keyboard drives the carousel the opposite way to what is on screen.
   //
-  // `useDirection` reads the nearest DirectionProvider. Consumers must ALSO
-  // set `dir` on a DOM ancestor for the CSS half — see the note on
-  // DirectionProvider in direction.stories.tsx.
-  const direction = useDirection()
+  // `useDirection` (read above, and also handed to embla) comes from the
+  // nearest DirectionProvider. Consumers must ALSO set `dir` on a DOM ancestor
+  // for the CSS half — see the note on DirectionProvider in
+  // direction.stories.tsx.
   const [previousKey, nextKey] =
     orientation === 'vertical'
       ? (['ArrowUp', 'ArrowDown'] as const)

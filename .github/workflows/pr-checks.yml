@@ -208,11 +208,25 @@ jobs:
           # packages/ui/package.json (scripts, keywords) must not trip this.
           tokens_bump=""
           if printf '%s\n' "$files" | grep -qx 'packages/ui/package.json'; then
-            if ! diff="$(gh pr diff "$PR" --repo "$GITHUB_REPOSITORY" -- packages/ui/package.json)"; then
-              echo "::error::Could not fetch the packages/ui/package.json diff (gh pr diff failed). The token/style release guard cannot evaluate the change; re-run this check."
+            # The per-file patch comes from the API, NOT from `gh pr diff <n> --
+            # <path>`: gh pr diff takes no pathspec and rejects one outright
+            # ("accepts at most 1 arg(s), received 2"), which under the `if !`
+            # below would fail this job on every PR that touches the published
+            # package's manifest — every Renovate bump into packages/ui.
+            if ! patch="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR/files" --paginate \
+              --jq '.[] | select(.filename == "packages/ui/package.json") | .patch // ""')"; then
+              echo "::error::Could not fetch the packages/ui/package.json patch (gh api failed — auth, rate limit, or transient error). The token/style release guard cannot evaluate the change; re-run this check."
               exit 1
             fi
-            tokens_bump="$(printf '%s\n' "$diff" | grep -E '^[+-][[:space:]]*"@nswds/tokens":' || true)"
+            # The file is in the changed list, so an empty patch means GitHub
+            # withheld it (it does that for very large diffs). Fail rather than
+            # read "no patch" as "no tokens bump" — silently passing is the one
+            # outcome this guard must never produce.
+            if [ -z "$patch" ]; then
+              echo "::error::GitHub returned no patch for packages/ui/package.json, so the guard cannot tell whether @nswds/tokens moved. Re-run this check; if it persists, inspect the version line by hand and merge only under a releasable type."
+              exit 1
+            fi
+            tokens_bump="$(printf '%s\n' "$patch" | grep -E '^[+-][[:space:]]*"@nswds/tokens":' || true)"
           fi
 
           if [ -z "$changed" ] && [ -z "$tokens_bump" ]; then

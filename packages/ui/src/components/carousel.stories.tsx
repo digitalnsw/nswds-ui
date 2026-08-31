@@ -46,6 +46,33 @@ function pressKey(target: Element, key: string) {
   target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
 }
 
+/**
+ * Index of the slide whose centre currently sits inside the embla viewport.
+ *
+ * Asserting on the controls' `disabled` state is NOT enough to test direction:
+ * that reflects embla's INDEX, which advances identically whether the engine
+ * runs ltr or rtl. Only the geometry differs — the engine translates the track
+ * one way or the other — so distinguishing a correctly-configured RTL carousel
+ * from a mis-configured one means asking which slide you can actually see.
+ * Returns -1 when none qualifies.
+ */
+function visibleSlideIndex(canvasElement: HTMLElement): number {
+  const viewport = canvasElement.querySelector<HTMLElement>('[data-slot="carousel-content"]')
+  if (!viewport) {
+    throw new Error('Could not find the embla viewport.')
+  }
+  const view = viewport.getBoundingClientRect()
+  const slides = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="carousel-item"]')]
+  return slides.findIndex((slide) => {
+    const rect = slide.getBoundingClientRect()
+    const centreX = rect.left + rect.width / 2
+    const centreY = rect.top + rect.height / 2
+    return (
+      centreX > view.left && centreX < view.right && centreY > view.top && centreY < view.bottom
+    )
+  })
+}
+
 // Annotated (not `satisfies`) so the inferred meta type does not surface
 // embla-carousel's internal Options/Plugins modules (TS2742 portability error).
 const meta: Meta<typeof Carousel> = {
@@ -252,6 +279,11 @@ export const Vertical: Story = {
  *
  * Both halves of RTL are set here: `dir` for the CSS, DirectionProvider for
  * the JS. See direction.stories.tsx for why one without the other is not RTL.
+ *
+ * Deliberately NO `opts={{ direction: 'rtl' }}` — the component derives embla's
+ * direction from the same provider. Passing it here would configure the engine
+ * from the story and let a component that wired only the KEYS pass, which is
+ * exactly the hole this story existed with before.
  */
 export const RightToLeft: Story = {
   name: 'Right to left',
@@ -259,7 +291,7 @@ export const RightToLeft: Story = {
     <div dir='rtl'>
       <DirectionProvider direction='rtl'>
         <div className='w-64'>
-          <Carousel opts={{ direction: 'rtl' }}>
+          <Carousel>
             <CarouselContent>
               {[1, 2, 3].map((n) => (
                 <CarouselItem key={n}>
@@ -286,11 +318,25 @@ export const RightToLeft: Story = {
     await expect(getComputedStyle(region).direction).toBe('rtl')
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
-    // ArrowLeft is "next" in RTL.
+    // Slide 1 is the one on screen to begin with.
+    await waitFor(
+      () => visibleSlideIndex(canvasElement) === 0,
+      'Expected the first slide to be the visible one at rest.',
+    )
+
+    // ArrowLeft is "next" in RTL. Assert the INDEX advances and that the
+    // second slide is what you can actually see — the geometry is the half
+    // that proves embla itself was configured rtl. With the engine left on
+    // ltr while the layout and keys run rtl, the track translates the wrong
+    // way and the visible slide does not follow the index.
     pressKey(region, 'ArrowLeft')
     await waitFor(
       () => !previous.hasAttribute('disabled'),
       'Expected ArrowLeft to advance an RTL carousel.',
+    )
+    await waitFor(
+      () => visibleSlideIndex(canvasElement) === 1,
+      'Expected the SECOND slide to be visible after advancing an RTL carousel — the index moved but the track did not follow, so embla is not running rtl.',
     )
 
     // ArrowRight is "previous" in RTL.
@@ -298,6 +344,10 @@ export const RightToLeft: Story = {
     await waitFor(
       () => previous.hasAttribute('disabled'),
       'Expected ArrowRight to move an RTL carousel back.',
+    )
+    await waitFor(
+      () => visibleSlideIndex(canvasElement) === 0,
+      'Expected the first slide to be visible again after going back.',
     )
   },
 }
