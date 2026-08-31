@@ -49,7 +49,14 @@ type CarouselContextProps = {
 const ARROW_CONSUMING_ROLES = new Set([
   // 1 — consumed by the focused element
   'combobox',
+  'scrollbar',
   'searchbox',
+  // `separator` is the focusable window-splitter form, and it is not
+  // hypothetical here: this package's own ResizableHandle wraps
+  // react-resizable-panels, which renders role="separator" and handles all
+  // four arrows. A Resizable inside a slide loses its keyboard resizing
+  // without this entry.
+  'separator',
   'slider',
   'spinbutton',
   'textbox',
@@ -61,15 +68,23 @@ const ARROW_CONSUMING_ROLES = new Set([
   'menubar',
   'radiogroup',
   'tablist',
+  // `toolbar` matters more than it looks: its controls are usually plain
+  // buttons, which have no native arrow behaviour, so a toolbar can move focus
+  // WITHOUT calling preventDefault — meaning the defaultPrevented guard in the
+  // handler does not cover it and only this list can.
+  'toolbar',
   'tree',
   'treegrid',
   // 3 — the descendant halves, for aria-owns associations
+  'columnheader',
   'gridcell',
   'menuitem',
   'menuitemcheckbox',
   'menuitemradio',
   'option',
   'radio',
+  'row',
+  'rowheader',
   'tab',
   'treeitem',
 ])
@@ -148,6 +163,7 @@ function Carousel({
   plugins,
   className,
   children,
+  onKeyDown,
   ...props
 }: React.ComponentProps<'div'> & CarouselProps) {
   // Read once, and used for BOTH halves of direction handling: embla's own
@@ -213,6 +229,19 @@ function Carousel({
 
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
+      // The consumer's handler runs FIRST, and is destructured out of `props`
+      // rather than left to the trailing spread. The spread sits after
+      // `onKeyDown` on the root element, so a consumer passing one used to
+      // REPLACE this handler outright and silently switch off every arrow key
+      // — on a component whose props type explicitly accepts `onKeyDown`.
+      //
+      // Running theirs first also gives them a working opt-out for free: the
+      // defaultPrevented test below already covers it, so `preventDefault()`
+      // in a consumer handler suppresses the carousel exactly as it does for a
+      // widget inside a slide. Errors are deliberately not caught — a throwing
+      // consumer handler should surface, as it would on a plain <div>.
+      onKeyDown?.(event)
+
       // Somebody nearer the key already dealt with it. ownsArrowKeys below is a
       // list of the things we know consume arrows; this is the open-ended half,
       // covering any custom widget in a slide that handles its own keys and
@@ -247,7 +276,7 @@ function Carousel({
         scrollNext()
       }
     },
-    [previousKey, nextKey, scrollPrev, scrollNext],
+    [onKeyDown, previousKey, nextKey, scrollPrev, scrollNext],
   )
 
   React.useEffect(() => {
@@ -295,6 +324,10 @@ function Carousel({
         // event reaches the focused descendant, so it would take the arrows
         // off an input in a slide no matter what that input wanted. Bubbling
         // lets the control handle (and, where it cares, preventDefault) first.
+        //
+        // Safe to sit before `{...props}` only because `onKeyDown` is
+        // destructured out of props and composed inside handleKeyDown. Do not
+        // "simplify" that away — the spread would silently win.
         onKeyDown={handleKeyDown}
         className={cn('relative', className)}
         role='region'

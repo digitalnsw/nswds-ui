@@ -219,8 +219,11 @@ export const TranslatedRemoveLabel: Story = {
     await expect(canvas.getByRole('button', { name: 'Quitar Apple' })).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: 'Quitar Banana' })).toBeInTheDocument()
 
-    // And the default is still English when the prop is omitted (asserted
-    // against the Variants story's chip, which passes no removeLabel).
+    // Every chip here passes removeLabel, so finding NO button named "Remove"
+    // proves the prop was honoured rather than ignored — an implementation
+    // that dropped it would fall back to the default and be caught here.
+    // (`canvas` is scoped to this story; Storybook renders each story in its
+    // own DOM, so this says nothing about any other story's chips.)
     await expect(canvas.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument()
   },
 }

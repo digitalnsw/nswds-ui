@@ -14,6 +14,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import * as React from 'react'
 import { expect, within } from 'storybook/test'
 
 import {
@@ -253,6 +254,34 @@ export const CompositeInSlide: Story = {
                     </button>
                   ))}
                 </div>
+                {/* A toolbar moves focus between plain buttons, which have no
+                    native arrow behaviour — so a real toolbar can do that
+                    WITHOUT calling preventDefault, and the defaultPrevented
+                    guard never fires. Only the role list catches this one. */}
+                <div role='toolbar' aria-label={`Slide ${n} actions`} className='flex gap-2'>
+                  {['Zoom in', 'Zoom out'].map((action, index) => (
+                    <button
+                      key={action}
+                      type='button'
+                      tabIndex={index === 0 ? 0 : -1}
+                      className='rounded-sm bg-background px-2 py-1 text-sm text-foreground'
+                    >
+                      {action}
+                    </button>
+                  ))}
+                </div>
+                {/* The focusable window-splitter form, which is what this
+                    package's own ResizableHandle renders. */}
+                <div
+                  role='separator'
+                  aria-label={`Slide ${n} splitter`}
+                  aria-valuenow={50}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  tabIndex={0}
+                  data-slot='separator-focus-target'
+                  className='h-2 rounded-sm bg-background'
+                />
                 {/* The harder half: a composite whose focused descendant has
                     NO role of its own. `application` is the realistic case —
                     an embedded map or canvas widget that pans with the arrow
@@ -316,6 +345,96 @@ export const CompositeInSlide: Story = {
     await expect(roleless.getAttribute('role')).toBeNull()
     await expect(roleless.closest('[role="application"]')).toBeInTheDocument()
     await press(roleless)
+
+    // A toolbar button: focus moves between plain buttons, so a real toolbar
+    // need never call preventDefault and the defaultPrevented guard cannot
+    // help. This is the role list's own case.
+    const toolbarButton = canvasElement.querySelector<HTMLElement>('[role="toolbar"] button')!
+    await expect(toolbarButton.closest('[role="toolbar"]')).toBeInTheDocument()
+    await press(toolbarButton)
+
+    // The focusable separator — the shape ResizableHandle renders.
+    await press(canvasElement.querySelector<HTMLElement>('[data-slot="separator-focus-target"]')!)
+  },
+}
+
+/**
+ * `Carousel` accepts native div props, so a consumer may pass `onKeyDown`. The
+ * trailing `{...props}` spread used to REPLACE the internal handler outright,
+ * silently switching off every arrow key on a component whose props type
+ * explicitly accepts one.
+ *
+ * Both halves are asserted: the consumer's handler runs AND the carousel still
+ * navigates, and a consumer that calls `preventDefault()` suppresses the
+ * carousel — the documented opt-out.
+ */
+export const ConsumerKeyHandler: Story = {
+  name: 'Consumer onKeyDown',
+  render: function ConsumerKeyHandlerRender() {
+    const [seen, setSeen] = React.useState(0)
+    const [suppress, setSuppress] = React.useState(false)
+    return (
+      <div className='w-64'>
+        <label className='mb-2 flex items-center gap-2 text-sm text-foreground'>
+          <input
+            type='checkbox'
+            data-testid='suppress'
+            checked={suppress}
+            onChange={(event) => setSuppress(event.target.checked)}
+          />
+          Consumer calls preventDefault
+        </label>
+        <output data-testid='seen' className='mb-2 block text-sm text-muted-foreground'>
+          {seen}
+        </output>
+        <Carousel
+          onKeyDown={(event) => {
+            setSeen((n) => n + 1)
+            if (suppress) {
+              event.preventDefault()
+            }
+          }}
+        >
+          <CarouselContent>
+            {[1, 2, 3].map((n) => (
+              <CarouselItem key={n}>
+                <div className='flex h-32 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                  {n}
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const seen = canvasElement.querySelector<HTMLElement>('[data-testid="seen"]')!
+    const suppress = canvasElement.querySelector<HTMLInputElement>('[data-testid="suppress"]')!
+
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // The consumer's handler fires AND the carousel still navigates.
+    pressKey(region, 'ArrowRight')
+    await waitFor(() => seen.textContent === '1', 'Expected the consumer handler to run.')
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected the carousel to navigate even though a consumer onKeyDown is set — the spread has clobbered the internal handler.',
+    )
+
+    // Back to the start, then opt out and confirm the carousel stays put.
+    pressKey(region, 'ArrowLeft')
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected ArrowLeft to return.')
+
+    suppress.click()
+    pressKey(region, 'ArrowRight')
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    await expect(previous.hasAttribute('disabled')).toBe(true)
   },
 }
 
