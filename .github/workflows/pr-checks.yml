@@ -226,7 +226,18 @@ jobs:
               echo "::error::GitHub returned no patch for packages/ui/package.json, so the guard cannot tell whether @nswds/tokens moved. Re-run this check; if it persists, inspect the version line by hand and merge only under a releasable type."
               exit 1
             fi
-            tokens_bump="$(printf '%s\n' "$patch" | grep -E '^[+-][[:space:]]*"@nswds/tokens":' || true)"
+            # Compare the VERSIONS, not merely the presence of the line on both
+            # sides of the diff. A reindent, a key reorder or a trailing-comma
+            # change rewrites the line without changing what it pins, and
+            # tripping the guard there would block a maintenance PR under the
+            # very rule this job documents ("only a version change counts").
+            # Either side may legitimately be empty: adding or removing the
+            # dependency is a real change and must still trip.
+            tokens_before="$(printf '%s\n' "$patch" | sed -nE 's/^-[[:space:]]*"@nswds\/tokens":[[:space:]]*"([^"]*)".*/\1/p' | head -1)"
+            tokens_after="$(printf '%s\n' "$patch" | sed -nE 's/^\+[[:space:]]*"@nswds\/tokens":[[:space:]]*"([^"]*)".*/\1/p' | head -1)"
+            if [ "$tokens_before" != "$tokens_after" ]; then
+              tokens_bump="@nswds/tokens: ${tokens_before:-(absent)} -> ${tokens_after:-(absent)}"
+            fi
           fi
 
           if [ -z "$changed" ] && [ -z "$tokens_bump" ]; then

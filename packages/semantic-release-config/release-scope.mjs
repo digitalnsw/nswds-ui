@@ -108,6 +108,18 @@ function delegateConfig({ paths, ...rest }) {
  */
 const scopeCache = new WeakMap()
 
+/**
+ * Test seam. NOT part of the plugin contract — semantic-release never sees it.
+ *
+ * The memoisation is invisible from the outside: the walk fails OPEN, so a
+ * cache miss produces the same answer as a hit, and its whole purpose (not
+ * spawning a second `git diff-tree` per commit) leaves no observable trace in
+ * the result. Exporting the map lets the suite assert the behaviour directly
+ * rather than asserting a proxy for it, which is the only honest way to keep a
+ * pure optimisation covered.
+ */
+export const __scopeCacheForTests = scopeCache
+
 async function commitsInScope(pluginConfig, context) {
   const paths = pluginConfig.paths ?? DEFAULT_PATHS
   const { cwd, commits, logger } = context

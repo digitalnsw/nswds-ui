@@ -221,6 +221,156 @@ export const Keyboard: Story = {
 }
 
 /**
+ * A roving-tabindex composite inside a slide keeps its arrows. Focus sits on
+ * the `tab`, but the keyboard contract belongs to the `tablist` ABOVE it — so
+ * a guard that reads only the focused element's own role misses every
+ * composite (tabs, listboxes, menus, radio groups, trees) and scrolls the
+ * carousel while the user is moving between tabs.
+ */
+export const CompositeInSlide: Story = {
+  name: 'Composite widget in a slide',
+  render: () => (
+    <div className='w-72'>
+      <Carousel>
+        <CarouselContent>
+          {[1, 2].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-32 flex-col justify-center gap-2 rounded-md bg-muted p-3'>
+                {/* Deliberately hand-rolled: this is a stand-in for any
+                    consumer widget, not a NSWDS component. The roles are what
+                    the guard has to read. */}
+                <div role='tablist' aria-label={`Slide ${n} views`} className='flex gap-2'>
+                  {['List', 'Map'].map((view, index) => (
+                    <button
+                      key={view}
+                      type='button'
+                      role='tab'
+                      aria-selected={index === 0}
+                      tabIndex={index === 0 ? 0 : -1}
+                      className='rounded-sm bg-background px-2 py-1 text-sm text-foreground'
+                    >
+                      {view}
+                    </button>
+                  ))}
+                </div>
+                {/* The harder half: a composite whose focused descendant has
+                    NO role of its own. `application` is the realistic case —
+                    an embedded map or canvas widget that pans with the arrow
+                    keys and puts focus on a plain element. Only walking
+                    ancestors can find the contract here; matching the focused
+                    element's own role cannot. */}
+                <div
+                  role='application'
+                  aria-label={`Slide ${n} map`}
+                  className='rounded-sm bg-background p-2'
+                >
+                  <div
+                    tabIndex={0}
+                    data-slot='roleless-focus-target'
+                    className='text-sm text-foreground'
+                  >
+                    Pan with arrow keys
+                  </div>
+                </div>
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // The role that consumes arrows is on the ANCESTOR tablist, not on the tab
+    // that has focus — the case an own-role-only check cannot see.
+    const tab = canvasElement.querySelector<HTMLElement>('[role="tab"]')!
+    await expect(tab.getAttribute('role')).toBe('tab')
+    await expect(tab.closest('[role="tablist"]')).toBeInTheDocument()
+
+    const press = async (from: HTMLElement) => {
+      from.focus()
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowRight',
+        bubbles: true,
+        cancelable: true,
+      })
+      from.dispatchEvent(event)
+      // The carousel must neither consume the key nor move.
+      await expect(event.defaultPrevented).toBe(false)
+      await new Promise((resolve) => setTimeout(resolve, 120))
+      await expect(previous.hasAttribute('disabled')).toBe(true)
+    }
+
+    await press(tab)
+
+    // The case only the ancestor walk can catch: the focused element carries
+    // no role at all, and the contract is on the `application` above it.
+    const roleless = canvasElement.querySelector<HTMLElement>(
+      '[data-slot="roleless-focus-target"]',
+    )!
+    await expect(roleless.getAttribute('role')).toBeNull()
+    await expect(roleless.closest('[role="application"]')).toBeInTheDocument()
+    await press(roleless)
+  },
+}
+
+/**
+ * `opts.direction` is the documented escape hatch for driving the engine
+ * independently of the ambient provider — and it has to move the KEYS with it.
+ * It is spread into embla's options after the provider value, so it wins there;
+ * if the key mapping kept reading the provider, the hatch would leave the
+ * engine running RTL while the keyboard ran LTR and the two would disagree on
+ * every press.
+ */
+export const DirectionFromOpts: Story = {
+  name: 'Direction from opts',
+  render: () => (
+    // No DirectionProvider and no `dir` — the provider stays at its ltr
+    // default, so `opts` is the only thing saying rtl.
+    <div className='w-64'>
+      <Carousel opts={{ direction: 'rtl' }}>
+        <CarouselContent>
+          {[1, 2, 3].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-32 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                {n}
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious />
+        <CarouselNext />
+      </Carousel>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
+    const previous = canvas.getByRole('button', { name: /previous slide/i })
+
+    await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
+
+    // Keys must follow `opts`, not the (ltr) provider: ArrowLeft is "next".
+    pressKey(region, 'ArrowLeft')
+    await waitFor(
+      () => !previous.hasAttribute('disabled'),
+      'Expected ArrowLeft to advance when opts.direction is rtl — the key map is still reading the provider.',
+    )
+
+    pressKey(region, 'ArrowRight')
+    await waitFor(
+      () => previous.hasAttribute('disabled'),
+      'Expected ArrowRight to go back when opts.direction is rtl.',
+    )
+  },
+}
+
+/**
  * A carousel inside another carousel's slide must consume the key it acts on,
  * or one press moves both: the outer region's role is `region`, which is not
  * something `ownsArrowKeys` rejects, so without `stopPropagation` the event
@@ -434,11 +584,17 @@ export const RightToLeft: Story = {
  * The controls are icon-only, so their `label` prop is the only accessible
  * name AT ever hears — and the only way a consumer can translate them. It used
  * to be hardcoded English rendered after the props spread, i.e. unreachable.
+ *
+ * The `null` cases are the regression guard. The fallback and the label test
+ * must agree about what "no children" means: `??` treats null and undefined
+ * alike, so a label test naming only `undefined` left `children={null}` — what
+ * `cond ? <Icon/> : null` yields — rendering the default chevron with no
+ * accessible name at all.
  */
 export const TranslatedLabels: Story = {
   name: 'Translated labels',
   render: () => (
-    <div className='w-64'>
+    <div className='flex w-64 flex-col gap-10'>
       <Carousel>
         <CarouselContent>
           {[1, 2].map((n) => (
@@ -452,12 +608,38 @@ export const TranslatedLabels: Story = {
         <CarouselPrevious label='Diapositiva anterior' />
         <CarouselNext label='Diapositiva siguiente' />
       </Carousel>
+      {/* Same labels, but with an explicit `null` child — the shape a
+          conditional icon collapses to. */}
+      <Carousel>
+        <CarouselContent>
+          {[1, 2].map((n) => (
+            <CarouselItem key={n}>
+              <div className='flex h-32 items-center justify-center rounded-md bg-muted text-2xl font-semibold text-muted-foreground'>
+                {n}
+              </div>
+            </CarouselItem>
+          ))}
+        </CarouselContent>
+        <CarouselPrevious label='Anterior con null'>{null}</CarouselPrevious>
+        <CarouselNext label='Siguiente con null'>{null}</CarouselNext>
+      </Carousel>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Diapositiva anterior' })).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: 'Diapositiva siguiente' })).toBeInTheDocument()
+
+    // `children={null}` still resolves BY ACCESSIBLE NAME, which is the whole
+    // point: the control renders the default icon, so it must carry the label.
+    // getByRole throws if the name is absent, so this is the assertion.
+    await expect(canvas.getByRole('button', { name: 'Anterior con null' })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Siguiente con null' })).toBeInTheDocument()
+
+    // And the icon really did render — otherwise the name could be passing on
+    // an empty button, which is a different (and also wrong) outcome.
+    const nullPrevious = canvas.getByRole('button', { name: 'Anterior con null' })
+    await expect(nullPrevious.querySelector('svg')).toBeInTheDocument()
   },
 }
 

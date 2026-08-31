@@ -171,6 +171,60 @@ export const Variants: Story = {
   },
 }
 
+/**
+ * The chip's remove button is icon-only, so `removeLabel` is the only name AT
+ * hears for it. In a list of chips a bare "Remove" is also ambiguous — the
+ * prop exists so a consumer can name the chip being removed, which this story
+ * demonstrates as well as covering the translation path.
+ */
+export const TranslatedRemoveLabel: Story = {
+  name: 'Translated remove label',
+  render: function TranslatedRemove() {
+    const anchor = useComboboxAnchor()
+    return (
+      <div className='w-64'>
+        <Combobox multiple items={fruits} defaultValue={['Apple', 'Banana']}>
+          <ComboboxChips ref={anchor}>
+            <ComboboxValue>
+              {(value: string[]) =>
+                value.map((item) => (
+                  <ComboboxChip key={item} removeLabel={`Quitar ${item}`}>
+                    {item}
+                  </ComboboxChip>
+                ))
+              }
+            </ComboboxValue>
+            <ComboboxChipsInput placeholder='Añadir fruta' aria-label='Fruta (varias)' />
+          </ComboboxChips>
+          <ComboboxContent anchor={anchor}>
+            <ComboboxEmpty>Sin resultados.</ComboboxEmpty>
+            <ComboboxList>
+              {(item: string) => (
+                <ComboboxItem key={item} value={item}>
+                  {item}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+      </div>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // Each chip's remove button is findable by its own translated name — the
+    // per-chip naming the prop exists for. getByRole throws when the name is
+    // absent, so these ARE the assertions.
+    await expect(canvas.getByRole('button', { name: 'Quitar Apple' })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Quitar Banana' })).toBeInTheDocument()
+
+    // And the default is still English when the prop is omitted (asserted
+    // against the Variants story's chip, which passes no removeLabel).
+    await expect(canvas.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument()
+  },
+}
+
 export const CssCheck: Story = {
   name: 'CssCheck',
   play: async ({ canvasElement }) => {

@@ -371,20 +371,29 @@ export const Default: Story = {
 }
 
 /**
- * Under RTL the mega panel must still span the nav container edge-to-edge.
- * `align='start'` anchors the popup's inline-start edge — the RIGHT one in RTL
- * — so `alignOffset` has to mirror; get the sign wrong and the panel flies off
- * the opposite side of the bar rather than failing loudly. Asserting the right
- * edge as well as the width is what catches it: a width-only check passes on a
- * panel positioned entirely off-screen.
+ * Under RTL the mega panel must still span the nav container edge-to-edge —
+ * and it does so through the SAME physical offset used in LTR, which is the
+ * point of this story.
  *
- * BOTH halves of RTL are set here, and both are load-bearing. `dir` drives the
- * CSS (logical properties, the `rtl:` variant); DirectionProvider drives Base
- * UI's positioner, which is what decides the physical edge `align='start'`
- * resolves to and therefore what `alignOffset` has to correct. With `dir`
- * alone the positioner still anchors LTR and the mirrored offset pushes the
- * panel ~962px off the bar — measured, not hypothetical. See
- * direction.stories.tsx.
+ * `alignOffset` does not mirror. Base UI's `useAnchorPositioning` consults the
+ * direction only to map a logical `side` (`inline-start`/`inline-end`), and
+ * MainNav passes the physical `side='bottom'`, so `align='start'` resolves to
+ * the popup's LEFT edge in both directions and the offset is applied on
+ * floating-ui's physical cross axis. Adding a mirror was measured putting the
+ * panel at left=914 against a container at left=0. See the comment on
+ * `alignOffset` in main-nav.tsx.
+ *
+ * This story therefore pins the geometry rather than a mirroring rule: if a
+ * future Base UI release starts mirroring `align`, it fails here instead of in
+ * a consumer's RTL site. Asserting the right edge as well as the width is what
+ * gives it teeth — a width-only check passes on a panel positioned entirely
+ * off-screen.
+ *
+ * `dir='rtl'` is what drives the CSS (logical properties, the `rtl:` variant).
+ * `DirectionProvider` is included because it is the documented full-RTL setup
+ * a consumer should write (see direction.stories.tsx), but it is NOT what
+ * positions this panel: removing it leaves every assertion here passing,
+ * precisely because `side` is physical.
  */
 export const RightToLeft: Story = {
   name: 'Right to left',

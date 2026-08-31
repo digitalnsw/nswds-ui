@@ -789,9 +789,10 @@ which project's Root Directory is set.
 | `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
 
 Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
-`.vercel.app` hostnames do not resolve (`nswds-ui-storybook.vercel.app` returns
-404). Link to the custom domains; docs/README.md pointed at the wrong host for
-Storybook on the strength of the `.vercel.app` name.
+`.vercel.app` hostnames resolve but do not serve these projects
+(`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
+docs/README.md pointed at the wrong host for Storybook on the strength of the
+`.vercel.app` name.
 
 ### The registry's two URLs — `location` vs `origin`
 

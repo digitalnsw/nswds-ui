@@ -17,7 +17,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, before, describe, test } from 'node:test'
 
-import { analyzeCommits, generateNotes } from './release-scope.mjs'
+import { __scopeCacheForTests, analyzeCommits, generateNotes } from './release-scope.mjs'
 
 const PLUGIN_CONFIG = {
   paths: ['packages/ui/'],
@@ -196,14 +196,35 @@ describe('scope memoisation', () => {
     // release and generateNotes decides what the changelog CLAIMS shipped, so
     // the two disagreeing is the failure that matters — a release whose notes
     // describe a different set of commits than the one that triggered it.
-    // (The saving itself is not asserted: proving a child process did not run
-    // would need to instrument execFile, which is more harness than the perf
-    // fix is worth. This pins the behaviour the optimisation must not break.)
     const inScope = commit('fix: memo', { 'packages/ui/src/memo.ts': 'export {}\n' })
     const commits = [inScope]
 
     assert.equal(await analyzeCommits(PLUGIN_CONFIG, contextFor(commits)), 'patch')
     assert.match(await generateNotes(PLUGIN_CONFIG, contextFor(commits)), /memo/)
+  })
+
+  test('the second entry point reuses the walk rather than repeating it', async () => {
+    // Asserted directly against the cache, because the saving is invisible from
+    // the outside: the walk fails open, so a miss returns the same answer as a
+    // hit. Without this, deleting the cache entirely leaves every other test in
+    // this file green — which is exactly what a reviewer pointed out.
+    const inScope = commit('fix: reuse', { 'packages/ui/src/reuse.ts': 'export {}\n' })
+    const commits = [inScope]
+
+    assert.equal(__scopeCacheForTests.get(commits), undefined, 'expected a cold cache')
+
+    await analyzeCommits(PLUGIN_CONFIG, contextFor(commits))
+    const afterAnalyze = __scopeCacheForTests.get(commits)
+    assert.ok(afterAnalyze, 'analyzeCommits should have populated the cache')
+    const entry = afterAnalyze.get(JSON.stringify(PLUGIN_CONFIG.paths))
+    assert.ok(entry, 'expected an entry keyed by the paths scope')
+
+    await generateNotes(PLUGIN_CONFIG, contextFor(commits))
+    assert.equal(
+      __scopeCacheForTests.get(commits).get(JSON.stringify(PLUGIN_CONFIG.paths)),
+      entry,
+      'generateNotes should have reused the SAME result object, not walked again',
+    )
   })
 
   test('does not serve a cached answer to a different `paths` scope', async () => {

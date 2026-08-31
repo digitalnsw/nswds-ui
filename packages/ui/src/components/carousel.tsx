@@ -31,27 +31,47 @@ type CarouselContextProps = {
 } & CarouselProps
 
 /**
- * Roles whose own keyboard contract claims the arrow keys. A widget carrying
- * one of these needs the arrows for itself (moving a caret, a thumb, a
- * selection), so the carousel must not act on them.
+ * Roles whose keyboard contract claims the arrow keys.
  *
- * `combobox` and `searchbox` are here for their caret; the composite roles
- * (`listbox`, `menu`, `grid`, …) for their own roving-tabindex navigation.
+ * Three groups, and the split matters for how they are matched:
+ *
+ * 1. Roles that consume arrows on the FOCUSED element itself — a caret or a
+ *    thumb lives there.
+ * 2. COMPOSITE roles that consume arrows on behalf of a focused descendant.
+ *    Under a roving tabindex the focus sits on the `tab`/`option`/`menuitem`
+ *    while the contract lives on the container, so matching the event target's
+ *    own role alone misses every one of them. The ancestor walk in
+ *    `ownsArrowKeys` is what finds these.
+ * 3. The descendant halves of those composites. Redundant with the walk when
+ *    the pair is nested in the DOM, but a composite may own its items through
+ *    `aria-owns` instead, and no ancestor walk can see that association.
  */
 const ARROW_CONSUMING_ROLES = new Set([
+  // 1 — consumed by the focused element
   'combobox',
+  'searchbox',
+  'slider',
+  'spinbutton',
+  'textbox',
+  // 2 — consumed by an ancestor composite
+  'application',
   'grid',
   'listbox',
   'menu',
   'menubar',
   'radiogroup',
-  'searchbox',
-  'slider',
-  'spinbutton',
   'tablist',
-  'textbox',
   'tree',
   'treegrid',
+  // 3 — the descendant halves, for aria-owns associations
+  'gridcell',
+  'menuitem',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'option',
+  'radio',
+  'tab',
+  'treeitem',
 ])
 
 /**
@@ -70,26 +90,43 @@ const ARROW_CONSUMING_ROLES = new Set([
  * arrows (checkbox, button) are still ones a user would not expect to scroll a
  * carousel from.
  */
-function ownsArrowKeys(target: EventTarget | null): boolean {
+function ownsArrowKeys(target: EventTarget | null, boundary: EventTarget | null): boolean {
+  // Walks ANCESTORS, not just the target. Every roving-tabindex composite
+  // focuses a descendant — the `tab` inside the `tablist`, the `option` inside
+  // the `listbox` — so testing only the focused element's own role misses the
+  // entire class, and the carousel scrolls while the user is moving between
+  // tabs. Stops at the carousel region so the walk cannot escape into the
+  // consumer's page and match something unrelated.
+  //
   // Duck-typed on nodeType rather than `instanceof Element`. `instanceof` is
   // per-realm: a carousel rendered into another document (a portal, a
   // popped-out window) would fail the check and fall through to `false`, and
   // false is the ANSWER THAT STEALS THE KEY — the exact bug this guard exists
   // to prevent. Getting it wrong should not depend on which realm the node
   // came from.
-  const element = target as Element | null
-  if (!element || element.nodeType !== 1 || typeof element.getAttribute !== 'function') {
-    return false
+  let element = target as Element | null
+
+  while (element && element.nodeType === 1 && typeof element.getAttribute === 'function') {
+    const tag = element.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+      return true
+    }
+    if ((element as HTMLElement).isContentEditable) {
+      return true
+    }
+    const role = element.getAttribute('role')
+    if (role !== null && ARROW_CONSUMING_ROLES.has(role)) {
+      return true
+    }
+    // Tested first, then stopped on: the region itself gets the same checks as
+    // anything else, but nothing above it does.
+    if (element === boundary) {
+      return false
+    }
+    element = element.parentElement
   }
-  const tag = element.tagName
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
-    return true
-  }
-  if ((element as HTMLElement).isContentEditable) {
-    return true
-  }
-  const role = element.getAttribute('role')
-  return role !== null && ARROW_CONSUMING_ROLES.has(role)
+
+  return false
 }
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
@@ -123,7 +160,14 @@ function Carousel({
   // `direction` sits BEFORE the spread so an explicit `opts.direction` still
   // wins; a consumer who wants the engine mirrored independently of the
   // ambient DirectionProvider keeps that escape hatch.
-  const direction = useDirection()
+  // `opts.direction` wins for the engine because it is spread later, so it has
+  // to win for the KEYS too. Deriving both from one effective value is what
+  // makes the escape hatch documented below actually safe: passing
+  // `opts={{ direction: 'rtl' }}` under a default LTR provider previously ran
+  // the engine RTL while mapping keys LTR, so the two halves disagreed on every
+  // press — the same class of desync this comment claims to prevent.
+  const providerDirection = useDirection()
+  const direction = opts?.direction ?? providerDirection
   const [carouselRef, api] = useEmblaCarousel(
     {
       direction,
@@ -183,7 +227,7 @@ function Carousel({
         return
       }
       // A control inside a slide gets its arrows untouched. See ownsArrowKeys.
-      if (ownsArrowKeys(event.target)) {
+      if (ownsArrowKeys(event.target, event.currentTarget)) {
         return
       }
       if (event.key === previousKey) {
@@ -295,6 +339,27 @@ function CarouselItem({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
+/**
+ * Whether a control should render its own default icon — and therefore whether
+ * it must supply its own accessible name.
+ *
+ * ONE test, because the fallback content and the `aria-label` have to agree
+ * about what "the consumer supplied content" means, and they once did not:
+ * `??` treats null and undefined alike while the label test named only
+ * `undefined`, so `children={null}` — what `cond ? <Icon/> : null` yields —
+ * rendered the default chevron with NO accessible name, on a control whose
+ * only name is that label. Both call sites now derive from here, so they
+ * cannot drift apart again.
+ *
+ * `children={false}` (from `{cond && <Icon/>}`) is deliberately excluded: that
+ * consumer asked for no content, and substituting the default icon would be a
+ * surprise. The resulting unnamed button is reported by Button's own dev-time
+ * icon-only warning.
+ */
+function usesDefaultContent(children: React.ReactNode): boolean {
+  return children === undefined || children === null
+}
+
 function CarouselPrevious({
   className,
   variant = 'outline',
@@ -311,6 +376,8 @@ function CarouselPrevious({
 }) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel()
 
+  const usesDefaultIcon = usesDefaultContent(children)
+
   return (
     <Button
       data-slot='carousel-previous'
@@ -321,7 +388,7 @@ function CarouselPrevious({
       // fastest way to teach a team to ignore the warning. Set only when we
       // render the default icon: a consumer passing `children` supplies their
       // own content, and an aria-label would mask it.
-      aria-label={children === undefined ? label : undefined}
+      aria-label={usesDefaultIcon ? label : undefined}
       variant={variant}
       size={size}
       className={cn(
@@ -335,7 +402,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      {children ?? <IconChevronLeft className='rtl:rotate-180' />}
+      {usesDefaultIcon ? <IconChevronLeft className='rtl:rotate-180' /> : children}
     </Button>
   )
 }
@@ -356,6 +423,8 @@ function CarouselNext({
 }) {
   const { orientation, scrollNext, canScrollNext } = useCarousel()
 
+  const usesDefaultIcon = usesDefaultContent(children)
+
   return (
     <Button
       data-slot='carousel-next'
@@ -366,7 +435,7 @@ function CarouselNext({
       // fastest way to teach a team to ignore the warning. Set only when we
       // render the default icon: a consumer passing `children` supplies their
       // own content, and an aria-label would mask it.
-      aria-label={children === undefined ? label : undefined}
+      aria-label={usesDefaultIcon ? label : undefined}
       variant={variant}
       size={size}
       className={cn(
@@ -380,7 +449,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      {children ?? <IconChevronRight className='rtl:rotate-180' />}
+      {usesDefaultIcon ? <IconChevronRight className='rtl:rotate-180' /> : children}
     </Button>
   )
 }
