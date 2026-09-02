@@ -643,16 +643,32 @@ function ButtonContent({
  * (`size="icon"` or `iconOnly`) renders no visible text, so it must carry an
  * explicit accessible name. Warns in development when one is missing; a no-op
  * in production. A falsy `aria-label` (including `""`) counts as missing.
+ *
+ * A text child counts as a label. `size="icon"` is also the square a
+ * `PaginationLink` page number sits in, and a bare "2" is a visible, readable
+ * name — axe accepts it and so does this guard. Only a string or a number
+ * qualifies, at the top level or directly inside a fragment or array; an
+ * element child is most likely the icon itself, which is the case the guard
+ * exists for.
  */
 function warnIfIconButtonUnlabelled(
   size: ButtonOwnProps['size'],
   iconOnly: ButtonOwnProps['iconOnly'],
   props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown },
+  children: React.ReactNode,
 ) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  if ((size === 'icon' || iconOnly) && !props['aria-label'] && !props['aria-labelledby']) {
+  const hasTextChild = React.Children.toArray(children).some(
+    (child) => (typeof child === 'string' && child.trim() !== '') || typeof child === 'number',
+  )
+  if (
+    (size === 'icon' || iconOnly) &&
+    !props['aria-label'] &&
+    !props['aria-labelledby'] &&
+    !hasTextChild
+  ) {
     console.warn(
       '[nswds/ui] Icon-only buttons (size="icon" or iconOnly) have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',
     )
@@ -696,7 +712,7 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, iconOnly, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
   return (
     <ButtonPrimitive
@@ -761,7 +777,7 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, iconOnly, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
   return (
     <Link

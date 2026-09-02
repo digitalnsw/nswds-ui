@@ -37,13 +37,31 @@ type PaginationLinkProps = {
 } & Pick<React.ComponentProps<typeof Button>, 'size'> &
   React.ComponentProps<'a'>
 
-function PaginationLink({ className, isActive, size = 'icon', ...props }: PaginationLinkProps) {
+function PaginationLink({
+  className,
+  isActive,
+  size = 'icon',
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
+  children,
+  ...props
+}: PaginationLinkProps) {
+  // The anchor's own props ride on the `render` element; the name and the
+  // children go to Button. Button's dev-time icon-button guard reads its own
+  // props, so a label or a page number that only the anchor carried was
+  // invisible to it — a fully labelled `<PaginationLink aria-label="Page 2">`
+  // warned on every render, and so did the bare digits in this component's
+  // stories. Base UI merges the two sets onto the one anchor, and routing the
+  // children through Button also gives a page link Button's touch target,
+  // which it had been skipping.
   return (
     <Button
       variant={isActive ? 'outline' : 'ghost'}
       size={size}
       className={cn(className)}
       nativeButton={false}
+      aria-label={ariaLabel}
+      aria-labelledby={ariaLabelledby}
       render={
         <a
           aria-current={isActive ? 'page' : undefined}
@@ -52,7 +70,9 @@ function PaginationLink({ className, isActive, size = 'icon', ...props }: Pagina
           {...props}
         />
       }
-    />
+    >
+      {children}
+    </Button>
   )
 }
 
