@@ -639,6 +639,26 @@ function ButtonContent({
 }
 
 /**
+ * Whether a child tree carries visible text: a non-empty string or a number,
+ * at the top level, in an array, or inside a Fragment however deep. Other
+ * elements are not looked into — `Children.toArray` flattens arrays but hands
+ * a Fragment back whole, so the Fragment case is walked by hand.
+ */
+function hasTextChild(children: React.ReactNode): boolean {
+  return React.Children.toArray(children).some((child) => {
+    if (typeof child === 'string') return child.trim() !== ''
+    if (typeof child === 'number') return true
+    if (
+      React.isValidElement<{ children?: React.ReactNode }>(child) &&
+      child.type === React.Fragment
+    ) {
+      return hasTextChild(child.props.children)
+    }
+    return false
+  })
+}
+
+/**
  * Dev-only guard shared by `Button` and `ButtonLink`: an icon-only button
  * (`size="icon"` or `iconOnly`) renders no visible text, so it must carry an
  * explicit accessible name. Warns in development when one is missing; a no-op
@@ -660,14 +680,11 @@ function warnIfIconButtonUnlabelled(
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  const hasTextChild = React.Children.toArray(children).some(
-    (child) => (typeof child === 'string' && child.trim() !== '') || typeof child === 'number',
-  )
   if (
     (size === 'icon' || iconOnly) &&
     !props['aria-label'] &&
     !props['aria-labelledby'] &&
-    !hasTextChild
+    !hasTextChild(children)
   ) {
     console.warn(
       '[nswds/ui] Icon-only buttons (size="icon" or iconOnly) have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',

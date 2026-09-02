@@ -22,7 +22,7 @@ import path from 'node:path'
 import { afterEach, beforeEach, describe, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { createElement as h } from 'react'
+import { Fragment, createElement as h } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -111,5 +111,26 @@ describe('Button keeps the guard for real icon buttons', () => {
     renderToStaticMarkup(h(Button, { size: 'icon' }, h('svg', null), 'Page ', 2))
 
     assert.equal(warnings.length, 0)
+  })
+
+  test('looks inside a Fragment, which Children.toArray hands back whole', () => {
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h(Fragment, null, 2)))
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h(Fragment, null, 'Page ', 2)))
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h(Fragment, null, h(Fragment, null, '2'))))
+
+    assert.equal(warnings.length, 0)
+  })
+
+  test('an empty or whitespace-only Fragment is still nameless', () => {
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h(Fragment, null)))
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h(Fragment, null, ' ')))
+
+    assert.equal(warnings.length, 2)
+  })
+
+  test('does not look inside other elements', () => {
+    renderToStaticMarkup(h(Button, { size: 'icon' }, h('span', null, 'Previous')))
+
+    assert.equal(warnings.length, 1)
   })
 })
