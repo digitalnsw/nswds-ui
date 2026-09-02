@@ -40,14 +40,22 @@ const { Button } = await import(path.join(dist, 'button.js'))
 
 const GUARD = /Icon-only buttons/
 
-/** Every `console.warn` the render produced that came from the guard. */
+/**
+ * Every `console.warn` the render produced that came from the guard. Anything
+ * else — a React warning about a prop, say — still reaches the real
+ * `console.warn`, so this file cannot hide a problem it was not looking for.
+ */
 let warnings
 const originalWarn = console.warn
 
 beforeEach(() => {
   warnings = []
   console.warn = (...args) => {
-    if (args.some((arg) => GUARD.test(String(arg)))) warnings.push(args)
+    if (args.some((arg) => GUARD.test(String(arg)))) {
+      warnings.push(args)
+    } else {
+      originalWarn(...args)
+    }
   }
 })
 
