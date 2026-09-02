@@ -1,3 +1,9 @@
+## [5.7.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.7.0...@nswds/ui-v5.7.1) (2026-09-02)
+
+### Bug Fixes
+
+* **pagination:** stop the icon-button guard warning on labelled page links ([#165](https://github.com/digitalnsw/nswds-ui/issues/165)) ([4cc6813](https://github.com/digitalnsw/nswds-ui/commit/4cc6813a956bd09f20ebba5c9f1c282e99d91516))
+
 ## [5.7.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.6.0...@nswds/ui-v5.7.0) (2026-08-31)
 
 ### Features
