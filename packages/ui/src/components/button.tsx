@@ -639,20 +639,53 @@ function ButtonContent({
 }
 
 /**
+ * Whether a child tree carries visible text: a non-empty string or a number,
+ * at the top level, in an array, or inside a Fragment however deep. Other
+ * elements are not looked into — `Children.toArray` flattens arrays but hands
+ * a Fragment back whole, so the Fragment case is walked by hand.
+ */
+function hasTextChild(children: React.ReactNode): boolean {
+  return React.Children.toArray(children).some((child) => {
+    if (typeof child === 'string') return child.trim() !== ''
+    if (typeof child === 'number') return true
+    if (
+      React.isValidElement<{ children?: React.ReactNode }>(child) &&
+      child.type === React.Fragment
+    ) {
+      return hasTextChild(child.props.children)
+    }
+    return false
+  })
+}
+
+/**
  * Dev-only guard shared by `Button` and `ButtonLink`: an icon-only button
  * (`size="icon"` or `iconOnly`) renders no visible text, so it must carry an
  * explicit accessible name. Warns in development when one is missing; a no-op
  * in production. A falsy `aria-label` (including `""`) counts as missing.
+ *
+ * A text child counts as a label. `size="icon"` is also the square a
+ * `PaginationLink` page number sits in, and a bare "2" is a visible, readable
+ * name — axe accepts it and so does this guard. Only a string or a number
+ * qualifies, at the top level or directly inside a fragment or array; an
+ * element child is most likely the icon itself, which is the case the guard
+ * exists for.
  */
 function warnIfIconButtonUnlabelled(
   size: ButtonOwnProps['size'],
   iconOnly: ButtonOwnProps['iconOnly'],
   props: { 'aria-label'?: unknown; 'aria-labelledby'?: unknown },
+  children: React.ReactNode,
 ) {
   if (process.env.NODE_ENV === 'production') {
     return
   }
-  if ((size === 'icon' || iconOnly) && !props['aria-label'] && !props['aria-labelledby']) {
+  if (
+    (size === 'icon' || iconOnly) &&
+    !props['aria-label'] &&
+    !props['aria-labelledby'] &&
+    !hasTextChild(children)
+  ) {
     console.warn(
       '[nswds/ui] Icon-only buttons (size="icon" or iconOnly) have no visible label — pass aria-label or aria-labelledby so the control has an accessible name.',
     )
@@ -696,7 +729,7 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, iconOnly, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
   return (
     <ButtonPrimitive
@@ -761,7 +794,7 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
 
-  warnIfIconButtonUnlabelled(size, iconOnly, props)
+  warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
   return (
     <Link
