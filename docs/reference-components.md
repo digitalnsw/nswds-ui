@@ -164,16 +164,15 @@ out of `<main>`.
 
 `HeaderBrand`:
 
-| Prop           | Type                           | Default     | Notes                                                                                                                      |
-| -------------- | ------------------------------ | ----------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `sitename`     | `ReactNode`                    | —           | Service name beside the logo.                                                                                              |
-| `href`         | `string \| LinkUrlObject`      | `'/'`       | Home-page target.                                                                                                          |
-| `headingLevel` | `2 \| 3 \| 4 \| 5 \| 6`        | —           | Omit to render a `<span>`, which is usually right: the page's `<h1>` belongs to its content. `1` is deliberately excluded. |
-| `version`      | `ReactNode`                    | —           | Version string in a Badge. Sits outside the link, so it never joins the home link's accessible name.                       |
-| `versionLabel` | `string`                       | `'Version'` | Visually-hidden prefix. Pass `''` to suppress.                                                                             |
-| `badgeProps`   | `Omit<BadgeProps, 'children'>` | —           | Forwarded to the version Badge. `undefined`/`null` fall back to the surface-aware defaults rather than cva's.              |
-| `logo`         | `boolean \| ReactNode`         | `true`      | `false` omits the waratah; a node replaces it with an agency lockup.                                                       |
-| `label`        | `string`                       | —           | Set only when the brand renders no text — overriding it otherwise breaks WCAG 2.5.3 Label in Name.                         |
+| Prop           | Type                           | Default     | Notes                                                                                                                                     |
+| -------------- | ------------------------------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `sitename`     | `ReactNode`                    | —           | Service name beside the logo. Always a `<span>`: the brand sits ahead of `<main>`, so a heading here would precede the page's own `<h1>`. |
+| `href`         | `string \| LinkUrlObject`      | `'/'`       | Home-page target.                                                                                                                         |
+| `version`      | `ReactNode`                    | —           | Version string in a Badge. Sits outside the link, so it never joins the home link's accessible name.                                      |
+| `versionLabel` | `string`                       | `'Version'` | Visually-hidden prefix. Pass `''` to suppress.                                                                                            |
+| `badgeProps`   | `Omit<BadgeProps, 'children'>` | —           | Forwarded to the version Badge. `undefined`/`null` fall back to the surface-aware defaults rather than cva's.                             |
+| `logo`         | `boolean \| ReactNode`         | `true`      | `false` omits the waratah; a node replaces it with an agency lockup.                                                                      |
+| `label`        | `string`                       | —           | Set only when the brand renders no text — overriding it otherwise breaks WCAG 2.5.3 Label in Name.                                        |
 
 `HeaderActions` takes no own props. It is the trailing control cluster (search, theme switcher,
 sign-in) and is deliberately **not** a `nav` landmark — wrap real navigation in your own `<nav>`.
