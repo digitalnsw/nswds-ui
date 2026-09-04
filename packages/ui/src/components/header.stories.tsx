@@ -374,9 +374,6 @@ export const Brand: Story = {
       <Header id='header-brand-version' sticky={false}>
         <HeaderBrand sitename='Service name' version='2.1.0' />
       </Header>
-      <Header id='header-brand-heading' sticky={false}>
-        <HeaderBrand sitename='Site name in the outline' headingLevel={2} />
-      </Header>
       <Header id='header-brand-no-logo' sticky={false}>
         <HeaderBrand logo={false} sitename='No logo' />
       </Header>
@@ -387,20 +384,16 @@ export const Brand: Story = {
   ),
   play: async ({ canvasElement }) => {
     const brands = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header-brand"]')
-    if (brands.length !== 6) {
-      throw new Error(`Expected 6 brands, got ${brands.length}.`)
+    if (brands.length !== 5) {
+      throw new Error(`Expected 5 brands, got ${brands.length}.`)
     }
 
-    const [, plain, , heading, noLogo, badgeSized] = brands
+    const [, plain, , noLogo, badgeSized] = brands
 
-    // Default: the site name is a span, not a heading — the page's own <h1>
-    // belongs to its main content.
+    // The site name is never a heading: the brand sits ahead of <main>, so a
+    // heading here would precede the page's own <h1> in the outline.
     if (plain!.querySelector('h1, h2, h3, h4, h5, h6')) {
-      throw new Error('Expected the site name to render as a span unless headingLevel is set.')
-    }
-    // Opted in: it lands in the outline at the requested level.
-    if (!heading!.querySelector('h2')) {
-      throw new Error('Expected headingLevel={2} to render an <h2>.')
+      throw new Error('Expected the site name to render as a span, not a heading.')
     }
     // logo={false} removes the mark and its visually-hidden organisation name.
     if (noLogo!.querySelector('svg')) {

@@ -105,19 +105,16 @@ const DARK_SURFACE_COLORS = new Set<HeaderColor>(['dark', 'grey'])
 type HeaderBrandProps = React.ComponentPropsWithoutRef<'div'> & {
   /** Home-page target for the brand link. Defaults to `/`. */
   href?: React.ComponentPropsWithoutRef<typeof Link>['href']
-  /** Service or site name shown beside the logo. */
-  sitename?: React.ReactNode
   /**
-   * Heading level for `sitename`. Omit (the default) to render a `<span>`,
-   * which is usually right: the page's own `<h1>` belongs to its main content,
-   * and a site name repeated in the header on every page is not the heading
-   * that describes this page. Supply a level only when a service deliberately
-   * places the site name in the document outline.
-   *
-   * `1` is excluded for the reason above; `6` is the deepest heading HTML
-   * defines.
+   * Service or site name shown beside the logo. Renders as a `<span>`, never a
+   * heading: the brand sits in the `banner` landmark ahead of `<main>`, so any
+   * heading here would land in the outline *before* the page's own `<h1>` —
+   * the first heading a screen-reader user meets would be the site name
+   * repeated on every page, and the outline would open at a lower level and
+   * then jump up to 1. The heading that describes the page belongs to its main
+   * content.
    */
-  headingLevel?: 2 | 3 | 4 | 5 | 6
+  sitename?: React.ReactNode
   /**
    * Version string shown in a Badge beside the brand. Sits outside the link,
    * so it never becomes part of the home link's accessible name.
@@ -202,7 +199,6 @@ function HeaderBrand({
   className,
   href = '/',
   sitename,
-  headingLevel,
   version,
   versionLabel = 'Version',
   badgeProps,
@@ -214,7 +210,6 @@ function HeaderBrand({
 }: HeaderBrandProps) {
   const color = React.useContext(HeaderColorContext)
   const onDarkSurface = DARK_SURFACE_COLORS.has(color)
-  const Sitename = headingLevel ? (`h${headingLevel}` as const) : 'span'
 
   warnIfBrandUnlabelled({ logo, sitename, label })
 
@@ -288,14 +283,14 @@ function HeaderBrand({
           // and `grey` is nearly as deep, so those keep the header's own white
           // ink; dark mode does the same, matching the `dark:text-white` the
           // light/white variants already set on the surface.
-          <Sitename
+          <span
             className={cn(
               'font-bold text-balance max-sm:text-lg sm:max-lg:text-xl lg:text-2xl',
               !onDarkSurface && 'text-primary-800 dark:text-white',
             )}
           >
             {sitename}
-          </Sitename>
+          </span>
         ) : null}
       </Link>
       {version ? (
