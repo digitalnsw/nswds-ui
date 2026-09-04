@@ -1,3 +1,16 @@
+## [6.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.7.1...@nswds/ui-v6.0.0) (2026-09-04)
+
+### ⚠ BREAKING CHANGES
+
+* **header:** `HeaderBrand` no longer accepts `headingLevel`. The site
+name always renders as a `<span>`. The brand sits in the banner landmark
+ahead of `<main>`, so any heading level put the site name into the outline
+before the page's own `<h1>`. Remove the prop; rendering is unchanged.
+
+### Bug Fixes
+
+* **header:** drop headingLevel so the site name never precedes the page h1 ([#168](https://github.com/digitalnsw/nswds-ui/issues/168)) ([d42adb8](https://github.com/digitalnsw/nswds-ui/commit/d42adb8a5d2e92dcd603fc252f74906b0c5d9fba))
+
 ## [5.7.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.7.0...@nswds/ui-v5.7.1) (2026-09-02)
 
 ### Bug Fixes
