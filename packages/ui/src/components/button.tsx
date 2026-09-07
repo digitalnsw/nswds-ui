@@ -13,7 +13,15 @@ import { Spinner } from '../components/spinner.js'
 const styles = {
   base: [
     // Base
-    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold motion-safe:transition-all',
+    // Transitioned properties are named, NOT `transition-all`. `all` includes
+    // `outline-width` and `outline-offset`, and animating those out of the
+    // initial `outline-style: none` state means the width never commits — the
+    // focus ring below never painted, on every button in the system, leaving
+    // keyboard users the browser default (WCAG 2.4.7). Isolated by bisection:
+    // the focus utilities alone settle at 2px/-2px, adding `transition-all`
+    // gives 1.5px/0px, and naming properties is fine. Nothing is lost by
+    // naming them — no state in this file animates a transform or a size.
+    'relative isolate inline-flex items-baseline justify-center gap-x-2 rounded-sm border text-base/7 font-bold motion-safe:transition-[color,background-color,border-color,box-shadow,opacity]',
     // Height floor, published per size step as `--btn-h` (see `styles.size`).
     // A floor rather than a fixed height so a wrapped label can still grow.
     'min-h-(--btn-h)',
