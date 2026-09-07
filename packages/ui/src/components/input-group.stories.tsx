@@ -308,6 +308,51 @@ export const ActionFills: Story = {
         (Math.min(...lines.map((r) => r.top)) + Math.max(...lines.map((r) => r.bottom))) / 2
       await expect(Math.abs(textMid - (box.top + box.bottom) / 2)).toBeLessThanOrEqual(1.5)
     }
+
+    // One leading edge down the whole control: the writing surface's text and
+    // the footer row's text must share an inset. Textarea's standalone 8px
+    // padding put the placeholder 8px in while the footer sat at 16px, which
+    // read as the comment field being cramped.
+    for (const group of canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')) {
+      const textarea = group.querySelector<HTMLTextAreaElement>('textarea')
+      const hint = group.querySelector<HTMLElement>('[data-align="block-end"] span')
+      if (!textarea || !hint) {
+        continue
+      }
+      const hintRange = document.createRange()
+      hintRange.selectNodeContents(hint)
+      const hintRects = [...hintRange.getClientRects()].filter((r) => r.height > 0)
+      await expect(hintRects.length).toBeGreaterThan(0)
+
+      const surfaceTextLeft =
+        textarea.getBoundingClientRect().left + parseFloat(getComputedStyle(textarea).paddingLeft)
+      await expect(Math.abs(hintRects[0].left - surfaceTextLeft)).toBeLessThanOrEqual(1)
+    }
+
+    // ONE hairline colour for the whole control. Internal dividers drawn in a
+    // lighter token than the group's own edge made every junction read as
+    // heavier rather than as a hierarchy, and the lighter token fell under the
+    // 3:1 boundary floor in dark mode.
+    const hairlines = new Set<string>()
+    for (const group of canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')) {
+      const parts = [
+        group,
+        group.querySelector<HTMLElement>('[data-align="inline-start"]'),
+        group.querySelector<HTMLElement>('[data-align="block-end"]'),
+        group.querySelector<HTMLElement>('[data-slot="input-group-action"]'),
+      ]
+      for (const part of parts) {
+        if (!part) continue
+        const styles = getComputedStyle(part)
+        for (const side of ['Top', 'Right', 'Bottom', 'Left'] as const) {
+          const width = styles[`border${side}Width` as 'borderTopWidth']
+          if (parseFloat(width) === 0) continue
+          await expect(width).toBe('1px')
+          hairlines.add(styles[`border${side}Color` as 'borderTopColor'])
+        }
+      }
+    }
+    await expect(hairlines.size).toBe(1)
   },
 }
 

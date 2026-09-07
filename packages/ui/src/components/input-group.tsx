@@ -87,6 +87,14 @@ const inputGroupAddonVariants = cva(
         // inset is now that same 8px, so affixes, buttons and footer rows all
         // land on one grid. The kbd nudge stays — a kbd chip is small enough
         // that the optical correction still reads.
+        // ONE hairline colour for the whole control: `--input-border`, the same
+        // token the group's own edge uses. The mockup drew internal dividers in
+        // the lighter `--border-default`, but mixing the two put a #dcdfe0
+        // divider beside a #888f92 seam and outer edge, which reads as the
+        // junctions being heavier rather than as a hierarchy. It also fixes
+        // dark mode: `--border-default` measures 1.12:1 on the dark surface,
+        // under the 3:1 floor for a boundary that has to identify a control.
+        //
         // The leading affix is a CELL, not floating text: a recessed fill, a
         // hairline on its inner edge, and the group's full height. This is what
         // makes the trailing action read as its mirror — the approved design's
@@ -94,7 +102,7 @@ const inputGroupAddonVariants = cva(
         // 16px padding matches the value's own, so affix and value sit on one
         // rhythm.
         'inline-start':
-          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--border-default) bg-(--surface-sunken) px-4 has-[>kbd]:ms-[-0.275rem]',
+          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--input-border) bg-(--surface-sunken) px-4 has-[>kbd]:ms-[-0.275rem]',
         'inline-end':
           'order-last px-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0 has-[>kbd]:me-[-0.275rem]',
         // Block addons are chrome, not content, so they carry the boundary the
@@ -109,9 +117,9 @@ const inputGroupAddonVariants = cva(
         // `overflow-hidden` would cut off the focus ring of any button inside
         // the row, since Button rings 2px outside itself.
         'block-start':
-          'order-first min-h-12 w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--border-default) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
+          'order-first min-h-12 w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--input-border) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
         'block-end':
-          'order-last min-h-12 w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--border-default) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
+          'order-last min-h-12 w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--input-border) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
       },
     },
     defaultVariants: {
@@ -380,7 +388,15 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
         // neutralisers it needs are the ring ones — and it still needs a
         // `dark:` counterpart for `dark:bg-input/30`. These collapse to match
         // InputGroupInput once textarea.tsx moves onto the --input-* tokens.
-        'flex-1 rounded-none border-0 bg-transparent py-2 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
+        'flex-1 rounded-none border-0 bg-transparent focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
+        // Writing-surface metrics, from the approved design's `.g .field`
+        // (`padding: 12px 16px`) and `textarea.field` (`min-height: 96px`).
+        // Textarea's standalone 8px padding left the placeholder 8px from the
+        // group's inner edge while the footer hint sat at 16px — an 8px
+        // misalignment down the leading edge, and a cramped box at 64px.
+        // Set here rather than in textarea.tsx: those are the metrics a
+        // textarea needs INSIDE a group, and standalone Textarea keeps its own.
+        'min-h-24 px-4 py-3',
         className,
       )}
       {...props}
