@@ -118,7 +118,10 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>)
     <Input
       data-slot='input-group-control'
       className={cn(
-        'flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
+        // `focus-visible:outline-none` / `aria-invalid:border-0` neutralise Input's
+        // own outline and 2px danger border: inside a group the WRAPPER owns both
+        // treatments, and two nested rings read as a rendering fault.
+        'flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus-visible:outline-none aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent',
         className,
       )}
       {...props}
@@ -131,7 +134,8 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
     <Textarea
       data-slot='input-group-control'
       className={cn(
-        'flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
+        // Same wrapper-owns-the-focus-treatment reasoning as InputGroupInput above.
+        'flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 focus-visible:outline-none aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent',
         className,
       )}
       {...props}

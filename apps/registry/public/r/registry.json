@@ -1855,8 +1855,9 @@
       "name": "textarea",
       "type": "registry:ui",
       "title": "Textarea",
-      "description": "A multi-line text input.",
+      "description": "A multi-line text input built on the Base UI input primitive with NSW form styling.",
       "dependencies": [
+        "@base-ui/react",
         "clsx",
         "tailwind-merge"
       ],

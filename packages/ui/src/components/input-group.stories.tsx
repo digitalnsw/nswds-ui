@@ -108,6 +108,19 @@ export const Variants: Story = {
       </InputGroup>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    // Every inner control must relabel itself `input-group-control`: the
+    // wrapper's focus ring is a `has-[[data-slot=input-group-control]:focus-visible]`
+    // rule, so a control that keeps its own slot name silently stops lighting
+    // the group up. Input and Textarea both forward props last precisely so
+    // this override wins — reorder that spread and this is what breaks.
+    const controls = canvasElement.querySelectorAll('[data-slot="input-group-control"]')
+    await expect(controls).toHaveLength(4)
+    await expect(canvasElement.querySelector('textarea')).toHaveAttribute(
+      'data-slot',
+      'input-group-control',
+    )
+  },
 }
 
 export const CssCheck: Story = {
