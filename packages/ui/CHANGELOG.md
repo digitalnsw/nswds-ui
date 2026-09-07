@@ -1,3 +1,100 @@
+## [7.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v6.1.0...@nswds/ui-v7.0.0) (2026-09-07)
+
+### ⚠ BREAKING CHANGES
+
+* **input-group:** InputGroupButton now defaults to variant="soft" instead of
+variant="ghost". Any consumer relying on the bare-text look must pass
+variant="ghost" explicitly.
+
+Adds assertions to the Variants story covering the default, the released
+min-height, and the block addon's hairline and fill, so none of it can
+silently revert.
+
+* fix(input-group): match the approved design's cell geometry
+
+Comparing the shipped component against the approved mockup rather than
+against my memory of it, six values were wrong. The mockup's own words for
+the direction were "the trailing cell mirrors the leading AUD cell exactly",
+and the leading cell had never been built.
+
+                  design            was
+  group           items-stretch     items-center
+  leading affix   filled cell,      bare text, no fill, no divider,
+                  right hairline,   not full height, 8px pad, weight 500
+                  full height,
+                  16px pad, 600
+  field           16px lead pad     6px (squashed by a ps-1.5 override
+                                    that existed to tuck the value against
+                                    bare affix text)
+  block rows      16px pad,         8px pad, centred, floor only when
+                  min-height 48px   an action was present
+  action label    weight 600        Button's 700
+
+The `ps-1.5` / `pe-1.5` overrides go: they tucked the value up against an
+affix that was loose text. With the affix a bordered cell carrying its own
+16px, the value keeps Input's 16px and the two sit on one rhythm.
+
+Flush edges and stretched children are scoped to rows that actually hold an
+InputGroupAction. Applying the mockup's footer rules unconditionally pushed
+a plain InputGroupButton hard against the group's border and stopped it
+centring, since `align-items: stretch` leaves a fixed-height child at the
+row's top.
+
+Verified against the mockup value by value: align-items, affix padding,
+weight, divider width, full-bleed height, field padding, action padding and
+weight, and footer padding, floor and alignment all now agree.
+
+Keeps `--surface-sunken` where the mockup wrote `--background-subtle`. They
+are the same value in light, but background-subtle collapses onto
+surface-default in dark, which would drop the fill entirely.
+
+One extrapolation to flag: the mockup only ever showed a TEXT affix in the
+leading cell, so an icon-only addon now gets the same fill and divider.
+
+* fix(input-group): centre the action and inline button labels
+
+Button's base is `inline-flex items-baseline`. Baseline alignment only reads
+as centred while Button's own vertical padding balances the line box — and
+both InputGroupAction and InputGroupButton zero that padding to fit inside a
+48px control. With `py-0` and a stretched box, every label sat 9px above
+centre in a 46px segment.
+
+Measured off the text's own client rects rather than the class list: all six
+actions were `offBy: -9`, now `offBy: 0`. Swept every action, inline button
+and addon across the InputGroup and Combobox stories — 18 elements, none off
+centre by more than 1.5px.
+
+`items-center` wins deterministically: same tailwind-merge group as Button's
+`items-baseline`, so the base class is dropped from the string rather than
+being outranked at render time.
+
+The approved mockup specified `align-items: center` on the action all along;
+this is the fourth property Button's base sets that a naive override missed,
+after min-height, padding and border colour.
+
+Adds a centring assertion to the Action fills story that measures the text
+rects, so a future padding change cannot silently un-centre the labels again.
+
+* fix(input-group): give the comment field its design padding and unify hairlines
+
+Two defects, both measured rather than eyeballed.
+
+The writing surface was cramped. Textarea's standalone metrics are 8px
+padding and a 64px floor; the approved design's `.g .field` is
+`padding: 12px 16px` and `textarea.field` is `min-height: 96px`. That left
+the placeholder 8px from the group's inner edge while the footer hint sat at
+16px — an 8px misalignment down the leading edge, in a box a third shorter
+than drawn. Set on InputGroupTextarea rather than in textarea.tsx: these are
+the metrics a textarea needs INSIDE a group, and standalone Textarea keeps
+its own.
+
+The control had three hairline colours at once: the group's edge and the
+action's seam in `--input-border` (#888f92), the affix divider and the block
+
+### Features
+
+* **input-group:** add an attached action and move the group onto the --input-* tokens ([#177](https://github.com/digitalnsw/nswds-ui/issues/177)) ([3d19d03](https://github.com/digitalnsw/nswds-ui/commit/3d19d0324b241e08d6b7d452c85ab623644c4e6c)), closes [#dcdfe0](https://github.com/digitalnsw/nswds-ui/issues/dcdfe0) [pre-#173](https://github.com/digitalnsw/pre-/issues/173) [#888f92](https://github.com/digitalnsw/nswds-ui/issues/888f92) [#f5f5f5](https://github.com/digitalnsw/nswds-ui/issues/f5f5f5)
+
 ## [6.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v6.0.0...@nswds/ui-v6.1.0) (2026-09-07)
 
 ### Features
