@@ -111,7 +111,7 @@ const inputGroupAddonVariants = cva(
         // -end and a rounded start corner, a negative start margin drags the
         // whole cell out past the group's own border.
         'inline-start':
-          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--input-border) bg-(--surface-sunken) px-4 font-semibold',
+          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--input-border) bg-(--surface-sunken) px-4 font-semibold has-[[data-slot=input-group-action]]:ms-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0',
         'inline-end':
           'order-last px-2 font-semibold has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0 has-[>kbd]:me-[-0.275rem]',
         // Block addons are chrome, not content, so they carry the boundary the
@@ -420,20 +420,18 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
     <Textarea
       data-slot='input-group-control'
       className={cn(
-        // Same contract as InputGroupInput, but Textarea is still on the old
-        // shadcn token set (`bg-input/20` + a `ring-*` focus treatment), so the
-        // neutralisers it needs are the ring ones — and it still needs a
-        // `dark:` counterpart for `dark:bg-input/30`. These collapse to match
-        // InputGroupInput once textarea.tsx moves onto the --input-* tokens.
-        'flex-1 rounded-none border-0 bg-transparent focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
-        // Writing-surface metrics, from the approved design's `.g .field`
-        // (`padding: 12px 16px`) and `textarea.field` (`min-height: 96px`).
-        // Textarea's standalone 8px padding left the placeholder 8px from the
-        // group's inner edge while the footer hint sat at 16px — an 8px
-        // misalignment down the leading edge, and a cramped box at 64px.
-        // Set here rather than in textarea.tsx: those are the metrics a
-        // textarea needs INSIDE a group, and standalone Textarea keeps its own.
-        'min-h-24 px-4 py-3',
+        // Identical contract to InputGroupInput, because Textarea is now
+        // Input's twin: same `--input-*` tokens, same outline focus treatment,
+        // same `aria-invalid:border-2`. The group owns all three, so the same
+        // three neutralisers apply, for the same tailwind-merge reason
+        // (`outline-0` / `border-0` land in Button's own conflict groups and
+        // drop its utilities from the class string rather than racing them).
+        'flex-1 rounded-none border-0 bg-transparent focus-visible:outline-0 aria-invalid:border-0',
+        // Only the vertical padding differs from Textarea's own: the design's
+        // writing surface is `12px 16px`, and Textarea ships `py-2`. Its
+        // `min-h-24` (96px) and `px-4` already match the design, so restating
+        // them here would be dead weight.
+        'py-3',
         className,
       )}
       {...props}
