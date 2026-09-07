@@ -230,6 +230,27 @@ export const AttachedAction: Story = {
     // Still real buttons: the enabled one presses, the disabled one does not.
     await expect(within(firstGroup).getByRole('button', { name: 'Apply' })).toBeEnabled()
     await expect(within(disabledGroup).getByRole('button', { name: 'Apply' })).toBeDisabled()
+
+    // No hover assertions here on purpose: `userEvent.hover` dispatches
+    // synthetic pointer events, which do not move the browser's real pointer,
+    // so CSS `:hover` never engages and `firstGroup.matches(':hover')` stays
+    // false. Any computed-style hover expectation in this harness would be
+    // asserting the REST value under a hover-shaped name. Hover is verified
+    // with a real pointer instead (see the design audit for this component).
+
+    // A disabled control fades the WHOLE group. Input's own `disabled:opacity-50`
+    // only fades its own box, which left the border, the affix panel and the
+    // cursor reading as live. The control neutralises its copy so the two
+    // cannot compound to 0.25.
+    const disabledControl = disabledGroup.querySelector<HTMLElement>(
+      '[data-slot="input-group-control"]',
+    )
+    if (!disabledControl) {
+      throw new Error('Expected the disabled group to hold a control.')
+    }
+    await expect(getComputedStyle(disabledGroup).opacity).toBe('0.5')
+    await expect(getComputedStyle(disabledControl).opacity).toBe('1')
+    await expect(getComputedStyle(firstGroup).opacity).toBe('1')
   },
 }
 
