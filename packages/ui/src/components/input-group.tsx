@@ -17,7 +17,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // No `outline-none` here: it sets `--tw-outline-style: none` on this
         // element, which then suppresses the focus outline below (which reads
         // `outline-style: var(--tw-outline-style)`).
-        'group/input-group relative flex h-12 w-full min-w-0 items-center rounded-sm motion-safe:transition-colors',
+        'group/input-group relative flex h-12 w-full min-w-0 items-stretch rounded-sm motion-safe:transition-colors',
         // Every colour routes through the --input-* semantic tokens (layer 3,
         // theme.css / the registry theme item) — the same set Input uses, so a
         // group and a bare input are the same control. The role tokens behind
@@ -52,7 +52,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         'has-data-[align=block-end]:rounded-sm has-data-[align=block-start]:rounded-sm has-[textarea]:rounded-sm',
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto',
         // Addon-driven padding on the inner input
-        'has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pe-1.5 has-[>[data-align=inline-start]]:[&>input]:ps-1.5',
+        'has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3',
         className,
       )}
       {...props}
@@ -76,7 +76,7 @@ const inputGroupAddonVariants = cva(
   // row still has height once the padding is gone (the affix text centres in
   // it via `items-center`). Each override carries the has-[] selector, so it
   // outranks the base padding on specificity rather than on emission order.
-  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-base font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  "flex cursor-text items-center justify-center gap-1 text-base font-semibold text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -87,9 +87,16 @@ const inputGroupAddonVariants = cva(
         // inset is now that same 8px, so affixes, buttons and footer rows all
         // land on one grid. The kbd nudge stays — a kbd chip is small enough
         // that the optical correction still reads.
-        'inline-start': 'order-first ps-2 has-[>kbd]:ms-[-0.275rem]',
+        // The leading affix is a CELL, not floating text: a recessed fill, a
+        // hairline on its inner edge, and the group's full height. This is what
+        // makes the trailing action read as its mirror — the approved design's
+        // words were "the trailing cell mirrors the leading AUD cell exactly".
+        // 16px padding matches the value's own, so affix and value sit on one
+        // rhythm.
+        'inline-start':
+          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--border-default) bg-(--surface-sunken) px-4 has-[>kbd]:ms-[-0.275rem]',
         'inline-end':
-          'order-last pe-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:pe-0 has-[>kbd]:me-[-0.275rem]',
+          'order-last px-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0 has-[>kbd]:me-[-0.275rem]',
         // Block addons are chrome, not content, so they carry the boundary the
         // Hairline Rule asks for and sit on the recessed surface. Without both
         // the row floats in the writing area with nothing dividing it.
@@ -102,9 +109,9 @@ const inputGroupAddonVariants = cva(
         // `overflow-hidden` would cut off the focus ring of any button inside
         // the row, since Button rings 2px outside itself.
         'block-start':
-          'order-first w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--border-default) bg-(--surface-sunken) px-2 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2',
+          'order-first min-h-12 w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--border-default) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
         'block-end':
-          'order-last w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--border-default) bg-(--surface-sunken) px-2 pb-2 group-has-[>input]/input-group:pb-2 has-[[data-slot=input-group-action]]:pe-0 has-[[data-slot=input-group-action]]:pb-0 [.border-t]:pt-2',
+          'order-last min-h-12 w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--border-default) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
       },
     },
     defaultVariants: {
@@ -248,7 +255,7 @@ const inputGroupActionVariants = cva(
     'border-(--input-border) dark:border-(--input-border)',
     // Focus draws INSIDE the segment: Button's default `outline-offset-2` puts
     // the ring on the page, which the clipping group cuts off.
-    'focus:-outline-offset-2',
+    'font-semibold focus:-outline-offset-2',
   ],
   {
     variants: {
