@@ -76,7 +76,7 @@ const inputGroupAddonVariants = cva(
   // row still has height once the padding is gone (the affix text centres in
   // it via `items-center`). Each override carries the has-[] selector, so it
   // outranks the base padding on specificity rather than on emission order.
-  "flex cursor-text items-center justify-center gap-1 text-base font-semibold text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -101,10 +101,19 @@ const inputGroupAddonVariants = cva(
         // words were "the trailing cell mirrors the leading AUD cell exactly".
         // 16px padding matches the value's own, so affix and value sit on one
         // rhythm.
+        // Weight lives per align, not in the base: the design sets the inline
+        // affix at 600 (`.affix`) but the block row's hint at 300
+        // (`.foot .hint`). A base `font-semibold` made "Markdown supported"
+        // read as a label at the same weight as the AUD affix.
+        //
+        // No kbd nudge here any more. `ms-[-0.275rem]` was harmless while this
+        // addon was transparent text; now that it paints a fill, a border-inline
+        // -end and a rounded start corner, a negative start margin drags the
+        // whole cell out past the group's own border.
         'inline-start':
-          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--input-border) bg-(--surface-sunken) px-4 has-[>kbd]:ms-[-0.275rem]',
+          'order-first rounded-s-[calc(var(--radius-sm)-1px)] border-e border-(--input-border) bg-(--surface-sunken) px-4 font-semibold',
         'inline-end':
-          'order-last px-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0 has-[>kbd]:me-[-0.275rem]',
+          'order-last px-2 font-semibold has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:p-0 has-[>kbd]:me-[-0.275rem]',
         // Block addons are chrome, not content, so they carry the boundary the
         // Hairline Rule asks for and sit on the recessed surface. Without both
         // the row floats in the writing area with nothing dividing it.
@@ -117,9 +126,9 @@ const inputGroupAddonVariants = cva(
         // `overflow-hidden` would cut off the focus ring of any button inside
         // the row, since Button rings 2px outside itself.
         'block-start':
-          'order-first min-h-12 w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--input-border) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
+          'order-first min-h-12 w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--input-border) bg-(--surface-sunken) px-4 font-light has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
         'block-end':
-          'order-last min-h-12 w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--input-border) bg-(--surface-sunken) px-4 has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
+          'order-last min-h-12 w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--input-border) bg-(--surface-sunken) px-4 font-light has-[[data-slot=input-group-action]]:items-stretch has-[[data-slot=input-group-action]]:pe-0',
       },
     },
     defaultVariants: {
@@ -154,7 +163,13 @@ const inputGroupButtonVariants = cva(
   [
     // No font-size here: Button already sets `text-base/7`, and the
     // `text-xs/relaxed` this used to carry shrank its label to 12px.
-    'flex items-center gap-2 rounded-sm shadow-none',
+    // `before:shadow-none`, NOT `shadow-none`. Button paints its drop shadow on
+    // the `::before` fill layer (`before:shadow-sm` in the soft and solid
+    // variants), never on the button box — so `shadow-none` was doubly dead:
+    // wrong element, and a different tailwind-merge key, so both classes
+    // survived and the shadow rendered. Measured: `::before` box-shadow was
+    // `rgba(0,0,0,.1) 0 1px 3px`, a cast shadow inside flat hairline chrome.
+    'flex items-center gap-2 rounded-sm before:shadow-none',
     // Every size below was inert until this line. Button pins
     // `min-h-(--btn-h)` — 52px at the default step, 60px below `sm` — which
     // outranks a plain `h-*` because they are different properties, so an
@@ -270,7 +285,19 @@ const inputGroupActionVariants = cva(
     // alignment only looks centred while Button's own vertical padding
     // balances the line box; with `py-0` and a stretched box it parked the
     // label 9px above centre in a 46px segment. Measured, not eyeballed.
-    'items-center font-semibold focus:-outline-offset-2',
+    // The focus ring is stated in full here rather than inherited. Button
+    // publishes it as four classes (`focus:outline`, `focus:outline-2`,
+    // `focus:outline-offset-2`, `focus:outline-(--btn-bg)`); overriding only the
+    // offset left the rendered ring at the browser default — measured
+    // `solid 1.5px offset 0px`, not the designed 2px inset. Restating width and
+    // offset makes the treatment independent of what tailwind-merge does to
+    // Button's copies.
+    //
+    // Colour is `--input-ring`, the token the GROUP rings itself with, so a
+    // focused segment matches the control it sits in instead of borrowing the
+    // button system's brand ink. iterate-1.css:
+    // `.it .act:focus-visible { outline: 2px solid var(--input-ring); outline-offset: -2px }`.
+    'items-center font-semibold focus:outline-2 focus:-outline-offset-2 focus:outline-(--input-ring)',
   ],
   {
     variants: {
@@ -283,8 +310,18 @@ const inputGroupActionVariants = cva(
         // `open` and `subtle` have no usable fill contrast against the input
         // surface (1:1 and 1.69:1 measured in dark), so both are bounded by a
         // leading hairline in every mode. Colour comes from the base above.
-        open: 'border-s bg-transparent',
-        subtle: 'border-s',
+        // The seam is keyed on `data-variant-action` (stamped below) so it beats
+        // `border-0` on SPECIFICITY (0,2,0 vs 0,1,0). As a bare `border-s` it
+        // did not: tailwind-merge keeps BOTH `border-0` and `border-s` (verified
+        // — `border-w-s` invalidates nothing), `border-width:0` expands to the
+        // physical longhands and collides with `border-inline-start-width` at
+        // equal specificity, so only emission order separated them. Ours wins
+        // today by 199 bytes in dist/styles.css; a consuming app that emits its
+        // own `.border-0` after ours would reset the seam to 0 and `open` would
+        // lose the only thing delineating it. check:cascade cannot catch this —
+        // it only flags conditional at-rule pairs.
+        open: 'bg-transparent data-[variant-action=open]:border-s',
+        subtle: 'data-[variant-action=subtle]:border-s',
         // Button rings in `--btn-bg`, which for a solid button IS the fill, so
         // the inset ring above would be navy-on-navy. `--btn-text` is the label
         // colour: 14.37:1 on the fill in both modes.
@@ -296,7 +333,7 @@ const inputGroupActionVariants = cva(
         // other three edges are bounded by the group's own border; this
         // continues that hairline inward. Light needs none at 15.26:1, and a
         // grey seam there would read as a gap.
-        solid: 'focus:outline-(--btn-text) dark:border-s',
+        solid: 'focus:outline-(--btn-text) data-[variant-action=solid]:dark:border-s',
       },
     },
     defaultVariants: {
