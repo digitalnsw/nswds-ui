@@ -99,6 +99,15 @@ export const Variants: Story = {
         </InputGroupAddon>
       </InputGroup>
 
+      {/* Invalid — the group draws the danger border and focus outline; the
+          inner control's own aria-invalid treatment is suppressed. */}
+      <InputGroup>
+        <InputGroupAddon>
+          <IconSearch />
+        </InputGroupAddon>
+        <InputGroupInput placeholder='Invalid' aria-label='Invalid' aria-invalid />
+      </InputGroup>
+
       {/* Disabled */}
       <InputGroup>
         <InputGroupAddon>
@@ -131,11 +140,11 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="input-group"].')
     }
 
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
+    // Proves globals.css loaded: --input-border resolves to a real colour
+    // rather than staying transparent.
     const borderColor = getComputedStyle(group).borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
+      throw new Error(`Expected --input-border to resolve, received "${borderColor}".`)
     }
   },
 }

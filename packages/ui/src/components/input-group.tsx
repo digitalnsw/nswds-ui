@@ -14,7 +14,38 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
       data-slot='input-group'
       role='group'
       className={cn(
-        'group/input-group relative flex h-7 w-full min-w-0 items-center rounded-sm border border-input bg-input/20 transition-colors outline-none in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-data-[align=block-end]:rounded-sm has-data-[align=block-start]:rounded-sm has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-ring/30 has-[[data-slot][aria-invalid=true]]:border-destructive has-[[data-slot][aria-invalid=true]]:ring-2 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[textarea]:rounded-sm has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto dark:bg-input/30 dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pe-1.5 has-[>[data-align=inline-start]]:[&>input]:ps-1.5',
+        // No `outline-none` here: it sets `--tw-outline-style: none` on this
+        // element, which then suppresses the focus outline below (which reads
+        // `outline-style: var(--tw-outline-style)`).
+        'group/input-group relative flex h-7 w-full min-w-0 items-center rounded-sm motion-safe:transition-colors',
+        // Every colour routes through the --input-* semantic tokens (layer 3,
+        // theme.css / the registry theme item) — the same set Input uses, so a
+        // group and a bare input are the same control. The role tokens behind
+        // them are mode-aware, so there are no dark: variants here.
+        'border border-(--input-border) bg-(--input-surface)',
+        // Hover — owned by the wrapper so the whole control reacts, addons
+        // included, rather than just the inner control's box.
+        'hover:bg-(--input-surface-hover)',
+        // Focus — the group draws one outline for whichever control is focused;
+        // InputGroupInput / InputGroupTextarea suppress their own. Offset and
+        // colour are unconditional because neither renders anything until
+        // `outline-2` supplies an outline-style, and keeping them off the
+        // has-[] variant leaves the invalid colour below a plain specificity
+        // win instead of a source-order tie between two has-[] rules.
+        'outline-offset-2 outline-(--input-ring)',
+        'has-[[data-slot=input-group-control]:focus-visible]:outline-2',
+        // Invalid — 2px danger border, danger hover surface and danger focus
+        // outline, mirroring Input's aria-invalid treatment. Each rule carries
+        // the has-[] selector, so it outranks its unqualified counterpart on
+        // specificity rather than on emission order.
+        'has-[[data-slot][aria-invalid=true]]:border-2 has-[[data-slot][aria-invalid=true]]:border-(--input-invalid-border)',
+        'has-[[data-slot][aria-invalid=true]]:outline-(--input-invalid-ring)',
+        'has-[[data-slot][aria-invalid=true]]:hover:bg-(--input-invalid-surface-hover)',
+        // Block-aligned addons stack the group and let it grow to fit
+        'has-data-[align=block-end]:rounded-sm has-data-[align=block-start]:rounded-sm has-[textarea]:rounded-sm',
+        'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto',
+        // Addon-driven padding on the inner input
+        'has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pe-1.5 has-[>[data-align=inline-start]]:[&>input]:ps-1.5',
         className,
       )}
       {...props}
@@ -23,7 +54,10 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 const inputGroupAddonVariants = cva(
-  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-xs/relaxed font-medium text-muted-foreground select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-muted-foreground/10 **:data-[slot=kbd]:px-1 **:data-[slot=kbd]:text-[0.625rem] [&>svg:not([class*='size-'])]:size-3.5",
+  // `--input-placeholder` is the input token set's de-emphasised-text role, and
+  // an icon or text affix is exactly that — so addons restyle with the input
+  // rather than drifting from it. Mode-aware, hence no dark: variants.
+  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-xs/relaxed font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 **:data-[slot=kbd]:text-[0.625rem] [&>svg:not([class*='size-'])]:size-3.5",
   {
     variants: {
       align: {
@@ -118,10 +152,17 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>)
     <Input
       data-slot='input-group-control'
       className={cn(
-        // `focus-visible:outline-none` / `aria-invalid:border-0` neutralise Input's
-        // own outline and 2px danger border: inside a group the WRAPPER owns both
-        // treatments, and two nested rings read as a rendering fault.
-        'flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus-visible:outline-none aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent',
+        // The group owns the box, so fill its height (Input is `h-12` on its
+        // own) and drop the border, surface and radius to let the group's
+        // chrome show through. Hover is left alone: the group paints the same
+        // `--input-surface-hover`, so the inner control's copy is invisible.
+        //
+        // `outline-0` / `border-0` rather than `outline-none` / `border-none`:
+        // tailwind-merge treats those as the same group as Input's
+        // `focus-visible:outline-2` / `aria-invalid:border-2` and drops them
+        // from the class string outright, so there is never a pair of
+        // same-specificity rules whose winner depends on stylesheet order.
+        'h-full flex-1 rounded-none border-0 bg-transparent focus-visible:outline-0 aria-invalid:border-0',
         className,
       )}
       {...props}
@@ -134,8 +175,12 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
     <Textarea
       data-slot='input-group-control'
       className={cn(
-        // Same wrapper-owns-the-focus-treatment reasoning as InputGroupInput above.
-        'flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 focus-visible:outline-none aria-invalid:border-0 aria-invalid:ring-0 dark:bg-transparent',
+        // Same contract as InputGroupInput, but Textarea is still on the old
+        // shadcn token set (`bg-input/20` + a `ring-*` focus treatment), so the
+        // neutralisers it needs are the ring ones — and it still needs a
+        // `dark:` counterpart for `dark:bg-input/30`. These collapse to match
+        // InputGroupInput once textarea.tsx moves onto the --input-* tokens.
+        'flex-1 rounded-none border-0 bg-transparent py-2 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent',
         className,
       )}
       {...props}
