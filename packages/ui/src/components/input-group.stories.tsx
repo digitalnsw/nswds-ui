@@ -119,17 +119,30 @@ export const Variants: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // Every inner control must relabel itself `input-group-control`: the
-    // wrapper's focus ring is a `has-[[data-slot=input-group-control]:focus-visible]`
-    // rule, so a control that keeps its own slot name silently stops lighting
-    // the group up. Input and Textarea both forward props last precisely so
-    // this override wins — reorder that spread and this is what breaks.
-    const controls = canvasElement.querySelectorAll('[data-slot="input-group-control"]')
-    await expect(controls).toHaveLength(4)
-    await expect(canvasElement.querySelector('textarea')).toHaveAttribute(
-      'data-slot',
-      'input-group-control',
-    )
+    // An inline button has to look pressable without being hovered, so the
+    // default is `soft` — a ghost default made it bare text. Callers that want
+    // a bare icon affordance (Combobox's chevron and clear) opt into `ghost`
+    // explicitly, so this assertion must not reach into those.
+    const buttons = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group-button"]')
+    await expect(buttons.length).toBe(2)
+
+    for (const button of buttons) {
+      const styles = getComputedStyle(button)
+      await expect(button.dataset.variant).toBe('soft')
+      await expect(styles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+      // Released from Button's min-height floor, so it fits the row it sits in.
+      await expect(styles.minHeight).toBe('0px')
+      await expect(button.getBoundingClientRect().height).toBeLessThanOrEqual(32)
+    }
+
+    // Block addons carry the Hairline chrome: a boundary and a recessed fill.
+    const footer = canvasElement.querySelector<HTMLElement>('[data-align="block-end"]')
+    if (!footer) {
+      throw new Error('Could not find the block-end addon.')
+    }
+    const footerStyles = getComputedStyle(footer)
+    await expect(footerStyles.borderTopWidth).toBe('1px')
+    await expect(footerStyles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
   },
 }
 

@@ -175,10 +175,22 @@ const inputGroupButtonVariants = cva(
   },
 )
 
+/**
+ * The inline button inside an addon — a secondary action or an icon
+ * affordance, as opposed to `InputGroupAction`, which attaches to the group's
+ * trailing edge.
+ *
+ * Defaults to `soft` rather than `ghost`: a ghost button inside a control is
+ * bare text with no shape, location or formatting to signal it is pressable,
+ * which is the one thing an affordance has to do without being hovered. `soft`
+ * gives it a 10% ink chip and stays quieter than the attached action beside
+ * it. Icon affordances that should stay bare — Combobox's chevron and clear —
+ * pass `variant='ghost'` explicitly and are unaffected.
+ */
 function InputGroupButton({
   className,
   type = 'button',
-  variant = 'ghost',
+  variant = 'soft',
   size = 'xs',
   ...props
 }: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'> &
@@ -188,6 +200,7 @@ function InputGroupButton({
   return (
     <Button
       type={type}
+      data-slot='input-group-button'
       data-size={size}
       variant={variant}
       className={cn(inputGroupButtonVariants({ size }), className)}
