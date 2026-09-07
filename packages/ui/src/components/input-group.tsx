@@ -163,6 +163,9 @@ const inputGroupButtonVariants = cva(
     // is 0,2,0 against the media rule's 0,1,0 and wins at every width, with no
     // second rule to order against.
     'data-[size]:py-0',
+    // Same reason as InputGroupAction: zeroing Button's padding exposes its
+    // `items-baseline` base, which no longer centres the label.
+    'items-center',
   ],
   {
     variants: {
@@ -255,7 +258,11 @@ const inputGroupActionVariants = cva(
     'border-(--input-border) dark:border-(--input-border)',
     // Focus draws INSIDE the segment: Button's default `outline-offset-2` puts
     // the ring on the page, which the clipping group cuts off.
-    'font-semibold focus:-outline-offset-2',
+    // `items-center`, because Button's base is `items-baseline`. Baseline
+    // alignment only looks centred while Button's own vertical padding
+    // balances the line box; with `py-0` and a stretched box it parked the
+    // label 9px above centre in a 46px segment. Measured, not eyeballed.
+    'items-center font-semibold focus:-outline-offset-2',
   ],
   {
     variants: {

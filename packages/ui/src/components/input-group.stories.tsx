@@ -293,6 +293,21 @@ export const ActionFills: Story = {
       .filter((a) => a.textContent?.trim() === 'Apply')
       .map((a) => getComputedStyle(a).backgroundColor)
     await expect(new Set(fills).size).toBe(3)
+
+    // Labels must be optically centred. Button's base is `items-baseline`,
+    // which only reads centred while its own vertical padding balances the line
+    // box — zeroing that padding parked every label 9px high in a 46px segment.
+    // Measured off the text's own client rects, not assumed from the classes.
+    for (const action of actions) {
+      const box = action.getBoundingClientRect()
+      const range = document.createRange()
+      range.selectNodeContents(action)
+      const lines = [...range.getClientRects()].filter((r) => r.height > 0)
+      await expect(lines.length).toBeGreaterThan(0)
+      const textMid =
+        (Math.min(...lines.map((r) => r.top)) + Math.max(...lines.map((r) => r.bottom))) / 2
+      await expect(Math.abs(textMid - (box.top + box.bottom) / 2)).toBeLessThanOrEqual(1.5)
+    }
   },
 }
 
