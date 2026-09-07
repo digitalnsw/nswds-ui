@@ -9,6 +9,7 @@ import { IconAttachMoney } from '../icons/attach-money.js'
 import { IconSearch } from '../icons/search.js'
 import {
   InputGroup,
+  InputGroupAction,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
@@ -99,6 +100,15 @@ export const Variants: Story = {
         </InputGroupAddon>
       </InputGroup>
 
+      {/* Invalid — the group draws the danger border and focus outline; the
+          inner control's own aria-invalid treatment is suppressed. */}
+      <InputGroup>
+        <InputGroupAddon>
+          <IconSearch />
+        </InputGroupAddon>
+        <InputGroupInput placeholder='Invalid' aria-label='Invalid' aria-invalid />
+      </InputGroup>
+
       {/* Disabled */}
       <InputGroup>
         <InputGroupAddon>
@@ -109,17 +119,268 @@ export const Variants: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // Every inner control must relabel itself `input-group-control`: the
-    // wrapper's focus ring is a `has-[[data-slot=input-group-control]:focus-visible]`
-    // rule, so a control that keeps its own slot name silently stops lighting
-    // the group up. Input and Textarea both forward props last precisely so
-    // this override wins — reorder that spread and this is what breaks.
-    const controls = canvasElement.querySelectorAll('[data-slot="input-group-control"]')
-    await expect(controls).toHaveLength(4)
-    await expect(canvasElement.querySelector('textarea')).toHaveAttribute(
-      'data-slot',
-      'input-group-control',
+    // An inline button has to look pressable without being hovered, so the
+    // default is `soft` — a ghost default made it bare text. Callers that want
+    // a bare icon affordance (Combobox's chevron and clear) opt into `ghost`
+    // explicitly, so this assertion must not reach into those.
+    const buttons = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group-button"]')
+    await expect(buttons.length).toBe(2)
+
+    for (const button of buttons) {
+      const styles = getComputedStyle(button)
+      await expect(button.dataset.variant).toBe('soft')
+      await expect(styles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+      // Released from Button's min-height floor, so it fits the row it sits in.
+      await expect(styles.minHeight).toBe('0px')
+      await expect(button.getBoundingClientRect().height).toBeLessThanOrEqual(32)
+    }
+
+    // Block addons carry the Hairline chrome: a boundary and a recessed fill.
+    const footer = canvasElement.querySelector<HTMLElement>('[data-align="block-end"]')
+    if (!footer) {
+      throw new Error('Could not find the block-end addon.')
+    }
+    const footerStyles = getComputedStyle(footer)
+    await expect(footerStyles.borderTopWidth).toBe('1px')
+    await expect(footerStyles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+  },
+}
+
+/**
+ * `InputGroupAction` is the attached trailing action: a solid primary block
+ * that fills the group's height and sits flush against its trailing edge. It
+ * is a distinct role from `InputGroupButton` — an action you press to do
+ * something, not an inline icon affordance like a combobox chevron or a clear
+ * button, which stay inside an addon.
+ */
+export const AttachedAction: Story = {
+  name: 'Attached action',
+  render: () => (
+    <div className='flex max-w-md flex-col gap-6'>
+      {/* Leading text affix + attached action */}
+      <InputGroup>
+        <InputGroupAddon>
+          <InputGroupText>AUD</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput placeholder='0.00' inputMode='decimal' aria-label='Amount' />
+        <InputGroupAction>Apply</InputGroupAction>
+      </InputGroup>
+
+      {/* No leading affix — the action carries the group on its own */}
+      <InputGroup>
+        <InputGroupInput placeholder='Search the site' aria-label='Search' />
+        <InputGroupAction>Search</InputGroupAction>
+      </InputGroup>
+
+      {/* Block addon: the action fills the footer row's height */}
+      <InputGroup>
+        <InputGroupTextarea placeholder='Leave a comment' aria-label='Comment' rows={3} />
+        <InputGroupAddon align='block-end'>
+          <InputGroupText>Markdown supported</InputGroupText>
+          <InputGroupAction className='ms-auto'>Send</InputGroupAction>
+        </InputGroupAddon>
+      </InputGroup>
+
+      {/* Disabled */}
+      <InputGroup>
+        <InputGroupInput
+          placeholder='0.00'
+          inputMode='decimal'
+          aria-label='Amount disabled'
+          disabled
+        />
+        <InputGroupAction disabled>Apply</InputGroupAction>
+      </InputGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Every action must fill its group rather than Button's min-height floor
+    // (52px at the default step, 60px below `sm`), and sit flush against the
+    // group's inner edge. Checked on all of them, including the one nested in
+    // a block-end addon, which has to defeat that addon's padding too.
+    const groups = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')]
+    await expect(groups.length).toBe(4)
+
+    // Destructured, not indexed: this workspace typechecks with
+    // `noUncheckedIndexedAccess`, so `groups[0]` is `HTMLElement | undefined`.
+    const [firstGroup, , , disabledGroup] = groups
+    if (!firstGroup || !disabledGroup) {
+      throw new Error('Expected the first and the disabled group to be present.')
+    }
+
+    for (const group of groups) {
+      const action = group.querySelector<HTMLElement>('[data-slot="input-group-action"]')
+      if (!action) {
+        throw new Error('Every group in this story should carry an action.')
+      }
+      const groupBox = group.getBoundingClientRect()
+      const actionBox = action.getBoundingClientRect()
+
+      await expect(actionBox.height).toBeLessThanOrEqual(groupBox.height)
+      // Flush trailing edge — only the group's own 1px border between them.
+      await expect(Math.abs(groupBox.right - actionBox.right)).toBeLessThanOrEqual(2)
+      // Square, so the group's radius can clip it.
+      await expect(getComputedStyle(action).borderRadius).toBe('0px')
+    }
+
+    // The group clips ONLY because it holds an action — a bare overflow-hidden
+    // would cut off descendant outlines, taking Combobox's chevron ring with it.
+    await expect(getComputedStyle(firstGroup).overflow).toBe('hidden')
+
+    // Still real buttons: the enabled one presses, the disabled one does not.
+    await expect(within(firstGroup).getByRole('button', { name: 'Apply' })).toBeEnabled()
+    await expect(within(disabledGroup).getByRole('button', { name: 'Apply' })).toBeDisabled()
+
+    // No hover assertions here on purpose: `userEvent.hover` dispatches
+    // synthetic pointer events, which do not move the browser's real pointer,
+    // so CSS `:hover` never engages and `firstGroup.matches(':hover')` stays
+    // false. Any computed-style hover expectation in this harness would be
+    // asserting the REST value under a hover-shaped name. Hover is verified
+    // with a real pointer instead (see the design audit for this component).
+
+    // A disabled control fades the WHOLE group. Input's own `disabled:opacity-50`
+    // only fades its own box, which left the border, the affix panel and the
+    // cursor reading as live. The control neutralises its copy so the two
+    // cannot compound to 0.25.
+    const disabledControl = disabledGroup.querySelector<HTMLElement>(
+      '[data-slot="input-group-control"]',
     )
+    if (!disabledControl) {
+      throw new Error('Expected the disabled group to hold a control.')
+    }
+    await expect(getComputedStyle(disabledGroup).opacity).toBe('0.5')
+    await expect(getComputedStyle(disabledControl).opacity).toBe('1')
+    await expect(getComputedStyle(firstGroup).opacity).toBe('1')
+  },
+}
+
+/**
+ * The three `InputGroupAction` fills. All share the same geometry — full group
+ * height, flush trailing edge, square corners clipped by the group — and differ
+ * only in fill weight: `open` is transparent, `subtle` is a 10% ink tint, and
+ * `solid` (the default) is the primary fill.
+ */
+export const ActionFills: Story = {
+  name: 'Action fills',
+  render: () => (
+    <div className='flex max-w-md flex-col gap-8'>
+      {(['open', 'subtle', 'solid'] as const).map((variant) => (
+        <div key={variant} className='flex flex-col gap-3'>
+          <p className='text-base font-semibold'>{variant}</p>
+
+          <InputGroup>
+            <InputGroupAddon>
+              <InputGroupText>AUD</InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder='0.00'
+              inputMode='decimal'
+              aria-label={`Amount ${variant}`}
+            />
+            <InputGroupAction variant={variant}>Apply</InputGroupAction>
+          </InputGroup>
+
+          <InputGroup>
+            <InputGroupTextarea
+              placeholder='Leave a comment'
+              aria-label={`Comment ${variant}`}
+              rows={3}
+            />
+            <InputGroupAddon align='block-end'>
+              <InputGroupText>Markdown supported</InputGroupText>
+              <InputGroupAction variant={variant} className='ms-auto'>
+                Send
+              </InputGroupAction>
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const actions = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group-action"]')
+    await expect(actions.length).toBe(6)
+
+    // Every fill keeps the shared geometry: flush to the group's inner edge and
+    // never taller than the group.
+    for (const action of actions) {
+      const group = action.closest<HTMLElement>('[data-slot="input-group"]')
+      if (!group) {
+        throw new Error('An action rendered outside a group.')
+      }
+      const groupBox = group.getBoundingClientRect()
+      const actionBox = action.getBoundingClientRect()
+      await expect(actionBox.height).toBeLessThanOrEqual(groupBox.height)
+      await expect(Math.abs(groupBox.right - actionBox.right)).toBeLessThanOrEqual(2)
+    }
+
+    // The three fills must actually differ, or they are not three variants.
+    const fills = [...actions]
+      .filter((a) => a.textContent?.trim() === 'Apply')
+      .map((a) => getComputedStyle(a).backgroundColor)
+    await expect(new Set(fills).size).toBe(3)
+
+    // Labels must be optically centred. Button's base is `items-baseline`,
+    // which only reads centred while its own vertical padding balances the line
+    // box — zeroing that padding parked every label 9px high in a 46px segment.
+    // Measured off the text's own client rects, not assumed from the classes.
+    for (const action of actions) {
+      const box = action.getBoundingClientRect()
+      const range = document.createRange()
+      range.selectNodeContents(action)
+      const lines = [...range.getClientRects()].filter((r) => r.height > 0)
+      await expect(lines.length).toBeGreaterThan(0)
+      const textMid =
+        (Math.min(...lines.map((r) => r.top)) + Math.max(...lines.map((r) => r.bottom))) / 2
+      await expect(Math.abs(textMid - (box.top + box.bottom) / 2)).toBeLessThanOrEqual(1.5)
+    }
+
+    // One leading edge down the whole control: the writing surface's text and
+    // the footer row's text must share an inset. Textarea's standalone 8px
+    // padding put the placeholder 8px in while the footer sat at 16px, which
+    // read as the comment field being cramped.
+    for (const group of canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')) {
+      const textarea = group.querySelector<HTMLTextAreaElement>('textarea')
+      const hint = group.querySelector<HTMLElement>('[data-align="block-end"] span')
+      if (!textarea || !hint) {
+        continue
+      }
+      const hintRange = document.createRange()
+      hintRange.selectNodeContents(hint)
+      const [firstHintRect] = [...hintRange.getClientRects()].filter((r) => r.height > 0)
+      if (!firstHintRect) {
+        throw new Error('The block-end hint rendered no text box.')
+      }
+
+      const surfaceTextLeft =
+        textarea.getBoundingClientRect().left + parseFloat(getComputedStyle(textarea).paddingLeft)
+      await expect(Math.abs(firstHintRect.left - surfaceTextLeft)).toBeLessThanOrEqual(1)
+    }
+
+    // ONE hairline colour for the whole control. Internal dividers drawn in a
+    // lighter token than the group's own edge made every junction read as
+    // heavier rather than as a hierarchy, and the lighter token fell under the
+    // 3:1 boundary floor in dark mode.
+    const hairlines = new Set<string>()
+    for (const group of canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')) {
+      const parts = [
+        group,
+        group.querySelector<HTMLElement>('[data-align="inline-start"]'),
+        group.querySelector<HTMLElement>('[data-align="block-end"]'),
+        group.querySelector<HTMLElement>('[data-slot="input-group-action"]'),
+      ]
+      for (const part of parts) {
+        if (!part) continue
+        const styles = getComputedStyle(part)
+        for (const side of ['Top', 'Right', 'Bottom', 'Left'] as const) {
+          const width = styles[`border${side}Width` as 'borderTopWidth']
+          if (parseFloat(width) === 0) continue
+          await expect(width).toBe('1px')
+          hairlines.add(styles[`border${side}Color` as 'borderTopColor'])
+        }
+      }
+    }
+    await expect(hairlines.size).toBe(1)
   },
 }
 
@@ -131,11 +392,11 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="input-group"].')
     }
 
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
+    // Proves globals.css loaded: --input-border resolves to a real colour
+    // rather than staying transparent.
     const borderColor = getComputedStyle(group).borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
+      throw new Error(`Expected --input-border to resolve, received "${borderColor}".`)
     }
   },
 }

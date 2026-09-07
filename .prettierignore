@@ -22,3 +22,10 @@ packages/ui/CHANGELOG.md
 # semicolons) on every run — formatting it by hand just re-breaks next time.
 # Stays committed because typecheck needs it; it's only format-exempt.
 next-env.d.ts
+
+# Daemon lockfiles and logs written into the repo root by the gstack browse and
+# design binaries (PID, port, audit logs). Git already ignores the directory via
+# its own `.gstack/.gitignore`, but `prettier --check .` still walks it, so
+# `format:check` — a PR-check gate — fails for anyone with a gstack daemon
+# running. Runtime state, never formatted, never committed.
+.gstack/
