@@ -41,6 +41,13 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         'has-[[data-slot][aria-invalid=true]]:border-2 has-[[data-slot][aria-invalid=true]]:border-(--input-invalid-border)',
         'has-[[data-slot][aria-invalid=true]]:outline-(--input-invalid-ring)',
         'has-[[data-slot][aria-invalid=true]]:hover:bg-(--input-invalid-surface-hover)',
+        // An InputGroupAction sits flush to the trailing edge with square
+        // corners, so the group clips it to its own radius — cheaper and
+        // RTL-correct next to per-corner arithmetic on the action. Scoped to
+        // groups that actually hold one: a bare `overflow-hidden` would clip
+        // DESCENDANT outlines, and InputGroupButton's focus ring sits 2px
+        // outside itself, so every Combobox chevron would lose its ring.
+        'has-[[data-slot=input-group-action]]:overflow-hidden',
         // Block-aligned addons stack the group and let it grow to fit
         'has-data-[align=block-end]:rounded-sm has-data-[align=block-start]:rounded-sm has-[textarea]:rounded-sm',
         'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>textarea]:h-auto',
@@ -64,16 +71,22 @@ const inputGroupAddonVariants = cva(
   // group this component used to be and read as fine print beside 16px input
   // text. Glyphs are `size-5` (20px), 1.25x the label, the same reasoning
   // button.tsx documents for a label glyph.
-  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-base font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  // An addon holding an InputGroupAction yields its own padding on that edge so
+  // the action reaches the group's inner border, and takes a 48px floor so the
+  // row still has height once the padding is gone (the affix text centres in
+  // it via `items-center`). Each override carries the has-[] selector, so it
+  // outranks the base padding on specificity rather than on emission order.
+  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-base font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
         'inline-start': 'order-first ps-2 has-[>button]:ms-[-0.275rem] has-[>kbd]:ms-[-0.275rem]',
-        'inline-end': 'order-last pe-2 has-[>button]:me-[-0.275rem] has-[>kbd]:me-[-0.275rem]',
+        'inline-end':
+          'order-last pe-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:pe-0 has-[>button]:me-[-0.275rem] has-[>kbd]:me-[-0.275rem]',
         'block-start':
           'order-first w-full justify-start px-2 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2',
         'block-end':
-          'order-last w-full justify-start px-2 pb-2 group-has-[>input]/input-group:pb-2 [.border-t]:pt-2',
+          'order-last w-full justify-start px-2 pb-2 group-has-[>input]/input-group:pb-2 has-[[data-slot=input-group-action]]:pe-0 has-[[data-slot=input-group-action]]:pb-0 [.border-t]:pt-2',
       },
     },
     defaultVariants: {
@@ -144,6 +157,66 @@ function InputGroupButton({
   )
 }
 
+function InputGroupAction({
+  className,
+  type = 'button',
+  ...props
+}: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'> & {
+  type?: 'button' | 'submit' | 'reset'
+}) {
+  return (
+    <Button
+      type={type}
+      data-slot='input-group-action'
+      className={cn(
+        // Fills the group's height and sits flush against its trailing edge —
+        // one solid block, not a button floating in addon padding. Button's
+        // `styles.base` pins `min-h-(--btn-h)` (52px at the default step, 60px
+        // below `sm`), which a 48px group cannot hold, so `self-stretch` sizes
+        // the segment off the group and `min-h-0` clears the floor.
+        //
+        // `min-h-0`, NOT `[--btn-h:0px]`: the size step publishes its height
+        // through a RESPONSIVE pair (`[--btn-h:…] sm:[--btn-h:…]`), and a media
+        // query adds no specificity, so an unprefixed custom-property override
+        // loses to the `sm:` rule on emission order alone. Overriding the
+        // property itself lands in tailwind-merge's `min-h` group, which drops
+        // Button's utility from the class string outright.
+        'h-auto min-h-0 self-stretch',
+        // Square: the group re-rounds the one outer corner by clipping (see
+        // `has-[[data-slot=input-group-action]]:overflow-hidden` on InputGroup),
+        // which is why there is no corner arithmetic here. The `before`/`after`
+        // fill layers are squared too — left at `calc(var(--radius-sm)-1px)`
+        // they notch the flush edges.
+        'rounded-none before:rounded-none after:rounded-none dark:after:rounded-none',
+        // Flush against the value: no optical border, and no shadow — a
+        // `shadow-sm` whisper belongs under a button sitting on the page, not
+        // under one inset into a control.
+        'border-0 px-5 before:shadow-none',
+        // Dark mode needs a seam on the leading edge. Button's `primary` reads
+        // the masterbrand ramp (--color-primary-800, Blue 01) which is
+        // theme-invariant, so on the dark group surface the fill measures
+        // 1.32:1 — under the 3:1 WCAG floor for identifying a UI component.
+        // The other three edges are bounded by the group's own border; this
+        // continues that same hairline inward so the segment stays legible as
+        // a shape. `border-0` above zeroes the width, so the leading edge has
+        // to restate it. Light mode needs none: navy on the white input
+        // surface is boundary enough, and a grey seam there would read as a gap.
+        'dark:border-s dark:border-s-(--input-border)',
+        // Focus draws INSIDE the segment: Button's default `outline-offset-2`
+        // puts the ring on the page, which a clipped group cuts off. Moving it
+        // inward also means it lands on the fill, so the colour has to change
+        // with it — Button rings in `--btn-bg`, which for a solid button IS
+        // the fill, so an inset ring in that colour is navy-on-navy and
+        // invisible. `--btn-text` is the label colour, 14.37:1 on the fill in
+        // both modes.
+        'focus:-outline-offset-2 focus:outline-(--btn-text)',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
 function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
@@ -209,6 +282,7 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
 
 export {
   InputGroup,
+  InputGroupAction,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,

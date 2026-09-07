@@ -9,6 +9,7 @@ import { IconAttachMoney } from '../icons/attach-money.js'
 import { IconSearch } from '../icons/search.js'
 import {
   InputGroup,
+  InputGroupAction,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
@@ -129,6 +130,88 @@ export const Variants: Story = {
       'data-slot',
       'input-group-control',
     )
+  },
+}
+
+/**
+ * `InputGroupAction` is the attached trailing action: a solid primary block
+ * that fills the group's height and sits flush against its trailing edge. It
+ * is a distinct role from `InputGroupButton` — an action you press to do
+ * something, not an inline icon affordance like a combobox chevron or a clear
+ * button, which stay inside an addon.
+ */
+export const AttachedAction: Story = {
+  name: 'Attached action',
+  render: () => (
+    <div className='flex max-w-md flex-col gap-6'>
+      {/* Leading text affix + attached action */}
+      <InputGroup>
+        <InputGroupAddon>
+          <InputGroupText>AUD</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput placeholder='0.00' inputMode='decimal' aria-label='Amount' />
+        <InputGroupAction>Apply</InputGroupAction>
+      </InputGroup>
+
+      {/* No leading affix — the action carries the group on its own */}
+      <InputGroup>
+        <InputGroupInput placeholder='Search the site' aria-label='Search' />
+        <InputGroupAction>Search</InputGroupAction>
+      </InputGroup>
+
+      {/* Block addon: the action fills the footer row's height */}
+      <InputGroup>
+        <InputGroupTextarea placeholder='Leave a comment' aria-label='Comment' rows={3} />
+        <InputGroupAddon align='block-end'>
+          <InputGroupText>Markdown supported</InputGroupText>
+          <InputGroupAction className='ms-auto'>Send</InputGroupAction>
+        </InputGroupAddon>
+      </InputGroup>
+
+      {/* Disabled */}
+      <InputGroup>
+        <InputGroupInput
+          placeholder='0.00'
+          inputMode='decimal'
+          aria-label='Amount disabled'
+          disabled
+        />
+        <InputGroupAction disabled>Apply</InputGroupAction>
+      </InputGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Every action must fill its group rather than Button's min-height floor
+    // (52px at the default step, 60px below `sm`), and sit flush against the
+    // group's inner edge. Checked on all of them, including the one nested in
+    // a block-end addon, which has to defeat that addon's padding too.
+    const groups = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')
+    await expect(groups.length).toBe(4)
+
+    for (const group of groups) {
+      const action = group.querySelector<HTMLElement>('[data-slot="input-group-action"]')
+      if (!action) {
+        throw new Error('Every group in this story should carry an action.')
+      }
+      const groupBox = group.getBoundingClientRect()
+      const actionBox = action.getBoundingClientRect()
+
+      await expect(actionBox.height).toBeLessThanOrEqual(groupBox.height)
+      // Flush trailing edge — only the group's own 1px border between them.
+      await expect(Math.abs(groupBox.right - actionBox.right)).toBeLessThanOrEqual(2)
+      // Square, so the group's radius can clip it.
+      await expect(getComputedStyle(action).borderRadius).toBe('0px')
+    }
+
+    // The group clips ONLY because it holds an action — a bare overflow-hidden
+    // would cut off descendant outlines, taking Combobox's chevron ring with it.
+    await expect(getComputedStyle(groups[0]).overflow).toBe('hidden')
+
+    // Still real buttons: the enabled one presses, the disabled one does not.
+    const within0 = within(groups[0])
+    const within3 = within(groups[3])
+    await expect(within0.getByRole('button', { name: 'Apply' })).toBeEnabled()
+    await expect(within3.getByRole('button', { name: 'Apply' })).toBeDisabled()
   },
 }
 
