@@ -198,8 +198,15 @@ export const AttachedAction: Story = {
     // (52px at the default step, 60px below `sm`), and sit flush against the
     // group's inner edge. Checked on all of them, including the one nested in
     // a block-end addon, which has to defeat that addon's padding too.
-    const groups = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')
+    const groups = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')]
     await expect(groups.length).toBe(4)
+
+    // Destructured, not indexed: this workspace typechecks with
+    // `noUncheckedIndexedAccess`, so `groups[0]` is `HTMLElement | undefined`.
+    const [firstGroup, , , disabledGroup] = groups
+    if (!firstGroup || !disabledGroup) {
+      throw new Error('Expected the first and the disabled group to be present.')
+    }
 
     for (const group of groups) {
       const action = group.querySelector<HTMLElement>('[data-slot="input-group-action"]')
@@ -218,13 +225,11 @@ export const AttachedAction: Story = {
 
     // The group clips ONLY because it holds an action — a bare overflow-hidden
     // would cut off descendant outlines, taking Combobox's chevron ring with it.
-    await expect(getComputedStyle(groups[0]).overflow).toBe('hidden')
+    await expect(getComputedStyle(firstGroup).overflow).toBe('hidden')
 
     // Still real buttons: the enabled one presses, the disabled one does not.
-    const within0 = within(groups[0])
-    const within3 = within(groups[3])
-    await expect(within0.getByRole('button', { name: 'Apply' })).toBeEnabled()
-    await expect(within3.getByRole('button', { name: 'Apply' })).toBeDisabled()
+    await expect(within(firstGroup).getByRole('button', { name: 'Apply' })).toBeEnabled()
+    await expect(within(disabledGroup).getByRole('button', { name: 'Apply' })).toBeDisabled()
   },
 }
 
@@ -321,12 +326,14 @@ export const ActionFills: Story = {
       }
       const hintRange = document.createRange()
       hintRange.selectNodeContents(hint)
-      const hintRects = [...hintRange.getClientRects()].filter((r) => r.height > 0)
-      await expect(hintRects.length).toBeGreaterThan(0)
+      const [firstHintRect] = [...hintRange.getClientRects()].filter((r) => r.height > 0)
+      if (!firstHintRect) {
+        throw new Error('The block-end hint rendered no text box.')
+      }
 
       const surfaceTextLeft =
         textarea.getBoundingClientRect().left + parseFloat(getComputedStyle(textarea).paddingLeft)
-      await expect(Math.abs(hintRects[0].left - surfaceTextLeft)).toBeLessThanOrEqual(1)
+      await expect(Math.abs(firstHintRect.left - surfaceTextLeft)).toBeLessThanOrEqual(1)
     }
 
     // ONE hairline colour for the whole control. Internal dividers drawn in a
