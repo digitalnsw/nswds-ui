@@ -25,9 +25,9 @@
     "@tailwindcss/vite": "^4",
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
-    "@vitest/browser": "^4.1.7",
-    "@vitest/browser-playwright": "^4.1.7",
-    "@vitest/coverage-v8": "^4.1.7",
+    "@vitest/browser": "^5.0.0",
+    "@vitest/browser-playwright": "^5.0.0",
+    "@vitest/coverage-v8": "^5.0.0",
     "@workspace/eslint-config": "*",
     "@workspace/theme-tools": "*",
     "@workspace/typescript-config": "*",
@@ -43,6 +43,6 @@
     "tailwind-merge": "^3.6.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.14",
-    "vitest": "^4.1.7"
+    "vitest": "^5.0.0"
   }
 }
