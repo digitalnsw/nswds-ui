@@ -80,13 +80,31 @@ const inputGroupAddonVariants = cva(
   {
     variants: {
       align: {
-        'inline-start': 'order-first ps-2 has-[>button]:ms-[-0.275rem] has-[>kbd]:ms-[-0.275rem]',
+        // No negative nudge for buttons. `me-[-0.275rem]` was tuned to cancel a
+        // 20px `px-1` button in the 28px group this component used to be; at
+        // 32px and `px-3` it under-compensates and left the inline button 3.6px
+        // off the group's inner edge while the block-end row sat at 8px. Every
+        // inset is now that same 8px, so affixes, buttons and footer rows all
+        // land on one grid. The kbd nudge stays — a kbd chip is small enough
+        // that the optical correction still reads.
+        'inline-start': 'order-first ps-2 has-[>kbd]:ms-[-0.275rem]',
         'inline-end':
-          'order-last pe-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:pe-0 has-[>button]:me-[-0.275rem] has-[>kbd]:me-[-0.275rem]',
+          'order-last pe-2 has-[[data-slot=input-group-action]]:me-0 has-[[data-slot=input-group-action]]:pe-0 has-[>kbd]:me-[-0.275rem]',
+        // Block addons are chrome, not content, so they carry the boundary the
+        // Hairline Rule asks for and sit on the recessed surface. Without both
+        // the row floats in the writing area with nothing dividing it.
+        //
+        // `--surface-sunken`, NOT `--background-subtle`: the latter resolves to
+        // the same value as `--surface-default` in dark, so the tint vanishes
+        // there. Sunken differs from the group's surface in BOTH modes.
+        //
+        // The corners are rounded rather than clipped by the group: a group-level
+        // `overflow-hidden` would cut off the focus ring of any button inside
+        // the row, since Button rings 2px outside itself.
         'block-start':
-          'order-first w-full justify-start px-2 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2',
+          'order-first w-full justify-start rounded-t-[calc(var(--radius-sm)-1px)] border-b border-(--border-default) bg-(--surface-sunken) px-2 pt-2 group-has-[>input]/input-group:pt-2 [.border-b]:pb-2',
         'block-end':
-          'order-last w-full justify-start px-2 pb-2 group-has-[>input]/input-group:pb-2 has-[[data-slot=input-group-action]]:pe-0 has-[[data-slot=input-group-action]]:pb-0 [.border-t]:pt-2',
+          'order-last w-full justify-start rounded-b-[calc(var(--radius-sm)-1px)] border-t border-(--border-default) bg-(--surface-sunken) px-2 pb-2 group-has-[>input]/input-group:pb-2 has-[[data-slot=input-group-action]]:pe-0 has-[[data-slot=input-group-action]]:pb-0 [.border-t]:pt-2',
       },
     },
     defaultVariants: {
@@ -118,16 +136,37 @@ function InputGroupAddon({
 }
 
 const inputGroupButtonVariants = cva(
-  // No font-size here: Button already sets `text-base/7`, and the
-  // `text-xs/relaxed` this used to carry shrank its label to 12px.
-  'flex items-center gap-2 rounded-sm shadow-none',
+  [
+    // No font-size here: Button already sets `text-base/7`, and the
+    // `text-xs/relaxed` this used to carry shrank its label to 12px.
+    'flex items-center gap-2 rounded-sm shadow-none',
+    // Every size below was inert until this line. Button pins
+    // `min-h-(--btn-h)` — 52px at the default step, 60px below `sm` — which
+    // outranks a plain `h-*` because they are different properties, so an
+    // `xs` button rendered at full size and inflated the row it sat in.
+    'min-h-0',
+    // Button's padding is a RESPONSIVE pair (`py-[…] sm:py-[…]`), and a media
+    // query adds no specificity, so an unprefixed override loses to the `sm:`
+    // rule on emission order. Restating both halves (`py-0 sm:py-0`) fixes the
+    // render but pairs a bare utility with a conditional one on the same
+    // property — check:cascade rejects that, and rightly: a consumer whose own
+    // build emits `.py-0` can have their copy land last on our element.
+    //
+    // `data-size` is always set by InputGroupButton, so an attribute selector
+    // is 0,2,0 against the media rule's 0,1,0 and wins at every width, with no
+    // second rule to order against.
+    'data-[size]:py-0',
+  ],
   {
     variants: {
+      // Heights are capped at 32px: the addon pads 8px top and bottom inside a
+      // 48px group, so anything taller re-inflates the row it is meant to sit
+      // inside. `sm` buys horizontal room rather than height for that reason.
       size: {
-        xs: "h-5 gap-1 rounded-[calc(var(--radius-sm)-2px)] px-1 [&>svg:not([class*='size-'])]:size-3",
-        sm: 'gap-1',
-        'icon-xs': 'size-6 p-0 has-[>svg]:p-0',
-        'icon-sm': 'size-7 p-0 has-[>svg]:p-0',
+        xs: "h-8 gap-1 rounded-[calc(var(--radius-sm)-1px)] data-[size=xs]:px-3 [&>svg:not([class*='size-'])]:size-5",
+        sm: "h-8 gap-1 rounded-[calc(var(--radius-sm)-1px)] data-[size=sm]:px-4 [&>svg:not([class*='size-'])]:size-5",
+        'icon-xs': 'size-7 data-[size=icon-xs]:px-0',
+        'icon-sm': 'size-8 data-[size=icon-sm]:px-0',
       },
     },
     defaultVariants: {
@@ -157,61 +196,103 @@ function InputGroupButton({
   )
 }
 
+const inputGroupActionVariants = cva(
+  [
+    // Fills the group's height and sits flush against its trailing edge — one
+    // block, not a button floating in addon padding. Button pins
+    // `min-h-(--btn-h)` (52px at the default step, 60px below `sm`), which a
+    // 48px group cannot hold, so `self-stretch` sizes the segment off the group
+    // and `min-h-0` clears the floor.
+    //
+    // `min-h-0`, NOT `[--btn-h:0px]`: the size step publishes its height through
+    // a RESPONSIVE pair (`[--btn-h:…] sm:[--btn-h:…]`), and a media query adds
+    // no specificity, so an unprefixed custom-property override loses to the
+    // `sm:` rule on emission order alone. Overriding the property itself lands
+    // in tailwind-merge's `min-h` group and drops Button's utility outright.
+    'h-auto min-h-0 self-stretch',
+    // Square: the group re-rounds the one outer corner by clipping (see
+    // `has-[[data-slot=input-group-action]]:overflow-hidden` on InputGroup), so
+    // there is no corner arithmetic here. The `before`/`after` fill layers are
+    // squared too — left at `calc(var(--radius-sm)-1px)` they notch the flush
+    // edges.
+    'rounded-none before:rounded-none after:rounded-none dark:after:rounded-none',
+    // Flush against the value: no optical border, and no shadow — a `shadow-sm`
+    // whisper belongs under a button sitting on the page, not one inset into a
+    // control. Padding is restated for both breakpoints because Button's is a
+    // responsive pair (see the min-h note above).
+    // Padding is keyed on `data-slot` rather than restated at both breakpoints:
+    // Button's own padding is a responsive pair, and a bare-plus-conditional
+    // override of the same property is what check:cascade forbids. The
+    // attribute selector is 0,2,0 and wins at every width on specificity.
+    'border-0 before:shadow-none data-[slot=input-group-action]:px-5 data-[slot=input-group-action]:py-0',
+    // The seam colour is owned here, for both modes, in the ALL-SIDES form.
+    // Button's ghost/soft/solid each set `dark:border-white/5`, which is a
+    // border-color shorthand — an inline-start longhand would only beat it by
+    // emission order, and white at 5% measures 1.12:1 on the dark surface, so
+    // the seam vanished there. Matching the shorthand puts both in one
+    // tailwind-merge group and drops Button's outright. Width stays 0 except
+    // where a variant below asks for it, so only that one edge paints.
+    'border-(--input-border) dark:border-(--input-border)',
+    // Focus draws INSIDE the segment: Button's default `outline-offset-2` puts
+    // the ring on the page, which the clipping group cuts off.
+    'focus:-outline-offset-2',
+  ],
+  {
+    variants: {
+      // Three fills, mapped onto Button's own variants so hover, active and
+      // dark-mode handling come from the button system rather than being
+      // restated here. `open` and `subtle` have little or no fill contrast
+      // against the input surface, so both carry a leading hairline to read as
+      // a distinct cell; `solid` needs one only in dark (see below).
+      variant: {
+        // `open` and `subtle` have no usable fill contrast against the input
+        // surface (1:1 and 1.69:1 measured in dark), so both are bounded by a
+        // leading hairline in every mode. Colour comes from the base above.
+        open: 'border-s bg-transparent',
+        subtle: 'border-s',
+        // Button rings in `--btn-bg`, which for a solid button IS the fill, so
+        // the inset ring above would be navy-on-navy. `--btn-text` is the label
+        // colour: 14.37:1 on the fill in both modes.
+        //
+        // The dark seam is not decoration. Button's `primary` reads the
+        // masterbrand ramp (--color-primary-800, Blue 01), which is
+        // theme-invariant, so on the dark group surface the fill measures
+        // 1.32:1 — under the 3:1 floor for identifying a UI component. The
+        // other three edges are bounded by the group's own border; this
+        // continues that hairline inward. Light needs none at 15.26:1, and a
+        // grey seam there would read as a gap.
+        solid: 'focus:outline-(--btn-text) dark:border-s',
+      },
+    },
+    defaultVariants: {
+      variant: 'solid',
+    },
+  },
+)
+
+/** Maps this component's fill names onto Button's variant names. */
+const inputGroupActionButtonVariant = {
+  open: 'ghost',
+  subtle: 'soft',
+  solid: 'solid',
+} as const
+
 function InputGroupAction({
   className,
   type = 'button',
+  variant = 'solid',
   ...props
-}: Omit<React.ComponentProps<typeof Button>, 'size' | 'type'> & {
-  type?: 'button' | 'submit' | 'reset'
-}) {
+}: Omit<React.ComponentProps<typeof Button>, 'size' | 'type' | 'variant'> &
+  VariantProps<typeof inputGroupActionVariants> & {
+    type?: 'button' | 'submit' | 'reset'
+  }) {
   return (
     <Button
       type={type}
       data-slot='input-group-action'
-      className={cn(
-        // Fills the group's height and sits flush against its trailing edge —
-        // one solid block, not a button floating in addon padding. Button's
-        // `styles.base` pins `min-h-(--btn-h)` (52px at the default step, 60px
-        // below `sm`), which a 48px group cannot hold, so `self-stretch` sizes
-        // the segment off the group and `min-h-0` clears the floor.
-        //
-        // `min-h-0`, NOT `[--btn-h:0px]`: the size step publishes its height
-        // through a RESPONSIVE pair (`[--btn-h:…] sm:[--btn-h:…]`), and a media
-        // query adds no specificity, so an unprefixed custom-property override
-        // loses to the `sm:` rule on emission order alone. Overriding the
-        // property itself lands in tailwind-merge's `min-h` group, which drops
-        // Button's utility from the class string outright.
-        'h-auto min-h-0 self-stretch',
-        // Square: the group re-rounds the one outer corner by clipping (see
-        // `has-[[data-slot=input-group-action]]:overflow-hidden` on InputGroup),
-        // which is why there is no corner arithmetic here. The `before`/`after`
-        // fill layers are squared too — left at `calc(var(--radius-sm)-1px)`
-        // they notch the flush edges.
-        'rounded-none before:rounded-none after:rounded-none dark:after:rounded-none',
-        // Flush against the value: no optical border, and no shadow — a
-        // `shadow-sm` whisper belongs under a button sitting on the page, not
-        // under one inset into a control.
-        'border-0 px-5 before:shadow-none',
-        // Dark mode needs a seam on the leading edge. Button's `primary` reads
-        // the masterbrand ramp (--color-primary-800, Blue 01) which is
-        // theme-invariant, so on the dark group surface the fill measures
-        // 1.32:1 — under the 3:1 WCAG floor for identifying a UI component.
-        // The other three edges are bounded by the group's own border; this
-        // continues that same hairline inward so the segment stays legible as
-        // a shape. `border-0` above zeroes the width, so the leading edge has
-        // to restate it. Light mode needs none: navy on the white input
-        // surface is boundary enough, and a grey seam there would read as a gap.
-        'dark:border-s dark:border-s-(--input-border)',
-        // Focus draws INSIDE the segment: Button's default `outline-offset-2`
-        // puts the ring on the page, which a clipped group cuts off. Moving it
-        // inward also means it lands on the fill, so the colour has to change
-        // with it — Button rings in `--btn-bg`, which for a solid button IS
-        // the fill, so an inset ring in that colour is navy-on-navy and
-        // invisible. `--btn-text` is the label colour, 14.37:1 on the fill in
-        // both modes.
-        'focus:-outline-offset-2 focus:outline-(--btn-text)',
-        className,
-      )}
+      data-variant-action={variant}
+      variant={inputGroupActionButtonVariant[variant ?? 'solid']}
+      className={cn(inputGroupActionVariants({ variant }), className)}
       {...props}
     />
   )

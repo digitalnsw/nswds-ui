@@ -215,6 +215,74 @@ export const AttachedAction: Story = {
   },
 }
 
+/**
+ * The three `InputGroupAction` fills. All share the same geometry — full group
+ * height, flush trailing edge, square corners clipped by the group — and differ
+ * only in fill weight: `open` is transparent, `subtle` is a 10% ink tint, and
+ * `solid` (the default) is the primary fill.
+ */
+export const ActionFills: Story = {
+  name: 'Action fills',
+  render: () => (
+    <div className='flex max-w-md flex-col gap-8'>
+      {(['open', 'subtle', 'solid'] as const).map((variant) => (
+        <div key={variant} className='flex flex-col gap-3'>
+          <p className='text-base font-semibold'>{variant}</p>
+
+          <InputGroup>
+            <InputGroupAddon>
+              <InputGroupText>AUD</InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput
+              placeholder='0.00'
+              inputMode='decimal'
+              aria-label={`Amount ${variant}`}
+            />
+            <InputGroupAction variant={variant}>Apply</InputGroupAction>
+          </InputGroup>
+
+          <InputGroup>
+            <InputGroupTextarea
+              placeholder='Leave a comment'
+              aria-label={`Comment ${variant}`}
+              rows={3}
+            />
+            <InputGroupAddon align='block-end'>
+              <InputGroupText>Markdown supported</InputGroupText>
+              <InputGroupAction variant={variant} className='ms-auto'>
+                Send
+              </InputGroupAction>
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const actions = canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group-action"]')
+    await expect(actions.length).toBe(6)
+
+    // Every fill keeps the shared geometry: flush to the group's inner edge and
+    // never taller than the group.
+    for (const action of actions) {
+      const group = action.closest<HTMLElement>('[data-slot="input-group"]')
+      if (!group) {
+        throw new Error('An action rendered outside a group.')
+      }
+      const groupBox = group.getBoundingClientRect()
+      const actionBox = action.getBoundingClientRect()
+      await expect(actionBox.height).toBeLessThanOrEqual(groupBox.height)
+      await expect(Math.abs(groupBox.right - actionBox.right)).toBeLessThanOrEqual(2)
+    }
+
+    // The three fills must actually differ, or they are not three variants.
+    const fills = [...actions]
+      .filter((a) => a.textContent?.trim() === 'Apply')
+      .map((a) => getComputedStyle(a).backgroundColor)
+    await expect(new Set(fills).size).toBe(3)
+  },
+}
+
 export const CssCheck: Story = {
   name: 'CssCheck',
   play: async ({ canvasElement }) => {
