@@ -1,3 +1,9 @@
+## [6.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v6.0.0...@nswds/ui-v6.1.0) (2026-09-07)
+
+### Features
+
+* **textarea:** restyle on the Input tokens and Base UI primitive ([#173](https://github.com/digitalnsw/nswds-ui/issues/173)) ([b637432](https://github.com/digitalnsw/nswds-ui/commit/b637432c8c0f27052a9dda0b0f571d76fa9c8a12))
+
 ## [6.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v5.7.1...@nswds/ui-v6.0.0) (2026-09-04)
 
 ### ⚠ BREAKING CHANGES
