@@ -17,7 +17,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // No `outline-none` here: it sets `--tw-outline-style: none` on this
         // element, which then suppresses the focus outline below (which reads
         // `outline-style: var(--tw-outline-style)`).
-        'group/input-group relative flex h-7 w-full min-w-0 items-center rounded-sm motion-safe:transition-colors',
+        'group/input-group relative flex h-12 w-full min-w-0 items-center rounded-sm motion-safe:transition-colors',
         // Every colour routes through the --input-* semantic tokens (layer 3,
         // theme.css / the registry theme item) — the same set Input uses, so a
         // group and a bare input are the same control. The role tokens behind
@@ -57,7 +57,13 @@ const inputGroupAddonVariants = cva(
   // `--input-placeholder` is the input token set's de-emphasised-text role, and
   // an icon or text affix is exactly that — so addons restyle with the input
   // rather than drifting from it. Mode-aware, hence no dark: variants.
-  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-xs/relaxed font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 **:data-[slot=kbd]:text-[0.625rem] [&>svg:not([class*='size-'])]:size-3.5",
+  //
+  // Glyphs are `size-5` (20px) — 1.25x the control's own `text-base`, matched
+  // to the TEXT beside them rather than to the 48px box, the same reasoning
+  // Button applies to a label glyph. The old 3.5 (14px) was scaled for the
+  // 28px group this component used to be and read as fine print next to 16px
+  // input text.
+  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-xs/relaxed font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 **:data-[slot=kbd]:text-[0.625rem] [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -139,7 +145,9 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       className={cn(
-        "flex items-center gap-2 text-xs/relaxed text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+        // Nested glyph size tracks the addon's, so an icon inside the text
+        // affix and one beside it are the same size.
+        "flex items-center gap-2 text-xs/relaxed text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
         className,
       )}
       {...props}
