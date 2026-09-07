@@ -58,12 +58,13 @@ const inputGroupAddonVariants = cva(
   // an icon or text affix is exactly that — so addons restyle with the input
   // rather than drifting from it. Mode-aware, hence no dark: variants.
   //
-  // Glyphs are `size-5` (20px) — 1.25x the control's own `text-base`, matched
-  // to the TEXT beside them rather than to the 48px box, the same reasoning
-  // Button applies to a label glyph. The old 3.5 (14px) was scaled for the
-  // 28px group this component used to be and read as fine print next to 16px
-  // input text.
-  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-xs/relaxed font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 **:data-[slot=kbd]:text-[0.625rem] [&>svg:not([class*='size-'])]:size-5",
+  // Type and glyphs are sized off the control's own `text-base`, not off the
+  // box. An affix sits on the same line as the value, so 16px is the floor —
+  // the old `text-xs/relaxed` (12px) and 10px kbd were scaled for the 28px
+  // group this component used to be and read as fine print beside 16px input
+  // text. Glyphs are `size-5` (20px), 1.25x the label, the same reasoning
+  // button.tsx documents for a label glyph.
+  "flex h-auto cursor-text items-center justify-center gap-1 py-2 text-base font-medium text-(--input-placeholder) select-none group-data-[disabled=true]/input-group:opacity-50 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -104,7 +105,9 @@ function InputGroupAddon({
 }
 
 const inputGroupButtonVariants = cva(
-  'flex items-center gap-2 rounded-sm text-xs/relaxed shadow-none',
+  // No font-size here: Button already sets `text-base/7`, and the
+  // `text-xs/relaxed` this used to carry shrank its label to 12px.
+  'flex items-center gap-2 rounded-sm shadow-none',
   {
     variants: {
       size: {
@@ -145,9 +148,9 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       className={cn(
-        // Nested glyph size tracks the addon's, so an icon inside the text
-        // affix and one beside it are the same size.
-        "flex items-center gap-2 text-xs/relaxed text-muted-foreground [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
+        // Matches the addon it sits in: 16px type, `--input-placeholder` ink,
+        // and a nested glyph the same size as one beside it.
+        "flex items-center gap-2 text-base text-(--input-placeholder) [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
         className,
       )}
       {...props}
@@ -162,15 +165,23 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>)
       className={cn(
         // The group owns the box, so fill its height (Input is `h-12` on its
         // own) and drop the border, surface and radius to let the group's
-        // chrome show through. Hover is left alone: the group paints the same
-        // `--input-surface-hover`, so the inner control's copy is invisible.
+        // chrome show through.
+        //
+        // The hover surfaces must be neutralised too, even though the group
+        // paints the identical token: this control is `rounded-none` and
+        // `flex-1`, so with no inline-end addon its right edge lands 1px
+        // inside the group's border and its SQUARE corner fills the group's
+        // `rounded-sm` corner notch. Same colour, wrong shape — the group's
+        // own paint is clipped to its radius, the control's is not. Letting
+        // only the group paint keeps the corners round in both the default
+        // and the aria-invalid state (where the notch is 2px, not 1px).
         //
         // `outline-0` / `border-0` rather than `outline-none` / `border-none`:
         // tailwind-merge treats those as the same group as Input's
         // `focus-visible:outline-2` / `aria-invalid:border-2` and drops them
         // from the class string outright, so there is never a pair of
         // same-specificity rules whose winner depends on stylesheet order.
-        'h-full flex-1 rounded-none border-0 bg-transparent focus-visible:outline-0 aria-invalid:border-0',
+        'h-full flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
         className,
       )}
       {...props}
