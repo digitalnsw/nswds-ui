@@ -216,6 +216,14 @@ const inputGroupButtonVariants = cva(
     // Same reason as InputGroupAction: zeroing Button's padding exposes its
     // `items-baseline` base, which no longer centres the label.
     'items-center',
+    // Same neutraliser InputGroupAction carries, and for the same reason: the
+    // group fades for a disabled control, and Button's own
+    // `data-disabled:opacity-50` would multiply into it. Measured at 0.25
+    // before this line — Combobox is the live case, since ComboboxInput passes
+    // `disabled` to the control AND to the trigger and clear buttons at once.
+    // Conditioned on the CONTROL, so a button disabled beside a live field
+    // still dims on its own.
+    'group-has-[[data-slot=input-group-control]:disabled]/input-group:disabled:opacity-100',
   ],
   {
     variants: {
@@ -467,7 +475,18 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
         // drop its utilities from the class string rather than racing them).
         // `disabled:opacity-100` for the same reason as InputGroupInput: the
         // group owns the disabled fade now, and two 50% layers would compound.
-        'flex-1 rounded-none border-0 bg-transparent focus-visible:outline-0 disabled:opacity-100 aria-invalid:border-0',
+        //
+        // The two `hover:bg-transparent` neutralisers are here for the reason
+        // InputGroupInput documents above, and were missing: `bg-transparent`
+        // and `hover:bg-*` are different tailwind-merge keys, so Textarea's own
+        // `hover:bg-(--input-surface-hover)` survived on the element and
+        // outranks the flat `bg-transparent` on specificity. This box is
+        // `rounded-none` inside the group's `rounded-sm`, and the group only
+        // clips when it holds an action — so a hover surface painted by the
+        // control itself can square off the group's corner notch, which is the
+        // artefact the input's copies exist to prevent. Restores the "identical
+        // contract to InputGroupInput" this comment claims.
+        'flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 disabled:opacity-100 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
         // Only the vertical padding differs from Textarea's own: the design's
         // writing surface is `12px 16px`, and Textarea ships `py-2`. Its
         // `min-h-24` (96px) and `px-4` already match the design, so restating
