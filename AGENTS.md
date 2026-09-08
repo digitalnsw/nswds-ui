@@ -545,13 +545,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.
 
-### Storybook suite reliability — two guards, one workaround
+### Storybook suite reliability — configuration guards and built-in protection
 
 The Storybook Vitest browser suite (`npm run test -w @workspace/storybook`)
 runs every story file as a browser test on CI's 2-core runners. Two
 configuration guards (the pre-bundle list and `noDiscovery`, first bullet) and
-one workaround (the GC hook, second bullet) keep it stable, and none of them
-is optional:
+Vitest's built-in Chromium disk protection (second bullet) keep it stable.
+Keep both configuration guards and the Vitest version floor that provides
+the built-in protection:
 
 - **`optimizeDeps.include` must list every bare import reachable from
   `packages/ui/src`** (`apps/storybook/vitest.config.ts`). Stories import
