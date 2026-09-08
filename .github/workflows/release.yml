@@ -5,8 +5,12 @@
 # own release.yml AND release config"). Groups 1 and 3 map `workflow-stubs/`
 # → `.github/workflows/` wholesale, which would overwrite it; that is the
 # difference, and it is the reason to check the group before assuming a shared
-# release pipeline. Edit this file here — there is no upstream copy to change,
-# and nswds-devops' reusable-release.yml carries no npm verification at all.
+# release pipeline. Edit this file here: no upstream copy of it is synced into
+# this repo. nswds-devops does have its own release workflows — a stub calling
+# reusable-release.yml, which groups 1, 3 and 4 receive — so a change meant for
+# the whole fleet still belongs upstream. That implementation is a different
+# one, though: it runs semantic-release and stops, with no npm verification of
+# any kind, so the poll below has no counterpart there to keep in step.
 # (The "Mirrors nswds-devops reusable-release.yml" note further down is about
 # the deploy-key pattern it sits on, not about this file being synced.)
 name: Release
@@ -35,10 +39,13 @@ jobs:
     # is the one job in the repo nobody is watching when it runs. Without a
     # timeout a wedged poll or a hung install sits on GitHub's 6-hour default
     # before alert-on-failure can fire — defeating the point of that job.
-    # Worst case is both polls exhausting: ~10 min for npm, and up to ~17 min
-    # for the registry (10 min of sleeps plus 20 curls that can each burn
-    # their 20s --max-time), on top of ~5 min of install, build and release.
-    # 40 clears that; 30 did not.
+    # Worst case is both polls exhausting: ~10 min for npm (20 checks, 19x30s)
+    # and up to ~17 min for the registry (20 sleeps of 30s plus 20 curls that
+    # can each burn their 20s --max-time) — ~27 min of polling alone. What sits
+    # on top of that is the part that varies: the v7.0.0 run spent only 95s on
+    # setup, install, build and release with a warm npm cache, but a cold one
+    # can add minutes. 40 keeps headroom over the slow case; 30 leaves almost
+    # none, which is why this is not still 30.
     timeout-minutes: 40
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
