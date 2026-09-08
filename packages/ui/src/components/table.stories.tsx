@@ -1,13 +1,17 @@
 /**
- * Table — Default, Variants, CssCheck
+ * Table — Default, Variants, Scrollable, CssCheck
  *
  * A styled data table built from native table elements. The parts map onto the
  * corresponding HTML elements (table, thead, tbody, tfoot, tr, th, td, caption)
  * so semantics and accessibility come from the platform.
+ *
+ * The one thing the component adds is the scroll container around the table,
+ * and its keyboard behaviour has its own criterion-driven file:
+ *   Components/Table/Accessibility → table.accessibility.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
+import { expect, waitFor } from 'storybook/test'
 
 import {
   Table,
@@ -39,7 +43,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A styled data table over native table elements. Compose TableHeader / TableBody / TableFooter with TableRow, TableHead and TableCell; TableCaption provides an accessible description.',
+          'A styled data table over native table elements. Compose TableHeader / TableBody / TableFooter with TableRow, TableHead and TableCell; TableCaption provides an accessible description. A table wider than its column scrolls horizontally, and while it overflows the scroll container becomes a focusable region named by the caption, so keyboard users can reach the clipped columns; a table that fits gains no tab stop.',
       },
     },
   },
@@ -121,6 +125,93 @@ export const Variants: Story = {
       </TableFooter>
     </Table>
   ),
+}
+
+/**
+ * A four-column props table in a 390px column — the case that surfaced the
+ * defect in a docs app. TableHead and TableCell are whitespace-nowrap, so the
+ * table cannot shrink to fit and the container scrolls instead.
+ */
+const propRows = [
+  {
+    prop: 'variant',
+    type: "'solid' | 'soft' | 'surface' | 'outline' | 'ghost' | 'link'",
+    defaultValue: "'solid'",
+    description: 'Visual treatment of the button.',
+  },
+  {
+    prop: 'color',
+    type: "'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger' | 'success' | 'warning' | 'grey' | 'white'",
+    defaultValue: "'primary'",
+    description: 'Ink the variant derives its states from.',
+  },
+  {
+    prop: 'size',
+    type: "'sm' | 'default' | 'lg' | 'icon'",
+    defaultValue: "'default'",
+    description: 'Padding step; the label stays 16px bold at every size.',
+  },
+]
+
+export const Scrollable: Story = {
+  name: 'Scrollable',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'A table wider than its column scrolls horizontally. While it overflows, the container is a focusable region (tabindex="0", role="region") named by the TableCaption, so a keyboard user can Tab to it and scroll with the arrow keys; once the table fits, the container is a plain div again. Without a caption the region takes the table’s own aria-label, and failing that the name "Scrollable table" — give the table a caption.',
+      },
+    },
+  },
+  render: () => (
+    <div style={{ width: 390 }}>
+      <Table>
+        <TableCaption>Button props</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Prop</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Default</TableHead>
+            <TableHead>Description</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {propRows.map((row) => (
+            <TableRow key={row.prop}>
+              <TableCell>
+                <code>{row.prop}</code>
+              </TableCell>
+              <TableCell>
+                <code>{row.type}</code>
+              </TableCell>
+              <TableCell>
+                <code>{row.defaultValue}</code>
+              </TableCell>
+              <TableCell>{row.description}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const container = canvasElement.querySelector<HTMLElement>('[data-slot="table-container"]')
+    if (!container) {
+      throw new Error('Could not find [data-slot="table-container"].')
+    }
+
+    // The overflow measurement lands in a ResizeObserver callback, one frame
+    // after mount, so the region attributes are awaited rather than read at
+    // once.
+    await waitFor(() => expect(container).toHaveAttribute('tabindex', '0'))
+    await expect(container).toHaveAttribute('role', 'region')
+
+    const caption = canvasElement.querySelector<HTMLElement>('[data-slot="table-caption"]')
+    if (!caption?.id) {
+      throw new Error('Expected TableCaption to carry an id for the region to reference.')
+    }
+    await expect(container).toHaveAttribute('aria-labelledby', caption.id)
+  },
 }
 
 export const CssCheck: Story = {
