@@ -320,6 +320,100 @@ export const Variants: Story = {
   },
 }
 
+/** The manual hook styles chrome; native disabled state belongs to each child. */
+export const DisabledChrome: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`data-disabled="true"` changes only the group border, addon hairline/cursor and hover surface. Set `disabled` on each input or textarea to make it inactive and fade its value. Actions remain independently enabled.',
+      },
+    },
+  },
+  render: () => (
+    <div className='flex max-w-md flex-col gap-6'>
+      {(['input', 'textarea'] as const).map((kind) =>
+        [false, true].map((disabled) => (
+          <InputGroup
+            key={`${kind}-${disabled}`}
+            data-disabled='true'
+            style={{ transition: 'none' }}
+          >
+            {kind === 'input' ? (
+              <InputGroupInput
+                aria-label={`${kind}-${disabled}`}
+                disabled={disabled}
+                defaultValue='Value'
+              />
+            ) : (
+              <InputGroupTextarea
+                aria-label={`${kind}-${disabled}`}
+                disabled={disabled}
+                defaultValue='Value'
+              />
+            )}
+            <InputGroupAddon align='block-end'>
+              <InputGroupText>Independent action</InputGroupText>
+              <InputGroupButton
+                onClick={(event) => {
+                  event.currentTarget.textContent = 'Applied'
+                }}
+              >
+                Apply
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+        )),
+      )}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const chrome = []
+    for (const kind of ['input', 'textarea']) {
+      for (const disabled of [false, true]) {
+        const control = canvas.getByRole('textbox', { name: `${kind}-${disabled}` })
+        const group = control.closest<HTMLElement>('[data-slot="input-group"]')!
+        const addon = group.querySelector<HTMLElement>('[data-slot="input-group-addon"]')!
+        const button = within(group).getByRole('button', { name: 'Apply' })
+        await expect(getComputedStyle(control).opacity).toBe(disabled ? '0.5' : '1')
+        if (disabled) {
+          await expect(control).toBeDisabled()
+          control.focus()
+          await expect(control).not.toHaveFocus()
+        } else {
+          await expect(control).toBeEnabled()
+          await userEvent.type(control, ' edited')
+          await expect(control).toHaveValue('Value edited')
+          await expect(control).toHaveFocus()
+        }
+        await expect(getComputedStyle(addon).cursor).toBe('not-allowed')
+        chrome.push([
+          getComputedStyle(group).borderTopColor,
+          getComputedStyle(addon).borderTopColor,
+        ])
+        // Walk ancestors: a button's own opacity cannot detect an ancestor fade.
+        let opacity = 1
+        for (let node: HTMLElement | null = button; node; node = node.parentElement) {
+          opacity *= Number.parseFloat(getComputedStyle(node).opacity)
+        }
+        await expect(opacity).toBe(1)
+        await expect(button).toBeEnabled()
+        await userEvent.click(button)
+        await expect(button).toHaveTextContent('Applied')
+        // Removing the hook changes both painted edges only for a live control.
+        if (!disabled) {
+          group.removeAttribute('data-disabled')
+          await expect(getComputedStyle(group).borderTopColor).not.toBe(chrome.at(-1)![0])
+          await expect(getComputedStyle(addon).borderTopColor).not.toBe(chrome.at(-1)![1])
+          group.setAttribute('data-disabled', 'true')
+        }
+      }
+    }
+    for (const paint of chrome) await expect(paint).toEqual(chrome[0])
+  },
+}
+
 /**
  * `InputGroupAction` is the attached trailing action: a solid primary block
  * that fills the group's height and sits flush against its trailing edge. It

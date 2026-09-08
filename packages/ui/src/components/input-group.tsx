@@ -8,6 +8,12 @@ import { Button } from './button.js'
 import { Input } from './input.js'
 import { Textarea } from './textarea.js'
 
+/**
+ * `data-disabled="true"` styles group chrome only. Set `disabled` on each
+ * InputGroupInput / InputGroupTextarea that should be inactive; the hook does
+ * not disable, fade, or prevent focus on descendants. Buttons own their state
+ * independently, so an action can remain enabled beside a disabled control.
+ */
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -48,7 +54,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         //
         // Mirrored for `data-disabled`, the manual escape hatch the addon also
         // honours. Every wrapper rule keyed on a disabled control needs its
-        // twin, or the hatch produces a HALF-disabled control — measured: the
+        // twin so the hook consistently styles the chrome — previously the
         // addon's hairline faded and its cursor changed while this border and
         // hover surface stayed fully live.
         'has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-surface)',
