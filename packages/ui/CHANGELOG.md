@@ -1,3 +1,9 @@
+## [7.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.0...@nswds/ui-v7.0.1) (2026-09-08)
+
+### Bug Fixes
+
+* **input-group:** fade disabled chrome without ancestor opacity ([#180](https://github.com/digitalnsw/nswds-ui/issues/180)) ([161cd4c](https://github.com/digitalnsw/nswds-ui/commit/161cd4c8142a1e3958bf38cfc096602871ed8840))
+
 ## [7.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v6.1.0...@nswds/ui-v7.0.0) (2026-09-07)
 
 ### ⚠ BREAKING CHANGES
