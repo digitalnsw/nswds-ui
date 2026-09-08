@@ -238,19 +238,44 @@ export const AttachedAction: Story = {
     // asserting the REST value under a hover-shaped name. Hover is verified
     // with a real pointer instead (see the design audit for this component).
 
-    // A disabled control fades the WHOLE group. Input's own `disabled:opacity-50`
-    // only fades its own box, which left the border, the affix panel and the
-    // cursor reading as live. The control neutralises its copy so the two
-    // cannot compound to 0.25.
+    // A disabled control fades the group's CHROME — its border here, its affix
+    // panel in the addon variants — while every child keeps its own state.
+    //
+    // The wrapper must NEVER carry `opacity`: ancestor opacity composites the
+    // whole subtree and a child cannot opt out of it, so an enabled action
+    // beside a disabled field would render at 50% (measured 3.12:1, under the
+    // 4.5:1 floor) while still being clickable. These assertions pin that.
     const disabledControl = disabledGroup.querySelector<HTMLElement>(
       '[data-slot="input-group-control"]',
     )
     if (!disabledControl) {
       throw new Error('Expected the disabled group to hold a control.')
     }
-    await expect(getComputedStyle(disabledGroup).opacity).toBe('0.5')
-    await expect(getComputedStyle(disabledControl).opacity).toBe('1')
+    await expect(getComputedStyle(disabledGroup).opacity).toBe('1')
     await expect(getComputedStyle(firstGroup).opacity).toBe('1')
+    // The control still fades itself, exactly as a bare disabled Input does.
+    await expect(getComputedStyle(disabledControl).opacity).toBe('0.5')
+    // ...and the chrome fades with it: the border goes translucent.
+    await expect(getComputedStyle(disabledGroup).borderTopColor).not.toBe(
+      getComputedStyle(firstGroup).borderTopColor,
+    )
+
+    // The regression that matters: a disabled control must not drag an ENABLED
+    // action down with it.
+    const liveAction = firstGroup.querySelector<HTMLButtonElement>(
+      '[data-slot="input-group-action"]',
+    )
+    const liveControl = firstGroup.querySelector<HTMLInputElement>(
+      '[data-slot="input-group-control"]',
+    )
+    if (!liveAction || !liveControl) {
+      throw new Error('Expected the first group to hold both a control and an action.')
+    }
+    liveControl.disabled = true
+    await expect(getComputedStyle(firstGroup).opacity).toBe('1')
+    await expect(getComputedStyle(liveAction).opacity).toBe('1')
+    await expect(liveAction).toBeEnabled()
+    liveControl.disabled = false
   },
 }
 
