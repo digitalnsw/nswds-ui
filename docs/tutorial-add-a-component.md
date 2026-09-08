@@ -254,6 +254,8 @@ Skip this and the Storybook job starts failing intermittently on an unrelated fi
 npm run lint
 npm run typecheck
 npm run format:check
+npm run check:workflows
+npm run test:scripts
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui
