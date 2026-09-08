@@ -20,6 +20,9 @@
 - Workspace-wide:
   - `npm run lint`
   - `npm run typecheck`
+  - `npm run format:check`
+  - `npm run check:workflows`
+  - `npm run test:scripts`
 - Package-specific:
   - `npm run build -w @nswds/ui`
   - `npm run check:drift -w @nswds/ui`
@@ -34,6 +37,9 @@
 The PR workflow (`.github/workflows/pr-checks.yml`) enforces:
 
 - lint + typecheck + Prettier check
+- workflow interpolation check (`check:workflows`) — no `${{ }}` inside a `run:` block;
+  bind the value under the step's `env:` and read it as `"$VAR"`
+- tests for the `scripts/` gates (`test:scripts`)
 - component drift check (`check:drift`)
 - icon module parity check (`check:icons`)
 - `@nswds/ui` build + package checks (`publint` + `attw`)

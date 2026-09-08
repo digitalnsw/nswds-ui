@@ -4,6 +4,9 @@ name: PR Checks
 #   - ESLint passes across the workspace
 #   - TypeScript typecheck passes across the workspace
 #   - Prettier formatting is clean
+#   - No `${{ }}` interpolation in any workflow `run:` block — check:workflows
+#     (Actions substitutes those as text before bash parses them)
+#   - The scripts/ gates pass their own tests — test:scripts
 #   - Every component ships on both channels (barrel + registry) — check:drift
 #   - The packed npm artefact is well-formed (publint + arethetypeswrong)
 #   - The committed registry JSON (apps/registry/public/r/) matches a fresh
