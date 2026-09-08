@@ -20,18 +20,20 @@ Run in this order, in one job:
 | 1   | Lint                       | `npm run lint`                                             |
 | 2   | Typecheck                  | `npm run typecheck`                                        |
 | 3   | Format check               | `npm run format:check`                                     |
-| 4   | Component drift            | `npm run check:drift -w @nswds/ui`                         |
-| 5   | Radius scale               | `npm run check:radius -w @nswds/ui`                        |
-| 6   | Icon module parity         | `npm run check:icons -w @nswds/ui`                         |
-| 7   | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
-| 8   | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
-| 9   | Unit tests                 | `npm test -w @nswds/ui`                                    |
-| 10  | Package checks             | `npm run check:package -w @nswds/ui`                       |
-| 11  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
-| 12  | Registry freshness         | rebuild + `git status` comparison                          |
-| 13  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
-| 14  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
-| 15  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
+| 4   | Workflow interpolation     | `npm run check:workflows`                                  |
+| 5   | Script tests               | `npm run test:scripts`                                     |
+| 6   | Component drift            | `npm run check:drift -w @nswds/ui`                         |
+| 7   | Radius scale               | `npm run check:radius -w @nswds/ui`                        |
+| 8   | Icon module parity         | `npm run check:icons -w @nswds/ui`                         |
+| 9   | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
+| 10  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
+| 11  | Unit tests                 | `npm test -w @nswds/ui`                                    |
+| 12  | Package checks             | `npm run check:package -w @nswds/ui`                       |
+| 13  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
+| 14  | Registry freshness         | rebuild + `git status` comparison                          |
+| 15  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
+| 16  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
+| 17  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
 
 A separate `visual-change-release-guard` job runs in parallel.
 
@@ -47,7 +49,35 @@ merge.
 
 **Fix:** `npm run format`
 
-### 4 · `check:drift`
+### 4 · `check:workflows`
+
+`scripts/check-workflow-interpolation.mjs` fails on any `${{ … }}` inside a workflow `run:` block.
+Actions substitutes those as **text** before bash parses the script, so a value derived from repo
+contents is code, not data — `release.yml` interpolated the newest git tag that way for three
+months, and a tag named `@nswds/ui-v9.9.9";id;#` (a valid refname, first under
+`--sort=-v:refname`) would have executed inside the job holding `id-token: write` and the
+ruleset-bypass deploy key.
+
+`if:`, `with:` and `env:` are expression context rather than shell and are ignored. Secrets are
+**not** exempt. The `ALLOWED` list holds the one exception, `…head.repo.fork`, a boolean the
+platform computes.
+
+**Fix:** bind the value under the step's `env:` and read it as `"$VAR"` in the script.
+
+### 5 · Script tests
+
+`node --test scripts/*.test.mjs` — today, the `check:workflows` scanner.
+
+Not belt-and-braces. A gate that stops gating exits 0, which reads exactly like success, and this
+one has done it twice: the first version silently missed every `- run:` written as a YAML sequence
+item, and a later one exempted `#`-commented lines on a false premise — leaving
+`# ${{ github.event.pull_request.title }}` (titles accept newlines) able to run its second line.
+Both passed the repo scan while doing so. Anything under `scripts/` that guards a path CI cannot
+otherwise exercise gets tests here, for the same reason the release-config tests exist.
+
+**Fix:** `npm run test:scripts` and read the failing assertion.
+
+### 6 · `check:drift`
 
 `packages/ui/scripts/check-component-drift.mjs` enforces the two-channel rule:
 
@@ -60,19 +90,19 @@ Removing a component from the public API is therefore never just deleting a barr
 **Escape hatch:** the `INTERNAL` allowlist at the top of that script — for a component that owns no
 registry item but ships as a supporting file inside another item's `files` list.
 
-### 5 · `check:radius`
+### 7 · `check:radius`
 
 Components may only use the token radius scale (`--radius-none|sm|md|lg|pill`). Catches a
 hand-rolled `rounded-[6px]`.
 
-### 6 · `check:icons`
+### 8 · `check:icons`
 
 Regenerates the icon barrel and byte-compares. The barrel is generated and lint/format-exempt, so
 it drifts silently otherwise.
 
 **Fix:** regenerate from `packages/ui` and commit the result.
 
-### 7 · Release config tests
+### 9 · Release config tests
 
 Cover the path-scoped release gate. They exist because `release.yml` commits with `[skip ci]`, so
 nothing else in CI ever exercises the release configuration — a mistake there is invisible until it
@@ -80,7 +110,7 @@ has already published, or silently failed to.
 
 They build a throwaway git repo per case, so they pass under this job's shallow checkout.
 
-### 8 · `check:cascade` (inside `build`)
+### 10 · `check:cascade` (inside `build`)
 
 Runs **inside** `build`, not as its own step, because it reads the built `dist/styles.css` — so a
 `build` that "succeeded" without it has not actually been run.
@@ -100,7 +130,7 @@ re-emit the loser after ours.
 Cascade layers cannot fix this — see
 [Surviving someone else's build](explanation-architecture.md#surviving-someone-elses-build).
 
-### 9 · Unit tests
+### 11 · Unit tests
 
 `node --test` over `packages/ui/tests/`, covering the package's **pure exported logic**. Runs
 against `dist/`, not `src/` (Node cannot strip JSX), so it must come after `build` and fails with a
@@ -112,12 +142,12 @@ with no coverage and two bugs.
 
 **Pure logic goes here; rendered behaviour goes in a story.**
 
-### 10 · `check:package`
+### 12 · `check:package`
 
 `publint --strict` + `are-the-types-wrong` against the built tarball. Catches export-map and
 type-resolution faults that `build` alone will happily produce.
 
-### 11 · Consumer fixture
+### 13 · Consumer fixture
 
 **The only gate with no npm script** — invisible from `package.json`. Run it by path:
 
@@ -137,7 +167,7 @@ Build `@nswds/ui` first. Not redundant with `check:package`: that validates the 
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside
 ours, the only place the two-build cascade is tested end to end.
 
-### 12 · Registry freshness
+### 14 · Registry freshness
 
 Rebuilds the registry and fails if committed output differs. Run `npm run registry:build` and
 commit `apps/registry/public/r/` whenever component source, `registry.json` or `components.json`
@@ -147,7 +177,7 @@ change.
 > `git status`, which cannot see a file nothing regenerates. Deleting an item from `registry.json`
 > also means deleting `apps/registry/public/r/<name>.json` by hand.
 
-### 13 · `check:registry-resolves`
+### 15 · `check:registry-resolves`
 
 The companion to `check:drift`, and easy to confuse with it. **Drift proves an item is registered;
 this proves it would actually compile** once `shadcn add` copies it.
@@ -170,7 +200,7 @@ Four real bugs motivated it, all of which passed drift, validate **and** the fre
 
 **Import icons per-icon (`../icons/close.js`), never through the barrel.**
 
-### 14 · `check:optimize-deps`
+### 16 · `check:optimize-deps`
 
 Asserts every bare import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
 `apps/storybook/vitest.config.ts`.
@@ -183,7 +213,7 @@ that kills whichever story was mid-flight.
 Add a component with a new dependency, forget this list, and the Storybook job starts failing
 intermittently **somewhere else entirely**.
 
-### 15 · Storybook tests
+### 17 · Storybook tests
 
 Every story rendered in real Chromium, with axe at WCAG 2.x AA enforced as an error. This is the
 suite that actually proves the components work. Takes roughly 80–170s.
@@ -224,6 +254,8 @@ The full local equivalent, in CI order:
 npm run lint
 npm run typecheck
 npm run format:check
+npm run check:workflows
+npm run test:scripts
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui

@@ -36,8 +36,15 @@ jobs:
     steps:
       - name: Check for project token
         id: token
+        env:
+          # Bound here rather than interpolated into the script below. A
+          # `${{ }}` inside a run: block is pasted in as TEXT before bash parses
+          # it, so the value is code — and while only an admin can set a secret,
+          # that is a weaker guarantee than one line of env:. `check:workflows`
+          # enforces this for every workflow; see AGENTS.md §8.
+          CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
         run: |
-          if [ -n "${{ secrets.CHROMATIC_PROJECT_TOKEN }}" ]; then
+          if [ -n "$CHROMATIC_PROJECT_TOKEN" ]; then
             echo "present=true" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
             # Secrets are unavailable to fork PRs by design — don't block

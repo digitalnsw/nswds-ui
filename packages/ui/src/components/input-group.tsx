@@ -8,6 +8,12 @@ import { Button } from './button.js'
 import { Input } from './input.js'
 import { Textarea } from './textarea.js'
 
+/**
+ * `data-disabled="true"` styles group chrome only. Set `disabled` on each
+ * InputGroupInput / InputGroupTextarea that should be inactive; the hook does
+ * not disable, fade, or prevent focus on descendants. Buttons own their state
+ * independently, so an action can remain enabled beside a disabled control.
+ */
 function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -37,16 +43,53 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // sharpen the rare one is the wrong trade. Revisit if the group ever
         // gains a wrapper that can own hover without `:has()`.
         'hover:bg-(--input-surface-hover)',
-        // Disabled — owned by the wrapper, because the control is only PART of
-        // this control. Input's `disabled:opacity-50` fades its own box and
-        // nothing else, so a disabled group rendered a full-strength border, a
-        // full-strength affix panel and a text cursor over dead chrome:
-        // measurably identical to an enabled group on every property except
-        // the input's text. Fading the wrapper reproduces a disabled bare
-        // Input, where one element carries border, surface and text together.
-        // The children neutralise their own `disabled:opacity-50` so the two
-        // layers cannot compound to 0.25.
-        'has-[[data-slot=input-group-control]:disabled]:opacity-50',
+        // ...but a disabled group must not react at all. A standalone Input
+        // cannot: `disabled:pointer-events-none` means `:hover` never matches
+        // it. This wrapper is a plain div, and `pointer-events` on the CONTROL
+        // does not stop its ancestor being hovered, so without this line a dead
+        // field painted the full enabled hover surface — measured with a real
+        // pointer at `--input-surface-hover`, identical to an enabled group.
+        // `pointer-events-none` on the wrapper is not the fix: it would also
+        // kill an enabled action sitting inside a disabled-field group.
+        //
+        // Mirrored for `data-disabled`, the manual escape hatch the addon also
+        // honours. Every wrapper rule keyed on a disabled control needs its
+        // twin so the hook consistently styles the chrome — previously the
+        // addon's hairline faded and its cursor changed while this border and
+        // hover surface stayed fully live.
+        'has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-surface)',
+        'data-[disabled=true]:hover:bg-(--input-surface)',
+        // Disabled — the group fades its own CHROME: this border, plus the
+        // addon's hairline and cursor. Every child owns its own state, and
+        // nothing in this component puts `opacity` on an ancestor.
+        //
+        // The wrapper-opacity version of this shipped briefly and was wrong:
+        // ancestor opacity composites the whole subtree and a child cannot opt
+        // out of it, so an ENABLED action beside a disabled field rendered at
+        // 50% — measured white-on-navy at 3.12:1, under the 4.5:1 floor, on a
+        // button that was still clickable. A control that looks disabled and
+        // isn't is worse than the chrome bug it replaced. It also forced
+        // `opacity-100` neutralisers onto four children to stop 0.5 x 0.5
+        // compounding, and those only worked for natively `:disabled` targets.
+        // Fading the chrome directly needs no neutralisers and cannot compound.
+        //
+        // `not-has-[…aria-invalid…]` is load-bearing, not belt-and-braces. This
+        // rule and the aria-invalid border rule below both set `border-color`
+        // at identical specificity — `:has()` takes its most specific argument,
+        // so `:has([data-slot=input-group-control]:disabled)` (attribute +
+        // pseudo-class) and `:has([data-slot][aria-invalid=true])` (two
+        // attributes) are both (0,2,0), plus one class each. Without the
+        // exclusion only emission order separates them, and this package's
+        // classes can be re-emitted after ours by a consuming app's own
+        // Tailwind build — the two-build hazard check:cascade exists for, which
+        // it cannot catch here because it only flags conditional at-rule pairs.
+        // A field that fails validation and is then disabled during submit hits
+        // exactly this: the faded grey would erase the error border. Making the
+        // two mutually exclusive decides it by MATCHING instead of by order.
+        // The `data-disabled` twin below carries the same exclusion, for the
+        // same reason: an error border must outlive either disabled path.
+        'has-[[data-slot=input-group-control]:disabled]:not-has-[[data-slot][aria-invalid=true]]:border-(--input-border)/50',
+        'data-[disabled=true]:not-has-[[data-slot][aria-invalid=true]]:border-(--input-border)/50',
         // Focus — the group draws one outline for whichever control is focused;
         // InputGroupInput / InputGroupTextarea suppress their own. Offset and
         // colour are unconditional because neither renders anything until
@@ -61,7 +104,18 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // specificity rather than on emission order.
         'has-[[data-slot][aria-invalid=true]]:border-2 has-[[data-slot][aria-invalid=true]]:border-(--input-invalid-border)',
         'has-[[data-slot][aria-invalid=true]]:outline-(--input-invalid-ring)',
-        'has-[[data-slot][aria-invalid=true]]:hover:bg-(--input-invalid-surface-hover)',
+        // Excluded when the control is disabled, for the same reason the border
+        // rule above is: this and the disabled hover rule both compute to
+        // (0,4,0) — class + `:has()` + `:hover` on each — so a tie decided by
+        // emission order would let an invalid AND disabled field paint the
+        // danger hover surface. Mutually exclusive selectors decide it by
+        // MATCHING, and disabled is the one that should win: a dead control
+        // gives no hover feedback whatever its validation state. BOTH disabled
+        // paths are excluded — the hover rules are (0,3,0) for `data-disabled`
+        // against this rule's (0,6,0), so excluding only the control-disabled
+        // one would have let an invalid group flagged via the hatch keep
+        // painting the danger hover surface.
+        'has-[[data-slot][aria-invalid=true]]:not-has-[[data-slot=input-group-control]:disabled]:not-data-[disabled=true]:hover:bg-(--input-invalid-surface-hover)',
         // An InputGroupAction sits flush to the trailing edge with square
         // corners, so the group clips it to its own radius — cheaper and
         // RTL-correct next to per-corner arithmetic on the action. Scoped to
@@ -97,13 +151,48 @@ const inputGroupAddonVariants = cva(
   // row still has height once the padding is gone (the affix text centres in
   // it via `items-center`). Each override carries the has-[] selector, so it
   // outranks the base padding on specificity rather than on emission order.
-  // The affix advertises a text caret because clicking it focuses the control.
-  // Over a DISABLED control that is a lie, so it takes the same
-  // `cursor-not-allowed` the control itself does — keyed on the control rather
-  // than on the group's `data-disabled`, which nothing in the component ever
-  // sets (the opacity hook below has the same gap and is left as the manual
-  // escape hatch it already was).
-  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  // Disabled: the addon fades its own HAIRLINE and swaps its cursor, and never
+  // touches `opacity`. This is the whole point, so it is worth stating plainly:
+  // the addon is an ANCESTOR of every inline button (InputGroupButton always sits
+  // in one, and a block-end InputGroupAction does too). `opacity` on this
+  // element therefore composites those buttons, and a child cannot opt out of
+  // an ancestor's opacity. Measured with `opacity-50` here: an ENABLED button
+  // beside a disabled field rendered at effective 0.5 while still clickable,
+  // and a disabled one multiplied with Button's own `data-disabled:opacity-50`
+  // to 0.25 — which is exactly the Combobox shape, since ComboboxInput passes
+  // `disabled` to the control and to the trigger and clear buttons at once.
+  // Fading only what this element itself paints leaves every descendant
+  // untouched and cannot compound.
+  //
+  // The affix CONTENT is deliberately not faded — only the hairline is. Two
+  // attempts to fade it were both wrong and are worth recording so neither is
+  // retried. A faded `color` on the addon never reaches InputGroupText, which
+  // sets its own `color` and so stayed lit beside a faded glyph. Expressing the
+  // same fade as `opacity` on the children fixed that, but the a11y gate
+  // rejects both: axe measures the affix label at 2.43:1 and cannot tell it
+  // belongs to a disabled control, because the span carries no disabled state
+  // of its own and the addon is a sibling of the control, not its ancestor.
+  //
+  // Leaving it legible is also the better answer. An affix is an adornment —
+  // "AUD", "Markdown supported" — closer to a label than to the control, and a
+  // label beside a disabled input does not fade either. The disabled signal is
+  // carried by the wrapper's border, this hairline, `cursor-not-allowed`, and
+  // the control's own fade, which is four cues without making information
+  // harder to read. Fading it would need `aria-disabled` plumbed onto a
+  // presentational div to keep axe honest, for a worse result.
+  //
+  // Background is likewise NOT faded: `--surface-sunken` measures 1.1:1 against
+  // the field, so 50% of it is imperceptible, and an `inline-end` addon has no
+  // background at all — a base-level `bg` fade would ADD a grey panel.
+  //
+  // Both conditions get the same paint. `data-disabled` on the group is a
+  // manual escape hatch nothing in this component sets, but it had the same
+  // ancestor-opacity defect, so it is converted rather than left as a landmine.
+  //
+  // The affix also advertises a text caret, because clicking it focuses the
+  // control. Over a disabled control that is a lie, so it takes the same
+  // `cursor-not-allowed` the control itself does.
+  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-has-[[data-slot=input-group-control]:disabled]/input-group:border-(--input-border)/50 group-data-[disabled=true]/input-group:cursor-not-allowed group-data-[disabled=true]/input-group:border-(--input-border)/50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -216,14 +305,11 @@ const inputGroupButtonVariants = cva(
     // Same reason as InputGroupAction: zeroing Button's padding exposes its
     // `items-baseline` base, which no longer centres the label.
     'items-center',
-    // Same neutraliser InputGroupAction carries, and for the same reason: the
-    // group fades for a disabled control, and Button's own
-    // `data-disabled:opacity-50` would multiply into it. Measured at 0.25
-    // before this line — Combobox is the live case, since ComboboxInput passes
-    // `disabled` to the control AND to the trigger and clear buttons at once.
-    // Conditioned on the CONTROL, so a button disabled beside a live field
-    // still dims on its own.
-    'group-has-[[data-slot=input-group-control]:disabled]/input-group:disabled:opacity-100',
+    // No disabled-opacity handling here on purpose. Button's own
+    // `data-disabled:opacity-50` is the whole treatment: this button always
+    // renders inside an addon, and the addon fades its own paint rather than
+    // its opacity, so there is no ancestor fade to compound with and nothing
+    // to neutralise.
   ],
   {
     variants: {
@@ -231,8 +317,8 @@ const inputGroupButtonVariants = cva(
       // 48px group, so anything taller re-inflates the row it is meant to sit
       // inside. `sm` buys horizontal room rather than height for that reason.
       size: {
-        xs: "h-8 gap-1 rounded-[calc(var(--radius-sm)-1px)] data-[size=xs]:px-3 [&>svg:not([class*='size-'])]:size-5",
-        sm: "h-8 gap-1 rounded-[calc(var(--radius-sm)-1px)] data-[size=sm]:px-4 [&>svg:not([class*='size-'])]:size-5",
+        xs: "h-8 gap-1 data-[size=xs]:px-3 [&>svg:not([class*='size-'])]:size-5",
+        sm: "h-8 gap-1 data-[size=sm]:px-4 [&>svg:not([class*='size-'])]:size-5",
         'icon-xs': 'size-7 data-[size=icon-xs]:px-0',
         'icon-sm': 'size-8 data-[size=icon-sm]:px-0',
       },
@@ -333,13 +419,11 @@ const inputGroupActionVariants = cva(
     // button system's brand ink. iterate-1.css:
     // `.it .act:focus-visible { outline: 2px solid var(--input-ring); outline-offset: -2px }`.
     'items-center font-semibold focus:outline-2 focus:-outline-offset-2 focus:outline-(--input-ring)',
-    // Keep Button's own `disabled:opacity-50` for the common case where only
-    // the action is disabled (an Apply that waits for a valid value) and the
-    // field beside it stays live. Drop it only when the GROUP is already
-    // fading for a disabled control, where the two layers would compound to
-    // 0.25. Conditioning on the control — not on this button's own state —
-    // is what separates the two cases.
-    'group-has-[[data-slot=input-group-control]:disabled]/input-group:disabled:opacity-100',
+    // Button's own `data-disabled:opacity-50` is left as the entire disabled
+    // treatment, for both placements: flush against the group's edge, and
+    // nested in a block-end addon. Neither ancestor fades its opacity, so an
+    // Apply that waits for a valid value dims on its own while the live field
+    // beside it stays at full strength.
   ],
   {
     variants: {
@@ -363,7 +447,15 @@ const inputGroupActionVariants = cva(
         // lose the only thing delineating it. check:cascade cannot catch this —
         // it only flags conditional at-rule pairs.
         open: 'bg-transparent data-[variant-action=open]:border-s',
-        subtle: 'data-[variant-action=subtle]:border-s',
+        // `--btn-bg` (the button's own ink) for the ring, NOT the group's
+        // `--input-ring`. The base picks `--input-ring` so a focused segment
+        // matches the control it sits in, which holds for `open` — measured
+        // 3.29:1 against the field surface showing through. On `subtle` the
+        // ring lands on the tinted fill instead and measures 2.70:1, under the
+        // 3:1 non-text floor of WCAG 1.4.11. The ink reads 14.37:1 there and
+        // satisfies the Derived State Rule, which wants focus derived from the
+        // one ink variable rather than independently chosen.
+        subtle: 'focus:outline-(--btn-bg) data-[variant-action=subtle]:border-s',
         // Button rings in `--btn-bg`, which for a solid button IS the fill, so
         // the inset ring above would be navy-on-navy. `--btn-text` is the label
         // colour: 14.37:1 on the fill in both modes.
@@ -418,6 +510,15 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
       className={cn(
         // Matches the addon it sits in: 16px type, `--input-placeholder` ink,
         // and a nested glyph the same size as one beside it.
+        //
+        // No disabled rule here, and none on the addon either: affix content
+        // stays at full contrast in a disabled group. Do not add one. Two
+        // attempts are recorded on inputGroupAddonVariants — a faded `color` on
+        // the addon never reaches this span, because setting `color` here
+        // overrides the inherited one for its own subtree; and expressing the
+        // same fade as `opacity` on the addon's children fixed that but failed
+        // the a11y gate, which measures this label at 2.43:1 and cannot tell it
+        // belongs to a disabled control. The disabled signal lives on chrome.
         "flex items-center gap-2 text-base text-(--input-placeholder) [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
         className,
       )}
@@ -449,12 +550,10 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>)
         // `focus-visible:outline-2` / `aria-invalid:border-2` and drops them
         // from the class string outright, so there is never a pair of
         // same-specificity rules whose winner depends on stylesheet order.
-        // `disabled:opacity-100` because the GROUP now fades for a disabled
-        // control (see InputGroup). Whenever this rule can fire, the group's
-        // has-[] rule has fired too, so leaving Input's own 50% in place would
-        // multiply to 0.25 and render the value fainter than a bare disabled
-        // Input's.
-        'h-full flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 disabled:opacity-100 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
+        // Input's own `disabled:opacity-50` is deliberately left intact: the
+        // group fades only its own chrome, so this control owns its disabled
+        // appearance exactly as a bare Input does, and nothing compounds.
+        'h-full flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
         className,
       )}
       {...props}
@@ -473,8 +572,8 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
         // three neutralisers apply, for the same tailwind-merge reason
         // (`outline-0` / `border-0` land in Button's own conflict groups and
         // drop its utilities from the class string rather than racing them).
-        // `disabled:opacity-100` for the same reason as InputGroupInput: the
-        // group owns the disabled fade now, and two 50% layers would compound.
+        // Textarea's own `disabled:opacity-50` is left intact, as in
+        // InputGroupInput — the group fades only its chrome.
         //
         // The two `hover:bg-transparent` neutralisers are here for the reason
         // InputGroupInput documents above, and were missing: `bg-transparent`
@@ -486,7 +585,7 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
         // control itself can square off the group's corner notch, which is the
         // artefact the input's copies exist to prevent. Restores the "identical
         // contract to InputGroupInput" this comment claims.
-        'flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 disabled:opacity-100 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
+        'flex-1 rounded-none border-0 bg-transparent hover:bg-transparent focus-visible:outline-0 aria-invalid:border-0 aria-invalid:hover:bg-transparent',
         // Only the vertical padding differs from Textarea's own: the design's
         // writing surface is `12px 16px`, and Textarea ships `py-2`. Its
         // `min-h-24` (96px) and `px-4` already match the design, so restating

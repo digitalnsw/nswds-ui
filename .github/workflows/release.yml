@@ -1,3 +1,18 @@
+# OWNED BY THIS REPO — not synced from digitalnsw/nswds-devops, unlike the
+# seven workflows here that open with a "Synced from … DO NOT EDIT" header.
+# nswds-devops `.github/sync.yml` puts nswds-ui in group 2a, which lists each
+# workflow stub INDIVIDUALLY precisely so this file is left alone ("keeps its
+# own release.yml AND release config"). Groups 1 and 3 map `workflow-stubs/`
+# → `.github/workflows/` wholesale, which would overwrite it; that is the
+# difference, and it is the reason to check the group before assuming a shared
+# release pipeline. Edit this file here: no upstream copy of it is synced into
+# this repo. nswds-devops does have its own release workflows — a stub calling
+# reusable-release.yml, which groups 1, 3 and 4 receive — so a change meant for
+# the whole fleet still belongs upstream. That implementation is a different
+# one, though: it runs semantic-release and stops, with no npm verification of
+# any kind, so the poll below has no counterpart there to keep in step.
+# (The "Mirrors nswds-devops reusable-release.yml" note further down is about
+# the deploy-key pattern it sits on, not about this file being synced.)
 name: Release
 
 on:
@@ -19,12 +34,22 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Bounded deliberately. This job contains two polling loops (~2 min for
-    # npm, ~10 min for the registry deploy) and an npm ci, and it is the one
-    # job in the repo nobody is watching when it runs. Without a timeout a
-    # wedged poll or a hung install sits on GitHub's 6-hour default before
-    # alert-on-failure can fire — which defeats the point of alert-on-failure.
-    timeout-minutes: 30
+    # Bounded deliberately. This job contains two polling loops (~10 min of
+    # sleeps each, for npm and for the registry deploy) and an npm ci, and it
+    # is the one job in the repo nobody is watching when it runs. Without a
+    # timeout a wedged poll or a hung install sits on GitHub's 6-hour default
+    # before alert-on-failure can fire — defeating the point of that job.
+    # Worst case is both polls exhausting: ~10 min for npm (a 600s deadline
+    # plus one final request capped at 20s) and up to ~17 min for the registry
+    # (20 sleeps of 30s plus 20 curls that can each burn their 20s
+    # --max-time) — ~27 min of polling alone. Both figures hold only because
+    # each poll caps its own network call; neither would be a real bound
+    # otherwise. What sits
+    # on top of that is the part that varies: the v7.0.0 run spent only 95s on
+    # setup, install, build and release with a warm npm cache, but a cold one
+    # can add minutes. 40 keeps headroom over the slow case; 30 leaves almost
+    # none, which is why this is not still 30.
+    timeout-minutes: 40
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
       # commit over SSH as a deploy key that's a bypass actor on the ruleset
@@ -91,24 +116,83 @@ jobs:
       # tags with no package behind them (exactly how v1.8.0–v2.1.0 went
       # missing for a week). Poll npm until the new version appears; fail
       # loudly if it never does.
+      #
+      # The ~10-minute budget and the --prefer-online are both load-bearing,
+      # and neither substitutes for the other.
+      #
+      #   - `npm publish` returns BEFORE the version is readable, and says so:
+      #     "Your package is being processed and may take a few minutes to
+      #     become available." This is what called v7.0.0 a failed release and
+      #     filed a release-failure issue against a publish that had already
+      #     succeeded — semantic-release logged "Published @nswds/ui@7.0.0" at
+      #     23:49:29, npm recorded the version at 23:52:06, and the budget here
+      #     was 100 seconds. Hence ~10 minutes — the same budget the registry
+      #     poll below gets, though that one counts attempts where this one
+      #     runs to a wall-clock deadline (see the run block for why).
+      #   - The packument is cached TWICE, and the flag and the budget close
+      #     one layer each — so neither is safe to trim on the strength of the
+      #     other. It is served `cache-control: public, max-age=300`.
+      #     LOCALLY, `npm view` is cache-first over the ~/.npm that setup-node's
+      #     `cache: npm` restores, and both `npm ci` and the `npm install
+      #     --package-lock-only` inside the release step resolve @nswds/ui — so
+      #     without `--prefer-online` a packument fetched minutes earlier in
+      #     this same job can be replayed from _cacache for the full max-age
+      #     without a request ever leaving the runner. `--prefer-online` forces
+      #     that request. It does NOT make the answer fresh: the registry is
+      #     fronted by an edge cache (responses carry a non-zero `age`, e.g.
+      #     `age: 232`), so a revalidation can still be answered from a copy up
+      #     to 5 minutes old. Only a budget longer than max-age covers that
+      #     half. Whether either layer bit on v7.0.0 is unknowable after the
+      #     fact — a stale hit and a slow publish are indistinguishable from
+      #     the outside — which is why both are closed rather than one.
+      #
+      # A generous budget costs time only when the release has genuinely failed,
+      # and nobody is waiting on this job. A tight one costs a false alarm on a
+      # good release, which is worse — it trains the next person to disbelieve
+      # the alert.
       - name: Verify the release reached npm
         if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
+        env:
+          # Through env:, NEVER interpolated into `run:`. A `${{ }}` in a run
+          # block is pasted in as TEXT before bash parses the script, and this
+          # value comes from repo contents (`git tag --list` in the step above).
+          # Git refnames forbid spaces and newlines but permit `"`, `;`, `#`,
+          # backticks and `$(…)`, so a tag named `@nswds/ui-v9.9.9";id;#` is
+          # both creatable and selected by that glob — and would execute here,
+          # in the one job holding id-token: write (npm trusted publishing),
+          # contents: write, and a deploy key that bypasses the main ruleset.
+          RELEASE_TAG: ${{ steps.after_release.outputs.tag }}
         run: |
-          expected="${{ steps.after_release.outputs.tag }}"
-          expected="${expected#@nswds/ui-v}"
-          echo "Verifying npm has @nswds/ui@${expected}…"
-          for attempt in 1 2 3 4 5 6; do
-            published="$(npm view "@nswds/ui@${expected}" version 2>/dev/null || true)"
+          expected="${RELEASE_TAG#@nswds/ui-v}"
+          # A wall-clock deadline, not an attempt count. `npm view` has no
+          # per-call bound of its own — npm's defaults are fetch-timeout 300000
+          # (5 min) with 2 retries — so a single stalled request could outlast
+          # the entire budget this loop claims to enforce and carry the job into
+          # its timeout-minutes, filing a release-failure issue against a good
+          # publish. That is the very failure this step was rewritten to stop,
+          # arriving through a different door. --prefer-online raises the odds
+          # by forcing a request on every attempt where a cache hit used to
+          # return instantly. Capping each request and looping to a deadline
+          # makes the ~10 minutes true no matter how slow any one call is.
+          budget=600
+          interval=30
+          deadline=$(( $(date +%s) + budget ))
+          attempt=0
+          echo "Verifying npm has @nswds/ui@${expected} (up to ${budget}s)…"
+          while :; do
+            attempt=$((attempt + 1))
+            published="$(npm view --prefer-online --fetch-retries=0 --fetch-timeout=20000 "@nswds/ui@${expected}" version 2>/dev/null || true)"
             if [ "$published" = "$expected" ]; then
-              echo "✔ npm has @nswds/ui@${expected}"
+              echo "✔ npm has @nswds/ui@${expected} (attempt ${attempt})"
               exit 0
             fi
-            if [ "$attempt" -lt 6 ]; then
-              echo "Attempt ${attempt}/6: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in 20s…"
-              sleep 20
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              break
             fi
+            echo "Attempt ${attempt}: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in ${interval}s…"
+            sleep "$interval"
           done
-          echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} never appeared on npm — the publish failed or was skipped. Check the Release step log; consumers are still receiving the previous version."
+          echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} did not appear on npm within ~${budget}s (${attempt} attempts) — the publish failed, was skipped, or is stuck in npm's post-publish processing. Check the Release step log for a 'Published @nswds/ui@${expected}' line: if it is there the publish itself succeeded and this is npm-side latency; if it is not, consumers are still receiving the previous version."
           exit 1
 
       # The shadcn registry is the second distribution channel and must track
@@ -124,9 +208,12 @@ jobs:
         env:
           # Optional override; otherwise the committed source of truth is used.
           REGISTRY_LOCATION_OVERRIDE: ${{ vars.REGISTRY_LOCATION }}
+          # Through env: for the same reason as the npm step above — a `${{ }}`
+          # in a run block is textual substitution, and a git tag name is
+          # attacker-shaped input.
+          RELEASE_TAG: ${{ steps.after_release.outputs.tag }}
         run: |
-          expected="${{ steps.after_release.outputs.tag }}"
-          expected="${expected#@nswds/ui-v}"
+          expected="${RELEASE_TAG#@nswds/ui-v}"
           # `// empty` -> null/absent .location becomes empty (not the literal
           # "null"); 2>/dev/null swallows a missing/invalid registry.config.json.
           location="${REGISTRY_LOCATION_OVERRIDE:-$(jq -r '.location // empty' registry.config.json 2>/dev/null)}"
