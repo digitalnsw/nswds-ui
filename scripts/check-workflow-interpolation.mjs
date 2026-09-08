@@ -68,7 +68,19 @@ const repoRoot = fileURLToPath(new URL('..', import.meta.url))
  */
 export const ALLOWED = [/^github\.event\.pull_request\.head\.repo\.fork$/]
 
-const EXPRESSION = /\$\{\{([^}]*)\}\}/g
+/**
+ * Lazy through the closing `}}`, NOT `[^}]*`.
+ *
+ * An expression body may legally contain `}` — `format()` exists to take `{N}`
+ * placeholders, so `${{ format('{0}', github.event.pull_request.title) }}` is
+ * an ordinary way to build a string, and the dangerous one: PR titles accept
+ * newlines. Under `[^}]*` that expression did not match at all, and on a line
+ * carrying two expressions only the second was reported — the gate said
+ * "clean" about the interpolation that mattered.
+ */
+const EXPRESSION = /\$\{\{([\s\S]*?)\}\}/g
+/** A `${{` with no closing `}}` on the same line — see findViolations. */
+const OPENER = '${{'
 /**
  * The `- ` of a sequence item is part of the key's indent: in `      - run: |`
  * the `run` key sits at column 8, so its block body is whatever is indented
@@ -78,8 +90,20 @@ const EXPRESSION = /\$\{\{([^}]*)\}\}/g
  * still passing release.yml, which happens to use the bare form.
  */
 const INDENT = String.raw`(\s*(?:-\s+)?)`
-/** `run:` with a block scalar (`|`, `>`, and their chomping/indent modifiers). */
-const RUN_BLOCK = new RegExp(`^${INDENT}run:\\s*[|>][-+0-9]*\\s*$`)
+/**
+ * `run:` with a block scalar (`|`, `>`, their chomping/indent modifiers, and an
+ * optional trailing YAML comment — `run: | # why` is legal, and the comment is
+ * not part of the scalar).
+ *
+ * Without the comment branch this fell through to RUN_INLINE, which since the
+ * continuation fix does scan the body correctly — so there was no bypass. But
+ * that was emergent rather than intended: a later tidy-up of RUN_INLINE to
+ * exclude block indicators would have silently stopped scanning these steps.
+ * Matching here makes it deliberate, and keeps the header out of the shell
+ * lines, where a `${{ }}` inside that YAML comment would otherwise be flagged
+ * despite never being substituted.
+ */
+const RUN_BLOCK = new RegExp(`^${INDENT}run:\\s*[|>][-+0-9]*\\s*(?:#.*)?$`)
 /** `run:` with the script inline on the same line. */
 const RUN_INLINE = new RegExp(`^${INDENT}run:\\s+(\\S.*)$`)
 
@@ -153,6 +177,15 @@ export function findViolations(fileText) {
       if (ALLOWED.some((pattern) => pattern.test(expression))) continue
       found.push({ line, expression })
     }
+    // An expression may span lines inside a block scalar, and this scanner
+    // works a line at a time — so `${{` with its `}}` on a later line matches
+    // nothing and would pass silently. Strip the complete matches and flag
+    // whatever opener is left. Failing loudly on a form we cannot read beats
+    // reporting a file clean we did not finish parsing; the fix is to put the
+    // expression on one line, or under `env:` where it belongs.
+    if (text.replace(EXPRESSION, '').includes(OPENER)) {
+      found.push({ line, expression: null, unterminated: true })
+    }
   }
   return found
 }
@@ -166,8 +199,12 @@ function main() {
   const failures = []
   for (const name of workflows) {
     const path = join(workflowDir, name)
-    for (const { line, expression } of findViolations(readFileSync(path, 'utf8'))) {
-      failures.push({ location: `${relative(repoRoot, path)}:${line}`, expression })
+    for (const { line, expression, unterminated } of findViolations(readFileSync(path, 'utf8'))) {
+      failures.push({
+        location: `${relative(repoRoot, path)}:${line}`,
+        expression,
+        unterminated,
+      })
     }
   }
 
@@ -177,8 +214,12 @@ function main() {
         `\${{ … }} is substituted into the script as TEXT before bash parses it, so the\n` +
         `value is code, not data. Bind it under the step's env: and read it as "$VAR".\n`,
     )
-    for (const { location, expression } of failures) {
-      console.error(`  ${location}\n    \${{ ${expression} }}`)
+    for (const { location, expression, unterminated } of failures) {
+      console.error(
+        unterminated
+          ? `  ${location}\n    \${{ with no closing }} on this line — put the expression on one line, or bind it under env:`
+          : `  ${location}\n    \${{ ${expression} }}`,
+      )
     }
     console.error(
       `\nIf an expression genuinely cannot carry repo-controlled text, add it to ALLOWED\n` +

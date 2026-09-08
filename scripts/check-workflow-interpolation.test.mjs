@@ -165,6 +165,84 @@ test('an inline run ends at a sibling key, not at the next interpolation', () =>
   assert.deepEqual(expressions(yaml), [])
 })
 
+test('flags an expression whose body contains a brace', () => {
+  // `format()` takes `{N}` placeholders, so a `}` before the delimiter is an
+  // ordinary form — and the dangerous one, since PR titles accept newlines.
+  // Under the old `[^}]*` this matched nothing at all.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: |',
+    "          echo ${{ format('{0}', github.event.pull_request.title) }}",
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), ["format('{0}', github.event.pull_request.title)"])
+})
+
+test('a brace-carrying expression does not mask a second one on the same line', () => {
+  // The old pattern reported only `github.ref` here, dropping the interpolation
+  // that mattered — a partial result reads exactly like a complete one.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    "      - run: echo ${{ format('{0}', github.head_ref) }} ${{ github.ref }}",
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), ["format('{0}', github.head_ref)", 'github.ref'])
+})
+
+test('scans the body of a block scalar whose header carries a comment', () => {
+  // `run: | # why` is legal YAML. RUN_BLOCK now matches it directly; before, it
+  // fell through to RUN_INLINE, which scanned the body correctly but only as an
+  // emergent consequence of regex ordering.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: | # why',
+    '          echo ${{ github.event.pull_request.title }}',
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), ['github.event.pull_request.title'])
+})
+
+test('does NOT flag an expression inside the block header YAML comment', () => {
+  // That comment is not part of the scalar, so Actions never substitutes into
+  // it. Flagging it would be a false positive that pushes people to work around
+  // the gate.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: | # see ${{ github.ref }}',
+    '          echo hi',
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), [])
+})
+
+test('flags an interpolation that spans lines rather than passing it silently', () => {
+  // This scanner reads a line at a time, so a `${{` closed on a later line
+  // matches nothing. Reporting the opener fails loudly on a form it cannot
+  // read, instead of calling the file clean without finishing it.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: |',
+    '          echo ${{',
+    '            github.event.pull_request.title',
+    '          }}',
+    '',
+  ].join('\n')
+  const found = findViolations(yaml)
+  assert.equal(found.length, 1)
+  assert.equal(found[0].unterminated, true)
+  assert.equal(found[0].line, 5)
+})
+
 test('honours the ALLOWED list, and only for an exact match', () => {
   const allowed = [
     'jobs:',
