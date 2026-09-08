@@ -261,12 +261,47 @@ export const Variants: Story = {
     // every assertion above green. So assert the SELECTOR SHAPE, which is
     // order-independent: every disabled border rule on this element must carry
     // the aria-invalid exclusion.
-    const disabledBorderClasses = [...invalidDisabled.classList].filter(
-      (name) => name.includes(':disabled]') && name.includes('border-(--input-border)'),
+    // Both disabled entry points need the guard, so drive the check off the
+    // list of conditions rather than a substring filter. An earlier version
+    // filtered on `':disabled]'`, which silently skipped the `data-[disabled=
+    // true]` twin — that spelling contains no such substring, so deleting the
+    // twin left the suite green.
+    const DISABLED_CONDITIONS = [
+      'has-[[data-slot=input-group-control]:disabled]',
+      'data-[disabled=true]',
+    ] as const
+    const wrapperClasses = [...invalidDisabled.classList]
+    for (const condition of DISABLED_CONDITIONS) {
+      const borderClass = wrapperClasses.find(
+        (name) => name.startsWith(condition) && name.includes('border-(--input-border)'),
+      )
+      await expect(`${condition} border fade present`).toBe(
+        borderClass ? `${condition} border fade present` : `${condition} border fade MISSING`,
+      )
+      await expect(borderClass).toContain('not-has-[[data-slot][aria-invalid=true]]')
+    }
+
+    // The HOVER half of the disabled treatment carries the identical tie, and
+    // needs the identical selector-shape guard. It cannot be asserted through
+    // rendered style at all: `userEvent` dispatches synthetic events that never
+    // move the real pointer, so `:hover` never engages in this harness.
+    //
+    // Both disabled entry points must suppress the hover surface — a control
+    // with `disabled`, and `data-disabled` on the group itself, which the addon
+    // also honours. A rule present for one and missing for the other produced a
+    // half-disabled control: faded hairline, live hover.
+    for (const condition of DISABLED_CONDITIONS) {
+      await expect(wrapperClasses).toContain(`${condition}:hover:bg-(--input-surface)`)
+    }
+    // ...and the danger hover surface must stand aside for BOTH of them, or an
+    // invalid group flagged through either path keeps painting it on hover.
+    const invalidHoverClasses = wrapperClasses.filter(
+      (name) => name.includes('aria-invalid=true') && name.includes(':hover:bg-'),
     )
-    await expect(disabledBorderClasses.length).toBeGreaterThan(0)
-    for (const name of disabledBorderClasses) {
-      await expect(name).toContain('not-has-[[data-slot][aria-invalid=true]]')
+    await expect(invalidHoverClasses.length).toBeGreaterThan(0)
+    for (const name of invalidHoverClasses) {
+      await expect(name).toContain('not-has-[[data-slot=input-group-control]:disabled]')
+      await expect(name).toContain('not-data-[disabled=true]')
     }
 
     // Inline buttons sit on the 4px control radius. `check:radius` allowlists

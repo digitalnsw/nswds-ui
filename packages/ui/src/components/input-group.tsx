@@ -45,7 +45,14 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // pointer at `--input-surface-hover`, identical to an enabled group.
         // `pointer-events-none` on the wrapper is not the fix: it would also
         // kill an enabled action sitting inside a disabled-field group.
+        //
+        // Mirrored for `data-disabled`, the manual escape hatch the addon also
+        // honours. Every wrapper rule keyed on a disabled control needs its
+        // twin, or the hatch produces a HALF-disabled control — measured: the
+        // addon's hairline faded and its cursor changed while this border and
+        // hover surface stayed fully live.
         'has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-surface)',
+        'data-[disabled=true]:hover:bg-(--input-surface)',
         // Disabled — the group fades its own CHROME: this border, plus the
         // addon's hairline and cursor. Every child owns its own state, and
         // nothing in this component puts `opacity` on an ancestor.
@@ -73,7 +80,10 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // A field that fails validation and is then disabled during submit hits
         // exactly this: the faded grey would erase the error border. Making the
         // two mutually exclusive decides it by MATCHING instead of by order.
+        // The `data-disabled` twin below carries the same exclusion, for the
+        // same reason: an error border must outlive either disabled path.
         'has-[[data-slot=input-group-control]:disabled]:not-has-[[data-slot][aria-invalid=true]]:border-(--input-border)/50',
+        'data-[disabled=true]:not-has-[[data-slot][aria-invalid=true]]:border-(--input-border)/50',
         // Focus — the group draws one outline for whichever control is focused;
         // InputGroupInput / InputGroupTextarea suppress their own. Offset and
         // colour are unconditional because neither renders anything until
@@ -94,8 +104,12 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // emission order would let an invalid AND disabled field paint the
         // danger hover surface. Mutually exclusive selectors decide it by
         // MATCHING, and disabled is the one that should win: a dead control
-        // gives no hover feedback whatever its validation state.
-        'has-[[data-slot][aria-invalid=true]]:not-has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-invalid-surface-hover)',
+        // gives no hover feedback whatever its validation state. BOTH disabled
+        // paths are excluded — the hover rules are (0,3,0) for `data-disabled`
+        // against this rule's (0,6,0), so excluding only the control-disabled
+        // one would have let an invalid group flagged via the hatch keep
+        // painting the danger hover surface.
+        'has-[[data-slot][aria-invalid=true]]:not-has-[[data-slot=input-group-control]:disabled]:not-data-[disabled=true]:hover:bg-(--input-invalid-surface-hover)',
         // An InputGroupAction sits flush to the trailing edge with square
         // corners, so the group clips it to its own radius — cheaper and
         // RTL-correct next to per-corner arithmetic on the action. Scoped to
