@@ -565,13 +565,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.
 
-### Storybook suite reliability — two guards, one workaround
+### Storybook suite reliability — configuration guards and built-in protection
 
 The Storybook Vitest browser suite (`npm run test -w @workspace/storybook`)
 runs every story file as a browser test on CI's 2-core runners. Two
 configuration guards (the pre-bundle list and `noDiscovery`, first bullet) and
-one workaround (the GC hook, second bullet) keep it stable, and none of them
-is optional:
+Vitest's built-in Chromium disk protection (second bullet) keep it stable.
+Keep both configuration guards and the Vitest version floor that provides
+the built-in protection:
 
 - **`optimizeDeps.include` must list every bare import reachable from
   `packages/ui/src`** (`apps/storybook/vitest.config.ts`). Stories import
@@ -584,22 +585,23 @@ is optional:
   `aria-query`) must be listed explicitly or every story file fails at import
   with "does not provide an export named 'jsxDEV'". `check:optimize-deps`
   enforces list completeness in CI.
-- **`apps/storybook/vitest.setup.ts` forces a Chromium garbage collection
-  after every story file.** Chromium leaks ~2 MiB of shared memory per
+- **Chromium disk exhaustion is handled upstream now — vitest must stay at
+  or above 4.1.11.** Chromium leaks ~2 MiB of shared memory per
   304-revalidated script load, and Playwright's `--disable-dev-shm-usage`
   turns the leaked blocks into deleted-but-open files on the runner's ~14 GB
   disk. Under per-story iframe isolation the module graph is revalidated per
   file, so free disk can collapse at ~1.2 GB/s mid-run and kill the tester
   page — surfacing as a roaming
   `Cannot connect to the iframe` / `Failed to fetch dynamically imported module`
-  failure that never reproduces locally. The per-file
-  `cdp().send('HeapProfiler.collectGarbage')` hook keeps the disk floor high
-  (~11.5 GB vs a 0.33–1.36 GB cliff without it). This is a workaround for
-  [vitest#9437](https://github.com/vitest-dev/vitest/issues/9437); its removal
-  condition — a released vitest carrying
-  [vitest#10912](https://github.com/vitest-dev/vitest/pull/10912) — is tracked
-  in issue #126. Do not remove it early, and judge any change to it on several
-  CI runs, never one: the unmasked failure was probabilistic (~1 pass in 4).
+  failure that never reproduces locally
+  ([vitest#9437](https://github.com/vitest-dev/vitest/issues/9437)).
+  vitest 4.1.11 ships the fix
+  ([#10951](https://github.com/vitest-dev/vitest/pull/10951), the v4 backport
+  of [#10912](https://github.com/vitest-dev/vitest/pull/10912)): the browser
+  provider triggers the collection itself when disk runs low, so
+  `apps/storybook` needs no setup file and declares none. The `^4.1.11` floor
+  in `apps/storybook/package.json` is what keeps that true — do not lower it. If this ever recurs, judge any change on several CI runs,
+  never one: the unmasked failure was probabilistic (~1 pass in 4).
 
 Diagnosing a suspected recurrence: deleted-but-open files are invisible to
 `du` and to any post-run inspection — only a `df` poll **during** the run sees
@@ -993,4 +995,4 @@ Only live items belong here — a fixed entry is deleted, not struck through.
 | #   | Issue                                                   | Where / status                                                                                                                                        |
 | --- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | `apps/web` has no content (`page.tsx` returns null)     | Expected; it's a dev sandbox                                                                                                                          |
-| 2   | Storybook Chromium GC workaround awaits an upstream fix | `apps/storybook/vitest.setup.ts`; remove when a released vitest carries vitest#10912 — tracked in issue #126, blocked on an upstream release (see §5) |
+| 2   | vitest majors are blocked while Storybook's addon lags   | `@storybook/addon-vitest` peers vitest `^3 \|\| ^4` in every release incl. 11.0.0-alpha.0, so vitest 5 cannot resolve; Renovate blocks the major (nswds-devops `default.json`). Unblocks when the addon's peer admits `^5` — upstream storybookjs/storybook#36082, #35752 |
