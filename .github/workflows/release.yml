@@ -1,3 +1,14 @@
+# OWNED BY THIS REPO — not synced from digitalnsw/nswds-devops, unlike the
+# seven workflows here that open with a "Synced from … DO NOT EDIT" header.
+# nswds-devops `.github/sync.yml` puts nswds-ui in group 2a, which lists each
+# workflow stub INDIVIDUALLY precisely so this file is left alone ("keeps its
+# own release.yml AND release config"). Groups 1 and 3 map `workflow-stubs/`
+# → `.github/workflows/` wholesale, which would overwrite it; that is the
+# difference, and it is the reason to check the group before assuming a shared
+# release pipeline. Edit this file here — there is no upstream copy to change,
+# and nswds-devops' reusable-release.yml carries no npm verification at all.
+# (The "Mirrors nswds-devops reusable-release.yml" note further down is about
+# the deploy-key pattern it sits on, not about this file being synced.)
 name: Release
 
 on:
