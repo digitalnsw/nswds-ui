@@ -19,12 +19,16 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    # Bounded deliberately. This job contains two polling loops (~2 min for
-    # npm, ~10 min for the registry deploy) and an npm ci, and it is the one
-    # job in the repo nobody is watching when it runs. Without a timeout a
-    # wedged poll or a hung install sits on GitHub's 6-hour default before
-    # alert-on-failure can fire — which defeats the point of alert-on-failure.
-    timeout-minutes: 30
+    # Bounded deliberately. This job contains two polling loops (~10 min of
+    # sleeps each, for npm and for the registry deploy) and an npm ci, and it
+    # is the one job in the repo nobody is watching when it runs. Without a
+    # timeout a wedged poll or a hung install sits on GitHub's 6-hour default
+    # before alert-on-failure can fire — defeating the point of that job.
+    # Worst case is both polls exhausting: ~10 min for npm, and up to ~17 min
+    # for the registry (10 min of sleeps plus 20 curls that can each burn
+    # their 20s --max-time), on top of ~5 min of install, build and release.
+    # 40 clears that; 30 did not.
+    timeout-minutes: 40
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
       # commit over SSH as a deploy key that's a bypass actor on the ruleset
@@ -91,24 +95,51 @@ jobs:
       # tags with no package behind them (exactly how v1.8.0–v2.1.0 went
       # missing for a week). Poll npm until the new version appears; fail
       # loudly if it never does.
+      #
+      # The budget and the --prefer-online are each load-bearing, for separate
+      # reasons.
+      #
+      #   - `npm publish` returns BEFORE the version is readable, and says so:
+      #     "Your package is being processed and may take a few minutes to
+      #     become available." This is what called v7.0.0 a failed release and
+      #     filed a release-failure issue against a publish that had already
+      #     succeeded — semantic-release logged "Published @nswds/ui@7.0.0" at
+      #     23:49:29, npm recorded the version at 23:52:06, and the budget here
+      #     was 100 seconds. Hence ~10 minutes, matching the registry poll.
+      #   - `npm view` is cache-first, and the packument is served
+      #     `cache-control: public, max-age=300`. setup-node's `cache: npm`
+      #     restores ~/.npm, and both `npm ci` and the `npm install
+      #     --package-lock-only` inside the release step resolve @nswds/ui, so
+      #     a packument fetched minutes earlier in this same job can be replayed
+      #     from _cacache without a request ever leaving the runner — for
+      #     longer than the old budget ran. Whether that happened on v7.0.0 is
+      #     unknowable after the fact (a stale hit and a slow publish are
+      #     indistinguishable from the outside), but a longer budget alone would
+      #     not fix it: within max-age the loop would poll a local file 20 times
+      #     and conclude the same thing. `--prefer-online` forces revalidation.
+      #
+      # A generous budget costs time only when the release has genuinely failed,
+      # and nobody is waiting on this job. A tight one costs a false alarm on a
+      # good release, which is worse — it trains the next person to disbelieve
+      # the alert.
       - name: Verify the release reached npm
         if: steps.before_release.outputs.tag != steps.after_release.outputs.tag
         run: |
           expected="${{ steps.after_release.outputs.tag }}"
           expected="${expected#@nswds/ui-v}"
           echo "Verifying npm has @nswds/ui@${expected}…"
-          for attempt in 1 2 3 4 5 6; do
-            published="$(npm view "@nswds/ui@${expected}" version 2>/dev/null || true)"
+          for attempt in $(seq 1 20); do
+            published="$(npm view --prefer-online "@nswds/ui@${expected}" version 2>/dev/null || true)"
             if [ "$published" = "$expected" ]; then
               echo "✔ npm has @nswds/ui@${expected}"
               exit 0
             fi
-            if [ "$attempt" -lt 6 ]; then
-              echo "Attempt ${attempt}/6: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in 20s…"
-              sleep 20
+            if [ "$attempt" -lt 20 ]; then
+              echo "Attempt ${attempt}/20: npm does not have ${expected} yet (got '${published:-nothing}'); retrying in 30s…"
+              sleep 30
             fi
           done
-          echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} never appeared on npm — the publish failed or was skipped. Check the Release step log; consumers are still receiving the previous version."
+          echo "::error::Tag @nswds/ui-v${expected} was created but @nswds/ui@${expected} did not appear on npm within ~10 minutes — the publish failed, was skipped, or is stuck in npm's post-publish processing. Check the Release step log for a 'Published @nswds/ui@${expected}' line: if it is there the publish itself succeeded and this is npm-side latency; if it is not, consumers are still receiving the previous version."
           exit 1
 
       # The shadcn registry is the second distribution channel and must track

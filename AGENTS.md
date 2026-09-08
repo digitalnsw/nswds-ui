@@ -687,8 +687,20 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
    semantic-release pushes the version-bump commit and tag **before** the npm
    publish step — a failed publish would otherwise leave green-looking tags
    with no package behind them:
-   - **npm**: polls `npm view @nswds/ui@<version>` until the new version
-     appears; fails loudly if it never does.
+   - **npm**: polls `npm view --prefer-online @nswds/ui@<version>` (~10-minute
+     budget) until the new version appears; fails loudly if it never does.
+     The budget and the flag are each load-bearing, for separate reasons.
+     `npm publish` returns **before** the version is readable — it prints
+     "Your package is being processed and may take a few minutes to become
+     available" — which is how v7.0.0 was declared a failed release and had a
+     `release-failure` issue filed against it: the publish succeeded at
+     23:49:29, npm recorded the version at 23:52:06, and the budget was 100
+     seconds. Separately, `npm view` is cache-first and the packument is
+     served `max-age=300`, so with `cache: npm` restoring `~/.npm` the poll
+     can replay a packument this same job already fetched (via `npm ci`, or
+     the `npm install --package-lock-only` inside the release step) rather
+     than asking npm at all — for longer than the old budget ran. A longer
+     budget does not fix that one; `--prefer-online` does.
    - **registry**: polls the deployed registry's `/r/version.json` (~10-minute
      budget) until it reports the new version. Vercel deploys the registry
      from the version-bump commit semantic-release just pushed, gated by the
