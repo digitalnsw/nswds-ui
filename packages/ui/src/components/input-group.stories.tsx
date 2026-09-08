@@ -5,6 +5,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
 
+import { compositeOver, expectContrast, resolveColor } from './story-helpers.js'
+
 import { IconAttachMoney } from '../icons/attach-money.js'
 import { IconSearch } from '../icons/search.js'
 import {
@@ -96,7 +98,13 @@ export const Variants: Story = {
         <InputGroupTextarea placeholder='Leave a comment' aria-label='Comment' rows={3} />
         <InputGroupAddon align='block-end'>
           <InputGroupText>Markdown supported</InputGroupText>
-          <InputGroupButton className='ms-auto'>Send</InputGroupButton>
+          {/* `sm` on purpose: the other inline button is the default `xs`, and
+              the radius assertion below has to exercise both size steps — each
+              declares its own corner, so covering one leaves the other free to
+              drift back off the scale. */}
+          <InputGroupButton size='sm' className='ms-auto'>
+            Send
+          </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
 
@@ -109,12 +117,33 @@ export const Variants: Story = {
         <InputGroupInput placeholder='Invalid' aria-label='Invalid' aria-invalid />
       </InputGroup>
 
-      {/* Disabled */}
+      {/* Disabled — carries BOTH a glyph and an InputGroupText on purpose. An
+          icon-only row cannot show whether an affix fade reaches a text span
+          that sets its own colour, and two attempts to fade the affix were
+          waved through against exactly that blind spot. */}
+      <InputGroup>
+        <InputGroupAddon>
+          <IconSearch />
+          <InputGroupText>AUD</InputGroupText>
+        </InputGroupAddon>
+        <InputGroupInput placeholder='Disabled' aria-label='Disabled' disabled />
+      </InputGroup>
+
+      {/* Disabled AND invalid — a field that failed validation and was then
+          disabled during submit. The error border has to survive: the disabled
+          border rule and the aria-invalid one both set `border-color` at the
+          same specificity, so they are made mutually exclusive rather than
+          left to emission order, and check:cascade cannot catch that. */}
       <InputGroup>
         <InputGroupAddon>
           <IconSearch />
         </InputGroupAddon>
-        <InputGroupInput placeholder='Disabled' aria-label='Disabled' disabled />
+        <InputGroupInput
+          placeholder='Disabled and invalid'
+          aria-label='Disabled and invalid'
+          aria-invalid
+          disabled
+        />
       </InputGroup>
     </div>
   ),
@@ -143,6 +172,245 @@ export const Variants: Story = {
     const footerStyles = getComputedStyle(footer)
     await expect(footerStyles.borderTopWidth).toBe('1px')
     await expect(footerStyles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+
+    // Pin the disabled affix treatment, comparing against the ENABLED group's
+    // label rather than a literal so a token change cannot make this vacuous.
+    const groups = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')]
+    const labelIn = (group: HTMLElement) =>
+      [...group.querySelectorAll<HTMLElement>('[data-align="inline-start"] span')].find(
+        (span) => span.textContent?.trim() === 'AUD',
+      )
+    // Select on the label FIRST, then split by disabled — most groups in this
+    // story have no text affix at all, so filtering by disabled first picks the
+    // icon-only search row and finds nothing.
+    const labelled = groups.filter((group) => labelIn(group))
+    const enabledGroup = labelled.find((group) => !group.querySelector(':disabled'))
+    const disabledGroup = labelled.find((group) => group.querySelector(':disabled'))
+    const enabledLabel = enabledGroup && labelIn(enabledGroup)
+    const disabledLabel = disabledGroup && labelIn(disabledGroup)
+    if (!enabledLabel || !disabledLabel) {
+      throw new Error('Expected an enabled and a disabled group, each with an "AUD" text affix.')
+    }
+    const disabledAffix = disabledLabel.closest<HTMLElement>('[data-align="inline-start"]')
+    const disabledIcon = disabledAffix?.querySelector('svg')
+    if (!disabledAffix || !disabledIcon) {
+      throw new Error('Expected the disabled affix to hold a glyph beside its label.')
+    }
+    // The affix stays legible in a disabled group: it is an adornment carrying
+    // information ("AUD"), not part of the inactive control, and axe measures a
+    // faded copy at 2.43:1 with no way to tell it belongs to something
+    // disabled. Nothing here may fade — not the addon, not its children.
+    await expect(getComputedStyle(disabledAffix).opacity).toBe('1')
+    await expect(getComputedStyle(disabledLabel).opacity).toBe('1')
+    await expect(getComputedStyle(disabledIcon).opacity).toBe('1')
+    await expect(getComputedStyle(disabledLabel).color).toBe(getComputedStyle(enabledLabel).color)
+    // The disabled signal lives on the chrome instead: the group's border goes
+    // translucent and the affix swaps its caret for `not-allowed`.
+    const disabledGroupEl = disabledLabel.closest<HTMLElement>('[data-slot="input-group"]')
+    const enabledGroupEl = enabledLabel.closest<HTMLElement>('[data-slot="input-group"]')
+    if (!disabledGroupEl || !enabledGroupEl) {
+      throw new Error('Expected both labelled affixes to sit inside a group.')
+    }
+    await expect(getComputedStyle(disabledGroupEl).borderTopColor).not.toBe(
+      getComputedStyle(enabledGroupEl).borderTopColor,
+    )
+    await expect(getComputedStyle(disabledAffix).cursor).toBe('not-allowed')
+
+    // The addon paints its OWN hairline, and it fades too. Asserted separately
+    // from the wrapper's border above, which is a different element — without
+    // this, deleting the addon's `border-(--input-border)/50` left the suite
+    // green. `inline-start` divides with `border-e`, so read that edge.
+    const enabledAffix = enabledLabel.closest<HTMLElement>('[data-align="inline-start"]')
+    if (!enabledAffix) {
+      throw new Error('Expected the enabled affix to be an inline-start addon.')
+    }
+    await expect(getComputedStyle(disabledAffix).borderInlineEndColor).not.toBe(
+      getComputedStyle(enabledAffix).borderInlineEndColor,
+    )
+
+    // A field that failed validation and was then disabled keeps its ERROR
+    // border. The disabled and aria-invalid border rules tie on specificity, so
+    // they are mutually exclusive by selector rather than by emission order —
+    // a consuming app's Tailwind build can re-emit ours after ours, and
+    // check:cascade only flags conditional at-rule pairs, so nothing else
+    // catches a regression here.
+    const invalidOnly = groups.find(
+      (group) => group.querySelector('[aria-invalid="true"]') && !group.querySelector(':disabled'),
+    )
+    const invalidDisabled = groups.find(
+      (group) => group.querySelector('[aria-invalid="true"]') && group.querySelector(':disabled'),
+    )
+    if (!invalidOnly || !invalidDisabled) {
+      throw new Error('Expected both an invalid group and a disabled+invalid group.')
+    }
+    await expect(getComputedStyle(invalidDisabled).borderTopColor).toBe(
+      getComputedStyle(invalidOnly).borderTopColor,
+    )
+    await expect(getComputedStyle(invalidDisabled).borderTopWidth).toBe('2px')
+    // ...and it is specifically NOT the faded grey the plain disabled row gets.
+    await expect(getComputedStyle(invalidDisabled).borderTopColor).not.toBe(
+      getComputedStyle(disabledGroupEl).borderTopColor,
+    )
+
+    // The three assertions above pin the BEHAVIOUR but cannot pin the FIX, and
+    // that gap is the whole point of this rule. Dropping the exclusion leaves
+    // the two rules tied on specificity, and in this build's emission order the
+    // invalid rule still wins — so the rendered border stays correct here and
+    // breaks only in a consuming app whose Tailwind build emits ours later.
+    // Verified: reverting to the plain `has-[…disabled]:border-…` selector left
+    // every assertion above green. So assert the SELECTOR SHAPE, which is
+    // order-independent: every disabled border rule on this element must carry
+    // the aria-invalid exclusion.
+    // Both disabled entry points need the guard, so drive the check off the
+    // list of conditions rather than a substring filter. An earlier version
+    // filtered on `':disabled]'`, which silently skipped the `data-[disabled=
+    // true]` twin — that spelling contains no such substring, so deleting the
+    // twin left the suite green.
+    const DISABLED_CONDITIONS = [
+      'has-[[data-slot=input-group-control]:disabled]',
+      'data-[disabled=true]',
+    ] as const
+    const wrapperClasses = [...invalidDisabled.classList]
+    for (const condition of DISABLED_CONDITIONS) {
+      const borderClass = wrapperClasses.find(
+        (name) => name.startsWith(condition) && name.includes('border-(--input-border)'),
+      )
+      await expect(`${condition} border fade present`).toBe(
+        borderClass ? `${condition} border fade present` : `${condition} border fade MISSING`,
+      )
+      await expect(borderClass).toContain('not-has-[[data-slot][aria-invalid=true]]')
+    }
+
+    // The HOVER half of the disabled treatment carries the identical tie, and
+    // needs the identical selector-shape guard. It cannot be asserted through
+    // rendered style at all: `userEvent` dispatches synthetic events that never
+    // move the real pointer, so `:hover` never engages in this harness.
+    //
+    // Both disabled entry points must suppress the hover surface — a control
+    // with `disabled`, and `data-disabled` on the group itself, which the addon
+    // also honours. A rule present for one and missing for the other produced a
+    // half-disabled control: faded hairline, live hover.
+    for (const condition of DISABLED_CONDITIONS) {
+      await expect(wrapperClasses).toContain(`${condition}:hover:bg-(--input-surface)`)
+    }
+    // ...and the danger hover surface must stand aside for BOTH of them, or an
+    // invalid group flagged through either path keeps painting it on hover.
+    const invalidHoverClasses = wrapperClasses.filter(
+      (name) => name.includes('aria-invalid=true') && name.includes(':hover:bg-'),
+    )
+    await expect(invalidHoverClasses.length).toBeGreaterThan(0)
+    for (const name of invalidHoverClasses) {
+      await expect(name).toContain('not-has-[[data-slot=input-group-control]:disabled]')
+      await expect(name).toContain('not-data-[disabled=true]')
+    }
+
+    // Inline buttons sit on the 4px control radius. `check:radius` allowlists
+    // `rounded-[calc(var(--radius-sm)-1px)]` for legitimate inner-border cases,
+    // so it cannot catch that value returning to these size steps, where the
+    // button floats free in addon padding and its outer corner is a control
+    // corner. Both steps declare their own radius, so both must be exercised —
+    // asserting only the default `xs` left `sm` free to drift back.
+    const sizes = [...buttons].map((button) => button.dataset.size)
+    await expect(new Set(sizes)).toEqual(new Set(['xs', 'sm']))
+    for (const button of buttons) {
+      await expect(`${button.dataset.size}:${getComputedStyle(button).borderRadius}`).toBe(
+        `${button.dataset.size}:4px`,
+      )
+    }
+  },
+}
+
+/** The manual hook styles chrome; native disabled state belongs to each child. */
+export const DisabledChrome: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          '`data-disabled="true"` changes only the group border, addon hairline/cursor and hover surface. Set `disabled` on each input or textarea to make it inactive and fade its value. Actions remain independently enabled.',
+      },
+    },
+  },
+  render: () => (
+    <div className='flex max-w-md flex-col gap-6'>
+      {(['input', 'textarea'] as const).map((kind) =>
+        [false, true].map((disabled) => (
+          <InputGroup
+            key={`${kind}-${disabled}`}
+            data-disabled='true'
+            style={{ transition: 'none' }}
+          >
+            {kind === 'input' ? (
+              <InputGroupInput
+                aria-label={`${kind}-${disabled}`}
+                disabled={disabled}
+                defaultValue='Value'
+              />
+            ) : (
+              <InputGroupTextarea
+                aria-label={`${kind}-${disabled}`}
+                disabled={disabled}
+                defaultValue='Value'
+              />
+            )}
+            <InputGroupAddon align='block-end'>
+              <InputGroupText>Independent action</InputGroupText>
+              <InputGroupButton
+                onClick={(event) => {
+                  event.currentTarget.textContent = 'Applied'
+                }}
+              >
+                Apply
+              </InputGroupButton>
+            </InputGroupAddon>
+          </InputGroup>
+        )),
+      )}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const chrome = []
+    for (const kind of ['input', 'textarea']) {
+      for (const disabled of [false, true]) {
+        const control = canvas.getByRole('textbox', { name: `${kind}-${disabled}` })
+        const group = control.closest<HTMLElement>('[data-slot="input-group"]')!
+        const addon = group.querySelector<HTMLElement>('[data-slot="input-group-addon"]')!
+        const button = within(group).getByRole('button', { name: 'Apply' })
+        await expect(getComputedStyle(control).opacity).toBe(disabled ? '0.5' : '1')
+        if (disabled) {
+          await expect(control).toBeDisabled()
+          control.focus()
+          await expect(control).not.toHaveFocus()
+        } else {
+          await expect(control).toBeEnabled()
+          await userEvent.type(control, ' edited')
+          await expect(control).toHaveValue('Value edited')
+          await expect(control).toHaveFocus()
+        }
+        await expect(getComputedStyle(addon).cursor).toBe('not-allowed')
+        chrome.push([
+          getComputedStyle(group).borderTopColor,
+          getComputedStyle(addon).borderTopColor,
+        ])
+        // Walk ancestors: a button's own opacity cannot detect an ancestor fade.
+        let opacity = 1
+        for (let node: HTMLElement | null = button; node; node = node.parentElement) {
+          opacity *= Number.parseFloat(getComputedStyle(node).opacity)
+        }
+        await expect(opacity).toBe(1)
+        await expect(button).toBeEnabled()
+        await userEvent.click(button)
+        await expect(button).toHaveTextContent('Applied')
+        // Removing the hook changes both painted edges only for a live control.
+        if (!disabled) {
+          group.removeAttribute('data-disabled')
+          await expect(getComputedStyle(group).borderTopColor).not.toBe(chrome.at(-1)![0])
+          await expect(getComputedStyle(addon).borderTopColor).not.toBe(chrome.at(-1)![1])
+          group.setAttribute('data-disabled', 'true')
+        }
+      }
+    }
+    for (const paint of chrome) await expect(paint).toEqual(chrome[0])
   },
 }
 
@@ -238,19 +506,72 @@ export const AttachedAction: Story = {
     // asserting the REST value under a hover-shaped name. Hover is verified
     // with a real pointer instead (see the design audit for this component).
 
-    // A disabled control fades the WHOLE group. Input's own `disabled:opacity-50`
-    // only fades its own box, which left the border, the affix panel and the
-    // cursor reading as live. The control neutralises its copy so the two
-    // cannot compound to 0.25.
+    // A disabled control fades the group's CHROME — its border here, its affix
+    // panel in the addon variants — while every child keeps its own state.
+    //
+    // The wrapper must NEVER carry `opacity`: ancestor opacity composites the
+    // whole subtree and a child cannot opt out of it, so an enabled action
+    // beside a disabled field would render at 50% (measured 3.12:1, under the
+    // 4.5:1 floor) while still being clickable. These assertions pin that.
     const disabledControl = disabledGroup.querySelector<HTMLElement>(
       '[data-slot="input-group-control"]',
     )
     if (!disabledControl) {
       throw new Error('Expected the disabled group to hold a control.')
     }
-    await expect(getComputedStyle(disabledGroup).opacity).toBe('0.5')
-    await expect(getComputedStyle(disabledControl).opacity).toBe('1')
+    await expect(getComputedStyle(disabledGroup).opacity).toBe('1')
     await expect(getComputedStyle(firstGroup).opacity).toBe('1')
+    // The control still fades itself, exactly as a bare disabled Input does.
+    await expect(getComputedStyle(disabledControl).opacity).toBe('0.5')
+    // ...and the chrome fades with it: the border goes translucent.
+    await expect(getComputedStyle(disabledGroup).borderTopColor).not.toBe(
+      getComputedStyle(firstGroup).borderTopColor,
+    )
+
+    // The regression that matters: a disabled control must not drag an ENABLED
+    // button down with it.
+    //
+    // This has to be measured on a group whose action is NESTED IN AN ADDON,
+    // and as an EFFECTIVE opacity. An earlier version of this test asserted
+    // `getComputedStyle(action).opacity` on a group whose action is a direct
+    // child of InputGroup, which is the one composition that structurally
+    // cannot fail — it stayed green while a nested action rendered at 0.5.
+    // Ancestor opacity does not show up on the element's own computed style,
+    // so walk the chain and multiply.
+    const effectiveOpacity = (el: HTMLElement) => {
+      let value = 1
+      let node: HTMLElement | null = el
+      while (node && node !== canvasElement) {
+        value *= Number.parseFloat(getComputedStyle(node).opacity)
+        node = node.parentElement
+      }
+      return value
+    }
+
+    const nestedGroup = groups.find((group) => {
+      const addon = group.querySelector('[data-slot="input-group-addon"]')
+      const action = group.querySelector('[data-slot="input-group-action"]')
+      return Boolean(addon && action && addon.contains(action))
+    })
+    if (!nestedGroup) {
+      throw new Error('Expected one group to nest its action inside an addon.')
+    }
+    const nestedAction = nestedGroup.querySelector<HTMLButtonElement>(
+      '[data-slot="input-group-action"]',
+    )
+    const nestedControl = nestedGroup.querySelector<HTMLTextAreaElement>(
+      '[data-slot="input-group-control"]',
+    )
+    if (!nestedAction || !nestedControl) {
+      throw new Error('Expected the nested group to hold both a control and an action.')
+    }
+
+    nestedControl.disabled = true
+    await expect(nestedAction).toBeEnabled()
+    // The action is enabled, so it must stay fully legible no matter which
+    // ancestor fades. 0.5 here means an ancestor took `opacity`.
+    await expect(effectiveOpacity(nestedAction)).toBe(1)
+    nestedControl.disabled = false
   },
 }
 
@@ -319,6 +640,78 @@ export const ActionFills: Story = {
       .filter((a) => a.textContent?.trim() === 'Apply')
       .map((a) => getComputedStyle(a).backgroundColor)
     await expect(new Set(fills).size).toBe(3)
+
+    // Each fill's focus ring must clear 3:1 against the fill it is drawn on
+    // (WCAG 1.4.11). `subtle` cannot use the base `--input-ring`: that grey
+    // measured 2.70:1 on the tinted fill, so it rings in `--btn-bg` instead.
+    // The ring is drawn INSIDE the segment, because the group clips anything
+    // outside it. Programmatic focus is enough — Button rings on `focus:`, not
+    // `focus-visible:`.
+    // The ring is drawn over the action's own fill, which for `open` and
+    // `subtle` is translucent — so flatten it onto the first opaque surface
+    // behind it. `contrastRatio` refuses a translucent background rather than
+    // guessing, which is what forces this to be done properly.
+    const opaqueBackdropOf = (element: HTMLElement) => {
+      let node: HTMLElement | null = element
+      const layers: ReturnType<typeof resolveColor>[] = []
+      while (node) {
+        const own = resolveColor(getComputedStyle(node).backgroundColor)
+        if (own.a > 0) {
+          layers.push(own)
+          if (own.a >= 1) break
+        }
+        node = node.parentElement
+      }
+      let base = { r: 255, g: 255, b: 255 }
+      for (const layer of layers.reverse()) {
+        base = compositeOver(layer, base)
+      }
+      return base
+    }
+
+    const ringOf = (variant: string) => {
+      const action = [...actions].find((a) => a.dataset.variantAction === variant)
+      if (!action) {
+        throw new Error(`No action rendered for the "${variant}" fill.`)
+      }
+      action.focus()
+      const styles = getComputedStyle(action)
+      // The fill lives on `::before`, not on the button's own background.
+      const fill = resolveColor(getComputedStyle(action, '::before').backgroundColor)
+      const behind = compositeOver(fill, opaqueBackdropOf(action))
+      const ring = {
+        colour: styles.outlineColor,
+        width: styles.outlineWidth,
+        offset: styles.outlineOffset,
+        backdrop: `rgb(${Math.round(behind.r)}, ${Math.round(behind.g)}, ${Math.round(behind.b)})`,
+      }
+      action.blur()
+      return ring
+    }
+
+    const subtleRing = ringOf('subtle')
+    const openRing = ringOf('open')
+    const solidRing = ringOf('solid')
+
+    for (const [variant, ring] of [
+      ['open', openRing],
+      ['subtle', subtleRing],
+      ['solid', solidRing],
+    ] as const) {
+      await expect(`${variant}:${ring.width}`).toBe(`${variant}:2px`)
+      await expect(`${variant}:${ring.offset}`).toBe(`${variant}:-2px`)
+      // Measure the ratio, do not merely require a different colour: the
+      // 2.70:1 ring this fix replaced was also a different colour from its
+      // fill, so an inequality check would have accepted it.
+      expectContrast(ring.colour, ring.backdrop, {
+        minimum: 3,
+        label: `${variant} action focus ring against the surface it is drawn on`,
+      })
+    }
+
+    // `subtle` specifically must NOT fall back to the group's grey ring, which
+    // is what the other two fills legitimately use against their own backdrops.
+    await expect(subtleRing.colour).not.toBe(openRing.colour)
 
     // Labels must be optically centred. Button's base is `items-baseline`,
     // which only reads centred while its own vertical padding balances the line
