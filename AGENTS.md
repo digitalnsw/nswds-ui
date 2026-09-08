@@ -689,18 +689,25 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
    with no package behind them:
    - **npm**: polls `npm view --prefer-online @nswds/ui@<version>` (~10-minute
      budget) until the new version appears; fails loudly if it never does.
-     The budget and the flag are each load-bearing, for separate reasons.
+     The budget and the flag are both load-bearing, and neither substitutes
+     for the other.
      `npm publish` returns **before** the version is readable — it prints
      "Your package is being processed and may take a few minutes to become
      available" — which is how v7.0.0 was declared a failed release and had a
      `release-failure` issue filed against it: the publish succeeded at
      23:49:29, npm recorded the version at 23:52:06, and the budget was 100
-     seconds. Separately, `npm view` is cache-first and the packument is
-     served `max-age=300`, so with `cache: npm` restoring `~/.npm` the poll
-     can replay a packument this same job already fetched (via `npm ci`, or
-     the `npm install --package-lock-only` inside the release step) rather
-     than asking npm at all — for longer than the old budget ran. A longer
-     budget does not fix that one; `--prefer-online` does.
+     seconds. Separately, the packument is cached **twice** — it is served
+     `max-age=300` — and the flag and the budget close one layer each, so
+     neither is safe to trim on the strength of the other. Locally,
+     `npm view` is cache-first over the `~/.npm` that `cache: npm` restores,
+     and this same job already resolved `@nswds/ui` (via `npm ci`, and the
+     `npm install --package-lock-only` inside the release step), so without
+     `--prefer-online` the poll can replay that packument for the full
+     max-age without asking npm at all. `--prefer-online` forces the request
+     but cannot make the answer fresh: the registry sits behind an edge cache
+     (responses carry a non-zero `age`), so a revalidation can still be served
+     from a copy up to 5 minutes old — which only a budget longer than
+     max-age covers.
    - **registry**: polls the deployed registry's `/r/version.json` (~10-minute
      budget) until it reports the new version. Vercel deploys the registry
      from the version-bump commit semantic-release just pushed, gated by the

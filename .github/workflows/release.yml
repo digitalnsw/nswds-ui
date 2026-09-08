@@ -96,8 +96,8 @@ jobs:
       # missing for a week). Poll npm until the new version appears; fail
       # loudly if it never does.
       #
-      # The budget and the --prefer-online are each load-bearing, for separate
-      # reasons.
+      # The ~10-minute budget and the --prefer-online are both load-bearing,
+      # and neither substitutes for the other.
       #
       #   - `npm publish` returns BEFORE the version is readable, and says so:
       #     "Your package is being processed and may take a few minutes to
@@ -106,17 +106,22 @@ jobs:
       #     succeeded — semantic-release logged "Published @nswds/ui@7.0.0" at
       #     23:49:29, npm recorded the version at 23:52:06, and the budget here
       #     was 100 seconds. Hence ~10 minutes, matching the registry poll.
-      #   - `npm view` is cache-first, and the packument is served
-      #     `cache-control: public, max-age=300`. setup-node's `cache: npm`
-      #     restores ~/.npm, and both `npm ci` and the `npm install
-      #     --package-lock-only` inside the release step resolve @nswds/ui, so
-      #     a packument fetched minutes earlier in this same job can be replayed
-      #     from _cacache without a request ever leaving the runner — for
-      #     longer than the old budget ran. Whether that happened on v7.0.0 is
-      #     unknowable after the fact (a stale hit and a slow publish are
-      #     indistinguishable from the outside), but a longer budget alone would
-      #     not fix it: within max-age the loop would poll a local file 20 times
-      #     and conclude the same thing. `--prefer-online` forces revalidation.
+      #   - The packument is cached TWICE, and the flag and the budget close
+      #     one layer each — so neither is safe to trim on the strength of the
+      #     other. It is served `cache-control: public, max-age=300`.
+      #     LOCALLY, `npm view` is cache-first over the ~/.npm that setup-node's
+      #     `cache: npm` restores, and both `npm ci` and the `npm install
+      #     --package-lock-only` inside the release step resolve @nswds/ui — so
+      #     without `--prefer-online` a packument fetched minutes earlier in
+      #     this same job can be replayed from _cacache for the full max-age
+      #     without a request ever leaving the runner. `--prefer-online` forces
+      #     that request. It does NOT make the answer fresh: the registry is
+      #     fronted by an edge cache (responses carry a non-zero `age`, e.g.
+      #     `age: 232`), so a revalidation can still be answered from a copy up
+      #     to 5 minutes old. Only a budget longer than max-age covers that
+      #     half. Whether either layer bit on v7.0.0 is unknowable after the
+      #     fact — a stale hit and a slow publish are indistinguishable from
+      #     the outside — which is why both are closed rather than one.
       #
       # A generous budget costs time only when the release has genuinely failed,
       # and nobody is waiting on this job. A tight one costs a false alarm on a
