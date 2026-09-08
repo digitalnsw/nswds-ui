@@ -159,7 +159,7 @@ export const Scrollable: Story = {
     docs: {
       description: {
         story:
-          'A table wider than its column scrolls horizontally. While it overflows, the container is a focusable region (tabindex="0", role="region") named by the TableCaption, so a keyboard user can Tab to it and scroll with the arrow keys; once the table fits, the container is a plain div again. Without a caption the region takes the table’s own aria-label, and failing that the name "Scrollable table" — give the table a caption.',
+          'A table wider than its column scrolls horizontally. While it overflows, the container is a focusable region (tabindex="0", role="region") named by explicit ARIA naming or the TableCaption, so a keyboard user can Tab to it and scroll with the arrow keys; once the table fits, the container is a plain div again. The table’s own aria-labelledby or aria-label takes precedence over its caption; without an explicit name or caption, the region uses the name "Scrollable table" — give the table a caption.',
       },
     },
   },

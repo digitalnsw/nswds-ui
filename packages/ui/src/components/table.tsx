@@ -28,8 +28,8 @@ const TableContext = React.createContext<TableContextValue | null>(null)
  * from the keyboard (WCAG 2.1.1; axe reports `scrollable-region-focusable`),
  * so **while the table overflows** the container becomes a named, focusable
  * region: `tabIndex={0}` so the arrow keys scroll it, `role="region"` so the
- * stop is announced, and an accessible name taken from the TableCaption
- * (linked by id), else the table's own `aria-labelledby` / `aria-label`, else
+ * stop is announced, and an accessible name taken from the table's own
+ * `aria-labelledby` / `aria-label`, else the TableCaption (linked by id), else
  * "Scrollable table". The `aria-label` / `aria-labelledby` stay on the
  * `<table>` too — the region borrows the name, it does not take it.
  *
@@ -79,8 +79,13 @@ function Table({
 
   // The name is only applied together with the role: `aria-label` on a plain
   // <div> is a prohibited attribute (the generic role cannot be named).
-  const regionLabelledBy = captionId ?? ariaLabelledBy
-  const regionLabel = regionLabelledBy ? undefined : (ariaLabel ?? DEFAULT_SCROLL_REGION_LABEL)
+  const explicitLabel = ariaLabel?.trim() ? ariaLabel : undefined
+  const regionLabelledBy = ariaLabelledBy?.trim()
+    ? ariaLabelledBy
+    : explicitLabel
+      ? undefined
+      : (captionId ?? undefined)
+  const regionLabel = regionLabelledBy ? undefined : (explicitLabel ?? DEFAULT_SCROLL_REGION_LABEL)
 
   return (
     <TableContext.Provider value={context}>
@@ -167,7 +172,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
 
 /**
  * The table's caption. Besides naming the table for everyone, it names the
- * scroll region Table exposes while the table overflows: the caption takes an
+ * scroll region when no explicit ARIA name is supplied: the caption takes an
  * id (the one given, else a generated one) and reports it to the Table, which
  * points `aria-labelledby` at it.
  */

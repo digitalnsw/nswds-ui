@@ -19,7 +19,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ComponentProps, ReactNode } from 'react'
+import { useId, useState, type ComponentProps, type ReactNode } from 'react'
 import { expect, userEvent, waitFor } from 'storybook/test'
 
 import { wcagStoryMeta } from './story-helpers.js'
@@ -208,9 +208,9 @@ export const NameRoleValue: Story = {
         story: wcagStoryMeta({
           criteria: '4.1.2',
           why: 'A focus stop with no role or name is announced as nothing — the user lands on it and cannot tell what it is. The scroll container is exposed as a region, and it takes its name from the table it wraps so the two announce consistently.',
-          how: 'With a screen reader, Tab to each container: the first announces its caption, the second the aria-label given to the table, the third the fallback name. The play() function asserts the resolution order: TableCaption (by id), else the table’s own aria-labelledby or aria-label, else "Scrollable table".',
+          how: 'With a screen reader, Tab to each container: the first announces its caption, the second the aria-label given to the table, the third the fallback name. The play() function asserts the resolution order: the table’s own aria-labelledby or aria-label, else TableCaption (by id), else "Scrollable table".',
           caveat:
-            'Give the table a TableCaption. It names the table for everyone and is the region’s preferred name; the fallback label is generic on purpose. aria-label / aria-labelledby passed to Table stay on the <table> as well, so the table is never left unnamed by the region taking the value.',
+            'Give the table a TableCaption. It names the table for everyone and names the region unless an explicit ARIA name is supplied; the fallback label is generic on purpose. aria-label / aria-labelledby passed to Table stay on the <table> as well, so the table is never left unnamed by the region taking the value.',
         }),
       },
     },
@@ -362,5 +362,96 @@ export const FocusVisible: Story = {
         `Expected a 2px solid focus outline on the scroll container, received "${style.outlineWidth} ${style.outlineStyle}".`,
       )
     }
+  },
+}
+
+function ExplicitNamesExample() {
+  const headingId = useId()
+  return (
+    <div>
+      <h2 id={headingId}>Published fees</h2>
+      <NarrowColumn>
+        <PropsTable caption='Fee details' aria-label='Current fees' />
+      </NarrowColumn>
+      <NarrowColumn>
+        <PropsTable caption='Fee details' aria-label='Current fees' aria-labelledby={headingId} />
+      </NarrowColumn>
+      <NarrowColumn>
+        <PropsTable caption='Fee details' aria-label=' ' aria-labelledby='' />
+      </NarrowColumn>
+      <NarrowColumn>
+        <PropsTable aria-label='' aria-labelledby=' ' />
+      </NarrowColumn>
+    </div>
+  )
+}
+
+export const ExplicitNames: Story = {
+  render: () => <ExplicitNamesExample />,
+  play: async ({ canvasElement }) => {
+    const containers = getContainers(canvasElement)
+    const names = ['Current fees', 'Published fees', 'Fee details', DEFAULT_REGION_LABEL]
+    for (const [index, container] of containers.entries()) {
+      await waitForRegion(container)
+      await expect(container).toHaveAccessibleName(names[index])
+      if (index < 3) {
+        await expect(container.querySelector('table')).toHaveAccessibleName(names[index])
+      }
+    }
+  },
+}
+
+function ContentChangesExample() {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div>
+      <button onClick={() => setExpanded(!expanded)}>Change cell content</button>
+      <div style={{ width: 390, height: 160 }}>
+        <Table>
+          <TableCaption>Service fees</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Service</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>
+                {expanded
+                  ? 'A long service name that grows beyond the fixed column width '.repeat(5)
+                  : 'Licence'}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}
+
+export const ContentChanges: Story = {
+  render: () => <ContentChangesExample />,
+  play: async ({ canvasElement }) => {
+    const container = getContainer(canvasElement)
+    const button = canvasElement.querySelector('button')
+    if (!button) throw new Error('Expected the content toggle.')
+    // Allow the initial observer delivery before changing content.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    )
+    await waitForPlainContainer(container)
+    const { width, height } = container.getBoundingClientRect()
+    await expect(container.scrollWidth).toBeLessThanOrEqual(container.clientWidth)
+    await userEvent.click(button)
+    await waitForRegion(container)
+    await expect(container).toHaveAccessibleName('Service fees')
+    await expect(container.scrollWidth).toBeGreaterThan(container.clientWidth)
+    await expect(container.getBoundingClientRect().width).toBe(width)
+    await expect(container.getBoundingClientRect().height).toBe(height)
+    await userEvent.click(button)
+    await waitForPlainContainer(container)
+    await expect(container.scrollWidth).toBeLessThanOrEqual(container.clientWidth)
+    await expect(container.getBoundingClientRect().width).toBe(width)
+    await expect(container.getBoundingClientRect().height).toBe(height)
   },
 }
