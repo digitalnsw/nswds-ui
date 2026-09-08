@@ -109,10 +109,14 @@ export const Variants: Story = {
         <InputGroupInput placeholder='Invalid' aria-label='Invalid' aria-invalid />
       </InputGroup>
 
-      {/* Disabled */}
+      {/* Disabled — carries BOTH a glyph and an InputGroupText on purpose. An
+          icon-only row cannot show whether an affix fade reaches a text span
+          that sets its own colour, and two attempts to fade the affix were
+          waved through against exactly that blind spot. */}
       <InputGroup>
         <InputGroupAddon>
           <IconSearch />
+          <InputGroupText>AUD</InputGroupText>
         </InputGroupAddon>
         <InputGroupInput placeholder='Disabled' aria-label='Disabled' disabled />
       </InputGroup>
@@ -143,6 +147,49 @@ export const Variants: Story = {
     const footerStyles = getComputedStyle(footer)
     await expect(footerStyles.borderTopWidth).toBe('1px')
     await expect(footerStyles.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+
+    // Pin the disabled affix treatment, comparing against the ENABLED group's
+    // label rather than a literal so a token change cannot make this vacuous.
+    const groups = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-group"]')]
+    const labelIn = (group: HTMLElement) =>
+      [...group.querySelectorAll<HTMLElement>('[data-align="inline-start"] span')].find(
+        (span) => span.textContent?.trim() === 'AUD',
+      )
+    // Select on the label FIRST, then split by disabled — most groups in this
+    // story have no text affix at all, so filtering by disabled first picks the
+    // icon-only search row and finds nothing.
+    const labelled = groups.filter((group) => labelIn(group))
+    const enabledGroup = labelled.find((group) => !group.querySelector(':disabled'))
+    const disabledGroup = labelled.find((group) => group.querySelector(':disabled'))
+    const enabledLabel = enabledGroup && labelIn(enabledGroup)
+    const disabledLabel = disabledGroup && labelIn(disabledGroup)
+    if (!enabledLabel || !disabledLabel) {
+      throw new Error('Expected an enabled and a disabled group, each with an "AUD" text affix.')
+    }
+    const disabledAffix = disabledLabel.closest<HTMLElement>('[data-align="inline-start"]')
+    const disabledIcon = disabledAffix?.querySelector('svg')
+    if (!disabledAffix || !disabledIcon) {
+      throw new Error('Expected the disabled affix to hold a glyph beside its label.')
+    }
+    // The affix stays legible in a disabled group: it is an adornment carrying
+    // information ("AUD"), not part of the inactive control, and axe measures a
+    // faded copy at 2.43:1 with no way to tell it belongs to something
+    // disabled. Nothing here may fade — not the addon, not its children.
+    await expect(getComputedStyle(disabledAffix).opacity).toBe('1')
+    await expect(getComputedStyle(disabledLabel).opacity).toBe('1')
+    await expect(getComputedStyle(disabledIcon).opacity).toBe('1')
+    await expect(getComputedStyle(disabledLabel).color).toBe(getComputedStyle(enabledLabel).color)
+    // The disabled signal lives on the chrome instead: the group's border goes
+    // translucent and the affix swaps its caret for `not-allowed`.
+    const disabledGroupEl = disabledLabel.closest<HTMLElement>('[data-slot="input-group"]')
+    const enabledGroupEl = enabledLabel.closest<HTMLElement>('[data-slot="input-group"]')
+    if (!disabledGroupEl || !enabledGroupEl) {
+      throw new Error('Expected both labelled affixes to sit inside a group.')
+    }
+    await expect(getComputedStyle(disabledGroupEl).borderTopColor).not.toBe(
+      getComputedStyle(enabledGroupEl).borderTopColor,
+    )
+    await expect(getComputedStyle(disabledAffix).cursor).toBe('not-allowed')
   },
 }
 

@@ -37,9 +37,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // sharpen the rare one is the wrong trade. Revisit if the group ever
         // gains a wrapper that can own hover without `:has()`.
         'hover:bg-(--input-surface-hover)',
-        // Disabled — the group fades its own CHROME (this border; the addon
-        // fades its ink and hairline) and lets every child own its own state.
-        // Nothing in this component puts `opacity` on an ancestor.
+        // Disabled — the group fades its own CHROME: this border, plus the
+        // addon's hairline and cursor. Every child owns its own state, and
+        // nothing in this component puts `opacity` on an ancestor.
         //
         // The wrapper-opacity version of this shipped briefly and was wrong:
         // ancestor opacity composites the whole subtree and a child cannot opt
@@ -115,9 +115,9 @@ const inputGroupAddonVariants = cva(
   // row still has height once the padding is gone (the affix text centres in
   // it via `items-center`). Each override carries the has-[] selector, so it
   // outranks the base padding on specificity rather than on emission order.
-  // Disabled: the addon fades its OWN PAINT — ink and hairline — and never its
-  // `opacity`. This is the whole point, so it is worth stating plainly: the
-  // addon is an ANCESTOR of every inline button (InputGroupButton always sits
+  // Disabled: the addon fades its own HAIRLINE and swaps its cursor, and never
+  // touches `opacity`. This is the whole point, so it is worth stating plainly:
+  // the addon is an ANCESTOR of every inline button (InputGroupButton always sits
   // in one, and a block-end InputGroupAction does too). `opacity` on this
   // element therefore composites those buttons, and a child cannot opt out of
   // an ancestor's opacity. Measured with `opacity-50` here: an ENABLED button
@@ -125,15 +125,29 @@ const inputGroupAddonVariants = cva(
   // and a disabled one multiplied with Button's own `data-disabled:opacity-50`
   // to 0.25 — which is exactly the Combobox shape, since ComboboxInput passes
   // `disabled` to the control and to the trigger and clear buttons at once.
-  // Fading the two properties this element actually paints leaves every
-  // descendant untouched and cannot compound.
+  // Fading only what this element itself paints leaves every descendant
+  // untouched and cannot compound.
   //
-  // Ink carries the signal: the affix label and its glyph (icons are
-  // `fill="currentColor"`) drop from 7.53:1 to a clearly dead weight. The
-  // hairline matches the wrapper's border treatment. Background is deliberately
-  // NOT faded: `--surface-sunken` measures 1.1:1 against the field, so 50% of
-  // it is imperceptible, and an `inline-end` addon has no background at all —
-  // a base-level `bg` fade would ADD a grey panel to it on disable.
+  // The affix CONTENT is deliberately not faded — only the hairline is. Two
+  // attempts to fade it were both wrong and are worth recording so neither is
+  // retried. A faded `color` on the addon never reaches InputGroupText, which
+  // sets its own `color` and so stayed lit beside a faded glyph. Expressing the
+  // same fade as `opacity` on the children fixed that, but the a11y gate
+  // rejects both: axe measures the affix label at 2.43:1 and cannot tell it
+  // belongs to a disabled control, because the span carries no disabled state
+  // of its own and the addon is a sibling of the control, not its ancestor.
+  //
+  // Leaving it legible is also the better answer. An affix is an adornment —
+  // "AUD", "Markdown supported" — closer to a label than to the control, and a
+  // label beside a disabled input does not fade either. The disabled signal is
+  // carried by the wrapper's border, this hairline, `cursor-not-allowed`, and
+  // the control's own fade, which is four cues without making information
+  // harder to read. Fading it would need `aria-disabled` plumbed onto a
+  // presentational div to keep axe honest, for a worse result.
+  //
+  // Background is likewise NOT faded: `--surface-sunken` measures 1.1:1 against
+  // the field, so 50% of it is imperceptible, and an `inline-end` addon has no
+  // background at all — a base-level `bg` fade would ADD a grey panel.
   //
   // Both conditions get the same paint. `data-disabled` on the group is a
   // manual escape hatch nothing in this component sets, but it had the same
@@ -142,7 +156,7 @@ const inputGroupAddonVariants = cva(
   // The affix also advertises a text caret, because clicking it focuses the
   // control. Over a disabled control that is a lie, so it takes the same
   // `cursor-not-allowed` the control itself does.
-  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-has-[[data-slot=input-group-control]:disabled]/input-group:border-(--input-border)/50 group-has-[[data-slot=input-group-control]:disabled]/input-group:text-(--input-placeholder)/50 group-data-[disabled=true]/input-group:cursor-not-allowed group-data-[disabled=true]/input-group:border-(--input-border)/50 group-data-[disabled=true]/input-group:text-(--input-placeholder)/50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-has-[[data-slot=input-group-control]:disabled]/input-group:border-(--input-border)/50 group-data-[disabled=true]/input-group:cursor-not-allowed group-data-[disabled=true]/input-group:border-(--input-border)/50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -460,6 +474,12 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
       className={cn(
         // Matches the addon it sits in: 16px type, `--input-placeholder` ink,
         // and a nested glyph the same size as one beside it.
+        //
+        // No disabled rule here: the addon fades its non-button CHILDREN, which
+        // includes this span. Worth knowing why it cannot be done by inheriting
+        // a faded `color` from the addon — setting `color` on this span
+        // overrides the inherited one for its own subtree, so an ink-only fade
+        // on the addon left the label at full strength beside a faded glyph.
         "flex items-center gap-2 text-base text-(--input-placeholder) [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
         className,
       )}
