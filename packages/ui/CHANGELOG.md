@@ -1,3 +1,9 @@
+## [7.0.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.1...@nswds/ui-v7.0.2) (2026-09-08)
+
+### Bug Fixes
+
+* **table:** make the scroll container keyboard reachable when it overflows ([#183](https://github.com/digitalnsw/nswds-ui/issues/183)) ([a68d65c](https://github.com/digitalnsw/nswds-ui/commit/a68d65c5ffb9e8a1c102a99bbd59b79d3e4cb0d5))
+
 ## [7.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.0...@nswds/ui-v7.0.1) (2026-09-08)
 
 ### Bug Fixes
