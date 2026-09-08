@@ -26,12 +26,15 @@
  * WHY A LINE SCANNER AND NOT A YAML PARSE: `yaml` is not in this repo's
  * lockfile, and adding a runtime dependency to a security gate to read a
  * sublanguage this simple is a poor trade. A `run:` block is either an inline
- * scalar or a block scalar whose body is exactly the lines indented deeper than
- * its key — that rule is short enough to implement correctly and is pinned by
- * scripts/check-workflow-interpolation.test.mjs, which covers the block/inline
- * forms, nested deeper-indented keys, `#`-commented hits, sibling keys at the
- * same indent, and the ALLOWED list. If this ever needs real YAML semantics,
- * add the dependency rather than growing the regexes.
+ * scalar or a block scalar, and either way its body is the lines indented
+ * deeper than its key — that rule is short enough to implement correctly and is
+ * pinned by scripts/check-workflow-interpolation.test.mjs, which covers the
+ * block and inline forms, multi-line continuations of each, nested
+ * deeper-indented keys, `#`-commented hits, sibling keys at the same indent,
+ * and the ALLOWED list. Both false negatives found so far lived in the gap
+ * between "looks like one line" and "is one scalar", so test that gap first.
+ * If this ever needs real YAML semantics, add the dependency rather than
+ * growing the regexes.
  *
  * WHAT THIS DOES NOT COVER, deliberately:
  *
@@ -83,9 +86,19 @@ const RUN_INLINE = new RegExp(`^${INDENT}run:\\s+(\\S.*)$`)
 /**
  * Every line of shell inside a `run:` in one workflow, as {line, text}.
  *
- * A block scalar's body is exactly the run of lines indented deeper than its
- * key, with blank lines belonging to whichever block surrounds them. That is
- * the whole rule; anything shallower than the key ends the block.
+ * A scalar's body is exactly the run of lines indented deeper than its key,
+ * with blank lines belonging to whichever block surrounds them. That is the
+ * whole rule; anything shallower than the key ends it.
+ *
+ * The rule applies to the INLINE form too, not just `run: |`. A YAML plain or
+ * quoted scalar may continue onto following indented lines, so
+ *
+ *     - run: echo
+ *         ${{ github.ref }}
+ *
+ * is one script, and treating the inline form as single-line left its
+ * continuation unscanned — the gate then reported "no interpolation" about a
+ * step it had not actually read.
  */
 export function shellLines(fileText) {
   const out = []
@@ -111,20 +124,30 @@ export function shellLines(fileText) {
     }
 
     const inline = text.match(RUN_INLINE)
-    if (inline) out.push({ line: lineNumber, text: inline[2] })
+    if (inline) {
+      out.push({ line: lineNumber, text: inline[2] })
+      blockIndent = inline[1].length
+    }
   }
 
   return out
 }
 
-/** Every disallowed interpolation in one workflow's shell. */
+/**
+ * Every disallowed interpolation in one workflow's shell.
+ *
+ * A `#`-commented line is NOT exempt, though an earlier version of this file
+ * exempted it on the grounds that release.yml quotes the banned pattern to
+ * explain itself. It does not: every such comment there is a YAML comment
+ * OUTSIDE the run scalar, so the exemption protected nothing and cost the
+ * gate its point. Substitution happens before bash sees the script, so a
+ * shell `#` does not comment out the value — it only comments out the FIRST
+ * line of it. `# ${{ github.event.pull_request.title }}` with a title of
+ * "x\nid" becomes two lines, and the second one runs.
+ */
 export function findViolations(fileText) {
   const found = []
   for (const { line, text } of shellLines(fileText)) {
-    // A `#`-commented line is documentation, not script. The comments in
-    // release.yml quote this very pattern to explain why it is banned, and a
-    // gate that fails on its own rationale is a gate people delete.
-    if (/^\s*#/.test(text)) continue
     for (const match of text.matchAll(EXPRESSION)) {
       const expression = match[1].trim()
       if (ALLOWED.some((pattern) => pattern.test(expression))) continue

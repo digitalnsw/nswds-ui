@@ -113,16 +113,53 @@ test('handles block-scalar chomping and indent modifiers', () => {
   }
 })
 
-test('ignores a #-commented line inside a run block', () => {
-  // release.yml quotes the banned pattern in its own comments to explain the
-  // rule. A gate that fails on its own rationale gets deleted.
+test('flags a #-commented line inside a run block', () => {
+  // A shell `#` does not comment out an interpolation: substitution happens
+  // before bash parses, so `#` only comments out the FIRST line of the value.
+  // A PR title of "x\nid" turns this into two lines and runs the second.
+  // An earlier version exempted these, on the false premise that release.yml
+  // needed it — every `${{ }}` in that file's comments is a YAML comment
+  // OUTSIDE the run scalar, which the scanner never sees anyway.
   const yaml = [
     'jobs:',
     '  a:',
     '    steps:',
     '      - run: |',
-    '          # never write expected="${{ steps.x.outputs.tag }}" here',
-    '          echo "$RELEASE_TAG"',
+    '          # ${{ github.event.pull_request.title }}',
+    '          echo hi',
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), ['github.event.pull_request.title'])
+})
+
+test('scans a multi-line plain scalar continuation of an inline run', () => {
+  // A YAML plain scalar continues onto lines indented past its key, so this is
+  // ONE script. Treating the inline form as single-line left the second line
+  // unscanned and the gate silently reported the step clean.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: echo',
+    '          ${{ github.ref }}',
+    '',
+  ].join('\n')
+  assert.deepEqual(expressions(yaml), ['github.ref'])
+})
+
+test('an inline run ends at a sibling key, not at the next interpolation', () => {
+  // The continuation rule must not swallow the step's own env:/with: blocks —
+  // those are expression context and flagging them would be a false positive
+  // on the very pattern this gate tells people to use.
+  const yaml = [
+    'jobs:',
+    '  a:',
+    '    steps:',
+    '      - run: echo "$TAG"',
+    '        env:',
+    '          TAG: ${{ steps.after.outputs.tag }}',
+    '        with:',
+    '          ref: ${{ github.head_ref }}',
     '',
   ].join('\n')
   assert.deepEqual(expressions(yaml), [])
