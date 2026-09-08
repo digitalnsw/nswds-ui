@@ -37,6 +37,15 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // sharpen the rare one is the wrong trade. Revisit if the group ever
         // gains a wrapper that can own hover without `:has()`.
         'hover:bg-(--input-surface-hover)',
+        // ...but a disabled group must not react at all. A standalone Input
+        // cannot: `disabled:pointer-events-none` means `:hover` never matches
+        // it. This wrapper is a plain div, and `pointer-events` on the CONTROL
+        // does not stop its ancestor being hovered, so without this line a dead
+        // field painted the full enabled hover surface — measured with a real
+        // pointer at `--input-surface-hover`, identical to an enabled group.
+        // `pointer-events-none` on the wrapper is not the fix: it would also
+        // kill an enabled action sitting inside a disabled-field group.
+        'has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-surface)',
         // Disabled — the group fades its own CHROME: this border, plus the
         // addon's hairline and cursor. Every child owns its own state, and
         // nothing in this component puts `opacity` on an ancestor.
@@ -79,7 +88,14 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // specificity rather than on emission order.
         'has-[[data-slot][aria-invalid=true]]:border-2 has-[[data-slot][aria-invalid=true]]:border-(--input-invalid-border)',
         'has-[[data-slot][aria-invalid=true]]:outline-(--input-invalid-ring)',
-        'has-[[data-slot][aria-invalid=true]]:hover:bg-(--input-invalid-surface-hover)',
+        // Excluded when the control is disabled, for the same reason the border
+        // rule above is: this and the disabled hover rule both compute to
+        // (0,4,0) — class + `:has()` + `:hover` on each — so a tie decided by
+        // emission order would let an invalid AND disabled field paint the
+        // danger hover surface. Mutually exclusive selectors decide it by
+        // MATCHING, and disabled is the one that should win: a dead control
+        // gives no hover feedback whatever its validation state.
+        'has-[[data-slot][aria-invalid=true]]:not-has-[[data-slot=input-group-control]:disabled]:hover:bg-(--input-invalid-surface-hover)',
         // An InputGroupAction sits flush to the trailing edge with square
         // corners, so the group clips it to its own radius — cheaper and
         // RTL-correct next to per-corner arithmetic on the action. Scoped to

@@ -5,6 +5,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
 
+import { compositeOver, expectContrast, resolveColor } from './story-helpers.js'
+
 import { IconAttachMoney } from '../icons/attach-money.js'
 import { IconSearch } from '../icons/search.js'
 import {
@@ -96,7 +98,13 @@ export const Variants: Story = {
         <InputGroupTextarea placeholder='Leave a comment' aria-label='Comment' rows={3} />
         <InputGroupAddon align='block-end'>
           <InputGroupText>Markdown supported</InputGroupText>
-          <InputGroupButton className='ms-auto'>Send</InputGroupButton>
+          {/* `sm` on purpose: the other inline button is the default `xs`, and
+              the radius assertion below has to exercise both size steps — each
+              declares its own corner, so covering one leaves the other free to
+              drift back off the scale. */}
+          <InputGroupButton size='sm' className='ms-auto'>
+            Send
+          </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
 
@@ -265,9 +273,14 @@ export const Variants: Story = {
     // `rounded-[calc(var(--radius-sm)-1px)]` for legitimate inner-border cases,
     // so it cannot catch that value returning to these size steps, where the
     // button floats free in addon padding and its outer corner is a control
-    // corner.
+    // corner. Both steps declare their own radius, so both must be exercised —
+    // asserting only the default `xs` left `sm` free to drift back.
+    const sizes = [...buttons].map((button) => button.dataset.size)
+    await expect(new Set(sizes)).toEqual(new Set(['xs', 'sm']))
     for (const button of buttons) {
-      await expect(getComputedStyle(button).borderRadius).toBe('4px')
+      await expect(`${button.dataset.size}:${getComputedStyle(button).borderRadius}`).toBe(
+        `${button.dataset.size}:4px`,
+      )
     }
   },
 }
@@ -505,6 +518,28 @@ export const ActionFills: Story = {
     // The ring is drawn INSIDE the segment, because the group clips anything
     // outside it. Programmatic focus is enough — Button rings on `focus:`, not
     // `focus-visible:`.
+    // The ring is drawn over the action's own fill, which for `open` and
+    // `subtle` is translucent — so flatten it onto the first opaque surface
+    // behind it. `contrastRatio` refuses a translucent background rather than
+    // guessing, which is what forces this to be done properly.
+    const opaqueBackdropOf = (element: HTMLElement) => {
+      let node: HTMLElement | null = element
+      const layers: ReturnType<typeof resolveColor>[] = []
+      while (node) {
+        const own = resolveColor(getComputedStyle(node).backgroundColor)
+        if (own.a > 0) {
+          layers.push(own)
+          if (own.a >= 1) break
+        }
+        node = node.parentElement
+      }
+      let base = { r: 255, g: 255, b: 255 }
+      for (const layer of layers.reverse()) {
+        base = compositeOver(layer, base)
+      }
+      return base
+    }
+
     const ringOf = (variant: string) => {
       const action = [...actions].find((a) => a.dataset.variantAction === variant)
       if (!action) {
@@ -512,11 +547,14 @@ export const ActionFills: Story = {
       }
       action.focus()
       const styles = getComputedStyle(action)
+      // The fill lives on `::before`, not on the button's own background.
+      const fill = resolveColor(getComputedStyle(action, '::before').backgroundColor)
+      const behind = compositeOver(fill, opaqueBackdropOf(action))
       const ring = {
         colour: styles.outlineColor,
         width: styles.outlineWidth,
         offset: styles.outlineOffset,
-        fill: getComputedStyle(action, '::before').backgroundColor,
+        backdrop: `rgb(${Math.round(behind.r)}, ${Math.round(behind.g)}, ${Math.round(behind.b)})`,
       }
       action.blur()
       return ring
@@ -533,8 +571,13 @@ export const ActionFills: Story = {
     ] as const) {
       await expect(`${variant}:${ring.width}`).toBe(`${variant}:2px`)
       await expect(`${variant}:${ring.offset}`).toBe(`${variant}:-2px`)
-      // A ring the same colour as the fill behind it is invisible.
-      await expect(`${variant}:${ring.colour}`).not.toBe(`${variant}:${ring.fill}`)
+      // Measure the ratio, do not merely require a different colour: the
+      // 2.70:1 ring this fix replaced was also a different colour from its
+      // fill, so an inequality check would have accepted it.
+      expectContrast(ring.colour, ring.backdrop, {
+        minimum: 3,
+        label: `${variant} action focus ring against the surface it is drawn on`,
+      })
     }
 
     // `subtle` specifically must NOT fall back to the group's grey ring, which
