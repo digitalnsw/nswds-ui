@@ -687,10 +687,18 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
    semantic-release pushes the version-bump commit and tag **before** the npm
    publish step — a failed publish would otherwise leave green-looking tags
    with no package behind them:
-   - **npm**: polls `npm view --prefer-online @nswds/ui@<version>` (~10-minute
-     budget) until the new version appears; fails loudly if it never does.
-     The budget and the flag are both load-bearing, and neither substitutes
-     for the other.
+   - **npm**: polls `npm view --prefer-online @nswds/ui@<version>` against a
+     600-second wall-clock deadline until the new version appears; fails
+     loudly if it never does. A deadline rather than an attempt count because
+     `npm view` has no per-call bound of its own — npm defaults to
+     `fetch-timeout` 300000 with 2 retries, so one stalled request could
+     outlast the whole budget and carry the job into its `timeout-minutes`,
+     which files a `release-failure` issue against a good publish just as
+     surely as a budget that is too short. The call is capped
+     (`--fetch-retries=0 --fetch-timeout=20000`) and the loop runs to the
+     deadline, so the budget is real whatever the network does.
+     The budget and the `--prefer-online` are both load-bearing, and neither
+     substitutes for the other.
      `npm publish` returns **before** the version is readable — it prints
      "Your package is being processed and may take a few minutes to become
      available" — which is how v7.0.0 was declared a failed release and had a
@@ -939,6 +947,18 @@ verifies registry output freshness instead.)
   `packages/ui`'s to match it.** With `engine-strict=true` the root range is a promise
   `npm ci` enforces, while `packages/ui`'s range is a constraint on consumers who never
   install the packages setting that floor. See §5 "Node version — the engine floor".
+- **Never interpolate `${{ … }}` into a workflow `run:` block when the value can
+  come from repo contents** — a tag, branch, filename, PR title, or any step
+  output derived from them. GitHub Actions substitutes it as **text** before
+  bash parses the script, so the value is code, not data. Git refnames alone
+  permit `"`, `;`, `#`, backticks and `$(…)`, which is enough: a tag named
+  `@nswds/ui-v9.9.9";id;#` is creatable and would have executed inside
+  `release.yml`, the one job holding `id-token: write` and a ruleset-bypass
+  deploy key. Pass such values through `env:` and read them as `"$VAR"` in the
+  script. Nothing in CI catches this — there is no actionlint or shellcheck
+  step — and the same class was fixed in `nswds-devops`' `reusable-ci.yml`.
+  Fixed enums and `${{ secrets.* }}` are fine; `if:` conditions are expression
+  context, not shell, and need no change.
 
 ---
 
