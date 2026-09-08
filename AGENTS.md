@@ -405,6 +405,8 @@ Run from the **repo root** unless noted.
 | Lint all                        | `npm run lint`                                                 |
 | Format all                      | `npm run format`                                               |
 | Check formatting                | `npm run format:check`                                         |
+| Check workflow interpolation    | `npm run check:workflows`                                      |
+| Test the root scripts           | `npm run test:scripts`                                         |
 | Type check all                  | `npm run typecheck`                                            |
 | Check component drift           | `npm run check:drift -w @nswds/ui`                             |
 | Check radius scale              | `npm run check:radius -w @nswds/ui`                            |
@@ -425,7 +427,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
-`format:check`, `check:drift`, `check:radius`, `check:icons`, the
+`format:check`, `check:workflows`, `test:scripts`, `check:drift`,
+`check:radius`, `check:icons`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
 `scripts/test-consumer-fixture.sh`, a
@@ -438,6 +441,23 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 - **`format:check`** is `prettier --check .` over the **whole repo**. A
   path-scoped `npx prettier --check packages/ui/src` passes while an unformatted
   file anywhere else fails the merge.
+- **`check:workflows`** (`scripts/check-workflow-interpolation.mjs`) fails on
+  any `${{ … }}` inside a workflow `run:` block. Actions substitutes those as
+  TEXT before bash parses the script, so a value derived from repo contents is
+  code, not data — `release.yml` interpolated the newest git tag that way for
+  three months, and a tag named `@nswds/ui-v9.9.9";id;#` (a valid refname, and
+  first under `--sort=-v:refname`) would have executed inside the job holding
+  `id-token: write` and the ruleset-bypass deploy key. Bind such values under
+  the step's `env:` and read them as `"$VAR"`. `if:`/`with:`/`env:` are
+  expression context and are ignored; secrets are NOT exempt (see §8). The one
+  `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
+- **`test:scripts`** is `node --test scripts/*.test.mjs`. Today that is the
+  `check:workflows` scanner, and it is not belt-and-braces: the scanner's first
+  version silently missed every `- run:` written as a YAML sequence item — the
+  common form — while still passing `release.yml`, which happens to use the
+  bare `run:` form. A gate that stops gating exits 0, which reads exactly like
+  success, so anything under `scripts/` that guards a path CI cannot otherwise
+  exercise gets tests here for the same reason the release-config tests exist.
 - **`check:drift`** (`packages/ui/scripts/check-component-drift.mjs`) enforces
   the two-channel rule: every non-story file in `src/components/` must be
   exported from `src/index.ts` **and** registered in `registry.json` as a
@@ -955,10 +975,14 @@ verifies registry output freshness instead.)
   `@nswds/ui-v9.9.9";id;#` is creatable and would have executed inside
   `release.yml`, the one job holding `id-token: write` and a ruleset-bypass
   deploy key. Pass such values through `env:` and read them as `"$VAR"` in the
-  script. Nothing in CI catches this — there is no actionlint or shellcheck
-  step — and the same class was fixed in `nswds-devops`' `reusable-ci.yml`.
-  Fixed enums and `${{ secrets.* }}` are fine; `if:` conditions are expression
-  context, not shell, and need no change.
+  script. `check:workflows` enforces this (§5); the same class was fixed in
+  `nswds-devops`' `reusable-ci.yml` the same week. `if:`, `with:` and `env:`
+  are expression context rather than shell, so `${{ }}` is fine there and the
+  gate ignores them. **`${{ secrets.* }}` is not exempt**: a secret's value is
+  interpolated as text like anything else, and "only an admin can set one" is a
+  weaker guarantee than one line of `env:` — which is also what GitHub's own
+  hardening guidance says. The gate's `ALLOWED` list holds the only exception,
+  `…head.repo.fork`, a boolean the platform computes.
 
 ---
 
