@@ -475,11 +475,14 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
         // Matches the addon it sits in: 16px type, `--input-placeholder` ink,
         // and a nested glyph the same size as one beside it.
         //
-        // No disabled rule here: the addon fades its non-button CHILDREN, which
-        // includes this span. Worth knowing why it cannot be done by inheriting
-        // a faded `color` from the addon — setting `color` on this span
-        // overrides the inherited one for its own subtree, so an ink-only fade
-        // on the addon left the label at full strength beside a faded glyph.
+        // No disabled rule here, and none on the addon either: affix content
+        // stays at full contrast in a disabled group. Do not add one. Two
+        // attempts are recorded on inputGroupAddonVariants — a faded `color` on
+        // the addon never reaches this span, because setting `color` here
+        // overrides the inherited one for its own subtree; and expressing the
+        // same fade as `opacity` on the addon's children fixed that but failed
+        // the a11y gate, which measures this label at 2.43:1 and cannot tell it
+        // belongs to a disabled control. The disabled signal lives on chrome.
         "flex items-center gap-2 text-base text-(--input-placeholder) [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-5",
         className,
       )}

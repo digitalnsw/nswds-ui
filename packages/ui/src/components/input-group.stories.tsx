@@ -120,6 +120,23 @@ export const Variants: Story = {
         </InputGroupAddon>
         <InputGroupInput placeholder='Disabled' aria-label='Disabled' disabled />
       </InputGroup>
+
+      {/* Disabled AND invalid — a field that failed validation and was then
+          disabled during submit. The error border has to survive: the disabled
+          border rule and the aria-invalid one both set `border-color` at the
+          same specificity, so they are made mutually exclusive rather than
+          left to emission order, and check:cascade cannot catch that. */}
+      <InputGroup>
+        <InputGroupAddon>
+          <IconSearch />
+        </InputGroupAddon>
+        <InputGroupInput
+          placeholder='Disabled and invalid'
+          aria-label='Disabled and invalid'
+          aria-invalid
+          disabled
+        />
+      </InputGroup>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -190,6 +207,68 @@ export const Variants: Story = {
       getComputedStyle(enabledGroupEl).borderTopColor,
     )
     await expect(getComputedStyle(disabledAffix).cursor).toBe('not-allowed')
+
+    // The addon paints its OWN hairline, and it fades too. Asserted separately
+    // from the wrapper's border above, which is a different element — without
+    // this, deleting the addon's `border-(--input-border)/50` left the suite
+    // green. `inline-start` divides with `border-e`, so read that edge.
+    const enabledAffix = enabledLabel.closest<HTMLElement>('[data-align="inline-start"]')
+    if (!enabledAffix) {
+      throw new Error('Expected the enabled affix to be an inline-start addon.')
+    }
+    await expect(getComputedStyle(disabledAffix).borderInlineEndColor).not.toBe(
+      getComputedStyle(enabledAffix).borderInlineEndColor,
+    )
+
+    // A field that failed validation and was then disabled keeps its ERROR
+    // border. The disabled and aria-invalid border rules tie on specificity, so
+    // they are mutually exclusive by selector rather than by emission order —
+    // a consuming app's Tailwind build can re-emit ours after ours, and
+    // check:cascade only flags conditional at-rule pairs, so nothing else
+    // catches a regression here.
+    const invalidOnly = groups.find(
+      (group) => group.querySelector('[aria-invalid="true"]') && !group.querySelector(':disabled'),
+    )
+    const invalidDisabled = groups.find(
+      (group) => group.querySelector('[aria-invalid="true"]') && group.querySelector(':disabled'),
+    )
+    if (!invalidOnly || !invalidDisabled) {
+      throw new Error('Expected both an invalid group and a disabled+invalid group.')
+    }
+    await expect(getComputedStyle(invalidDisabled).borderTopColor).toBe(
+      getComputedStyle(invalidOnly).borderTopColor,
+    )
+    await expect(getComputedStyle(invalidDisabled).borderTopWidth).toBe('2px')
+    // ...and it is specifically NOT the faded grey the plain disabled row gets.
+    await expect(getComputedStyle(invalidDisabled).borderTopColor).not.toBe(
+      getComputedStyle(disabledGroupEl).borderTopColor,
+    )
+
+    // The three assertions above pin the BEHAVIOUR but cannot pin the FIX, and
+    // that gap is the whole point of this rule. Dropping the exclusion leaves
+    // the two rules tied on specificity, and in this build's emission order the
+    // invalid rule still wins — so the rendered border stays correct here and
+    // breaks only in a consuming app whose Tailwind build emits ours later.
+    // Verified: reverting to the plain `has-[…disabled]:border-…` selector left
+    // every assertion above green. So assert the SELECTOR SHAPE, which is
+    // order-independent: every disabled border rule on this element must carry
+    // the aria-invalid exclusion.
+    const disabledBorderClasses = [...invalidDisabled.classList].filter(
+      (name) => name.includes(':disabled]') && name.includes('border-(--input-border)'),
+    )
+    await expect(disabledBorderClasses.length).toBeGreaterThan(0)
+    for (const name of disabledBorderClasses) {
+      await expect(name).toContain('not-has-[[data-slot][aria-invalid=true]]')
+    }
+
+    // Inline buttons sit on the 4px control radius. `check:radius` allowlists
+    // `rounded-[calc(var(--radius-sm)-1px)]` for legitimate inner-border cases,
+    // so it cannot catch that value returning to these size steps, where the
+    // button floats free in addon padding and its outer corner is a control
+    // corner.
+    for (const button of buttons) {
+      await expect(getComputedStyle(button).borderRadius).toBe('4px')
+    }
   },
 }
 
@@ -419,6 +498,48 @@ export const ActionFills: Story = {
       .filter((a) => a.textContent?.trim() === 'Apply')
       .map((a) => getComputedStyle(a).backgroundColor)
     await expect(new Set(fills).size).toBe(3)
+
+    // Each fill's focus ring must clear 3:1 against the fill it is drawn on
+    // (WCAG 1.4.11). `subtle` cannot use the base `--input-ring`: that grey
+    // measured 2.70:1 on the tinted fill, so it rings in `--btn-bg` instead.
+    // The ring is drawn INSIDE the segment, because the group clips anything
+    // outside it. Programmatic focus is enough — Button rings on `focus:`, not
+    // `focus-visible:`.
+    const ringOf = (variant: string) => {
+      const action = [...actions].find((a) => a.dataset.variantAction === variant)
+      if (!action) {
+        throw new Error(`No action rendered for the "${variant}" fill.`)
+      }
+      action.focus()
+      const styles = getComputedStyle(action)
+      const ring = {
+        colour: styles.outlineColor,
+        width: styles.outlineWidth,
+        offset: styles.outlineOffset,
+        fill: getComputedStyle(action, '::before').backgroundColor,
+      }
+      action.blur()
+      return ring
+    }
+
+    const subtleRing = ringOf('subtle')
+    const openRing = ringOf('open')
+    const solidRing = ringOf('solid')
+
+    for (const [variant, ring] of [
+      ['open', openRing],
+      ['subtle', subtleRing],
+      ['solid', solidRing],
+    ] as const) {
+      await expect(`${variant}:${ring.width}`).toBe(`${variant}:2px`)
+      await expect(`${variant}:${ring.offset}`).toBe(`${variant}:-2px`)
+      // A ring the same colour as the fill behind it is invisible.
+      await expect(`${variant}:${ring.colour}`).not.toBe(`${variant}:${ring.fill}`)
+    }
+
+    // `subtle` specifically must NOT fall back to the group's grey ring, which
+    // is what the other two fills legitimately use against their own backdrops.
+    await expect(subtleRing.colour).not.toBe(openRing.colour)
 
     // Labels must be optically centred. Button's base is `items-baseline`,
     // which only reads centred while its own vertical padding balances the line
