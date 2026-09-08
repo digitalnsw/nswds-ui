@@ -37,9 +37,9 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // sharpen the rare one is the wrong trade. Revisit if the group ever
         // gains a wrapper that can own hover without `:has()`.
         'hover:bg-(--input-surface-hover)',
-        // Disabled — the group fades its own CHROME (border here, affix panel
-        // in the addon variants) and lets every child own its own state. It
-        // does NOT put `opacity` on the wrapper.
+        // Disabled — the group fades its own CHROME (this border; the addon
+        // fades its ink and hairline) and lets every child own its own state.
+        // Nothing in this component puts `opacity` on an ancestor.
         //
         // The wrapper-opacity version of this shipped briefly and was wrong:
         // ancestor opacity composites the whole subtree and a child cannot opt
@@ -50,7 +50,21 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
         // `opacity-100` neutralisers onto four children to stop 0.5 x 0.5
         // compounding, and those only worked for natively `:disabled` targets.
         // Fading the chrome directly needs no neutralisers and cannot compound.
-        'has-[[data-slot=input-group-control]:disabled]:border-(--input-border)/50',
+        //
+        // `not-has-[…aria-invalid…]` is load-bearing, not belt-and-braces. This
+        // rule and the aria-invalid border rule below both set `border-color`
+        // at identical specificity — `:has()` takes its most specific argument,
+        // so `:has([data-slot=input-group-control]:disabled)` (attribute +
+        // pseudo-class) and `:has([data-slot][aria-invalid=true])` (two
+        // attributes) are both (0,2,0), plus one class each. Without the
+        // exclusion only emission order separates them, and this package's
+        // classes can be re-emitted after ours by a consuming app's own
+        // Tailwind build — the two-build hazard check:cascade exists for, which
+        // it cannot catch here because it only flags conditional at-rule pairs.
+        // A field that fails validation and is then disabled during submit hits
+        // exactly this: the faded grey would erase the error border. Making the
+        // two mutually exclusive decides it by MATCHING instead of by order.
+        'has-[[data-slot=input-group-control]:disabled]:not-has-[[data-slot][aria-invalid=true]]:border-(--input-border)/50',
         // Focus — the group draws one outline for whichever control is focused;
         // InputGroupInput / InputGroupTextarea suppress their own. Offset and
         // colour are unconditional because neither renders anything until
@@ -101,17 +115,34 @@ const inputGroupAddonVariants = cva(
   // row still has height once the padding is gone (the affix text centres in
   // it via `items-center`). Each override carries the has-[] selector, so it
   // outranks the base padding on specificity rather than on emission order.
-  // Disabled: the affix panel is the group's chrome, so it fades here rather
-  // than via `opacity` on the wrapper — an ancestor fade would take any ENABLED
-  // action down with it (measured 3.12:1 on a still-clickable button). Keyed on
-  // the CONTROL, because the group's own `data-disabled` is never set by this
-  // component; that hook stays beside it as the manual escape hatch it already
-  // was, and the two cannot compound now that no ancestor fades.
+  // Disabled: the addon fades its OWN PAINT — ink and hairline — and never its
+  // `opacity`. This is the whole point, so it is worth stating plainly: the
+  // addon is an ANCESTOR of every inline button (InputGroupButton always sits
+  // in one, and a block-end InputGroupAction does too). `opacity` on this
+  // element therefore composites those buttons, and a child cannot opt out of
+  // an ancestor's opacity. Measured with `opacity-50` here: an ENABLED button
+  // beside a disabled field rendered at effective 0.5 while still clickable,
+  // and a disabled one multiplied with Button's own `data-disabled:opacity-50`
+  // to 0.25 — which is exactly the Combobox shape, since ComboboxInput passes
+  // `disabled` to the control and to the trigger and clear buttons at once.
+  // Fading the two properties this element actually paints leaves every
+  // descendant untouched and cannot compound.
+  //
+  // Ink carries the signal: the affix label and its glyph (icons are
+  // `fill="currentColor"`) drop from 7.53:1 to a clearly dead weight. The
+  // hairline matches the wrapper's border treatment. Background is deliberately
+  // NOT faded: `--surface-sunken` measures 1.1:1 against the field, so 50% of
+  // it is imperceptible, and an `inline-end` addon has no background at all —
+  // a base-level `bg` fade would ADD a grey panel to it on disable.
+  //
+  // Both conditions get the same paint. `data-disabled` on the group is a
+  // manual escape hatch nothing in this component sets, but it had the same
+  // ancestor-opacity defect, so it is converted rather than left as a landmine.
   //
   // The affix also advertises a text caret, because clicking it focuses the
   // control. Over a disabled control that is a lie, so it takes the same
   // `cursor-not-allowed` the control itself does.
-  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-has-[[data-slot=input-group-control]:disabled]/input-group:opacity-50 group-data-[disabled=true]/input-group:opacity-50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
+  "flex cursor-text items-center justify-center gap-1 text-base text-(--input-placeholder) select-none group-has-[[data-slot=input-group-control]:disabled]/input-group:cursor-not-allowed group-has-[[data-slot=input-group-control]:disabled]/input-group:border-(--input-border)/50 group-has-[[data-slot=input-group-control]:disabled]/input-group:text-(--input-placeholder)/50 group-data-[disabled=true]/input-group:cursor-not-allowed group-data-[disabled=true]/input-group:border-(--input-border)/50 group-data-[disabled=true]/input-group:text-(--input-placeholder)/50 has-[[data-slot=input-group-action]]:min-h-12 has-[[data-slot=input-group-action]]:py-0 **:data-[slot=kbd]:rounded-[calc(var(--radius-sm)-2px)] **:data-[slot=kbd]:bg-(--input-placeholder)/10 **:data-[slot=kbd]:px-1 [&>svg:not([class*='size-'])]:size-5",
   {
     variants: {
       align: {
@@ -224,13 +255,11 @@ const inputGroupButtonVariants = cva(
     // Same reason as InputGroupAction: zeroing Button's padding exposes its
     // `items-baseline` base, which no longer centres the label.
     'items-center',
-    // Same neutraliser InputGroupAction carries, and for the same reason: the
-    // group fades for a disabled control, and Button's own
-    // `data-disabled:opacity-50` would multiply into it. Measured at 0.25
-    // before this line — Combobox is the live case, since ComboboxInput passes
-    // `disabled` to the control AND to the trigger and clear buttons at once.
-    // Conditioned on the CONTROL, so a button disabled beside a live field
-    // still dims on its own.
+    // No disabled-opacity handling here on purpose. Button's own
+    // `data-disabled:opacity-50` is the whole treatment: this button always
+    // renders inside an addon, and the addon fades its own paint rather than
+    // its opacity, so there is no ancestor fade to compound with and nothing
+    // to neutralise.
   ],
   {
     variants: {
@@ -340,12 +369,11 @@ const inputGroupActionVariants = cva(
     // button system's brand ink. iterate-1.css:
     // `.it .act:focus-visible { outline: 2px solid var(--input-ring); outline-offset: -2px }`.
     'items-center font-semibold focus:outline-2 focus:-outline-offset-2 focus:outline-(--input-ring)',
-    // Keep Button's own `disabled:opacity-50` for the common case where only
-    // the action is disabled (an Apply that waits for a valid value) and the
-    // field beside it stays live. Drop it only when the GROUP is already
-    // fading for a disabled control, where the two layers would compound to
-    // 0.25. Conditioning on the control — not on this button's own state —
-    // is what separates the two cases.
+    // Button's own `data-disabled:opacity-50` is left as the entire disabled
+    // treatment, for both placements: flush against the group's edge, and
+    // nested in a block-end addon. Neither ancestor fades its opacity, so an
+    // Apply that waits for a valid value dims on its own while the live field
+    // beside it stays at full strength.
   ],
   {
     variants: {

@@ -261,21 +261,49 @@ export const AttachedAction: Story = {
     )
 
     // The regression that matters: a disabled control must not drag an ENABLED
-    // action down with it.
-    const liveAction = firstGroup.querySelector<HTMLButtonElement>(
+    // button down with it.
+    //
+    // This has to be measured on a group whose action is NESTED IN AN ADDON,
+    // and as an EFFECTIVE opacity. An earlier version of this test asserted
+    // `getComputedStyle(action).opacity` on a group whose action is a direct
+    // child of InputGroup, which is the one composition that structurally
+    // cannot fail — it stayed green while a nested action rendered at 0.5.
+    // Ancestor opacity does not show up on the element's own computed style,
+    // so walk the chain and multiply.
+    const effectiveOpacity = (el: HTMLElement) => {
+      let value = 1
+      let node: HTMLElement | null = el
+      while (node && node !== canvasElement) {
+        value *= Number.parseFloat(getComputedStyle(node).opacity)
+        node = node.parentElement
+      }
+      return value
+    }
+
+    const nestedGroup = groups.find((group) => {
+      const addon = group.querySelector('[data-slot="input-group-addon"]')
+      const action = group.querySelector('[data-slot="input-group-action"]')
+      return Boolean(addon && action && addon.contains(action))
+    })
+    if (!nestedGroup) {
+      throw new Error('Expected one group to nest its action inside an addon.')
+    }
+    const nestedAction = nestedGroup.querySelector<HTMLButtonElement>(
       '[data-slot="input-group-action"]',
     )
-    const liveControl = firstGroup.querySelector<HTMLInputElement>(
+    const nestedControl = nestedGroup.querySelector<HTMLTextAreaElement>(
       '[data-slot="input-group-control"]',
     )
-    if (!liveAction || !liveControl) {
-      throw new Error('Expected the first group to hold both a control and an action.')
+    if (!nestedAction || !nestedControl) {
+      throw new Error('Expected the nested group to hold both a control and an action.')
     }
-    liveControl.disabled = true
-    await expect(getComputedStyle(firstGroup).opacity).toBe('1')
-    await expect(getComputedStyle(liveAction).opacity).toBe('1')
-    await expect(liveAction).toBeEnabled()
-    liveControl.disabled = false
+
+    nestedControl.disabled = true
+    await expect(nestedAction).toBeEnabled()
+    // The action is enabled, so it must stay fully legible no matter which
+    // ancestor fades. 0.5 here means an ancestor took `opacity`.
+    await expect(effectiveOpacity(nestedAction)).toBe(1)
+    nestedControl.disabled = false
   },
 }
 
