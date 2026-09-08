@@ -140,11 +140,12 @@ export default defineConfig({
             headless: true,
             instances: [{ browser: 'chromium' }],
           },
-          // Storybook needs no setupFiles — @storybook/addon-vitest 10.3+
-          // applies preview annotations automatically. This one exists solely
-          // for the vitest#9437 disk-leak workaround; see its header for the
-          // mechanism and the removal condition.
-          setupFiles: ['./vitest.setup.ts'],
+          // No setupFiles: @storybook/addon-vitest 10.3+ applies preview
+          // annotations automatically, and the vitest#9437 disk-leak
+          // workaround that used to live here is gone — vitest 4.1.11 ships
+          // the upstream fix (#10951, the v4 backport of #10912), so the
+          // browser provider now triggers the same collection itself when
+          // disk runs low.
           //
           // 30s, not the 15s default: story files run in parallel pages of
           // one browser, and the heavily interactive plays (navigation

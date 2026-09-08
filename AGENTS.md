@@ -405,6 +405,8 @@ Run from the **repo root** unless noted.
 | Lint all                        | `npm run lint`                                                 |
 | Format all                      | `npm run format`                                               |
 | Check formatting                | `npm run format:check`                                         |
+| Check workflow interpolation    | `npm run check:workflows`                                      |
+| Test the root scripts           | `npm run test:scripts`                                         |
 | Type check all                  | `npm run typecheck`                                            |
 | Check component drift           | `npm run check:drift -w @nswds/ui`                             |
 | Check radius scale              | `npm run check:radius -w @nswds/ui`                            |
@@ -425,7 +427,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
-`format:check`, `check:drift`, `check:radius`, `check:icons`, the
+`format:check`, `check:workflows`, `test:scripts`, `check:drift`,
+`check:radius`, `check:icons`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
 `scripts/test-consumer-fixture.sh`, a
@@ -438,6 +441,23 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 - **`format:check`** is `prettier --check .` over the **whole repo**. A
   path-scoped `npx prettier --check packages/ui/src` passes while an unformatted
   file anywhere else fails the merge.
+- **`check:workflows`** (`scripts/check-workflow-interpolation.mjs`) fails on
+  any `${{ … }}` inside a workflow `run:` block. Actions substitutes those as
+  TEXT before bash parses the script, so a value derived from repo contents is
+  code, not data — `release.yml` interpolated the newest git tag that way for
+  three months, and a tag named `@nswds/ui-v9.9.9";id;#` (a valid refname, and
+  first under `--sort=-v:refname`) would have executed inside the job holding
+  `id-token: write` and the ruleset-bypass deploy key. Bind such values under
+  the step's `env:` and read them as `"$VAR"`. `if:`/`with:`/`env:` are
+  expression context and are ignored; secrets are NOT exempt (see §8). The one
+  `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
+- **`test:scripts`** is `node --test scripts/*.test.mjs`. Today that is the
+  `check:workflows` scanner, and it is not belt-and-braces: the scanner's first
+  version silently missed every `- run:` written as a YAML sequence item — the
+  common form — while still passing `release.yml`, which happens to use the
+  bare `run:` form. A gate that stops gating exits 0, which reads exactly like
+  success, so anything under `scripts/` that guards a path CI cannot otherwise
+  exercise gets tests here for the same reason the release-config tests exist.
 - **`check:drift`** (`packages/ui/scripts/check-component-drift.mjs`) enforces
   the two-channel rule: every non-story file in `src/components/` must be
   exported from `src/index.ts` **and** registered in `registry.json` as a
@@ -545,13 +565,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 Note that the job stops at its first failing step, so fixing one can reveal
 another underneath — a green run is the only evidence that all of them pass.
 
-### Storybook suite reliability — two guards, one workaround
+### Storybook suite reliability — configuration guards and built-in protection
 
 The Storybook Vitest browser suite (`npm run test -w @workspace/storybook`)
 runs every story file as a browser test on CI's 2-core runners. Two
 configuration guards (the pre-bundle list and `noDiscovery`, first bullet) and
-one workaround (the GC hook, second bullet) keep it stable, and none of them
-is optional:
+Vitest's built-in Chromium disk protection (second bullet) keep it stable.
+Keep both configuration guards and the Vitest version floor that provides
+the built-in protection:
 
 - **`optimizeDeps.include` must list every bare import reachable from
   `packages/ui/src`** (`apps/storybook/vitest.config.ts`). Stories import
@@ -564,22 +585,23 @@ is optional:
   `aria-query`) must be listed explicitly or every story file fails at import
   with "does not provide an export named 'jsxDEV'". `check:optimize-deps`
   enforces list completeness in CI.
-- **`apps/storybook/vitest.setup.ts` forces a Chromium garbage collection
-  after every story file.** Chromium leaks ~2 MiB of shared memory per
+- **Chromium disk exhaustion is handled upstream now — vitest must stay at
+  or above 4.1.11.** Chromium leaks ~2 MiB of shared memory per
   304-revalidated script load, and Playwright's `--disable-dev-shm-usage`
   turns the leaked blocks into deleted-but-open files on the runner's ~14 GB
   disk. Under per-story iframe isolation the module graph is revalidated per
   file, so free disk can collapse at ~1.2 GB/s mid-run and kill the tester
   page — surfacing as a roaming
   `Cannot connect to the iframe` / `Failed to fetch dynamically imported module`
-  failure that never reproduces locally. The per-file
-  `cdp().send('HeapProfiler.collectGarbage')` hook keeps the disk floor high
-  (~11.5 GB vs a 0.33–1.36 GB cliff without it). This is a workaround for
-  [vitest#9437](https://github.com/vitest-dev/vitest/issues/9437); its removal
-  condition — a released vitest carrying
-  [vitest#10912](https://github.com/vitest-dev/vitest/pull/10912) — is tracked
-  in issue #126. Do not remove it early, and judge any change to it on several
-  CI runs, never one: the unmasked failure was probabilistic (~1 pass in 4).
+  failure that never reproduces locally
+  ([vitest#9437](https://github.com/vitest-dev/vitest/issues/9437)).
+  vitest 4.1.11 ships the fix
+  ([#10951](https://github.com/vitest-dev/vitest/pull/10951), the v4 backport
+  of [#10912](https://github.com/vitest-dev/vitest/pull/10912)): the browser
+  provider triggers the collection itself when disk runs low, so
+  `apps/storybook` needs no setup file and declares none. The `^4.1.11` floor
+  in `apps/storybook/package.json` is what keeps that true — do not lower it. If this ever recurs, judge any change on several CI runs,
+  never one: the unmasked failure was probabilistic (~1 pass in 4).
 
 Diagnosing a suspected recurrence: deleted-but-open files are invisible to
 `du` and to any post-run inspection — only a `df` poll **during** the run sees
@@ -687,8 +709,35 @@ so it must carry a releasable type — `fix:` for a tweak, `feat:` for a new/ret
    semantic-release pushes the version-bump commit and tag **before** the npm
    publish step — a failed publish would otherwise leave green-looking tags
    with no package behind them:
-   - **npm**: polls `npm view @nswds/ui@<version>` until the new version
-     appears; fails loudly if it never does.
+   - **npm**: polls `npm view --prefer-online @nswds/ui@<version>` against a
+     600-second wall-clock deadline until the new version appears; fails
+     loudly if it never does. A deadline rather than an attempt count because
+     `npm view` has no per-call bound of its own — npm defaults to
+     `fetch-timeout` 300000 with 2 retries, so one stalled request could
+     outlast the whole budget and carry the job into its `timeout-minutes`,
+     which files a `release-failure` issue against a good publish just as
+     surely as a budget that is too short. The call is capped
+     (`--fetch-retries=0 --fetch-timeout=20000`) and the loop runs to the
+     deadline, so the budget is real whatever the network does.
+     The budget and the `--prefer-online` are both load-bearing, and neither
+     substitutes for the other.
+     `npm publish` returns **before** the version is readable — it prints
+     "Your package is being processed and may take a few minutes to become
+     available" — which is how v7.0.0 was declared a failed release and had a
+     `release-failure` issue filed against it: the publish succeeded at
+     23:49:29, npm recorded the version at 23:52:06, and the budget was 100
+     seconds. Separately, the packument is cached **twice** — it is served
+     `max-age=300` — and the flag and the budget close one layer each, so
+     neither is safe to trim on the strength of the other. Locally,
+     `npm view` is cache-first over the `~/.npm` that `cache: npm` restores,
+     and this same job already resolved `@nswds/ui` (via `npm ci`, and the
+     `npm install --package-lock-only` inside the release step), so without
+     `--prefer-online` the poll can replay that packument for the full
+     max-age without asking npm at all. `--prefer-online` forces the request
+     but cannot make the answer fresh: the registry sits behind an edge cache
+     (responses carry a non-zero `age`), so a revalidation can still be served
+     from a copy up to 5 minutes old — which only a budget longer than
+     max-age covers.
    - **registry**: polls the deployed registry's `/r/version.json` (~10-minute
      budget) until it reports the new version. Vercel deploys the registry
      from the version-bump commit semantic-release just pushed, gated by the
@@ -920,6 +969,22 @@ verifies registry output freshness instead.)
   `packages/ui`'s to match it.** With `engine-strict=true` the root range is a promise
   `npm ci` enforces, while `packages/ui`'s range is a constraint on consumers who never
   install the packages setting that floor. See §5 "Node version — the engine floor".
+- **Never interpolate `${{ … }}` into a workflow `run:` block when the value can
+  come from repo contents** — a tag, branch, filename, PR title, or any step
+  output derived from them. GitHub Actions substitutes it as **text** before
+  bash parses the script, so the value is code, not data. Git refnames alone
+  permit `"`, `;`, `#`, backticks and `$(…)`, which is enough: a tag named
+  `@nswds/ui-v9.9.9";id;#` is creatable and would have executed inside
+  `release.yml`, the one job holding `id-token: write` and a ruleset-bypass
+  deploy key. Pass such values through `env:` and read them as `"$VAR"` in the
+  script. `check:workflows` enforces this (§5); the same class was fixed in
+  `nswds-devops`' `reusable-ci.yml` the same week. `if:`, `with:` and `env:`
+  are expression context rather than shell, so `${{ }}` is fine there and the
+  gate ignores them. **`${{ secrets.* }}` is not exempt**: a secret's value is
+  interpolated as text like anything else, and "only an admin can set one" is a
+  weaker guarantee than one line of `env:` — which is also what GitHub's own
+  hardening guidance says. The gate's `ALLOWED` list holds the only exception,
+  `…head.repo.fork`, a boolean the platform computes.
 
 ---
 
@@ -930,4 +995,4 @@ Only live items belong here — a fixed entry is deleted, not struck through.
 | #   | Issue                                                   | Where / status                                                                                                                                        |
 | --- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | `apps/web` has no content (`page.tsx` returns null)     | Expected; it's a dev sandbox                                                                                                                          |
-| 2   | Storybook Chromium GC workaround awaits an upstream fix | `apps/storybook/vitest.setup.ts`; remove when a released vitest carries vitest#10912 — tracked in issue #126, blocked on an upstream release (see §5) |
+| 2   | vitest majors are blocked while Storybook's addon lags   | `@storybook/addon-vitest` peers vitest `^3 \|\| ^4` in every release incl. 11.0.0-alpha.0, so vitest 5 cannot resolve; Renovate blocks the major (nswds-devops `default.json`). Unblocks when the addon's peer admits `^5` — upstream storybookjs/storybook#36082, #35752 |
