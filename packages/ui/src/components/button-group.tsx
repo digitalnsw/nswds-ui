@@ -31,12 +31,15 @@ const DEFAULT_GROUP_ORIENTATION = 'horizontal' as const
  *
  * Every colour is Button's own `--btn-fill` / `--btn-bg` / `--btn-text` pair,
  * applied to the group by `buttonColorVariants`, so a group's `color` means
- * what a Button's does and the ink flips for dark mode the same way.
- * Hairlines take the text colour, per the masterbrand's line system. These
- * classes therefore only paint on an element that also carries
- * `buttonColorVariants` — `ring-(--btn-bg)` is invalid without it — so a
- * consumer extending the group's styling applies the two together, as
- * `ButtonGroup` does.
+ * what a Button's does: the ink flips for dark mode the same way, and on a
+ * soft or surface band it steps to the darker ink those tints need the same
+ * way (`styles.tintInk` in button.tsx). The segments learn they sit on that
+ * tint from the `band` the context carries, and step their own colour's ink,
+ * so a segment naming another colour keeps it. Hairlines take the text
+ * colour, per the masterbrand's line system. These classes therefore only
+ * paint on an element that also carries `buttonColorVariants` —
+ * `ring-(--btn-bg)` is invalid without it — so a consumer extending the
+ * group's styling applies the two together, as `ButtonGroup` does.
  *
  * Two kinds of rule reach a segment. What depends on the segment's
  * NEIGHBOURS — dividers, seams, the text cell — lives here and uses the CHILD
@@ -245,7 +248,7 @@ function ButtonGroup({
       role='group'
       data-slot='button-group'
       className={cn(
-        buttonColorVariants({ color: resolvedColor }),
+        buttonColorVariants({ color: resolvedColor, variant: resolvedVariant }),
         buttonGroupVariants({ variant: resolvedVariant, orientation: resolvedOrientation }),
         className,
       )}

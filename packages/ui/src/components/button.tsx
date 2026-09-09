@@ -11,6 +11,17 @@ import { cn } from '../lib/utils.js'
 import { Link } from '../components/link.js'
 import { Spinner } from '../components/spinner.js'
 
+/**
+ * One entry of `styles.tintInk`: the ink a colour token steps to when its
+ * label sits on a tint of itself. Shared by `buttonVariants` and
+ * `buttonColorVariants`, which both declare the `onTint` and `color` keys.
+ */
+type TintInkCompound = {
+  onTint: true
+  color: 'tertiary' | 'accent' | 'success' | 'warning'
+  className: string
+}
+
 const styles = {
   base: [
     // Base
@@ -210,7 +221,8 @@ const styles = {
   // (`text-(--btn-bg)`), the border on `outline`/`surface`, the tint on
   // `soft`/`surface`, the `link` halos, the state overlays derived in
   // `styles.base`, and the focus ring. They start life the same colour, and
-  // only part company in dark mode.
+  // part company in two places: dark mode, and — for the four tokens in
+  // `styles.tintInk` — on the token's own tint.
   //
   // They used to be one variable, which made the ink un-flippable. The values
   // here are masterbrand palette steps, and palette steps are theme-invariant —
@@ -337,6 +349,63 @@ const styles = {
       'data-[variant=solid]:[--btn-active-overlay:var(--color-black)]/15',
     ],
   },
+  // Ink on the tint.
+  //
+  // `soft` and `surface` paint the label in the ink over a tint of the same
+  // ink, and for four tokens that pair cannot carry a label. Their inks are
+  // `-600` steps that sit at 4.53–5.18:1 on pure white to begin with, so any
+  // tint of themselves takes them under the 4.5:1 WCAG 1.4.3 asks of a 16px
+  // bold label: on a 10% band, primary-600 measures 4.00:1, accent-600
+  // 4.39:1, success-600 3.96:1 and warning-600 3.96:1, and a lone Button
+  // lands lower still (3.49–3.76:1) because its `before` fill layer paints
+  // the tint a second time inside the border. No lower tint rescues them —
+  // at 3% three of the four still fail — so the tint stays and the ink steps
+  // down to `-700`, which measures 7.0:1 or better on the band and 5.9:1 or
+  // better on the doubled tint. Not `-800`: for tertiary that is primary's
+  // own ink, and a soft tertiary would become a soft primary. Neither step
+  // is the ramps' text step (that is `-800`), so the case rests on the
+  // measurements, not on a ramp role. The other five tokens keep their ink;
+  // their closest pair is danger-600 at 4.71:1.
+  //
+  // It is `--btn-bg` that steps, not the text colour alone: the tint, the
+  // hover and active overlays and the focus ring all derive from it (the
+  // Derived State Rule in DESIGN.md). Two things stay outside the step and
+  // are known: the press overlay takes a lone soft tertiary to 4.40:1 and a
+  // lone soft accent to 4.18:1 for the duration of the press (2.8:1 before),
+  // and `outline`, `ghost` and `link` keep the `-600` ink, which clears
+  // 4.5:1 on pure white only — on an off-white such as `background-subtle`
+  // those three measure 4.15–4.19:1 for the same four tokens.
+  //
+  // Keyed on `onTint`, not on the variant: a segment of a soft or surface
+  // ButtonGroup band sits on the band's tint with `ghost` as its own
+  // variant, and it steps its own colour's ink there — a danger segment on a
+  // tertiary band stays danger. `buttonVariants` derives `onTint` from the
+  // variant for a lone Button; `resolveGroupDefaults` sets it for a segment.
+  //
+  // These are bare declarations at (0,1,0), so the colour's `dark:` ink at
+  // (0,2,0) wins over them exactly as it wins over the light ink above —
+  // dark mode is untouched, and its `-200` inks clear 5.8:1 on their tints.
+  // The colour's own light ink is not fought in the cascade at all:
+  // `buttonVariants` and `buttonColorVariants` merge their class strings
+  // before returning them, so one `--btn-bg` declaration reaches the DOM,
+  // and a surface that imposes its ink through `className` (footer.tsx) is
+  // merged later still.
+  //
+  // Raw tokens rather than the `--color-*` bridges, for the tree-shaking
+  // reason above `danger`: no utility in the package uses the primary,
+  // accent, success or warning `-700` steps, so none of those four bridges
+  // survives the build (grey-700 does, through step-indicator.tsx). A
+  // runtime re-theme that writes only the bridges — Storybook's theme
+  // picker — therefore leaves these inks at masterbrand, as it leaves the
+  // `dark:` inks; a rebrand that redefines the raw tokens is unaffected.
+  // The figures above are for the masterbrand colourway theme.css imports:
+  // a colourway swap (AGENTS.md §3) must re-measure this table.
+  tintInk: [
+    { onTint: true, color: 'tertiary', className: '[--btn-bg:var(--primary-700)]' },
+    { onTint: true, color: 'accent', className: '[--btn-bg:var(--accent-700)]' },
+    { onTint: true, color: 'success', className: '[--btn-bg:var(--success-700)]' },
+    { onTint: true, color: 'warning', className: '[--btn-bg:var(--warning-700)]' },
+  ] satisfies TintInkCompound[],
   // Each step publishes its own height as `--btn-h`, built from the same two
   // numbers that produce its box: one line box (`text-base/7` — Tailwind's
   // `/7` is `--spacing(7)`, so this is the same token, not a matching literal)
@@ -425,7 +494,7 @@ const styles = {
   ],
 }
 
-const buttonVariants = cva(styles.base, {
+const buttonCva = cva(styles.base, {
   variants: {
     variant: {
       solid: styles.solid,
@@ -458,8 +527,21 @@ const buttonVariants = cva(styles.base, {
       true: styles.iconOnly,
       false: '',
     },
+    // Whether the label sits on a tint of its own ink: a lone `soft` or
+    // `surface` Button, or any non-solid segment of a soft or surface
+    // ButtonGroup band. `buttonVariants` derives it from the variant when a
+    // caller leaves it unset; `resolveGroupDefaults` sets it for a segment.
+    onTint: {
+      true: '',
+      false: '',
+    },
   },
   compoundVariants: [
+    // ── Ink on the tint ──────────────────────────────────────────────────
+    //
+    // See `styles.tintInk`. The colour's own `--btn-bg` is still in this
+    // string; `buttonVariants` merges the two before returning.
+    ...styles.tintInk,
     // ── Icon-only glyph sizes ────────────────────────────────────────────
     //
     // With no label beside it the glyph has nothing to match, so here — and
@@ -500,20 +582,68 @@ const buttonVariants = cva(styles.base, {
     variant: 'solid',
     color: 'primary',
     size: 'default',
+    onTint: false,
   },
+})
+
+/** The props `buttonVariants` takes: the cva's own. */
+type ButtonVariantProps = NonNullable<Parameters<typeof buttonCva>[0]>
+
+/**
+ * The variants that paint the label on a tint of its own ink. A lone Button
+ * in one of these is on the tint; so is every non-solid segment of a
+ * ButtonGroup band in one of these, whatever the segment's own variant.
+ */
+const TINT_VARIANTS: ReadonlySet<string | null | undefined> = new Set(['soft', 'surface'])
+
+/**
+ * Button's class string. A thin wrapper over the cva so that two things hold
+ * for every caller, not only for `Button` itself: `onTint` defaults to
+ * whether the variant is one that paints its label on a tint, so a caller
+ * styling its own element with `buttonVariants({ variant: 'soft', … })` gets
+ * the stepped ink without knowing about it; and the string is merged before
+ * it is returned. The cva's output carries both the colour's own `--btn-bg`
+ * and, on the tint, the stepped one from `styles.tintInk`. `cn` keeps the
+ * later, so one declaration reaches the DOM and the pair is settled at the
+ * class-string level, never by stylesheet order — the two-build hazard in
+ * AGENTS.md §4 needs two rules in the cascade, and this leaves it one.
+ */
+function buttonVariants({ onTint, ...props }: ButtonVariantProps = {}) {
+  return cn(buttonCva({ ...props, onTint: onTint ?? TINT_VARIANTS.has(props.variant) }))
+}
+
+const buttonColorCva = cva('', {
+  variants: {
+    color: styles.colors,
+    // The band: a soft or surface group paints its tint from its own
+    // `--btn-bg`, so it is on the tint the way its segments are.
+    onTint: {
+      true: '',
+      false: '',
+    },
+  },
+  compoundVariants: styles.tintInk,
+  defaultVariants: { color: 'primary', onTint: false },
 })
 
 /**
  * Button's colour tokens on their own — the `--btn-fill` / `--btn-bg` /
  * `--btn-border` / `--btn-text` pair for each token, with the dark-mode ink
- * flip. ButtonGroup applies this to itself so the frame, band and dividers it
- * draws take the same ink its segments do, and a group's `color` means exactly
- * what a Button's does.
+ * flip and, on the tint, the stepped ink those tints need (`styles.tintInk`).
+ * ButtonGroup applies this to itself so the frame, band and dividers it draws
+ * take the same ink its segments do, and a group's `color` means exactly what
+ * a Button's does. Takes the group's `variant` and derives `onTint` from it
+ * as `buttonVariants` does, and merges the string for the same reason.
  */
-const buttonColorVariants = cva('', {
-  variants: { color: styles.colors },
-  defaultVariants: { color: 'primary' },
-})
+function buttonColorVariants({
+  variant,
+  onTint,
+  ...props
+}: NonNullable<Parameters<typeof buttonColorCva>[0]> & {
+  variant?: ButtonVariantProps['variant']
+} = {}) {
+  return cn(buttonColorCva({ ...props, onTint: onTint ?? TINT_VARIANTS.has(variant) }))
+}
 
 /**
  * The child variants that carry their own fill into a group. `surface` is
@@ -567,7 +697,10 @@ function renderIconSlot(slot: IconSlot | undefined | null): React.ReactNode {
 }
 
 /** Visual/content props shared by `Button` and `ButtonLink`. */
-type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOnly' | 'color'> & {
+type ButtonOwnProps = Omit<
+  VariantProps<typeof buttonVariants>,
+  'size' | 'iconOnly' | 'color' | 'onTint'
+> & {
   /**
    * Colour token. Most are safe on any surface: the non-solid variants take
    * their ink from the token and it flips for dark mode, so `primary` reads
@@ -582,6 +715,10 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * `primary-800` panel — and use `primary` on a light or theme-flipping
    * surface. `solid` is unaffected either way, since it pairs `--btn-fill`
    * with `--btn-text` rather than painting the ink.
+   *
+   * On a tint — `soft`, `surface`, or any non-solid segment of a soft or
+   * surface ButtonGroup — `tertiary`, `accent`, `success` and `warning` step
+   * to their `-700` ink so the label clears 4.5:1; see `styles.tintInk`.
    */
   color?:
     | 'white'
@@ -664,10 +801,11 @@ function buttonClasses({
   className,
   effectiveDisabled,
   segment,
-}: ButtonOwnProps & { effectiveDisabled?: boolean; segment?: SegmentKind }) {
+  onTint,
+}: ButtonOwnProps & { effectiveDisabled?: boolean; segment?: SegmentKind; onTint?: boolean }) {
   return clsx(
     cn(
-      buttonVariants({ variant, color, size, iconOnly }),
+      buttonVariants({ variant, color, size, iconOnly, onTint }),
       segment && styles.segment,
       block && 'w-full',
       alignContent === 'start' && 'justify-start',
@@ -730,6 +868,7 @@ function resolveGroupDefaults(
       iconOnly,
       segment: undefined,
       band: undefined,
+      onTint: undefined,
     }
   }
   const emphasised = EMPHASISED_SEGMENT_VARIANTS.has(variant)
@@ -748,8 +887,9 @@ function resolveGroupDefaults(
   // is also why the group's own step is read back through the same guard.
   const iconStep = resolvedSize === 'icon'
   const groupStep = group.size === 'icon' ? undefined : group.size
+  const resolved = emphasised ? variant : 'ghost'
   return {
-    variant: emphasised ? variant : 'ghost',
+    variant: resolved,
     color: color ?? group.color,
     size: iconStep ? (groupStep ?? 'default') : resolvedSize,
     // `??`, not `||`: an explicit `iconOnly={false}` is the author saying
@@ -758,6 +898,13 @@ function resolveGroupDefaults(
     iconOnly: iconOnly ?? iconStep,
     segment: emphasised ? ('override' as const) : ('default' as const),
     band: group.band,
+    // On a soft or surface band every segment that is not solid sits on the
+    // band's tint whatever its own variant, so its ink steps as a lone soft
+    // Button's does (`styles.tintInk`) — its own colour's ink, not the
+    // band's: the group's colour is a default, never an override, so a
+    // danger segment on a tertiary band stays danger. The band is the group's
+    // own variant, which is what `band` carries.
+    onTint: resolved !== 'solid' && TINT_VARIANTS.has(group.band),
   }
 }
 
@@ -930,7 +1077,7 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
   // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
-  const { variant, color, size, iconOnly, segment, band } = useSegmentDefaults({
+  const { variant, color, size, iconOnly, segment, band, onTint } = useSegmentDefaults({
     variant: variantProp,
     color: colorProp,
     size: sizeProp,
@@ -958,6 +1105,7 @@ function Button({
         className,
         effectiveDisabled,
         segment,
+        onTint,
       })}
       ref={ref}
     >
@@ -1005,7 +1153,7 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
   // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
-  const { variant, color, size, iconOnly, segment, band } = useSegmentDefaults({
+  const { variant, color, size, iconOnly, segment, band, onTint } = useSegmentDefaults({
     variant: variantProp,
     color: colorProp,
     size: sizeProp,
@@ -1044,6 +1192,7 @@ function ButtonLink({
         className,
         effectiveDisabled,
         segment,
+        onTint,
       })}
       ref={ref}
     >
