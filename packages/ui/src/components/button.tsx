@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import clsx from 'clsx'
 import React from 'react'
 
+import { ButtonGroupContext, type ButtonGroupContextValue } from '../lib/button-group-context.js'
 import { cn } from '../lib/utils.js'
 
 import { Link } from '../components/link.js'
@@ -366,6 +367,42 @@ const styles = {
   // the scale step and "is this icon-only" are independent axes. The glyph
   // needs no adjustment — the step already sizes it off the ladder.
   iconOnly: 'size-(--btn-h) flex-none p-0 sm:p-0',
+  // A segment: this button sits inside a ButtonGroup, which owns the boundary
+  // (frame, band, dividers, the 4px corners) and clips to its own radius. The
+  // button gives up the parts of its chrome the group now draws. Every rule is
+  // keyed on `data-segment` — an attribute selector, (0,2,0) against the
+  // variant's (0,1,0) and (0,3,0) against its `dark:` rules — so it wins on
+  // specificity, never on emission order (see the two-build note in AGENTS.md
+  // §4). InputGroupAction takes the same approach for the same reason.
+  segment: [
+    // Corners belong to the group. The fill and overlay layers are squared too
+    // — left at `calc(var(--radius-sm)-1px)` they notch the shared edges.
+    'data-[segment]:rounded-none data-[segment]:before:rounded-none data-[segment]:after:rounded-none data-[segment]:dark:after:rounded-none',
+    // The dark-mode overlay grows 1px to cover the button's own border; inside
+    // a group that 1px is the divider, and the hover tint must not paint over it.
+    'data-[segment]:dark:after:inset-0',
+    // No shadow: a `shadow-sm` whisper belongs under a button on the page, not
+    // under one segment of a control.
+    'data-[segment]:before:shadow-none',
+    // A framed group draws its frame as an inset ring on the group, which
+    // paints beneath its children. A solid segment's own background (the
+    // optical border, `bg-(--btn-border)`) would cover that ring on the top
+    // and bottom edges, so backgrounds stop at the padding box and the 1px
+    // transparent border lets the frame through. The `before` fill layer is
+    // positioned inside the padding box already.
+    'data-[segment]:bg-clip-padding',
+    // The group clips its corners (`overflow-hidden`), which would clip a ring
+    // sitting 2px outside the button, so the ring moves 2px inside instead —
+    // the same inversion the nav rails use inside a scroll container.
+    'data-[segment]:focus:-outline-offset-2',
+    // Inside the segment, a ring in the ink on a solid fill is fill on fill:
+    // in light mode `--btn-bg` and `--btn-fill` are the same token. So a solid
+    // segment rings in its label colour, the pair InputGroupAction's solid
+    // variant uses. (0,4,0) against the base ring's (0,2,0). A segment that
+    // is not solid keeps the ink ring; on a solid band the group re-points its
+    // ink to the label colour, so that ring is white there too.
+    'data-[segment]:data-[variant=solid]:focus:outline-(--btn-text)',
+  ],
 }
 
 const buttonVariants = cva(styles.base, {
@@ -445,6 +482,27 @@ const buttonVariants = cva(styles.base, {
     size: 'default',
   },
 })
+
+/**
+ * Button's colour tokens on their own — the `--btn-fill` / `--btn-bg` /
+ * `--btn-border` / `--btn-text` pair for each token, with the dark-mode ink
+ * flip. ButtonGroup applies this to itself so the frame, band and dividers it
+ * draws take the same ink its segments do, and a group's `color` means exactly
+ * what a Button's does.
+ */
+const buttonColorVariants = cva('', {
+  variants: { color: styles.colors },
+  defaultVariants: { color: 'primary' },
+})
+
+/**
+ * The child variants that carry their own fill into a group. `surface` is
+ * not among them: its 2px ink/50 border would stay on the segment's free
+ * edges inside the group's own 1px frame, and inside a band it would draw a
+ * box on the fill. `soft` and `solid` have transparent borders, so they sit
+ * flush.
+ */
+const EMPHASISED_SEGMENT_VARIANTS = new Set<ButtonOwnProps['variant']>(['solid', 'soft'])
 
 /**
  * An icon slot. Takes either form:
@@ -582,16 +640,81 @@ function buttonClasses({
   alignContent,
   className,
   effectiveDisabled,
-}: ButtonOwnProps & { effectiveDisabled?: boolean }) {
+  segment,
+}: ButtonOwnProps & { effectiveDisabled?: boolean; segment?: SegmentKind }) {
   return clsx(
     cn(
       buttonVariants({ variant, color, size, iconOnly }),
+      segment && styles.segment,
       block && 'w-full',
       alignContent === 'start' && 'justify-start',
       className,
     ),
     effectiveDisabled ? 'cursor-not-allowed' : 'cursor-pointer',
   )
+}
+
+/**
+ * How a Button relates to the ButtonGroup around it, emitted as
+ * `data-segment` for the segment styles to key on: `default` when it took
+ * its variant from the group, `override` when it named its own emphasis.
+ * Absent outside a group.
+ */
+type SegmentKind = 'default' | 'override'
+
+/** The context, with `color` and `size` narrowed to Button's own unions. */
+type GroupDefaults = ButtonGroupContextValue<
+  NonNullable<ButtonOwnProps['color']>,
+  NonNullable<ButtonOwnProps['size']>
+>
+
+/**
+ * Resolves the variant, colour and size a Button renders with, from its own
+ * props first and the enclosing ButtonGroup second.
+ *
+ * Outside a group the variant is resolved here rather than left to cva's
+ * `defaultVariants` so that `data-variant` is always present in the DOM. cva
+ * resolves its own default internally and emits the right classes either
+ * way, but the attribute was simply absent — so the `data-[variant=solid]:`
+ * state-overlay rules in `styles.colors` never matched a default `<Button>`.
+ * It fell through to the derived overlay in `styles.base` and painted
+ * `--btn-bg` at 10% over its own fill, which is the same colour: no visible
+ * hover at all.
+ *
+ * Inside a group the group's `color` and `size` become the defaults, and a
+ * segment renders as `ghost` whatever the group's variant, because the group
+ * paints the frame or band and the segment only paints its label and its
+ * hover overlay on top — so a child written as `variant='outline'` inside an
+ * outline group (the shadcn idiom, and the previous stories) draws no second
+ * border, and `link` gets button chrome like any other segment. A child that
+ * asks for emphasis keeps it: `solid` and `soft` paint their own fill, which
+ * is how a Save stays solid inside an outline group.
+ */
+function resolveGroupDefaults(
+  group: GroupDefaults | null,
+  { variant, color, size }: Pick<ButtonOwnProps, 'variant' | 'color' | 'size'>,
+) {
+  if (!group) {
+    return { variant: variant ?? 'solid', color, size, segment: undefined }
+  }
+  const emphasised = EMPHASISED_SEGMENT_VARIANTS.has(variant)
+  return {
+    variant: emphasised ? variant : 'ghost',
+    color: color ?? group.color,
+    size: size ?? group.size,
+    segment: emphasised ? ('override' as const) : ('default' as const),
+  }
+}
+
+/**
+ * `resolveGroupDefaults` against the enclosing ButtonGroup, if any. The
+ * context types `color` and `size` as strings so its module can ship with
+ * every popup (see button-group-context.tsx); only ButtonGroup provides it,
+ * from props typed with Button's own unions, so the narrowing here is sound.
+ */
+function useSegmentDefaults(props: Pick<ButtonOwnProps, 'variant' | 'color' | 'size'>) {
+  const group = React.useContext(ButtonGroupContext) as GroupDefaults | null
+  return resolveGroupDefaults(group, props)
 }
 
 /** Shared inner layout: spinner, visuals, label, count, touch target. */
@@ -710,16 +833,9 @@ function warnIfIconButtonUnlabelled(
  */
 function Button({
   className,
-  // Defaulted here rather than left to cva's `defaultVariants` so that
-  // `data-variant` below is always present in the DOM. cva resolves its own
-  // default internally and emits the right classes either way, but the
-  // attribute was simply absent — so the `data-[variant=solid]:` state-overlay
-  // rules in `styles.colors` never matched a default `<Button>`. It fell
-  // through to the derived overlay in `styles.base` and painted `--btn-bg` at
-  // 10% over its own fill, which is the same colour: no visible hover at all.
-  variant = 'solid',
-  color,
-  size,
+  variant: variantProp,
+  color: colorProp,
+  size: sizeProp,
   iconOnly,
   children,
   block,
@@ -736,12 +852,20 @@ function Button({
   ...props
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
+  // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
+  const { variant, color, size, segment } = useSegmentDefaults({
+    variant: variantProp,
+    color: colorProp,
+    size: sizeProp,
+  })
 
   warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
   return (
     <ButtonPrimitive
+      data-slot='button'
       data-variant={variant}
+      data-segment={segment}
       aria-busy={loading || undefined}
       {...props}
       disabled={effectiveDisabled}
@@ -754,6 +878,7 @@ function Button({
         alignContent,
         className,
         effectiveDisabled,
+        segment,
       })}
       ref={ref}
     >
@@ -781,10 +906,9 @@ function Button({
  */
 function ButtonLink({
   className,
-  // Always emitted as `data-variant` — see the note in `Button`.
-  variant = 'solid',
-  color,
-  size,
+  variant: variantProp,
+  color: colorProp,
+  size: sizeProp,
   iconOnly,
   children,
   block,
@@ -801,6 +925,12 @@ function ButtonLink({
   ...props
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
+  // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
+  const { variant, color, size, segment } = useSegmentDefaults({
+    variant: variantProp,
+    color: colorProp,
+    size: sizeProp,
+  })
 
   warnIfIconButtonUnlabelled(size, iconOnly, props, children)
 
@@ -810,7 +940,9 @@ function ButtonLink({
       // complete visual treatment (background, border, focus ring, icon
       // sizing) and any Link styling layered on top would conflict.
       variant='unstyled'
+      data-slot='button'
       data-variant={variant}
+      data-segment={segment}
       aria-busy={loading || undefined}
       {...props}
       {...(effectiveDisabled
@@ -830,6 +962,7 @@ function ButtonLink({
         alignContent,
         className,
         effectiveDisabled,
+        segment,
       })}
       ref={ref}
     >
@@ -863,5 +996,5 @@ function TouchTarget({ children }: { children: React.ReactNode }) {
   )
 }
 
-export { Button, ButtonLink, buttonVariants, TouchTarget }
+export { Button, buttonColorVariants, ButtonLink, buttonVariants, TouchTarget }
 export type { ButtonLinkProps, ButtonProps, IconSlot }

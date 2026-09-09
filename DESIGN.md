@@ -177,6 +177,15 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 - **Hover / Focus:** Hover and active states are 10%/20% `color-mix` overlays of the ink — derived, never restated (solid flips to white/black overlays). Focus is a 2px ring in the ink colour, offset 2px so it lands on the page; buttons ring on _click_ too (`focus:`), while links and inputs ring only for keyboard (`focus-visible:`) — this asymmetry is deliberate feedback design.
 - **Link variant:** sheds all button chrome and adopts the Link component's underline-and-halo treatment.
 
+### Button groups
+
+- **Character:** the line system applied to a row of buttons. The group owns the boundary — frame or band, the hairline between segments, the 4px corners — and each segment is an ordinary Button that gives up only the chrome the group now draws. Hairlines take the text colour.
+- **Variants:** Button's family, minus `link`. `outline` (default) is a 1px inset hairline frame in the ink with ghost segments and no fill of its own; `solid` is the fill band with white labels and reversed hairlines; `soft` and `surface` are Button's tint pairs as bands; `ghost` keeps only the dividers. The group's `color` and `size` are its segments' defaults.
+- **Emphasis:** a segment that names `solid` or `soft` keeps it — a solid Save beside a ghost Cancel is the row's primary action; two solid segments (a split button) divide with a white/30 hairline. `outline`, `ghost` and `link` children render as plain segments, so the shadcn idiom of writing `variant='outline'` on every child draws no second border. `surface` is not a segment emphasis: its 2px border would sit inside the group's frame.
+- **On a band:** every segment that is not itself solid takes the band's label colour as its ink, so a defaulted or soft segment on a solid band is white on blue, never blue on blue.
+- **Geometry:** the frame is an inset ring, so a group is exactly as tall as the lone Button beside it. Corners are clipped by the group, which is why a segment's focus ring sits 2px inside its edge rather than 2px onto the page — the same inversion the nav rails make inside a scroll container — and a solid segment rings in its label colour, since in light mode its ink and its fill are one token. The text cell is 16px semibold on the sunken surface, never fine print. The boundary before a disabled segment is drawn on the segment before it, so it does not fade with the disabled one.
+- **Scope:** Buttons only — an input with an attached action is InputGroup's job — and groups do not nest. React context follows a portal, so every popup in the package resets the group at its portal (`ButtonGroupBoundary`); an overlay from another library opened from a segment should do the same.
+
 ### Cards / Containers
 
 - **Corner Style:** 8px (`rounded-md`), with first/last images bleeding to the corner radius.

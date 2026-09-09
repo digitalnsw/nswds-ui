@@ -5,6 +5,7 @@ import { cva } from 'class-variance-authority'
 import type * as React from 'react'
 
 import { IconKeyboardArrowDown } from '../icons/keyboard-arrow-down.js'
+import { ButtonGroupBoundary } from '../lib/button-group-context.js'
 import { cn } from '../lib/utils.js'
 
 import { Link, type LinkProps } from '../components/link.js'
@@ -149,48 +150,51 @@ function NavigationMenu({
     >
       {children}
       <NavigationMenuPrimitive.Portal>
-        <NavigationMenuPrimitive.Positioner
-          data-slot='navigation-menu-positioner'
-          side={side}
-          sideOffset={sideOffset}
-          align={align}
-          alignOffset={alignOffset}
-          collisionPadding={collisionPadding}
-          collisionAvoidance={collisionAvoidance}
-          className={cn(
-            // Base UI reports its measured geometry through these vars; sizing
-            // the box from them lets top/left glide between triggers.
-            'isolate z-50 box-border h-[var(--positioner-height)] w-[var(--positioner-width)] max-w-[var(--available-width)]',
-            'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[top,left,right,bottom]',
-            // data-instant: Base UI disables the glide (e.g. keyboard re-anchor).
-            'data-instant:transition-none',
-          )}
-        >
-          <NavigationMenuPrimitive.Popup
-            data-slot='navigation-menu-popup'
+        {/* Stops a ButtonGroup's context at the portal — see ButtonGroupBoundary. */}
+        <ButtonGroupBoundary>
+          <NavigationMenuPrimitive.Positioner
+            data-slot='navigation-menu-positioner'
+            side={side}
+            sideOffset={sideOffset}
+            align={align}
+            alignOffset={alignOffset}
+            collisionPadding={collisionPadding}
+            collisionAvoidance={collisionAvoidance}
             className={cn(
-              // House popup surface (see popover.tsx / sheet.tsx).
-              'relative rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10',
-              // Width/height track the active Content's size (Base UI measures
-              // it into --popup-*), so switching sections morphs the surface
-              // instead of jump-cutting.
-              'h-[var(--popup-height)] w-[var(--popup-width)] max-w-[var(--available-width)] origin-(--transform-origin)',
-              'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[opacity,transform,width,height,scale,translate]',
-              // Open/close via Base UI transition attributes.
-              'data-starting-style:scale-95 data-starting-style:opacity-0',
-              'data-ending-style:scale-95 data-ending-style:opacity-0',
-              popupClassName,
+              // Base UI reports its measured geometry through these vars; sizing
+              // the box from them lets top/left glide between triggers.
+              'isolate z-50 box-border h-[var(--positioner-height)] w-[var(--positioner-width)] max-w-[var(--available-width)]',
+              'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[top,left,right,bottom]',
+              // data-instant: Base UI disables the glide (e.g. keyboard re-anchor).
+              'data-instant:transition-none',
             )}
-            style={popupStyle}
           >
-            <NavigationMenuPrimitive.Viewport
-              data-slot='navigation-menu-viewport'
-              // Clips the outgoing/incoming Content pair during a section
-              // switch; rounded to match the popup so corners don't leak.
-              className='relative size-full overflow-hidden rounded-md'
-            />
-          </NavigationMenuPrimitive.Popup>
-        </NavigationMenuPrimitive.Positioner>
+            <NavigationMenuPrimitive.Popup
+              data-slot='navigation-menu-popup'
+              className={cn(
+                // House popup surface (see popover.tsx / sheet.tsx).
+                'relative rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10',
+                // Width/height track the active Content's size (Base UI measures
+                // it into --popup-*), so switching sections morphs the surface
+                // instead of jump-cutting.
+                'h-[var(--popup-height)] w-[var(--popup-width)] max-w-[var(--available-width)] origin-(--transform-origin)',
+                'duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-safe:transition-[opacity,transform,width,height,scale,translate]',
+                // Open/close via Base UI transition attributes.
+                'data-starting-style:scale-95 data-starting-style:opacity-0',
+                'data-ending-style:scale-95 data-ending-style:opacity-0',
+                popupClassName,
+              )}
+              style={popupStyle}
+            >
+              <NavigationMenuPrimitive.Viewport
+                data-slot='navigation-menu-viewport'
+                // Clips the outgoing/incoming Content pair during a section
+                // switch; rounded to match the popup so corners don't leak.
+                className='relative size-full overflow-hidden rounded-md'
+              />
+            </NavigationMenuPrimitive.Popup>
+          </NavigationMenuPrimitive.Positioner>
+        </ButtonGroupBoundary>
       </NavigationMenuPrimitive.Portal>
     </NavigationMenuPrimitive.Root>
   )
