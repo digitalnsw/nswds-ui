@@ -6,7 +6,8 @@ type ButtonGroupOrientation = 'horizontal' | 'vertical'
 
 /**
  * What a ButtonGroup hands its segments: its `color` and `size` as their
- * defaults, and its orientation for the separator.
+ * defaults, its `variant` so a segment of a soft or surface band knows it
+ * sits on a tint, and its orientation for the separator.
  *
  * `color` and `size` are typed as plain strings here, deliberately. This
  * module ships as a supporting file of every popup in the package (each one
@@ -18,6 +19,7 @@ type ButtonGroupOrientation = 'horizontal' | 'vertical'
 type ButtonGroupContextValue<Color = string, Size = string> = {
   color?: Color | null
   size?: Size | null
+  variant?: string | null
   orientation: ButtonGroupOrientation
 }
 

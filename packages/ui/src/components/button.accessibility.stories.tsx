@@ -16,7 +16,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
-import { userEvent } from 'storybook/test'
+import { expect, userEvent, within } from 'storybook/test'
 
 import { IconAdd, IconClose, IconMoreHoriz, IconSearch } from '../icons/index.js'
 import { Button } from './button.js'
@@ -25,12 +25,7 @@ import { Button } from './button.js'
 
 type VariantKey = 'solid' | 'soft' | 'surface' | 'outline' | 'ghost' | 'link'
 type SizeKey = 'sm' | 'default' | 'lg' | 'icon'
-type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
-
-const lowContrastColors = ['white', 'secondary'] as const
-const lowContrastSet = new Set<ColorKey>(lowContrastColors)
-
-const themeColors: readonly ColorKey[] = [
+const themeColors = [
   'white',
   'grey',
   'primary',
@@ -38,7 +33,27 @@ const themeColors: readonly ColorKey[] = [
   'tertiary',
   'accent',
   'danger',
-]
+  'success',
+  'warning',
+] as const
+type ColorKey = (typeof themeColors)[number]
+
+const lowContrastColors = ['white', 'secondary'] as const
+const lowContrastSet = new Set<ColorKey>(lowContrastColors)
+
+// The four tokens whose ink steps to -700 on a tint (see `styles.tintInk` in
+// button.tsx), and the ramp each one reads its steps from.
+const steppedInk = {
+  tertiary: 'primary',
+  accent: 'accent',
+  success: 'success',
+  warning: 'warning',
+} as const
+
+/** A Button's resolved ink. */
+function inkOf(element: Element) {
+  return getComputedStyle(element).getPropertyValue('--btn-bg').trim()
+}
 
 const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
@@ -295,7 +310,7 @@ export const ContrastMinimum: Story = {
           why: 'Button labels and visible boundaries must meet minimum contrast ratios (4.5:1 for text, 3:1 for UI component boundaries) so users with low vision can perceive them.',
           how: 'Use a colour-contrast checker (e.g. Chrome DevTools) on each rendered state. Verify text on the solid variant and the boundary of the outline/surface variants pass against the surrounding background.',
           caveat:
-            'Contrast values depend on the active theme; check both light and dark modes. Low-contrast brand colours (white, secondary) are rendered on a grey-800 surface to model how they are intended to be used.',
+            'Contrast values depend on the active theme; check both light and dark modes. Low-contrast brand colours (white, secondary) are rendered on a grey-800 surface to model how they are intended to be used. axe cannot measure the soft and surface labels here — Button paints its tint on a pseudo-element, which axe reports as incomplete rather than as a result — so the play asserts the ink those cells use instead: tertiary, accent, success and warning step to their -700 ink on the tint (styles.tintInk in button.tsx), and the ButtonGroup Contrast story, whose band is a real element, is where axe measures the same pairs.',
         }),
       },
     },
@@ -329,6 +344,29 @@ export const ContrastMinimum: Story = {
       ))}
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const root = getComputedStyle(document.documentElement)
+    const byName = (name: string) => canvas.getAllByRole('button', { name })
+    for (const [color, ramp] of Object.entries(steppedInk)) {
+      const row = themeColors.indexOf(color as ColorKey)
+      const seven = root.getPropertyValue(`--${ramp}-700`).trim()
+      const soft = byName('Soft')[row]!
+      const surface = byName('Surface')[row]!
+      const outline = byName('Outline')[row]!
+      // On the tint the ink is the -700 step, and the label is painted in it.
+      await expect(inkOf(soft)).toBe(seven)
+      await expect(inkOf(surface)).toBe(seven)
+      await expect(getComputedStyle(soft).color).toBe(getComputedStyle(surface).color)
+      await expect(getComputedStyle(soft).color).not.toBe(getComputedStyle(outline).color)
+      // Off the tint the ink stays where it was.
+      await expect(inkOf(outline)).not.toBe(seven)
+      // One ink declaration reaches the DOM — the stepped one, the colour's
+      // own merged away — so the pair is never left to stylesheet order.
+      const inks = [...soft.classList].filter((name) => name.startsWith('[--btn-bg:'))
+      await expect(inks).toEqual([`[--btn-bg:var(--${ramp}-700)]`])
+    }
+  },
 }
 
 export const FocusVisible: Story = {

@@ -28,20 +28,41 @@ import { Button } from './button.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
+// Every colour token. A group paints its band on a real element, so axe
+// measures the label on the soft and surface tints here — which is what a
+// lone Button's pseudo-element fill hides from it. The four tokens whose
+// `-600` ink could not carry a label on its own tint (tertiary, accent,
+// success, warning) step to their `-700` ink on those bands (`styles.tintInk`
+// in button.tsx); axe measures the result and the Contrast play asserts the
+// step itself.
+const themeColors = [
+  'white',
+  'grey',
+  'primary',
+  'secondary',
+  'tertiary',
+  'accent',
+  'danger',
+  'success',
+  'warning',
+] as const
+type ColorKey = (typeof themeColors)[number]
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 
-// The colours whose soft and surface tints clear WCAG 1.4.3 for a bold 16px
-// label. `tertiary` and `accent` are left out on purpose: primary-600 on its
-// own 10% tint measures 3.99:1 (4.28:1 on the 5% tint) and accent-600 on its
-// 10% tint 4.39:1, under the 4.5:1 floor. Those are Button's own soft /
-// surface pairs — the group only makes axe able to measure them, because it
-// paints the band on a real element rather than a pseudo-element — so the
-// fix is a token retune. Until then a story that demonstrates compliance
-// must not render pairs that do not comply.
-const themeColors: readonly ColorKey[] = ['white', 'grey', 'primary', 'secondary', 'danger']
+// The four tokens whose ink steps to -700 on a tint, and the ramp each reads.
+const steppedInk = {
+  tertiary: 'primary',
+  accent: 'accent',
+  success: 'success',
+  warning: 'warning',
+} as const
+
+/** A Button's or group's resolved ink. */
+function inkOf(element: Element) {
+  return getComputedStyle(element).getPropertyValue('--btn-bg').trim()
+}
 
 const variants = ['outline', 'solid', 'soft', 'surface', 'ghost'] as const
 
@@ -258,10 +279,28 @@ export const ContrastMinimum: Story = {
           why: 'Segment labels must meet 4.5:1 against the frame or band behind them, and the frame and the dividers must meet 3:1 against the page, so the boundary of the control and the boundaries between its segments can be perceived.',
           how: 'Use a colour-contrast checker on each row: the label on the solid band, the label on the soft and surface tints, the outline frame against the surface, and the divider between two segments. Check both light and dark modes.',
           caveat:
-            'Low-contrast colours (white, secondary) are rendered on a grey-800 surface, which is where they are meant to be used. On a solid band every non-solid segment takes the label colour as its ink, so a soft segment on a band is white on a lighter blue rather than blue on blue. tertiary, accent, success and warning are not shown: their soft and surface tints measure 3.95:1 to 4.39:1 under a bold 16px label, a token-level shortfall Button shares.',
+            'Low-contrast colours (white, secondary) are rendered on a grey-800 surface, which is where they are meant to be used. On a solid band every non-solid segment takes the label colour as its ink, so a soft segment on a band is white on a lighter blue rather than blue on blue. On a soft or surface band each segment steps its own colour ink as a lone soft Button does, so for tertiary, accent, success and warning the band and its segments read in the -700 step, which clears the floor where the -600 ink did not (the measured pairs are in styles.tintInk in button.tsx). The play asserts that step; axe measures its result.',
         }),
       },
     },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const root = getComputedStyle(document.documentElement)
+    for (const [color, ramp] of Object.entries(steppedInk)) {
+      const seven = root.getPropertyValue(`--${ramp}-700`).trim()
+      for (const variant of ['soft', 'surface'] as const) {
+        // The band and every segment on it, the disabled one included, read
+        // in the stepped ink.
+        const band = canvas.getByRole('group', { name: `${color} ${variant}` })
+        await expect(inkOf(band)).toBe(seven)
+        for (const segment of within(band).getAllByRole('button')) {
+          await expect(inkOf(segment)).toBe(seven)
+        }
+      }
+      // Off the tint the ink stays where it was.
+      await expect(inkOf(canvas.getByRole('group', { name: `${color} outline` }))).not.toBe(seven)
+    }
   },
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>

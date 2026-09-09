@@ -133,6 +133,11 @@ function fillOf(element: Element) {
   return getComputedStyle(element).getPropertyValue('--btn-fill').trim()
 }
 
+/** A Button's or group's resolved ink, which steps on a tint (see button.tsx). */
+function inkOf(element: Element) {
+  return getComputedStyle(element).getPropertyValue('--btn-bg').trim()
+}
+
 const matrixGrid = 'grid grid-cols-[9rem_repeat(5,minmax(0,1fr))] items-center gap-2'
 
 function MatrixHeader({ prefix }: { prefix: string }) {
@@ -147,23 +152,6 @@ function MatrixHeader({ prefix }: { prefix: string }) {
     </div>
   )
 }
-
-// The full matrices render every colour token in every treatment, and four
-// of Button's soft / surface pairs do not clear WCAG 1.4.3 for a bold 16px
-// label on their own tint: tertiary (primary-600 on its 10% tint, 3.99:1;
-// on its 5% tint, 4.28:1), accent (4.39:1 on its 10% tint), success (3.95:1
-// and 4.22:1) and warning (3.98:1 and 4.23:1). These are Button's own pairs
-// — a lone soft success Button paints the same ink on the same tint — but
-// Button's matrices pass axe only because axe cannot compute a background
-// through Button's pseudo-element fill and reports those cells as
-// "incomplete" rather than as violations. A group paints its band on a real
-// element, so axe measures it. The fix is a token retune, not a group
-// change; until then the contrast rule is scoped off the matrix stories
-// only. The Accessibility folder's Contrast story renders the pairs that
-// pass and names the ones that do not.
-const contrastRuleOff = {
-  options: { rules: { 'color-contrast': { enabled: false } } },
-} as const
 
 // ─── Matrix stories ───────────────────────────────────────────────────────────
 
@@ -197,7 +185,6 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
 export const ByVariantTheme: Story = {
   name: 'By Variant - Theme',
   parameters: {
-    a11y: contrastRuleOff,
     docs: {
       description: {
         story: docsTemplate({
@@ -216,14 +203,14 @@ export const ByVariantTheme: Story = {
 export const ByVariantSemantic: Story = {
   name: 'By Variant - Semantic',
   parameters: {
-    a11y: contrastRuleOff,
     docs: {
       description: {
         story: docsTemplate({
           what: 'Theme-first matrix limited to semantic colours (danger, success, warning): each row is a semantic colour and each column is a group variant.',
           why: 'Keeps status-conveying tokens together so their weight can be compared without the brand colours in view.',
           how: 'Scan each row and verify the meaning still reads across every treatment: a ghost danger group should still read as danger.',
-          caveat: 'All semantic colours use the 600 step, so no grey surface treatment is needed.',
+          caveat:
+            'Semantic colours use the 600 step for the frame, the solid band and the ghost labels; on the soft and surface bands success and warning step to the 700 ink (see styles.tintInk in button.tsx). No grey surface treatment is needed.',
         }),
       },
     },
@@ -402,11 +389,11 @@ export const InheritedColour: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Per colour: a group whose segments inherit its colour, next to one segment naming its own, and a lone Button of the same colour as the reference.',
-          why: "A group's colour is every segment's default, and a segment that names its own colour must keep it. Both were silent before this story existed: a group that stopped passing its colour down still rendered, in primary.",
-          how: 'The inheriting segment should match the lone reference exactly; the overriding segment should not. The play compares the resolved fill token of each.',
+          what: 'Per colour: a group whose segments inherit its colour, next to one segment naming its own, a lone Button of the same colour as the reference, and the same pair of segments on a soft band.',
+          why: "A group's colour is every segment's default, and a segment that names its own colour must keep it — on a tinted band too, where the segments step their own colour's ink rather than taking the band's. Both were silent before this story existed: a group that stopped passing its colour down still rendered, in primary.",
+          how: 'The inheriting segment should match the lone reference exactly; the overriding segment should not. On the soft band the inheriting segment should read in the band ink and the overriding one in its own. The play compares the resolved fill token of each, and the ink on the band.',
           caveat:
-            'The comparison is on the `--btn-fill` custom property, which every colour token sets, so it holds in both light and dark mode.',
+            'The fill comparison is on the `--btn-fill` custom property, which every colour token sets, so it holds in both light and dark mode. The ink comparison is on `--btn-bg`, which the accent band steps to accent-700.',
         }),
       },
     },
@@ -422,6 +409,10 @@ export const InheritedColour: Story = {
               <Button color='primary'>Own colour</Button>
             </ButtonGroup>
             <Button color={color}>Reference</Button>
+            <ButtonGroup variant='soft' color={color} aria-label={`${color} soft group`}>
+              <Button>On tint</Button>
+              <Button color='primary'>Own colour on tint</Button>
+            </ButtonGroup>
           </div>
         </ThemeSurface>
       ))}
@@ -429,13 +420,23 @@ export const InheritedColour: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const groups = canvas.getAllByRole('group')
     const references = canvas.getAllByRole('button', { name: 'Reference' })
-    for (const [index, group] of groups.entries()) {
+    for (const [index, color] of (['danger', 'accent', 'grey'] as const).entries()) {
       const reference = fillOf(references[index]!)
-      const inside = within(group)
+      const inside = within(canvas.getByRole('group', { name: `${color} group` }))
       await expect(fillOf(inside.getByRole('button', { name: 'Inherits' }))).toBe(reference)
       await expect(fillOf(inside.getByRole('button', { name: 'Own colour' }))).not.toBe(reference)
+
+      // On a soft band the inheriting segment reads in the band's ink — for
+      // accent that is the stepped accent-700, not the -600 the frame draws
+      // in — and a segment naming its own colour keeps that colour's ink.
+      const band = canvas.getByRole('group', { name: `${color} soft group` })
+      const onBand = within(band)
+      const onTint = onBand.getByRole('button', { name: 'On tint' })
+      const ownColour = onBand.getByRole('button', { name: 'Own colour on tint' })
+      await expect(fillOf(onTint)).toBe(reference)
+      await expect(inkOf(onTint)).toBe(inkOf(band))
+      await expect(inkOf(ownColour)).not.toBe(inkOf(band))
     }
   },
 }
@@ -662,7 +663,6 @@ export const InteractionStates: Story = {
 export const Disabled: Story = {
   name: 'Disabled',
   parameters: {
-    a11y: contrastRuleOff,
     docs: {
       description: {
         story: docsTemplate({
@@ -725,7 +725,7 @@ export const Dark: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'The By Variant matrix and the Emphasis rows under the dark theme.',
+          what: 'The By Variant matrix for every colour token, and the Emphasis rows, under the dark theme.',
           why: "The ink flips to the -200 step in dark mode while a solid fill stays at -800, so the frame, dividers and labels must follow the ink while the band keeps its fill. Button's dark hover overlay also grows 1px to cover its own border; in a group that pixel is the divider, so a segment keeps the overlay inside.",
           how: 'Frames and dividers should be pale, bands should stay dark blue with white labels, and nothing should be dark on dark. The play checks the overlay inset and the band label colour.',
           caveat:
@@ -736,7 +736,7 @@ export const Dark: Story = {
   },
   render: () => (
     <div className='space-y-8'>
-      <ByVariantMatrix rowColors={themeColors} />
+      <ByVariantMatrix rowColors={colors} />
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-center gap-4'>
           <ButtonGroup variant='solid' aria-label='band'>

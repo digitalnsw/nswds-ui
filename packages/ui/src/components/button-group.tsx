@@ -31,8 +31,12 @@ const DEFAULT_GROUP_ORIENTATION = 'horizontal' as const
  *
  * Every colour is Button's own `--btn-fill` / `--btn-bg` / `--btn-text` pair,
  * applied to the group by `buttonColorVariants`, so a group's `color` means
- * what a Button's does and the ink flips for dark mode the same way.
- * Hairlines take the text colour, per the masterbrand's line system.
+ * what a Button's does: the ink flips for dark mode the same way, and on a
+ * soft or surface band it steps to the darker ink those tints need the same
+ * way (`styles.tintInk` in button.tsx). The segments learn they sit on that
+ * tint through the context and step their own colour's ink, so a segment
+ * naming another colour keeps it. Hairlines take the text colour, per the
+ * masterbrand's line system.
  *
  * Every rule that reaches into a child uses the CHILD combinator (`&>`), never
  * a descendant one. A group is not meant to nest, but if one ever does, a
@@ -168,8 +172,8 @@ function ButtonGroup({
   const resolvedVariant = variant ?? DEFAULT_GROUP_VARIANT
   const resolvedOrientation = orientation ?? DEFAULT_GROUP_ORIENTATION
   const context = React.useMemo<ButtonGroupContextValue>(
-    () => ({ color, size, orientation: resolvedOrientation }),
-    [color, size, resolvedOrientation],
+    () => ({ color, size, variant: resolvedVariant, orientation: resolvedOrientation }),
+    [color, size, resolvedVariant, resolvedOrientation],
   )
 
   return (
@@ -179,7 +183,7 @@ function ButtonGroup({
       data-variant={resolvedVariant}
       data-orientation={resolvedOrientation}
       className={cn(
-        buttonColorVariants({ color }),
+        buttonColorVariants({ color, variant: resolvedVariant }),
         buttonGroupVariants({ variant: resolvedVariant, orientation: resolvedOrientation }),
         className,
       )}
