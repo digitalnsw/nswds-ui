@@ -47,6 +47,13 @@ import {
 import { Button, ButtonLink } from './button.js'
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from './drawer.js'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card.js'
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from './navigation-menu.js'
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './sheet.js'
 
@@ -1081,11 +1088,11 @@ export const InOverlays: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: 'Segments that open a Sheet, a Drawer and a HoverCard, each holding a Button.',
+          what: 'Segments that open a Sheet, a Drawer, a HoverCard and a NavigationMenu panel, each holding a Button or ButtonLink.',
           why: 'Every popup in the package resets the group context at its portal. Popover is pinned by the In a Popup story; this one pins the other overlays a segment is likely to open, since a Sheet even brings its own close Button.',
           how: 'Open each overlay from its segment: the Buttons inside should look like ordinary Buttons with their own corners. The play opens each one and asserts the Button inside carries no segment stamp.',
           caveat:
-            'Select, Combobox, NavigationMenu and SiteSearch carry the same boundary but rarely hold Buttons, so they are not exercised here.',
+            'Select, Combobox and SiteSearch carry the same boundary but cannot be exercised this way — SiteSearch renders no Button inside its portal and exposes no slot to inject one, and the Select and Combobox popups take their own item components rather than arbitrary children. `check:portal-boundary` covers all nine at the source level, including those three and any portal added later.',
         }),
       },
     },
@@ -1114,6 +1121,16 @@ export const InOverlays: Story = {
           <Button>Inside card</Button>
         </HoverCardContent>
       </HoverCard>
+      <NavigationMenu>
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <NavigationMenuTrigger>Open menu</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ButtonLink href='#panel'>Inside menu</ButtonLink>
+            </NavigationMenuContent>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
     </ButtonGroup>
   ),
   play: async ({ canvasElement }) => {
@@ -1139,6 +1156,20 @@ export const InOverlays: Story = {
     await userEvent.hover(canvas.getByRole('button', { name: 'Hover card' }))
     const inCard = await screen.findByRole('button', { name: 'Inside card' }, { timeout: 3000 })
     await expect(inCard).not.toHaveAttribute('data-segment')
+
+    // A NavigationMenu panel is the likeliest of the five to hold something
+    // interactive in real markup, and a ButtonLink checks the boundary
+    // reaches the anchor path as well as the button one.
+    await userEvent.click(canvas.getByRole('button', { name: 'Open menu' }))
+    const inMenu = await screen.findByRole('link', { name: 'Inside menu' }, { timeout: 3000 })
+    await expect(inMenu).not.toHaveAttribute('data-segment')
+    await expect(getComputedStyle(inMenu).borderTopLeftRadius).not.toBe('0px')
+    // Close it before the story settles, as the sheet and drawer cases do.
+    // Base UI holds a focus trap open with `aria-hidden` `tabindex=0`
+    // sentinels, which the axe run at the end of every story reports as
+    // `aria-hidden-focus` — a real rule, firing on the primitive's own
+    // focus-guard technique rather than on anything this component does.
+    await userEvent.keyboard('{Escape}')
   },
 }
 

@@ -321,7 +321,7 @@ type NavigationMenuContentProps = Omit<NavigationMenuPrimitive.Content.Props, 'c
  * trigger the user came from), matching the app source's from-start/from-end
  * motion. Set `keepMounted` to keep the panel in the DOM for SSR crawlers.
  */
-function NavigationMenuContent({ className, ...props }: NavigationMenuContentProps) {
+function NavigationMenuContent({ className, children, ...props }: NavigationMenuContentProps) {
   return (
     <NavigationMenuPrimitive.Content
       data-slot='navigation-menu-content'
@@ -337,7 +337,23 @@ function NavigationMenuContent({ className, ...props }: NavigationMenuContentPro
         className,
       )}
       {...props}
-    />
+    >
+      {/* Reset the button group HERE, not only at the portal in the root.
+          This element is declared by the consumer inside NavigationMenuItem,
+          so React context reaches it from whatever encloses the menu — while
+          Base UI hosts its DOM in the portalled viewport, where the group's
+          own CSS cannot follow. Opened from inside a ButtonGroup, a control
+          in this panel would otherwise get the JS half of the segment
+          treatment and not the CSS half: squared corners and a ghost variant
+          on the panel's own surface, and on a solid band a label re-inked to
+          the band's colour. Verified in the browser: the link measured
+          `data-segment="default"`, `data-band="outline"` and a 0px radius
+          while sitting outside the group in the DOM.
+          `check:portal-boundary` cannot see this one — it checks the portal,
+          and this content is declared outside it — so the `In Overlays` play
+          is what pins it. */}
+      <ButtonGroupBoundary>{children}</ButtonGroupBoundary>
+    </NavigationMenuPrimitive.Content>
   )
 }
 
