@@ -242,10 +242,10 @@ export const Emphasis: Story = {
       description: {
         story: docsTemplate({
           what: 'Per group variant: a split button (two solid segments), a Cancel / Save row (a solid child beside a ghost one), a soft child, and a solid band holding a soft child.',
-          why: 'A segment that names solid or soft keeps its own fill; two solid segments must divide with a reversed hairline rather than the ink divider, and on a solid band every non-solid segment must take the label colour as its ink.',
+          why: 'A segment that names solid or soft keeps its own fill; two solid segments must divide with a reversed hairline rather than the ink divider, and on a solid band every non-solid segment must take the label colour as its ink and drop its own tint.',
           how: 'Look for the pale seam between Save and its chevron, and confirm the Day / Week / Month row on the band reads white on blue. The play asserts both.',
           caveat:
-            'Only solid and soft carry their fill into a group. A surface child would keep its 2px border inside the frame, so it renders as a plain segment.',
+            'Only solid and soft carry their fill into a group. A surface child would keep its 2px border inside the frame, so it renders as a plain segment. On a SOLID band a soft child keeps its emphasis in `data-variant` but not in paint: its fill re-inks to the label colour, which is white on white, and the two 10% layers it draws lift the band under the label below 4.5:1 on tertiary, success and warning.',
         }),
       },
     },
@@ -367,6 +367,32 @@ export const Emphasis: Story = {
     })
     await expect(trigger).toHaveAttribute('data-slot', 'popover-trigger')
     await expect(trigger).toHaveAttribute('data-band', 'solid')
+
+    // …and it gives up its own tint there. Re-inked to the label colour, a
+    // soft segment's fill is white on white, and it paints TWO 10% layers —
+    // its element background and its `before` fill — which together lift the
+    // band under the label enough to break 1.4.3 on the bands whose white
+    // label already sits near the floor (3.37:1 on success, 3.41:1 on
+    // tertiary, against 4.53:1 and 4.57:1 with the tint gone). Both layers
+    // are read, because clearing one alone still leaves the other.
+    const solidView = within(canvas.getByRole('group', { name: 'solid view' }))
+    const softOnBand = solidView.getByRole('button', { name: 'Week' })
+    await expect(isPainted(getComputedStyle(softOnBand).backgroundColor)).toBe(false)
+    await expect(isPainted(getComputedStyle(softOnBand, '::before').backgroundColor)).toBe(false)
+    // It reads exactly as the ghost segments beside it do.
+    const ghostOnBand = solidView.getByRole('button', { name: 'Day' })
+    await expect(getComputedStyle(softOnBand).backgroundColor).toBe(
+      getComputedStyle(ghostOnBand).backgroundColor,
+    )
+    // Scoped to a SOLID band: off one, soft keeps the fill that makes it soft.
+    // Without this the rule could drop its `data-band` condition and still
+    // pass everything above.
+    const softOffBand = within(canvas.getByRole('group', { name: 'outline view' })).getByRole(
+      'button',
+      { name: 'Week' },
+    )
+    await expect(isPainted(getComputedStyle(softOffBand).backgroundColor)).toBe(true)
+    await expect(isPainted(getComputedStyle(softOffBand, '::before').backgroundColor)).toBe(true)
   },
 }
 
@@ -592,6 +618,28 @@ export const Orientation: Story = {
                 <Button>Second</Button>
               </ButtonGroup>
             </div>
+            <ButtonGroup
+              variant={variant}
+              orientation='vertical'
+              aria-label={`${variant} mixed column`}
+            >
+              <Button>Wider label</Button>
+              <Button
+                iconOnly
+                aria-label={`${variant} column icon`}
+                leadingVisual={IconContentCopy}
+              />
+            </ButtonGroup>
+            <div className='w-32'>
+              <ButtonGroup variant={variant} aria-label={`${variant} wrapped row`}>
+                <Button>A label long enough to wrap</Button>
+                <Button
+                  iconOnly
+                  aria-label={`${variant} wrapped row icon`}
+                  leadingVisual={IconContentCopy}
+                />
+              </ButtonGroup>
+            </div>
           </div>
         </ThemeSurface>
       ))}
@@ -626,6 +674,37 @@ export const Orientation: Story = {
       await expect(rtlSecond.getBoundingClientRect().left).toBeLessThan(
         rtlFirst.getBoundingClientRect().left,
       )
+
+      // An icon-only segment is squared by `size-(--btn-h)`, which sets BOTH
+      // dimensions — and a definite cross size is the one case flexbox does
+      // not stretch, so `items-stretch` on the group cannot reach it. The
+      // group releases the cross dimension per orientation; these two read
+      // the result on each axis, because a rule written for one orientation
+      // leaves the other exactly as broken as before.
+      //
+      // In a column the square would hold its own width inside a wider band,
+      // leaving a void beside it and a hairline that stops partway across.
+      const mixed = within(canvas.getByRole('group', { name: `${variant} mixed column` }))
+      const columnLabel = mixed.getByRole('button', { name: 'Wider label' }).getBoundingClientRect()
+      const columnIcon = mixed
+        .getByRole('button', { name: `${variant} column icon` })
+        .getBoundingClientRect()
+      await expect(columnIcon.width).toBe(columnLabel.width)
+      // …and the square is still a square on its own axis, not stretched flat.
+      await expect(columnIcon.height).toBeLessThan(columnIcon.width)
+
+      // In a row it takes a wrapped label to expose the same thing: the
+      // button's height is a FLOOR (`min-h-(--btn-h)`), so a label that wraps
+      // grows its segment while the square stays one step tall.
+      const wrapped = within(canvas.getByRole('group', { name: `${variant} wrapped row` }))
+      const wrappedLabel = wrapped
+        .getByRole('button', { name: 'A label long enough to wrap' })
+        .getBoundingClientRect()
+      const wrappedIcon = wrapped
+        .getByRole('button', { name: `${variant} wrapped row icon` })
+        .getBoundingClientRect()
+      await expect(wrappedLabel.height).toBeGreaterThan(wrappedIcon.width)
+      await expect(wrappedIcon.height).toBe(wrappedLabel.height)
     }
   },
 }

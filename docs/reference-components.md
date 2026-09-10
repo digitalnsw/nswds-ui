@@ -423,7 +423,7 @@ import { LinkProvider } from '@nswds/ui'
 | `labelWrap`                                           | `boolean`                                                                                                       | `false`     | Allow the label to wrap.                             |
 | `count` / `countLabel`                                | `number` / `string`                                                                                             | —           | Trailing count badge and its screen-reader label.    |
 
-Inside a `ButtonGroup` the defaults above change: the group's `color` and `size` become each segment's defaults, `variant` defaults to `ghost` and only `solid` and `soft` are honoured (an `outline`, `surface` or `link` child renders as a plain segment), and `size='icon'` renders as `iconOnly` at the group's own step. A popup opened from a segment renders its own Buttons normally; an overlay from another library needs its contents wrapped in `ButtonGroupBoundary`.
+Inside a `ButtonGroup` the defaults above change: the group's `color` and `size` become each segment's defaults, `variant` defaults to `ghost` and only `solid` and `soft` are honoured (an `outline`, `surface` or `link` child renders as a plain segment), and `size='icon'` renders as `iconOnly` at the group's own step, stretched across the group's cross axis so it joins the band. On a `solid` band a segment that is not itself `solid` takes the band's label colour as its ink and paints no fill of its own, so a `soft` child there reads as a plain segment. A popup opened from a segment renders its own Buttons normally; an overlay from another library needs its contents wrapped in `ButtonGroupBoundary`.
 
 #### `ButtonGroup`
 

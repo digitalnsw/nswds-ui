@@ -55,6 +55,27 @@ const DEFAULT_GROUP_ORIENTATION = 'horizontal' as const
 const buttonGroupVariants = cva(
   [
     'isolate inline-flex w-fit items-stretch overflow-hidden rounded-sm',
+    // `items-stretch` above is what makes every segment the same size across
+    // the group's cross axis — except an icon-only one, which `styles.iconOnly`
+    // squares with `size-(--btn-h)`. A definite cross size is precisely the
+    // case flexbox does NOT stretch (CSS Flexbox §9.4: stretch applies only
+    // when the cross-size property computes to `auto`), so the square holds its
+    // 52px whatever the segments beside it do. In a column that is every mixed
+    // group: a 52px square in a 135px band, with a void beside it and the
+    // hairline above it stopping a third of the way across. In a row it needs a
+    // label to wrap first, which `min-h-(--btn-h)` on the button explicitly
+    // allows — a floor, not a fixed height — and then the square sits at the
+    // top of a 136px row.
+    //
+    // So the group releases the cross dimension and lets `items-stretch` do its
+    // work, keeping the main one: the square stays a square whenever its
+    // neighbours are one line tall, and grows with them when they are not.
+    // Keyed on the group's own orientation, so neither rule is a bare utility
+    // the other has to override, and reached through the child combinator, so
+    // a nested icon button (inside a popup opened from a segment, say) is not
+    // touched. (0,3,0) against `size-(--btn-h)`'s (0,1,0).
+    'data-[orientation=horizontal]:[&>[data-slot][data-icon-only]]:h-auto',
+    'data-[orientation=vertical]:[&>[data-slot][data-icon-only]]:w-auto',
     // The band's label colour, resolved HERE from the group's own colour
     // token and inherited by every segment as a computed value. A segment on
     // a solid band re-points its ink to this (see `styles.segment` in

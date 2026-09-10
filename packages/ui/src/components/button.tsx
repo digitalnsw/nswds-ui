@@ -491,6 +491,22 @@ const styles = {
     // (0,1,0) and its dark-mode ink at (0,2,0).
     'data-[segment]:not-data-[variant=solid]:data-[band=solid]:[--btn-bg:var(--group-label)]',
     'data-[segment]:not-data-[variant=solid]:data-[band=solid]:[--btn-active-overlay:var(--color-black)]/15',
+    // ...and it loses its own tint there. `soft` is the only non-solid variant
+    // that can reach this rule with a fill of its own (`surface` is not a
+    // segment emphasis, `ghost` paints nothing), and it paints TWO 10% layers
+    // — its element background and its `before` fill. Re-inked to the label
+    // colour those become white on white, and white/10 twice over lifts the
+    // band under the label just enough to break it: on the four bands whose
+    // white label already sits near the floor the pair measures 3.37:1
+    // (success), 3.39:1 (warning), 3.41:1 (tertiary) and 4.15:1 (accent),
+    // against 4.53:1 to 5.18:1 for the same bands with the tint gone. So a
+    // soft segment on a solid band reads as the ghost segments beside it do,
+    // and its emphasis is carried by `data-variant` for the seam rules rather
+    // than by a fill. Three attribute selectors, (0,3,0), so it beats both
+    // soft's own bare `bg-(--btn-bg)/10` and its `dark:` pair on specificity
+    // rather than on emission order (AGENTS.md §4).
+    'data-[segment]:not-data-[variant=solid]:data-[band=solid]:bg-transparent',
+    'data-[segment]:not-data-[variant=solid]:data-[band=solid]:before:bg-transparent',
   ],
 }
 
@@ -1092,6 +1108,10 @@ function Button({
       data-variant={variant}
       data-segment={segment}
       data-band={band}
+      // Read by ButtonGroup, which has to undo the square on its CROSS axis —
+      // `styles.iconOnly` sets both dimensions, and a definite cross size is
+      // exactly what stops `items-stretch` reaching the segment.
+      data-icon-only={iconOnly || undefined}
       aria-busy={loading || undefined}
       {...props}
       disabled={effectiveDisabled}
@@ -1172,6 +1192,10 @@ function ButtonLink({
       data-variant={variant}
       data-segment={segment}
       data-band={band}
+      // Read by ButtonGroup, which has to undo the square on its CROSS axis —
+      // `styles.iconOnly` sets both dimensions, and a definite cross size is
+      // exactly what stops `items-stretch` reaching the segment.
+      data-icon-only={iconOnly || undefined}
       aria-busy={loading || undefined}
       {...props}
       {...(effectiveDisabled
