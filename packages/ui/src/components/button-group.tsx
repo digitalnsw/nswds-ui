@@ -70,12 +70,21 @@ const buttonGroupVariants = cva(
     // never by emission order (AGENTS.md §4, the two-build cascade).
     //
     // A disabled segment fades itself with `opacity-50`, and a divider drawn
-    // on its own leading edge would fade with it — every hairline in the row
-    // at full strength but the one before the disabled segment. So the
-    // boundary before a disabled segment is drawn on the trailing edge of the
-    // segment BEFORE it instead, and the disabled segment's own leading edge
-    // stays transparent. A separator between the two has no edge to paint,
-    // so the rule also looks through one.
+    // on its own leading edge would fade with it — leaving one weak hairline
+    // in an otherwise full-strength row, right where the eye reads the join.
+    // So the boundary before a disabled segment is drawn on the trailing edge
+    // of the segment BEFORE it instead, and the disabled segment's own
+    // leading edge stays transparent. A separator between the two has no edge
+    // to paint, so the rule also looks through one.
+    //
+    // The one hairline this does NOT lift out of the fade is the one BETWEEN
+    // two adjacent disabled segments: its only available edge belongs to a
+    // disabled element either way, so it renders at 50% like the pair it
+    // divides. That is the coherent reading — the whole run is unavailable,
+    // and a full-strength line inside it would draw more attention than the
+    // controls do — and lifting it would mean moving dividers off the
+    // segments entirely, onto a layer the group owns. `Disabled` renders the
+    // case and pins where each edge lands.
     'data-[orientation=horizontal]:[&>[data-slot]~[data-slot]:not([data-disabled])]:border-s-(--divider)',
     'data-[orientation=horizontal]:[&>[data-slot]:has(+[data-slot][data-disabled])]:border-e-(--divider)',
     'data-[orientation=horizontal]:[&>[data-slot]:has(+[data-slot=button-group-separator]+[data-slot][data-disabled])]:border-e-(--divider)',

@@ -2,8 +2,13 @@
  * ButtonGroup — Features
  *
  * Theme/variant matrices, emphasis, sizes, orientation, compositions, states,
- * and the rules a group promises, each with a play that fails if the rule is
- * removed.
+ * and the rules a group promises.
+ *
+ * Every story that pins a RULE carries a play that fails when the rule is
+ * removed. The two `By Variant` matrices are the exception and carry none on
+ * purpose: they exist for visual review across the colour set, and every rule
+ * they render is already pinned by a story that reads it directly, so a play
+ * there would assert the same values twice.
  *
  * These stories are intended for internal use during design token reviews and
  * CSS refactors to catch regressions across the full component surface. They
@@ -712,14 +717,14 @@ export const InteractionStates: Story = {
                     </Button>
                     <Button>Cut</Button>
                   </ButtonGroup>
-                  <ButtonGroup variant={variant}>
+                  <ButtonGroup variant={variant} aria-label={`${variant} ${state} split`}>
                     <Button variant='solid' className={solidFocusClass} {...stateProps}>
                       Save
                     </Button>
                     <Button
                       variant='solid'
                       iconOnly
-                      aria-label='More save options'
+                      aria-label={`${variant} ${state} more save options`}
                       leadingVisual={IconExpandMore}
                     />
                   </ButtonGroup>
@@ -731,6 +736,40 @@ export const InteractionStates: Story = {
       ))}
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const pressOverlay = (element: Element) => getComputedStyle(element, '::after').backgroundColor
+
+    // A segment on a solid band presses like the solid segment beside it:
+    // black at 15%, the pair `solid` uses, so a band and a lone solid Button
+    // give the same feedback.
+    //
+    // This is the assertion the rule needs, and it is not the same as the ink
+    // assertions elsewhere. Both rules key on the same selector, but deleting
+    // only the overlay one leaves the ink re-point in place, so the press
+    // falls through to the DERIVED overlay — which reads the re-pointed ink
+    // and lands on the label colour at 20%. A press that lightens a white
+    // label's segment instead of darkening it, and every colour assertion in
+    // this folder still passes.
+    const band = within(canvas.getByRole('group', { name: 'solid active' }))
+    const pressedSegment = pressOverlay(band.getByRole('button', { name: 'Paste' }))
+    const pressedSolid = pressOverlay(
+      within(canvas.getByRole('group', { name: 'solid active split' })).getByRole('button', {
+        name: 'Save',
+      }),
+    )
+    await expect(pressedSegment).toBe(pressedSolid)
+    // Named rather than merely equal: both are black, not the band's white.
+    await expect(toRgb(pressedSegment)).toBe('rgb(0, 0, 0)')
+    await expect(alphaOf(pressedSegment)).toBeCloseTo(0.15, 2)
+
+    // And the rule is scoped to the band: off a solid band the same segment
+    // keeps Button's derived overlay, the ink at 20%.
+    const framed = within(canvas.getByRole('group', { name: 'outline active' }))
+    const pressedFramed = pressOverlay(framed.getByRole('button', { name: 'Paste' }))
+    await expect(pressedFramed).not.toBe(pressedSegment)
+    await expect(alphaOf(pressedFramed)).toBeCloseTo(0.2, 2)
+  },
 }
 
 export const Disabled: Story = {
@@ -741,7 +780,7 @@ export const Disabled: Story = {
       description: {
         story: docsTemplate({
           what: 'Per colour and variant: a three-segment group with its middle segment disabled, and a split button with a disabled action.',
-          why: 'A disabled segment fades itself, and a divider drawn on its own edge would fade with it. The boundary before a disabled segment is drawn on the segment before it instead, so every hairline in the row stays at one strength.',
+          why: 'A disabled segment fades itself, and a divider drawn on its own edge would fade with it. The boundary before a disabled segment is drawn on the segment before it instead, so a single disabled segment leaves no weak hairline beside an enabled one. Between two ADJACENT disabled segments the shared boundary has no enabled edge to move to, so it fades with the pair it divides.',
           how: 'The two hairlines around the disabled segment should look identical to each other and to the rest of the row. The play asserts where each one is painted.',
           caveat: 'Low-contrast colours render on grey-800 surfaces so the frame stays visible.',
         }),
@@ -810,6 +849,12 @@ export const Disabled: Story = {
               Later
             </Button>
           </ButtonGroup>
+          <ButtonGroup aria-label='adjacent disabled run'>
+            <Button>Rest</Button>
+            <Button disabled>Off</Button>
+            <Button disabled>Also off</Button>
+            <Button>After</Button>
+          </ButtonGroup>
         </div>
       </ThemeSurface>
     </div>
@@ -853,6 +898,24 @@ export const Disabled: Story = {
     )
     await expect(alphaOf(columnSeam.borderBottomColor)).toBeCloseTo(0.3, 2)
     await expect(toRgb(columnSeam.borderBottomColor)).toBe(toRgb(columnSeam.color))
+
+    // Two disabled segments in a row. Each boundary still has exactly one
+    // painted edge and never two, and the boundary INSIDE the disabled run
+    // sits on a disabled element — the one hairline the trailing-edge rule
+    // cannot lift out of the fade, which the group's comment documents. This
+    // fails in both directions: adding `:not([data-disabled])` to the
+    // fallback rule would leave that boundary with no painted edge at all.
+    const run = within(canvas.getByRole('group', { name: 'adjacent disabled run' }))
+    const runRest = getComputedStyle(run.getByRole('button', { name: 'Rest' }))
+    const runOff = run.getByRole('button', { name: 'Off' })
+    const runAlsoOff = run.getByRole('button', { name: 'Also off' })
+    const runAfter = getComputedStyle(run.getByRole('button', { name: 'After' }))
+    await expect(isPainted(runRest.borderRightColor)).toBe(true)
+    await expect(isPainted(getComputedStyle(runOff).borderLeftColor)).toBe(false)
+    await expect(isPainted(getComputedStyle(runOff).borderRightColor)).toBe(true)
+    await expect(runOff).toHaveAttribute('data-disabled')
+    await expect(isPainted(getComputedStyle(runAlsoOff).borderLeftColor)).toBe(false)
+    await expect(isPainted(runAfter.borderLeftColor)).toBe(true)
 
     // Horizontal groups only: the two vertical cases above read block edges,
     // and their names are outside this filter so they cannot fall in here.
