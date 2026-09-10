@@ -169,7 +169,8 @@ type ButtonGroupProps = Omit<React.ComponentProps<'div'>, 'color'> &
      * `icon` is not offered: it is a 40px chrome square, and the group clips
      * to its own box, so the 44px touch expansion Button adds on a coarse
      * pointer would be cut off. A segment that asks for `icon` anyway renders
-     * as `iconOnly` at `sm`.
+     * as `iconOnly` at the group's own step, so it lines up with the segments
+     * beside it.
      */
     size?: Exclude<ButtonProps['size'], 'icon'>
   }
@@ -210,9 +211,26 @@ function ButtonGroup({
 }: ButtonGroupProps) {
   const resolvedVariant = variant ?? DEFAULT_GROUP_VARIANT
   const resolvedOrientation = orientation ?? DEFAULT_GROUP_ORIENTATION
+  // `null` is admitted by both prop types (they borrow Button's, which allow
+  // it) and is the idiomatic way to thread an optional prop through a
+  // wrapper. cva reads it as "no variant" rather than "unspecified", so an
+  // unnormalised `null` would emit no size or colour classes AT ALL — and
+  // because a segment resolves `color ?? group.color`, one `null` on the
+  // group would turn every child's own `undefined` into an explicit `null`
+  // and un-style the whole row: no padding, no height, and a frame still
+  // pointing at a `--btn-bg` nothing defines. Normalising here means the
+  // group and its segments both fall back to the same cva defaults a lone
+  // Button gets.
+  const resolvedColor = color ?? undefined
+  const resolvedSize = size ?? undefined
   const context = React.useMemo<ButtonGroupContextValue>(
-    () => ({ band: resolvedVariant, color, size, orientation: resolvedOrientation }),
-    [resolvedVariant, color, size, resolvedOrientation],
+    () => ({
+      band: resolvedVariant,
+      color: resolvedColor,
+      size: resolvedSize,
+      orientation: resolvedOrientation,
+    }),
+    [resolvedVariant, resolvedColor, resolvedSize, resolvedOrientation],
   )
 
   return (
@@ -222,7 +240,7 @@ function ButtonGroup({
       data-variant={resolvedVariant}
       data-orientation={resolvedOrientation}
       className={cn(
-        buttonColorVariants({ color }),
+        buttonColorVariants({ color: resolvedColor }),
         buttonGroupVariants({ variant: resolvedVariant, orientation: resolvedOrientation }),
         className,
       )}

@@ -436,10 +436,17 @@ export const Sizes: Story = {
           <ButtonGroup size='sm' aria-label='Override group'>
             <Button size='lg'>Own size</Button>
           </ButtonGroup>
-          <ButtonGroup aria-label='Icon group'>
-            <Button size='icon' aria-label='Icon segment' leadingVisual={IconContentCopy} />
+          <ButtonGroup aria-label='Icon default group'>
+            <Button>Default text</Button>
+            <Button size='icon' aria-label='Default icon segment' leadingVisual={IconContentCopy} />
           </ButtonGroup>
-          <Button size='sm' iconOnly aria-label='Icon reference' leadingVisual={IconContentCopy} />
+          <ButtonGroup size='lg' aria-label='Icon lg group'>
+            <Button>Large text</Button>
+            <Button size='icon' aria-label='Large icon segment' leadingVisual={IconContentCopy} />
+          </ButtonGroup>
+          <ButtonGroup size={null} color={null} aria-label='Null props group'>
+            <Button>Null props</Button>
+          </ButtonGroup>
         </div>
       </ThemeSurface>
     </div>
@@ -458,17 +465,37 @@ export const Sizes: Story = {
     // …and a segment naming its own size keeps it.
     await expect(heightOf('Own size')).toBeGreaterThan(heightOf('Default segment'))
 
-    // `icon` is not a group step. A segment that asks for it renders as
-    // iconOnly at sm — the same square as a sm icon-only Button, never the
-    // 40px chrome square, which the group's clipping would rob of its 44px
-    // touch expansion.
-    const iconSegment = canvas.getByRole('button', { name: 'Icon segment' }).getBoundingClientRect()
-    const iconReference = canvas
-      .getByRole('button', { name: 'Icon reference' })
-      .getBoundingClientRect()
-    await expect(iconSegment.height).toBe(iconReference.height)
-    await expect(iconSegment.width).toBe(iconReference.width)
-    await expect(iconSegment.height).toBeGreaterThanOrEqual(44)
+    // `icon` is not a group step. A segment that asks for it renders as an
+    // icon-only square at the GROUP's step, never the 40px chrome square,
+    // which the group's clipping would rob of its 44px touch expansion.
+    //
+    // The comparison has to be against the segment BESIDE it, not against a
+    // standalone Button of the step we expect: `styles.iconOnly` sets a
+    // definite `size-(--btn-h)`, so `items-stretch` cannot correct a square
+    // pinned to the wrong step, and a play that compares it to a lone button
+    // passes at every step while the row itself is ragged. Checked at two
+    // group steps, since a literal coercion matches exactly one of them.
+    for (const [group, text, icon] of [
+      ['Icon default group', 'Default text', 'Default icon segment'],
+      ['Icon lg group', 'Large text', 'Large icon segment'],
+    ] as const) {
+      const row = within(canvas.getByRole('group', { name: group }))
+      const textBox = row.getByRole('button', { name: text }).getBoundingClientRect()
+      const iconBox = row.getByRole('button', { name: icon }).getBoundingClientRect()
+      await expect(iconBox.height).toBe(textBox.height)
+      await expect(iconBox.width).toBe(iconBox.height)
+      await expect(iconBox.height).toBeGreaterThanOrEqual(44)
+    }
+
+    // `null` is admitted by both group props and means "unspecified", not
+    // "no variant": an unnormalised null reaches cva and strips every size
+    // and colour class from the group AND from each segment, leaving a
+    // padding-less row and a frame pointing at an undefined token.
+    const nullGroup = canvas.getByRole('group', { name: 'Null props group' })
+    const nullSegment = canvas.getByRole('button', { name: 'Null props' })
+    await expect(nullSegment.getBoundingClientRect().height).toBe(heightOf('Default segment'))
+    await expect(isPainted(getComputedStyle(nullGroup).boxShadow)).toBe(true)
+    await expect(getComputedStyle(nullSegment).getPropertyValue('--btn-bg').trim()).not.toBe('')
   },
 }
 

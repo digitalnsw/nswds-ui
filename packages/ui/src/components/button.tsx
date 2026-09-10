@@ -604,8 +604,8 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * lines up with none of them. For an icon-only button that must sit level
    * with text buttons beside it, pair `iconOnly` with `sm`/`default`/`lg`.
    * Inside a ButtonGroup `icon` renders exactly that way, as `iconOnly` at
-   * `sm`: the group clips to its own box, so the square's 44px touch
-   * expansion would be cut off.
+   * the group's own step: the group clips to its own box, so the square's
+   * 44px touch expansion would be cut off.
    */
   size?: 'sm' | 'default' | 'lg' | 'icon' | null
   /**
@@ -734,16 +734,24 @@ function resolveGroupDefaults(
   }
   const emphasised = EMPHASISED_SEGMENT_VARIANTS.has(variant)
   const resolvedSize = size ?? group.size
-  // `icon` is the 40px chrome square, which the group cannot hold: it clips
-  // to its own box, so the 44px touch expansion the square relies on would be
-  // cut off. Inside a group it becomes an icon-only segment at the `sm` step
-  // instead — 44px, level with the text segments beside it. Applies whether
-  // the segment named `icon` itself or inherited it from an untyped group.
+  // `icon` is the 40px chrome square, which the group cannot hold: it clips to
+  // its own box, so the 44px touch expansion the square relies on would be cut
+  // off. Inside a group it becomes an icon-only segment at the GROUP's step
+  // instead, which is the only step that lines up with the segments beside it.
+  //
+  // Not a literal `sm`: `styles.iconOnly` sets `size-(--btn-h)`, a definite
+  // cross size, so `items-stretch` on the group cannot stretch it back. A
+  // square pinned to `sm` inside a `default` group is 8px short (16px at
+  // `lg`), sitting flush to the top of the row with a void beneath it and a
+  // divider that stops before the group's bottom edge. Applies whether the
+  // segment named `icon` itself or inherited it from an untyped group, which
+  // is also why the group's own step is read back through the same guard.
   const iconStep = resolvedSize === 'icon'
+  const groupStep = group.size === 'icon' ? undefined : group.size
   return {
     variant: emphasised ? variant : 'ghost',
     color: color ?? group.color,
-    size: iconStep ? ('sm' as const) : resolvedSize,
+    size: iconStep ? (groupStep ?? 'default') : resolvedSize,
     iconOnly: iconOnly || iconStep,
     segment: emphasised ? ('override' as const) : ('default' as const),
     band: group.band,
@@ -873,9 +881,10 @@ function warnIfIconButtonUnlabelled(
 }
 
 /**
- * Dev-only nudge for a segment that asked for the `icon` step: it renders as
- * `iconOnly` at `sm` inside a group (see `resolveGroupDefaults`), so the
- * author should say that instead of relying on the coercion.
+ * Dev-only nudge for a segment that asked for the `icon` step: inside a group
+ * it renders as `iconOnly` at the group's own step (see
+ * `resolveGroupDefaults`), so the author should say that instead of relying
+ * on the coercion.
  */
 function warnIfIconStepInGroup(group: GroupDefaults | null, size: ButtonOwnProps['size']) {
   if (process.env.NODE_ENV === 'production') {
@@ -883,7 +892,7 @@ function warnIfIconStepInGroup(group: GroupDefaults | null, size: ButtonOwnProps
   }
   if (group && size === 'icon') {
     console.warn(
-      '[nswds/ui] size="icon" inside a ButtonGroup renders as iconOnly at the sm step: the group clips its box, so the 40px square would lose its 44px touch target. Use iconOnly with size="sm" instead.',
+      '[nswds/ui] size="icon" inside a ButtonGroup renders as iconOnly at the group\'s own step, so the square lines up with the segments beside it: the group clips its box, so the 40px square would lose its 44px touch target. Pair iconOnly with the group\'s size instead.',
     )
   }
 }
