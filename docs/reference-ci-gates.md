@@ -25,15 +25,16 @@ Run in this order, in one job:
 | 6   | Component drift            | `npm run check:drift -w @nswds/ui`                         |
 | 7   | Radius scale               | `npm run check:radius -w @nswds/ui`                        |
 | 8   | Icon module parity         | `npm run check:icons -w @nswds/ui`                         |
-| 9   | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
-| 10  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
-| 11  | Unit tests                 | `npm test -w @nswds/ui`                                    |
-| 12  | Package checks             | `npm run check:package -w @nswds/ui`                       |
-| 13  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
-| 14  | Registry freshness         | rebuild + `git status` comparison                          |
-| 15  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
-| 16  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
-| 17  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
+| 9   | Portal boundaries          | `npm run check:portal-boundary -w @nswds/ui`               |
+| 10  | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
+| 11  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
+| 12  | Unit tests                 | `npm test -w @nswds/ui`                                    |
+| 13  | Package checks             | `npm run check:package -w @nswds/ui`                       |
+| 14  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
+| 15  | Registry freshness         | rebuild + `git status` comparison                          |
+| 16  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
+| 17  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
+| 18  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
 
 A separate `visual-change-release-guard` job runs in parallel.
 
@@ -66,14 +67,17 @@ platform computes.
 
 ### 5 · Script tests
 
-`node --test scripts/*.test.mjs` — today, the `check:workflows` scanner.
+`node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs` — today, the `check:workflows`
+scanner and the `check:portal-boundary` gate.
 
 Not belt-and-braces. A gate that stops gating exits 0, which reads exactly like success, and this
 one has done it twice: the first version silently missed every `- run:` written as a YAML sequence
 item, and a later one exempted `#`-commented lines on a false premise — leaving
 `# ${{ github.event.pull_request.title }}` (titles accept newlines) able to run its second line.
-Both passed the repo scan while doing so. Anything under `scripts/` that guards a path CI cannot
-otherwise exercise gets tests here, for the same reason the release-config tests exist.
+Both passed the repo scan while doing so. The portal gate did the same thing a third way: it
+passed every real portal while also passing three shapes that leak, because it checked a prefix.
+Any gate script that guards a path CI cannot otherwise exercise gets tests here, for the same
+reason the release-config tests exist.
 
 **Fix:** `npm run test:scripts` and read the failing assertion.
 
@@ -102,7 +106,30 @@ it drifts silently otherwise.
 
 **Fix:** regenerate from `packages/ui` and commit the result.
 
-### 9 · Release config tests
+### 9 · `check:portal-boundary`
+
+Requires every primitive `Portal` in `packages/ui/src` (`<Portal>` or `<Namespace.Portal>`) to have
+exactly one child: a `<ButtonGroupBoundary>` element enclosing the whole popup. ButtonGroup hands
+its segments a React context, which follows the component tree and so crosses a portal, while the
+CSS half of the treatment keys on DOM ancestry and does not. Without the reset, a Button inside a
+popup opened from a segment renders as a segment of that group: squared, ghost, and on a solid band
+white-on-white. Removing a reset leaves a file that lints, typechecks and resolves exactly as
+before, so nothing else in CI sees it.
+
+"Only child", not "first child": a self-closing `<ButtonGroupBoundary />` followed by the popup, and
+a boundary closed around one branch with the popup after it, both put the boundary first and both
+leak. The gate reads the TypeScript syntax tree to decide where the boundary ends, because its
+first version matched text, checked only that the first child _started with_ the boundary's name,
+and passed both of those. It also fails a self-closing portal and any use of `createPortal`.
+
+It cannot see `NavigationMenuContent`, whose element is declared outside the portal and hosted
+inside it; that reset is pinned by the `In Overlays` story instead. Its fixture tests run under
+[script tests](#5--script-tests).
+
+**Fix:** make `<ButtonGroupBoundary>` the portal's only child, with everything the portal renders
+inside it. The failure names the file, the line and the shape it found.
+
+### 10 · Release config tests
 
 Cover the path-scoped release gate. They exist because `release.yml` commits with `[skip ci]`, so
 nothing else in CI ever exercises the release configuration — a mistake there is invisible until it
@@ -110,7 +137,7 @@ has already published, or silently failed to.
 
 They build a throwaway git repo per case, so they pass under this job's shallow checkout.
 
-### 10 · `check:cascade` (inside `build`)
+### 11 · `check:cascade` (inside `build`)
 
 Runs **inside** `build`, not as its own step, because it reads the built `dist/styles.css` — so a
 `build` that "succeeded" without it has not actually been run.
@@ -130,7 +157,7 @@ re-emit the loser after ours.
 Cascade layers cannot fix this — see
 [Surviving someone else's build](explanation-architecture.md#surviving-someone-elses-build).
 
-### 11 · Unit tests
+### 12 · Unit tests
 
 `node --test` over `packages/ui/tests/`, covering the package's **pure exported logic**. Runs
 against `dist/`, not `src/` (Node cannot strip JSX), so it must come after `build` and fails with a
@@ -142,12 +169,12 @@ with no coverage and two bugs.
 
 **Pure logic goes here; rendered behaviour goes in a story.**
 
-### 12 · `check:package`
+### 13 · `check:package`
 
 `publint --strict` + `are-the-types-wrong` against the built tarball. Catches export-map and
 type-resolution faults that `build` alone will happily produce.
 
-### 13 · Consumer fixture
+### 14 · Consumer fixture
 
 **The only gate with no npm script** — invisible from `package.json`. Run it by path:
 
@@ -167,7 +194,7 @@ Build `@nswds/ui` first. Not redundant with `check:package`: that validates the 
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside
 ours, the only place the two-build cascade is tested end to end.
 
-### 14 · Registry freshness
+### 15 · Registry freshness
 
 Rebuilds the registry and fails if committed output differs. Run `npm run registry:build` and
 commit `apps/registry/public/r/` whenever component source, `registry.json` or `components.json`
@@ -177,7 +204,7 @@ change.
 > `git status`, which cannot see a file nothing regenerates. Deleting an item from `registry.json`
 > also means deleting `apps/registry/public/r/<name>.json` by hand.
 
-### 15 · `check:registry-resolves`
+### 16 · `check:registry-resolves`
 
 The companion to `check:drift`, and easy to confuse with it. **Drift proves an item is registered;
 this proves it would actually compile** once `shadcn add` copies it.
@@ -200,7 +227,7 @@ Four real bugs motivated it, all of which passed drift, validate **and** the fre
 
 **Import icons per-icon (`../icons/close.js`), never through the barrel.**
 
-### 16 · `check:optimize-deps`
+### 17 · `check:optimize-deps`
 
 Asserts every bare import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
 `apps/storybook/vitest.config.ts`.
@@ -213,7 +240,7 @@ that kills whichever story was mid-flight.
 Add a component with a new dependency, forget this list, and the Storybook job starts failing
 intermittently **somewhere else entirely**.
 
-### 17 · Storybook tests
+### 18 · Storybook tests
 
 Every story rendered in real Chromium, with axe at WCAG 2.x AA enforced as an error. This is the
 suite that actually proves the components work. Takes roughly 80–170s.

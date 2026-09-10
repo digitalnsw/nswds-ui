@@ -452,12 +452,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   the step's `env:` and read them as `"$VAR"`. `if:`/`with:`/`env:` are
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
-- **`test:scripts`** is `node --test scripts/*.test.mjs`. Today that is the
-  `check:workflows` scanner, and it is not belt-and-braces: the scanner's first
-  version silently missed every `- run:` written as a YAML sequence item — the
-  common form — while still passing `release.yml`, which happens to use the
-  bare `run:` form. A gate that stops gating exits 0, which reads exactly like
-  success, so anything under `scripts/` that guards a path CI cannot otherwise
+- **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs`.
+  Today that is the `check:workflows` scanner and the `check:portal-boundary`
+  gate, and it is not belt-and-braces: the scanner's first version silently
+  missed every `- run:` written as a YAML sequence item — the common form —
+  while still passing `release.yml`, which happens to use the bare `run:` form,
+  and the portal gate's first version passed three shapes that leak because it
+  checked only a prefix. A gate that stops gating exits 0, which reads exactly
+  like success, so any gate script that guards a path CI cannot otherwise
   exercise gets tests here for the same reason the release-config tests exist.
 - **`check:drift`** (`packages/ui/scripts/check-component-drift.mjs`) enforces
   the two-channel rule: every non-story file in `src/components/` must be
@@ -494,8 +496,9 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   change, still served on the registry, still advertised in three docs. When you
   delete an item, delete `apps/registry/public/r/<name>.json` by hand.
 - **`check:portal-boundary`**
-  (`packages/ui/scripts/check-portal-boundary.mjs`) requires the first child of
-  every primitive `Portal` in `src/` to be `<ButtonGroupBoundary>`. ButtonGroup
+  (`packages/ui/scripts/check-portal-boundary.mjs`) requires every primitive
+  `Portal` in `src/` to have exactly one child, a `<ButtonGroupBoundary>` element
+  enclosing the whole popup. ButtonGroup
   hands its segments a React context, which follows the COMPONENT tree and so
   crosses a portal, while the CSS half of the same treatment keys on DOM
   ancestry and does not — so without the reset a Button inside a popup opened
@@ -505,9 +508,15 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   renders no Button inside its portal and the Select and Combobox popups take
   their own item components rather than arbitrary children. Removing a reset
   leaves a file that lints, typechecks, drifts and resolves exactly as before,
-  so nothing else in CI can see it. A self-closing `<X.Portal />` fails by
-  construction — it wraps nothing, and that is the shape every one of these
-  files had before the boundary landed.
+  so nothing else in CI can see it. "Only child", not "first child": a
+  self-closing `<ButtonGroupBoundary />` followed by the popup, and a boundary
+  closed around one branch with the popup after it, both put the boundary first
+  and both leak. The gate therefore reads the TypeScript syntax tree rather than
+  matching text — its first version checked that the first child STARTED WITH
+  the boundary's name and passed both of those, plus any component whose name
+  merely begins with it. A self-closing `<X.Portal />` fails by construction —
+  it wraps nothing, and that is the shape every one of these files had before
+  the boundary landed.
 - **`check:radius`** (`packages/ui/scripts/check-radius.mjs`) holds every
   component to the `sm` / `md` / `full` / `none` radius scale, so a component
   cannot invent a one-off corner. See docs/reference-tokens.md for the scale.
