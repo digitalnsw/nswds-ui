@@ -522,7 +522,7 @@ export const TargetSizeMinimum: Story = {
           why: 'Pointer targets must be at least 24×24 CSS pixels so users with limited dexterity can activate them reliably. Segments in a group share edges, so each one must clear the minimum on its own.',
           how: 'The red dashed outline is the 24×24px minimum drawn inside each segment; it should never extend beyond the segment. Icon-only segments at the sm step are the smallest case.',
           caveat:
-            'The overlay carries aria-hidden="true". It measures rendered geometry, not effective hit area; the segments also carry the coarse-pointer expansion Button applies.',
+            'The overlay carries aria-hidden="true". It measures rendered geometry, not effective hit area; the segments also carry the coarse-pointer expansion Button applies. This play cannot fail on its own: it renders the same panel as the 2.5.5 story below and asserts a lower floor, so any run that fails 24px has already failed 44px. It is here to name the AA criterion the component is judged against, and the AAA story is what actually holds the line.',
         }),
       },
     },

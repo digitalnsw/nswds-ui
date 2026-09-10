@@ -69,6 +69,13 @@ const buttonGroupVariants = cva(
     // SHORTHAND at (0,2,0), and this longhand only beats it by specificity,
     // never by emission order (AGENTS.md §4, the two-build cascade).
     //
+    // `loading` reaches these rules as well as `disabled`: Button derives
+    // `disabled` from either, so a busy segment is a disabled one here. The
+    // boundary therefore moves by a pixel when a request starts, which is the
+    // contract holding rather than breaking — the alternative is a
+    // half-strength hairline beside an enabled control for as long as the
+    // request runs. `Segment Props` pins it.
+    //
     // A disabled segment fades itself with `opacity-50`, and a divider drawn
     // on its own leading edge would fade with it — leaving one weak hairline
     // in an otherwise full-strength row, right where the eye reads the join.
@@ -237,14 +244,22 @@ function ButtonGroup({
     <div
       role='group'
       data-slot='button-group'
-      data-variant={resolvedVariant}
-      data-orientation={resolvedOrientation}
       className={cn(
         buttonColorVariants({ color: resolvedColor }),
         buttonGroupVariants({ variant: resolvedVariant, orientation: resolvedOrientation }),
         className,
       )}
       {...props}
+      // AFTER the spread, unlike `data-slot` above and unlike Button, which
+      // puts its own stamps first so InputGroupButton can relabel them. These
+      // two are not identification: every divider and band rule keys on them,
+      // while the flex direction comes from the cva variant and the
+      // separator's axis from the context — neither of which a prop can
+      // reach. Overridable, they let `data-orientation='vertical'` paint
+      // column dividers across a row. `data-slot` stays first because
+      // relabelling a group is the same escape hatch Button offers.
+      data-variant={resolvedVariant}
+      data-orientation={resolvedOrientation}
     >
       <ButtonGroupContext.Provider value={context}>{children}</ButtonGroupContext.Provider>
     </div>

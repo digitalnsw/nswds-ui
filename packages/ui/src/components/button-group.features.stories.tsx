@@ -585,6 +585,12 @@ export const Orientation: Story = {
               <Button>Middle</Button>
               <Button>Bottom</Button>
             </ButtonGroup>
+            <div dir='rtl'>
+              <ButtonGroup variant={variant} aria-label={`${variant} rtl`}>
+                <Button>First</Button>
+                <Button>Second</Button>
+              </ButtonGroup>
+            </div>
           </div>
         </ThemeSurface>
       ))}
@@ -604,6 +610,21 @@ export const Orientation: Story = {
       const rowMiddle = getComputedStyle(row.getAllByRole('button')[1]!)
       await expect(isPainted(rowMiddle.borderLeftColor)).toBe(true)
       await expect(isPainted(rowMiddle.borderTopColor)).toBe(false)
+
+      // The dividers pair LOGICAL properties (border-s/border-e) with
+      // DOM-ORDER combinators (~, +), so right-to-left is the case where a
+      // physical property would betray them: the second segment's hairline
+      // must move to its RIGHT edge, the inline start in this direction, and
+      // the segment itself must sit left of the first.
+      const rtl = within(canvas.getByRole('group', { name: `${variant} rtl` }))
+      const rtlFirst = rtl.getByRole('button', { name: 'First' })
+      const rtlSecond = rtl.getByRole('button', { name: 'Second' })
+      const rtlSecondStyles = getComputedStyle(rtlSecond)
+      await expect(isPainted(rtlSecondStyles.borderRightColor)).toBe(true)
+      await expect(isPainted(rtlSecondStyles.borderLeftColor)).toBe(false)
+      await expect(rtlSecond.getBoundingClientRect().left).toBeLessThan(
+        rtlFirst.getBoundingClientRect().left,
+      )
     }
   },
 }
@@ -1312,5 +1333,120 @@ export const PaintContract: Story = {
         framed ? 'padding-box' : 'border-box',
       )
     }
+  },
+}
+
+// ─── Segment props ────────────────────────────────────────────────────────────
+
+export const SegmentProps: Story = {
+  name: 'Segment Props',
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Button props whose meaning the group changes or constrains: `loading`, `block`, `alignContent`, `labelWrap`, `count`, and an explicit `iconOnly={false}` beside the `icon` coercion. Also a group handed `data-orientation` through its props spread.',
+        // The four/five-part template does not fit a story that is a list of
+        // independent props; each assertion carries its own reasoning inline.
+      },
+    },
+  },
+  render: () => (
+    <div className='flex flex-col gap-4'>
+      <ButtonGroup aria-label='Busy'>
+        <Button>Rest</Button>
+        <Button loading>Saving</Button>
+        <Button>After</Button>
+      </ButtonGroup>
+      <ButtonGroup className='w-96' aria-label='Block'>
+        <Button block>Fills the group</Button>
+      </ButtonGroup>
+      <ButtonGroup className='w-96' aria-label='Aligned'>
+        <Button block alignContent='start'>
+          Aligned to the start
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup className='w-40' aria-label='Wrapping'>
+        <Button labelWrap={false}>A label too long to fit</Button>
+      </ButtonGroup>
+      <ButtonGroup aria-label='Counted'>
+        <Button count={3} countLabel='unread'>
+          Messages
+        </Button>
+      </ButtonGroup>
+      <ButtonGroup aria-label='Icon override'>
+        <Button
+          size='icon'
+          iconOnly={false}
+          aria-label='Not a square'
+          leadingVisual={IconContentCopy}
+        />
+      </ButtonGroup>
+      <ButtonGroup data-orientation='vertical' aria-label='Spread override'>
+        <Button>One</Button>
+        <Button>Two</Button>
+      </ButtonGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // `loading` sets `disabled`, so a busy segment joins the disabled divider
+    // contract: its own leading edge stays clear and the boundary moves to
+    // the segment before it. The hairline therefore shifts by one pixel when
+    // a request starts. That is the contract holding, not breaking — the
+    // alternative is a half-strength hairline beside an enabled control for
+    // as long as the request runs — but it is worth pinning, since nothing
+    // else in the folder renders a busy segment.
+    const busy = within(canvas.getByRole('group', { name: 'Busy' }))
+    const saving = busy.getByRole('button', { name: /Saving/ })
+    await expect(saving).toHaveAttribute('aria-busy', 'true')
+    await expect(saving).toHaveAttribute('data-disabled')
+    await expect(saving).toHaveAttribute('data-segment', 'default')
+    await expect(
+      isPainted(getComputedStyle(busy.getByRole('button', { name: 'Rest' })).borderRightColor),
+    ).toBe(true)
+    await expect(isPainted(getComputedStyle(saving).borderLeftColor)).toBe(false)
+
+    // `block` still fills, despite the group being `inline-flex w-fit`: the
+    // group takes the width its own className gives it and the segment fills
+    // that, rather than the segment collapsing to its content.
+    const blockGroup = canvas.getByRole('group', { name: 'Block' })
+    const blockSegment = canvas.getByRole('button', { name: 'Fills the group' })
+    await expect(blockSegment.getBoundingClientRect().width).toBeCloseTo(
+      blockGroup.getBoundingClientRect().width,
+      0,
+    )
+
+    // `alignContent` still reaches the segment's own flex line.
+    await expect(
+      getComputedStyle(canvas.getByRole('button', { name: 'Aligned to the start' })).justifyContent,
+    ).toBe('flex-start')
+
+    // `labelWrap={false}` wraps the label in a nowrap span, which the group's
+    // `items-stretch` and clipping must not undo.
+    const wrapping = canvas.getByRole('button', { name: 'A label too long to fit' })
+    const label = [...wrapping.querySelectorAll('span')].find(
+      (node) => node.textContent === 'A label too long to fit',
+    )
+    await expect(label).toBeDefined()
+    await expect(getComputedStyle(label!).whiteSpace).toBe('nowrap')
+
+    // `count` renders its badge and its screen-reader label inside a segment.
+    const counted = canvas.getByRole('button', { name: /Messages/ })
+    await expect(counted.textContent).toContain('3')
+    await expect(counted.textContent).toContain('unread')
+
+    // An explicit `iconOnly={false}` outranks the `icon` coercion, so the
+    // segment keeps its padding and is not square.
+    const notSquare = canvas.getByRole('button', { name: 'Not a square' }).getBoundingClientRect()
+    await expect(notSquare.width).toBeGreaterThan(notSquare.height)
+
+    // `data-orientation` is stamped after the props spread, so a consumer
+    // cannot desync the attribute every divider rule keys on from the flex
+    // direction, which comes from the cva variant and is out of a prop's
+    // reach. Passing `vertical` to a row group leaves both saying row.
+    const spread = canvas.getByRole('group', { name: 'Spread override' })
+    await expect(spread).toHaveAttribute('data-orientation', 'horizontal')
+    await expect(getComputedStyle(spread).flexDirection).toBe('row')
   },
 }

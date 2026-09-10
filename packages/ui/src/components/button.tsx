@@ -752,7 +752,10 @@ function resolveGroupDefaults(
     variant: emphasised ? variant : 'ghost',
     color: color ?? group.color,
     size: iconStep ? (groupStep ?? 'default') : resolvedSize,
-    iconOnly: iconOnly || iconStep,
+    // `??`, not `||`: an explicit `iconOnly={false}` is the author saying
+    // "not a square", and the `icon` coercion must not overrule it. Only an
+    // unstated `iconOnly` falls through to the coercion.
+    iconOnly: iconOnly ?? iconStep,
     segment: emphasised ? ('override' as const) : ('default' as const),
     band: group.band,
   }
