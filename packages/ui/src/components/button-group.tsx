@@ -274,13 +274,18 @@ function ButtonGroup({
         className,
       )}
       {...props}
-      // AFTER the spread, unlike `data-slot` above and unlike Button, which
-      // puts its own stamps first so InputGroupButton can relabel them. These
-      // two are not identification: every divider and band rule keys on them,
-      // while the flex direction comes from the cva variant and the
-      // separator's axis from the context — neither of which a prop can
-      // reach. Overridable, they let `data-orientation='vertical'` paint
-      // column dividers across a row. `data-slot` stays first because
+      // AFTER the spread, so that no prop can override these two — unlike
+      // `data-slot` above, and unlike Button, which puts its own stamps first
+      // so InputGroupButton can relabel them. `data-orientation` is what every
+      // divider rule keys on, while the flex direction comes from the cva
+      // variant and the separator's axis from the context — neither of which
+      // a prop can reach. If a prop could override it, a row handed
+      // `data-orientation='vertical'` would paint column dividers across
+      // itself. Nothing in the package keys on `data-variant` (the band
+      // treatment reaches the segments through `data-band` instead), but it is
+      // the group's public description of itself, and stamped last it cannot
+      // be made to contradict the variant the group actually paints. The
+      // Segment Props play pins both. `data-slot` stays first because
       // relabelling a group is the same escape hatch Button offers.
       data-variant={resolvedVariant}
       data-orientation={resolvedOrientation}

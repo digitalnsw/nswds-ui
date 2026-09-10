@@ -1423,7 +1423,7 @@ export const SegmentProps: Story = {
     docs: {
       description: {
         story:
-          'Button props whose meaning the group changes or constrains: `loading`, `block`, `alignContent`, `labelWrap`, `count`, and an explicit `iconOnly={false}` beside the `icon` coercion. Also a group handed `data-orientation` through its props spread.',
+          'Button props whose meaning the group changes or constrains: `loading`, `block`, `alignContent`, `labelWrap`, `count`, and an explicit `iconOnly={false}` beside the `icon` coercion. Also a group handed `data-orientation` and `data-variant` through its props spread.',
         // The four/five-part template does not fit a story that is a list of
         // independent props; each assertion carries its own reasoning inline.
       },
@@ -1460,7 +1460,7 @@ export const SegmentProps: Story = {
           leadingVisual={IconContentCopy}
         />
       </ButtonGroup>
-      <ButtonGroup data-orientation='vertical' aria-label='Spread override'>
+      <ButtonGroup data-orientation='vertical' data-variant='solid' aria-label='Spread override'>
         <Button>One</Button>
         <Button>Two</Button>
       </ButtonGroup>
@@ -1527,5 +1527,13 @@ export const SegmentProps: Story = {
     const spread = canvas.getByRole('group', { name: 'Spread override' })
     await expect(spread).toHaveAttribute('data-orientation', 'horizontal')
     await expect(getComputedStyle(spread).flexDirection).toBe('row')
+    // `data-variant` is stamped after it too. No rule in the package reads the
+    // group's own `data-variant`, so this pins a description rather than a
+    // paint: handed `solid`, an outline group still says outline, and still
+    // paints like one — a frame and no fill — so the attribute and the band
+    // agree for anything outside the package that does read it.
+    await expect(spread).toHaveAttribute('data-variant', 'outline')
+    await expect(isPainted(getComputedStyle(spread).backgroundColor)).toBe(false)
+    await expect(isPainted(getComputedStyle(spread).boxShadow)).toBe(true)
   },
 }
