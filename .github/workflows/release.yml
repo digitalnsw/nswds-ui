@@ -50,6 +50,14 @@ jobs:
     # can add minutes. 40 keeps headroom over the slow case; 30 leaves almost
     # none, which is why this is not still 30.
     timeout-minutes: 40
+    # One release at a time, never cancelled mid-publish. semantic-release pushes
+    # the tag BEFORE it publishes, so a cancelled or overlapping run can leave a
+    # tag with no package behind it — the stranded-release state
+    # release-drift-audit.yml exists to catch after the fact. This prevents one
+    # cause of it outright. Matches the fleet's reusable-release.yml.
+    concurrency:
+      group: release
+      cancel-in-progress: false
     env:
       # main is ruleset-protected: semantic-release pushes the version-bump
       # commit over SSH as a deploy key that's a bypass actor on the ruleset
@@ -72,7 +80,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '24.20.0'
+          # From the fleet-synced .nvmrc rather than a pinned copy. Renovate was
+          # bumping a hardcoded version here (24.19.0 -> 24.20.0) while .nvmrc is
+          # synced from nswds-devops, so the release ran on a different Node from
+          # the rest of the repo — and the release regenerates package-lock.json
+          # (see @semantic-release/exec in the release config), where that skew
+          # shows up. nswds-email-design already reads the file.
+          node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
@@ -102,6 +116,13 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # LOAD-BEARING: @semantic-release/git commits the version bump during
+          # the release, and this repo installs husky commit-msg, pre-commit and
+          # prepare-commit-msg hooks via `prepare`. They must not run against the
+          # bot commit — that broke nswds-tokens releases when it regressed
+          # (tokens #105/#107), and it is set in the fleet's reusable-release.yml
+          # and in nswds-email-design for the same reason.
+          HUSKY: 0
         run: npm run release
 
       - name: Capture published release tag
