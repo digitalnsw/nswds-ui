@@ -384,13 +384,16 @@ const styles = {
     // No shadow: a `shadow-sm` whisper belongs under a button on the page, not
     // under one segment of a control.
     'data-[segment]:before:shadow-none',
-    // A framed group draws its frame as an inset ring on the group, which
-    // paints beneath its children. A solid segment's own background (the
-    // optical border, `bg-(--btn-border)`) would cover that ring on the top
-    // and bottom edges, so backgrounds stop at the padding box and the 1px
-    // transparent border lets the frame through. The `before` fill layer is
-    // positioned inside the padding box already.
-    'data-[segment]:bg-clip-padding',
+    // A framed group (`outline`, `surface`) draws its frame as an inset ring
+    // on the group, which paints beneath its children. A solid segment's own
+    // background (the optical border, `bg-(--btn-border)`) would cover that
+    // ring on the top and bottom edges, so on those bands backgrounds stop at
+    // the padding box and the 1px transparent border lets the frame through.
+    // The `before` fill layer is positioned inside the padding box already.
+    // Only on framed bands: on `ghost` or `soft` nothing paints beneath that
+    // pixel, and clipping there would leave a solid segment 1px short of the
+    // group's edge on both sides.
+    'data-[segment]:data-[band=outline]:bg-clip-padding data-[segment]:data-[band=surface]:bg-clip-padding',
     // The group clips its corners (`overflow-hidden`), which would clip a ring
     // sitting 2px outside the button, so the ring moves 2px inside instead —
     // the same inversion the nav rails use inside a scroll container.
@@ -399,9 +402,26 @@ const styles = {
     // in light mode `--btn-bg` and `--btn-fill` are the same token. So a solid
     // segment rings in its label colour, the pair InputGroupAction's solid
     // variant uses. (0,4,0) against the base ring's (0,2,0). A segment that
-    // is not solid keeps the ink ring; on a solid band the group re-points its
-    // ink to the label colour, so that ring is white there too.
+    // is not solid keeps the ink ring; on a solid band the rule below re-points
+    // its ink to the label colour, so that ring is white there too.
     'data-[segment]:data-[variant=solid]:focus:outline-(--btn-text)',
+    // On a solid band a segment that is not itself solid is painted on the
+    // band, so its ink becomes the band's label colour: white label, white/10
+    // hover, white ring, and a soft segment's tint becomes white/10 too. The
+    // press overlay takes solid's own black/15 so a band and a lone solid
+    // Button give the same feedback.
+    //
+    // The colour comes from `--group-label`, which the GROUP publishes from
+    // its own `--btn-text` — resolved at the group, then inherited — so a
+    // segment that names its own `color` cannot hijack it through its own
+    // `--btn-text` (that would put a `secondary` segment's grey ink on a
+    // primary band). And the rule is keyed on `data-band`, which the segment
+    // is told by the group through context, never on DOM ancestry: a segment
+    // rendered through a trigger's `render` prop, or wrapped in a span for a
+    // tooltip, is re-inked like any other. (0,4,0) against the colour token's
+    // (0,1,0) and its dark-mode ink at (0,2,0).
+    'data-[segment]:not-data-[variant=solid]:data-[band=solid]:[--btn-bg:var(--group-label)]',
+    'data-[segment]:not-data-[variant=solid]:data-[band=solid]:[--btn-active-overlay:var(--color-black)]/15',
   ],
 }
 
@@ -583,6 +603,9 @@ type ButtonOwnProps = Omit<VariantProps<typeof buttonVariants>, 'size' | 'iconOn
    * square (header actions, dialog close buttons, footer social links) that
    * lines up with none of them. For an icon-only button that must sit level
    * with text buttons beside it, pair `iconOnly` with `sm`/`default`/`lg`.
+   * Inside a ButtonGroup `icon` renders exactly that way, as `iconOnly` at
+   * `sm`: the group clips to its own box, so the square's 44px touch
+   * expansion would be cut off.
    */
   size?: 'sm' | 'default' | 'lg' | 'icon' | null
   /**
@@ -692,29 +715,55 @@ type GroupDefaults = ButtonGroupContextValue<
  */
 function resolveGroupDefaults(
   group: GroupDefaults | null,
-  { variant, color, size }: Pick<ButtonOwnProps, 'variant' | 'color' | 'size'>,
+  {
+    variant,
+    color,
+    size,
+    iconOnly,
+  }: Pick<ButtonOwnProps, 'variant' | 'color' | 'size' | 'iconOnly'>,
 ) {
   if (!group) {
-    return { variant: variant ?? 'solid', color, size, segment: undefined }
+    return {
+      variant: variant ?? 'solid',
+      color,
+      size,
+      iconOnly,
+      segment: undefined,
+      band: undefined,
+    }
   }
   const emphasised = EMPHASISED_SEGMENT_VARIANTS.has(variant)
+  const resolvedSize = size ?? group.size
+  // `icon` is the 40px chrome square, which the group cannot hold: it clips
+  // to its own box, so the 44px touch expansion the square relies on would be
+  // cut off. Inside a group it becomes an icon-only segment at the `sm` step
+  // instead — 44px, level with the text segments beside it. Applies whether
+  // the segment named `icon` itself or inherited it from an untyped group.
+  const iconStep = resolvedSize === 'icon'
   return {
     variant: emphasised ? variant : 'ghost',
     color: color ?? group.color,
-    size: size ?? group.size,
+    size: iconStep ? ('sm' as const) : resolvedSize,
+    iconOnly: iconOnly || iconStep,
     segment: emphasised ? ('override' as const) : ('default' as const),
+    band: group.band,
   }
 }
 
 /**
  * `resolveGroupDefaults` against the enclosing ButtonGroup, if any. The
- * context types `color` and `size` as strings so its module can ship with
- * every popup (see button-group-context.tsx); only ButtonGroup provides it,
- * from props typed with Button's own unions, so the narrowing here is sound.
+ * context types `band`, `color` and `size` as strings so its module can ship
+ * with every popup (see button-group-context.tsx); only ButtonGroup provides
+ * it, from props typed with Button's own unions, so the narrowing here is
+ * sound.
  */
-function useSegmentDefaults(props: Pick<ButtonOwnProps, 'variant' | 'color' | 'size'>) {
+function useSegmentDefaults(
+  props: Pick<ButtonOwnProps, 'variant' | 'color' | 'size' | 'iconOnly'>,
+) {
   const group = React.useContext(ButtonGroupContext) as GroupDefaults | null
-  return resolveGroupDefaults(group, props)
+  const resolved = resolveGroupDefaults(group, props)
+  warnIfIconStepInGroup(group, props.size ?? group?.size)
+  return resolved
 }
 
 /** Shared inner layout: spinner, visuals, label, count, touch target. */
@@ -824,6 +873,22 @@ function warnIfIconButtonUnlabelled(
 }
 
 /**
+ * Dev-only nudge for a segment that asked for the `icon` step: it renders as
+ * `iconOnly` at `sm` inside a group (see `resolveGroupDefaults`), so the
+ * author should say that instead of relying on the coercion.
+ */
+function warnIfIconStepInGroup(group: GroupDefaults | null, size: ButtonOwnProps['size']) {
+  if (process.env.NODE_ENV === 'production') {
+    return
+  }
+  if (group && size === 'icon') {
+    console.warn(
+      '[nswds/ui] size="icon" inside a ButtonGroup renders as iconOnly at the sm step: the group clips its box, so the 40px square would lose its 44px touch target. Use iconOnly with size="sm" instead.',
+    )
+  }
+}
+
+/**
  * Action button on the Base UI button primitive. For button-styled
  * navigation, use `ButtonLink` — the `href` polymorphism that previously
  * lived on this component was removed in v2.
@@ -836,7 +901,7 @@ function Button({
   variant: variantProp,
   color: colorProp,
   size: sizeProp,
-  iconOnly,
+  iconOnly: iconOnlyProp,
   children,
   block,
   loading,
@@ -853,10 +918,11 @@ function Button({
 }: ButtonProps) {
   const effectiveDisabled = disabled || loading
   // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
-  const { variant, color, size, segment } = useSegmentDefaults({
+  const { variant, color, size, iconOnly, segment, band } = useSegmentDefaults({
     variant: variantProp,
     color: colorProp,
     size: sizeProp,
+    iconOnly: iconOnlyProp,
   })
 
   warnIfIconButtonUnlabelled(size, iconOnly, props, children)
@@ -866,6 +932,7 @@ function Button({
       data-slot='button'
       data-variant={variant}
       data-segment={segment}
+      data-band={band}
       aria-busy={loading || undefined}
       {...props}
       disabled={effectiveDisabled}
@@ -909,7 +976,7 @@ function ButtonLink({
   variant: variantProp,
   color: colorProp,
   size: sizeProp,
-  iconOnly,
+  iconOnly: iconOnlyProp,
   children,
   block,
   loading,
@@ -926,10 +993,11 @@ function ButtonLink({
 }: ButtonLinkProps) {
   const effectiveDisabled = disabled || loading
   // Always emitted as `data-variant`, and group-aware — see resolveGroupDefaults.
-  const { variant, color, size, segment } = useSegmentDefaults({
+  const { variant, color, size, iconOnly, segment, band } = useSegmentDefaults({
     variant: variantProp,
     color: colorProp,
     size: sizeProp,
+    iconOnly: iconOnlyProp,
   })
 
   warnIfIconButtonUnlabelled(size, iconOnly, props, children)
@@ -943,6 +1011,7 @@ function ButtonLink({
       data-slot='button'
       data-variant={variant}
       data-segment={segment}
+      data-band={band}
       aria-busy={loading || undefined}
       {...props}
       {...(effectiveDisabled

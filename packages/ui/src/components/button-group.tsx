@@ -32,16 +32,32 @@ const DEFAULT_GROUP_ORIENTATION = 'horizontal' as const
  * Every colour is Button's own `--btn-fill` / `--btn-bg` / `--btn-text` pair,
  * applied to the group by `buttonColorVariants`, so a group's `color` means
  * what a Button's does and the ink flips for dark mode the same way.
- * Hairlines take the text colour, per the masterbrand's line system.
+ * Hairlines take the text colour, per the masterbrand's line system. These
+ * classes therefore only paint on an element that also carries
+ * `buttonColorVariants` — `ring-(--btn-bg)` is invalid without it — so a
+ * consumer extending the group's styling applies the two together, as
+ * `ButtonGroup` does.
  *
- * Every rule that reaches into a child uses the CHILD combinator (`&>`), never
- * a descendant one. A group is not meant to nest, but if one ever does, a
- * descendant rule from the outer band would re-ink the inner group's segments;
- * a child rule cannot.
+ * Two kinds of rule reach a segment. What depends on the segment's
+ * NEIGHBOURS — dividers, seams, the text cell — lives here and uses the CHILD
+ * combinator (`&>`) and sibling combinators, so it needs the segments to be
+ * direct children. What depends only on the BAND — the re-ink on a solid
+ * band, the frame-revealing `bg-clip-padding` — lives on the segment itself,
+ * keyed on the `data-band` the group tells it through context, so it holds
+ * for a segment rendered through a trigger's `render` prop or wrapped in a
+ * span. Never a descendant rule: a group is not meant to nest, but if one
+ * ever does, a descendant rule from the outer band would re-ink the inner
+ * group's segments.
  */
 const buttonGroupVariants = cva(
   [
     'isolate inline-flex w-fit items-stretch overflow-hidden rounded-sm',
+    // The band's label colour, resolved HERE from the group's own colour
+    // token and inherited by every segment as a computed value. A segment on
+    // a solid band re-points its ink to this (see `styles.segment` in
+    // button.tsx); publishing it from the group is what stops a segment that
+    // names its own `color` from reading its own `--btn-text` instead.
+    '[--group-label:var(--btn-text)]',
     // Dividers. A Button or ButtonGroupText carries `data-slot` and a 1px
     // transparent border, so the divider is that border recoloured on the
     // shared edge: no extra pixel, and the group's outer box stays exactly
@@ -58,19 +74,26 @@ const buttonGroupVariants = cva(
     // at full strength but the one before the disabled segment. So the
     // boundary before a disabled segment is drawn on the trailing edge of the
     // segment BEFORE it instead, and the disabled segment's own leading edge
-    // stays transparent.
+    // stays transparent. A separator between the two has no edge to paint,
+    // so the rule also looks through one.
     'data-[orientation=horizontal]:[&>[data-slot]~[data-slot]:not([data-disabled])]:border-s-(--divider)',
     'data-[orientation=horizontal]:[&>[data-slot]:has(+[data-slot][data-disabled])]:border-e-(--divider)',
+    'data-[orientation=horizontal]:[&>[data-slot]:has(+[data-slot=button-group-separator]+[data-slot][data-disabled])]:border-e-(--divider)',
     'data-[orientation=vertical]:[&>[data-slot]~[data-slot]:not([data-disabled])]:border-t-(--divider)',
     'data-[orientation=vertical]:[&>[data-slot]:has(+[data-slot][data-disabled])]:border-b-(--divider)',
+    'data-[orientation=vertical]:[&>[data-slot]:has(+[data-slot=button-group-separator]+[data-slot][data-disabled])]:border-b-(--divider)',
     // Two solid segments side by side (a split button): the ink divider would
     // vanish on the fill, so the seam is a reversed hairline in the label
-    // colour. Above the general divider on specificity, and with the same
-    // disabled handling.
+    // colour. Above the general divider on specificity, with the same
+    // disabled handling, and again looking through a separator.
     'data-[orientation=horizontal]:[&>[data-slot][data-variant=solid]+[data-slot][data-variant=solid]:not([data-disabled])]:border-s-(--btn-text)/30',
+    'data-[orientation=horizontal]:[&>[data-slot][data-variant=solid]+[data-slot=button-group-separator]+[data-slot][data-variant=solid]:not([data-disabled])]:border-s-(--btn-text)/30',
     'data-[orientation=horizontal]:[&>[data-slot][data-variant=solid]:has(+[data-slot][data-variant=solid][data-disabled])]:border-e-(--btn-text)/30',
+    'data-[orientation=horizontal]:[&>[data-slot][data-variant=solid]:has(+[data-slot=button-group-separator]+[data-slot][data-variant=solid][data-disabled])]:border-e-(--btn-text)/30',
     'data-[orientation=vertical]:[&>[data-slot][data-variant=solid]+[data-slot][data-variant=solid]:not([data-disabled])]:border-t-(--btn-text)/30',
+    'data-[orientation=vertical]:[&>[data-slot][data-variant=solid]+[data-slot=button-group-separator]+[data-slot][data-variant=solid]:not([data-disabled])]:border-t-(--btn-text)/30',
     'data-[orientation=vertical]:[&>[data-slot][data-variant=solid]:has(+[data-slot][data-variant=solid][data-disabled])]:border-b-(--btn-text)/30',
+    'data-[orientation=vertical]:[&>[data-slot][data-variant=solid]:has(+[data-slot=button-group-separator]+[data-slot][data-variant=solid][data-disabled])]:border-b-(--btn-text)/30',
   ],
   {
     variants: {
@@ -79,30 +102,33 @@ const buttonGroupVariants = cva(
         // no height: the group is exactly as tall as a lone Button beside it.
         // No fill of its own, like Button's outline: the surface shows
         // through, so a `white` outline group on a dark panel stays a frame.
-        outline: 'ring-1 ring-(--btn-bg) [--divider:var(--btn-bg)] ring-inset',
-        // The band.
+        // Forced-colours mode discards box shadows, so the frame is restated
+        // there as an outline, which that mode keeps and recolours. The text
+        // cell stops its background at the padding box so the frame shows
+        // through its transparent border.
+        outline: [
+          'ring-1 ring-(--btn-bg) [--divider:var(--btn-bg)] ring-inset',
+          'forced-colors:outline forced-colors:outline-1 forced-colors:-outline-offset-1',
+          '[&>[data-slot=button-group-text]]:bg-clip-padding',
+        ],
+        // The band. Segments re-ink themselves on it (see `styles.segment` in
+        // button.tsx); the text cell sits on the band in its label colour, at
+        // the label weight so it reads as a label rather than as another
+        // button.
         solid: [
           'bg-(--btn-fill) [--divider:color-mix(in_oklab,var(--btn-text)_30%,transparent)]',
-          // Any segment that is not itself solid is painted on the band, so
-          // its ink becomes the band's label colour: white label, white/10
-          // hover, white ring, and a soft child's tint becomes white/10 too.
-          // `--btn-text` is the same variable `solid` pairs with `--btn-fill`,
-          // so every colour token's label works. The press overlay takes
-          // solid's own black/15 so a band and a lone solid Button give the
-          // same feedback. (0,3,0) against the colour token's (0,1,0) and its
-          // dark-mode ink at (0,2,0).
-          '[&>[data-slot=button]:not([data-variant=solid])]:[--btn-bg:var(--btn-text)]',
-          '[&>[data-slot=button]:not([data-variant=solid])]:[--btn-active-overlay:var(--color-black)]/15',
-          // The text cell sits on the band in its label colour, at the label
-          // weight so it reads as a label rather than as another button.
           '[&>[data-slot=button-group-text]]:bg-transparent [&>[data-slot=button-group-text]]:font-medium [&>[data-slot=button-group-text]]:text-(--btn-text)',
         ],
         // Button's soft pair — ink at 10%, 20% in dark — as a band. The text
         // cell sits on the band.
         soft: 'bg-(--btn-bg)/10 [--divider:color-mix(in_oklab,var(--btn-bg)_30%,transparent)] dark:bg-(--btn-bg)/20 [&>[data-slot=button-group-text]]:bg-transparent',
-        // Button's surface pair: ink at 5% inside an ink/50 hairline.
-        surface:
-          'bg-(--btn-bg)/5 ring-1 ring-(--btn-bg)/50 [--divider:color-mix(in_oklab,var(--btn-bg)_50%,transparent)] ring-inset dark:bg-(--btn-bg)/30 [&>[data-slot=button-group-text]]:bg-transparent',
+        // Button's surface pair: ink at 5% inside an ink/50 hairline, restated
+        // as an outline for forced colours like the outline frame.
+        surface: [
+          'bg-(--btn-bg)/5 ring-1 ring-(--btn-bg)/50 [--divider:color-mix(in_oklab,var(--btn-bg)_50%,transparent)] ring-inset dark:bg-(--btn-bg)/30',
+          'forced-colors:outline forced-colors:outline-1 forced-colors:-outline-offset-1',
+          '[&>[data-slot=button-group-text]]:bg-transparent',
+        ],
         // No frame, no fill: only the hairlines between segments remain.
         ghost: '[--divider:var(--btn-bg)]',
       },
@@ -133,7 +159,8 @@ type ButtonGroupProps = Omit<React.ComponentProps<'div'>, 'color'> &
      * Scale step, with Button's meaning. The default size of every segment.
      * `icon` is not offered: it is a 40px chrome square, and the group clips
      * to its own box, so the 44px touch expansion Button adds on a coarse
-     * pointer would be cut off. Pair `iconOnly` with `sm` instead.
+     * pointer would be cut off. A segment that asks for `icon` anyway renders
+     * as `iconOnly` at `sm`.
      */
     size?: Exclude<ButtonProps['size'], 'icon'>
   }
@@ -146,15 +173,22 @@ type ButtonGroupProps = Omit<React.ComponentProps<'div'>, 'color'> &
  * outline group is the primary action of that row.
  *
  * Children are Buttons (or ButtonLinks), `ButtonGroupText` for an inline
- * label, and `ButtonGroupSeparator` for a semantic boundary. It is a group of
- * buttons, not a general control frame — an input or select with an attached
- * action is InputGroup's job — and groups do not nest.
+ * label, and `ButtonGroupSeparator` for a semantic boundary, as DIRECT
+ * children: the hairlines between segments are drawn on the segments' shared
+ * edges, so a segment wrapped in another element (a span holding a tooltip
+ * on a disabled segment, say) keeps its label and its band treatment but
+ * loses the hairlines it shares with its neighbours — the one before it, and
+ * the one after it too when the wrapped segment is the first child. It is a group of buttons, not a general
+ * control frame — an input or select with an attached action is InputGroup's
+ * job — and groups do not nest.
  *
  * A popup opened from a segment (a split button's menu) renders through a
  * portal, which React context follows. Every popup in this package resets the
  * group context at its portal, so the Buttons inside render normally; wrap
  * the contents of an overlay from another library in `ButtonGroupBoundary`
- * to get the same.
+ * to get the same. Without that reset a Button inside the popup renders as a
+ * segment of the group it was opened from, and on a solid band that means its
+ * label takes the band's colour — white on the popup's own surface.
  */
 function ButtonGroup({
   className,
@@ -168,8 +202,8 @@ function ButtonGroup({
   const resolvedVariant = variant ?? DEFAULT_GROUP_VARIANT
   const resolvedOrientation = orientation ?? DEFAULT_GROUP_ORIENTATION
   const context = React.useMemo<ButtonGroupContextValue>(
-    () => ({ color, size, orientation: resolvedOrientation }),
-    [color, size, resolvedOrientation],
+    () => ({ band: resolvedVariant, color, size, orientation: resolvedOrientation }),
+    [resolvedVariant, color, size, resolvedOrientation],
   )
 
   return (
@@ -205,10 +239,8 @@ function ButtonGroupText({ className, render, ...props }: useRender.ComponentPro
     props: mergeProps<'div'>(
       {
         className: cn(
-          // The transparent border is what the group's divider recolours, and
-          // the background stops at the padding box so the group's inset frame
-          // shows through that border on the top and bottom edges.
-          'flex items-center gap-2 border border-transparent bg-(--surface-sunken) bg-clip-padding px-4 text-base font-semibold text-muted-foreground select-none',
+          // The transparent border is what the group's divider recolours.
+          'flex items-center gap-2 border border-transparent bg-(--surface-sunken) px-4 text-base font-semibold text-muted-foreground select-none',
           // A glyph beside the text matches Button's 24px label glyph.
           "[&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-6",
           className,

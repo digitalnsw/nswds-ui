@@ -40,7 +40,10 @@ import {
   type ButtonGroupVariant,
 } from './button-group.js'
 import { Button, ButtonLink } from './button.js'
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from './drawer.js'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card.js'
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './sheet.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -272,9 +275,48 @@ export const Emphasis: Story = {
               <Button variant='soft'>Week</Button>
               <Button>Month</Button>
             </ButtonGroup>
+            <ButtonGroup variant={variant} aria-label={`${variant} menu`}>
+              <Button>Actions</Button>
+              <Popover>
+                <PopoverTrigger
+                  render={
+                    <Button
+                      iconOnly
+                      aria-label={`${variant} menu chevron`}
+                      leadingVisual={IconExpandMore}
+                    />
+                  }
+                />
+                <PopoverContent>
+                  <Button block>Archive</Button>
+                </PopoverContent>
+              </Popover>
+            </ButtonGroup>
+            <ButtonGroup variant={variant} aria-label={`${variant} split separated`}>
+              <Button variant='solid'>Save</Button>
+              <ButtonGroupSeparator />
+              <Button
+                variant='solid'
+                iconOnly
+                aria-label={`${variant} more save options separated`}
+                leadingVisual={IconExpandMore}
+              />
+            </ButtonGroup>
           </div>
         </ThemeSurface>
       ))}
+      <ThemeSurface color='primary' className='p-3'>
+        <div className='flex flex-wrap items-center gap-4'>
+          <span className='w-20 text-sm font-semibold text-foreground'>own colour</span>
+          <ButtonGroup variant='solid' aria-label='solid own colour'>
+            <Button>Day</Button>
+            <Button color='secondary'>Own colour</Button>
+            <Button variant='soft' color='white'>
+              Soft white
+            </Button>
+          </ButtonGroup>
+        </div>
+      </ThemeSurface>
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -302,15 +344,30 @@ export const Emphasis: Story = {
     ).borderLeftColor
     await expect(isPainted(seam)).toBe(true)
     await expect(seam).not.toBe(divider)
+    // …and the seam survives a separator between the two.
+    const separatedSeam = getComputedStyle(
+      canvas.getByRole('button', { name: 'outline more save options separated' }),
+    ).borderLeftColor
+    await expect(separatedSeam).toBe(seam)
 
     // On a solid band every segment that is not itself solid takes the band's
-    // label colour as its ink: a defaulted segment and a soft one both read
-    // in the same colour as a solid segment's label.
+    // label colour as its ink: a defaulted segment, a soft one, one that named
+    // its own colour (whose own label colour must not leak in), and one
+    // rendered through a trigger's `render` prop (which carries the trigger's
+    // data-slot, so the rule cannot key on the DOM) all read in the same
+    // colour as a solid segment's label.
     const solidLabel = getComputedStyle(canvas.getAllByRole('button', { name: 'Save' })[0]!).color
-    const band = canvas.getByRole('group', { name: 'solid view' })
-    for (const segment of within(band).getAllByRole('button')) {
-      await expect(getComputedStyle(segment).color).toBe(solidLabel)
+    for (const name of ['solid view', 'solid menu', 'solid own colour']) {
+      const band = canvas.getByRole('group', { name })
+      for (const segment of within(band).getAllByRole('button')) {
+        await expect(getComputedStyle(segment).color).toBe(solidLabel)
+      }
     }
+    const trigger = within(canvas.getByRole('group', { name: 'solid menu' })).getByRole('button', {
+      name: 'solid menu chevron',
+    })
+    await expect(trigger).toHaveAttribute('data-slot', 'popover-trigger')
+    await expect(trigger).toHaveAttribute('data-band', 'solid')
   },
 }
 
@@ -374,6 +431,10 @@ export const Sizes: Story = {
           <ButtonGroup size='sm' aria-label='Override group'>
             <Button size='lg'>Own size</Button>
           </ButtonGroup>
+          <ButtonGroup aria-label='Icon group'>
+            <Button size='icon' aria-label='Icon segment' leadingVisual={IconContentCopy} />
+          </ButtonGroup>
+          <Button size='sm' iconOnly aria-label='Icon reference' leadingVisual={IconContentCopy} />
         </div>
       </ThemeSurface>
     </div>
@@ -391,6 +452,18 @@ export const Sizes: Story = {
     await expect(heightOf('Default segment')).toBe(heightOf('Default reference'))
     // …and a segment naming its own size keeps it.
     await expect(heightOf('Own size')).toBeGreaterThan(heightOf('Default segment'))
+
+    // `icon` is not a group step. A segment that asks for it renders as
+    // iconOnly at sm — the same square as a sm icon-only Button, never the
+    // 40px chrome square, which the group's clipping would rob of its 44px
+    // touch expansion.
+    const iconSegment = canvas.getByRole('button', { name: 'Icon segment' }).getBoundingClientRect()
+    const iconReference = canvas
+      .getByRole('button', { name: 'Icon reference' })
+      .getBoundingClientRect()
+    await expect(iconSegment.height).toBe(iconReference.height)
+    await expect(iconSegment.width).toBe(iconReference.width)
+    await expect(iconSegment.height).toBeGreaterThanOrEqual(44)
   },
 }
 
@@ -542,6 +615,7 @@ export const Compositions: Story = {
               <Button variant='outline'>Copy</Button>
               <Button variant='ghost'>Paste</Button>
               <Button variant='link'>Cut</Button>
+              <Button variant='surface'>Undo</Button>
             </ButtonGroup>
           </div>
         </ThemeSurface>
@@ -697,11 +771,92 @@ export const Disabled: Story = {
           </div>
         </ThemeSurface>
       ))}
+      <ThemeSurface color='primary' className='p-3'>
+        <div className='flex flex-wrap items-center gap-4'>
+          <span className='w-20 text-sm font-semibold text-foreground'>separated</span>
+          {variants.map((variant) => (
+            <ButtonGroup
+              key={`separated-${variant}`}
+              variant={variant}
+              aria-label={`${variant} separated disabled`}
+            >
+              <Button>Rest</Button>
+              <ButtonGroupSeparator />
+              <Button disabled>Off</Button>
+              <Button>After</Button>
+            </ButtonGroup>
+          ))}
+          <ButtonGroup aria-label='separated disabled seam'>
+            <Button variant='solid'>Save</Button>
+            <ButtonGroupSeparator />
+            <Button
+              variant='solid'
+              disabled
+              iconOnly
+              aria-label='Disabled save options'
+              leadingVisual={IconExpandMore}
+            />
+          </ButtonGroup>
+          <ButtonGroup orientation='vertical' aria-label='vertical separated column'>
+            <Button>Rest</Button>
+            <ButtonGroupSeparator />
+            <Button disabled>Off</Button>
+            <Button>After</Button>
+          </ButtonGroup>
+          <ButtonGroup orientation='vertical' aria-label='vertical separated seam'>
+            <Button variant='solid'>Save</Button>
+            <ButtonGroupSeparator />
+            <Button variant='solid' disabled>
+              Later
+            </Button>
+          </ButtonGroup>
+        </div>
+      </ThemeSurface>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    for (const group of canvas.getAllByRole('group')) {
+
+    // A separator between two solid segments does not lose the seam when the
+    // second is disabled: it moves to the first segment's trailing edge, in
+    // the label colour, not the ink.
+    const seamGroup = within(canvas.getByRole('group', { name: 'separated disabled seam' }))
+    const seam = getComputedStyle(seamGroup.getByRole('button', { name: 'Save' })).borderRightColor
+    // The label colour at 30%, not the opaque ink the general divider would
+    // paint — so deleting the seam rule and falling through to the divider
+    // fails here rather than passing on "something is painted".
+    await expect(isPainted(seam)).toBe(true)
+    await expect(alphaOf(seam)).toBeCloseTo(0.3, 2)
+    await expect(toRgb(seam)).toBe(
+      toRgb(getComputedStyle(seamGroup.getByRole('button', { name: 'Save' })).color),
+    )
+    await expect(
+      isPainted(
+        getComputedStyle(seamGroup.getByRole('button', { name: 'Disabled save options' }))
+          .borderLeftColor,
+      ),
+    ).toBe(false)
+
+    // The same two rules on the vertical axis, which the row cases cannot
+    // reach: the boundary moves to the bottom edge of the segment before.
+    const column = within(canvas.getByRole('group', { name: 'vertical separated column' }))
+    const columnRest = getComputedStyle(column.getByRole('button', { name: 'Rest' }))
+    await expect(isPainted(columnRest.borderBottomColor)).toBe(true)
+    await expect(isPainted(columnRest.borderRightColor)).toBe(false)
+    await expect(
+      isPainted(getComputedStyle(column.getByRole('button', { name: 'Off' })).borderTopColor),
+    ).toBe(false)
+    const columnSeam = getComputedStyle(
+      within(canvas.getByRole('group', { name: 'vertical separated seam' })).getByRole('button', {
+        name: 'Save',
+      }),
+    )
+    await expect(alphaOf(columnSeam.borderBottomColor)).toBeCloseTo(0.3, 2)
+    await expect(toRgb(columnSeam.borderBottomColor)).toBe(toRgb(columnSeam.color))
+
+    // Horizontal groups only: the two vertical cases above read block edges,
+    // and their names are outside this filter so they cannot fall in here.
+    for (const group of canvas.getAllByRole('group', { name: /disabled$/ })) {
       const inside = within(group)
       const rest = getComputedStyle(inside.getByRole('button', { name: 'Rest' }))
       const off = getComputedStyle(inside.getByRole('button', { name: 'Off' }))
@@ -825,5 +980,216 @@ export const InPortal: Story = {
     await expect(inside).not.toHaveAttribute('data-segment')
     await expect(inside).toHaveAttribute('data-variant', 'soft')
     await expect(getComputedStyle(inside).borderTopLeftRadius).not.toBe('0px')
+  },
+}
+
+// ─── Overlays ─────────────────────────────────────────────────────────────────
+
+export const InOverlays: Story = {
+  name: 'In Overlays',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'Segments that open a Sheet, a Drawer and a HoverCard, each holding a Button.',
+          why: 'Every popup in the package resets the group context at its portal. Popover is pinned by the In a Popup story; this one pins the other overlays a segment is likely to open, since a Sheet even brings its own close Button.',
+          how: 'Open each overlay from its segment: the Buttons inside should look like ordinary Buttons with their own corners. The play opens each one and asserts the Button inside carries no segment stamp.',
+          caveat:
+            'Select, Combobox, NavigationMenu and SiteSearch carry the same boundary but rarely hold Buttons, so they are not exercised here.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <ButtonGroup>
+      <Sheet>
+        <SheetTrigger render={<Button>Open sheet</Button>} />
+        <SheetContent>
+          <SheetTitle>A sheet</SheetTitle>
+          <Button>Inside sheet</Button>
+        </SheetContent>
+      </Sheet>
+      <Drawer>
+        <DrawerTrigger asChild>
+          <Button>Open drawer</Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerTitle>A drawer</DrawerTitle>
+          <Button>Inside drawer</Button>
+        </DrawerContent>
+      </Drawer>
+      <HoverCard>
+        <HoverCardTrigger render={<Button>Hover card</Button>} />
+        <HoverCardContent>
+          <Button>Inside card</Button>
+        </HoverCardContent>
+      </HoverCard>
+    </ButtonGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // Every trigger is a segment…
+    for (const name of ['Open sheet', 'Open drawer', 'Hover card']) {
+      await expect(canvas.getByRole('button', { name })).toHaveAttribute('data-segment', 'default')
+    }
+
+    // …and nothing inside the overlays is.
+    await userEvent.click(canvas.getByRole('button', { name: 'Open sheet' }))
+    const inSheet = await screen.findByRole('button', { name: 'Inside sheet' }, { timeout: 3000 })
+    await expect(inSheet).not.toHaveAttribute('data-segment')
+    await expect(getComputedStyle(inSheet).borderTopLeftRadius).not.toBe('0px')
+    await userEvent.keyboard('{Escape}')
+
+    await userEvent.click(canvas.getByRole('button', { name: 'Open drawer' }))
+    const inDrawer = await screen.findByRole('button', { name: 'Inside drawer' }, { timeout: 3000 })
+    await expect(inDrawer).not.toHaveAttribute('data-segment')
+    await userEvent.keyboard('{Escape}')
+
+    await userEvent.hover(canvas.getByRole('button', { name: 'Hover card' }))
+    const inCard = await screen.findByRole('button', { name: 'Inside card' }, { timeout: 3000 })
+    await expect(inCard).not.toHaveAttribute('data-segment')
+  },
+}
+
+// ─── Paint contract ───────────────────────────────────────────────────────────
+
+/**
+ * Normalises any CSS colour to `rgb(r, g, b)`, alpha discarded, by PAINTING it
+ * and reading the pixel back. Assigning to `fillStyle` and reading it again is
+ * not enough: the token colours here are `oklch()` / `oklab()`, and the getter
+ * returns those verbatim, so a string comparison ends up matching lightness
+ * and hue against red and green channels. Painting forces the conversion the
+ * screen would do. Alpha is dropped so a translucent divider can be compared
+ * with an opaque token; `alphaOf` reads the alpha separately.
+ */
+function toRgb(color: string) {
+  const canvas = document.createElement('canvas')
+  canvas.width = 1
+  canvas.height = 1
+  const context = canvas.getContext('2d', { willReadFrequently: true })
+  if (!context) throw new Error('No 2D canvas context to normalise colours with.')
+  context.clearRect(0, 0, 1, 1)
+  context.fillStyle = color
+  context.fillRect(0, 0, 1, 1)
+  const [r = 0, g = 0, b = 0] = context.getImageData(0, 0, 1, 1).data
+  return `rgb(${r}, ${g}, ${b})`
+}
+
+/**
+ * The alpha channel of a computed colour: the trailing number of an `rgba()`
+ * or the value after the slash in a colour-space form (`oklab(… / 0.3)`, which
+ * is what a `color-mix()` divider computes to); 1 when there is none.
+ */
+function alphaOf(color: string) {
+  const match = /[\s,/]([\d.]+)\)$/.exec(color)
+  return match && (color.includes('/') || color.startsWith('rgba')) ? Number(match[1]) : 1
+}
+
+export const PaintContract: Story = {
+  name: 'Paint Contract',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'One group per variant with two ghost segments and a solid one, beside a lone solid Button, read back through computed styles.',
+          why: 'What each variant paints is a contract: the outline and surface frames are inset rings, the solid band is the fill token, the soft and surface bands are the ink at 10% and 5%, ghost paints nothing, the group clips its corners, a segment drops its shadow, a solid segment stops its background at the padding box only where a frame sits beneath it, and the divider is the ink. None of these read from a screenshot in CI, so the play reads them.',
+          how: 'Nothing to look at beyond the five groups; the play is the check.',
+          caveat:
+            'Colours are normalised through a canvas so oklch tokens compare as rgb. Light mode only; the Dark story covers the ink flip.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='flex flex-wrap items-center gap-4'>
+      {variants.map((variant) => (
+        <ButtonGroup key={variant} variant={variant} aria-label={`${variant} paint`}>
+          <Button>Copy</Button>
+          <Button>Paste</Button>
+          <ButtonGroupText>Aa</ButtonGroupText>
+          <Button variant='solid'>Save</Button>
+        </ButtonGroup>
+      ))}
+      <Button variant='solid'>Reference</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const reference = getComputedStyle(canvas.getByRole('button', { name: 'Reference' }))
+    const fill = toRgb(reference.getPropertyValue('--btn-fill').trim())
+    const ink = toRgb(reference.getPropertyValue('--btn-bg').trim())
+    const label = toRgb(reference.getPropertyValue('--btn-text').trim())
+
+    for (const variant of variants) {
+      const group = canvas.getByRole('group', { name: `${variant} paint` })
+      const styles = getComputedStyle(group)
+      const inside = within(group)
+      const paste = getComputedStyle(inside.getByRole('button', { name: 'Paste' }))
+      const save = inside.getByRole('button', { name: 'Save' })
+
+      // The group clips to its own corners.
+      await expect(styles.overflow).toBe('hidden')
+
+      // What the band paints.
+      const framed = variant === 'outline' || variant === 'surface'
+      await expect(styles.boxShadow !== 'none').toBe(framed)
+      if (variant === 'solid') {
+        await expect(toRgb(styles.backgroundColor)).toBe(fill)
+      } else if (variant === 'soft') {
+        await expect(alphaOf(styles.backgroundColor)).toBeCloseTo(0.1, 2)
+      } else if (variant === 'surface') {
+        await expect(alphaOf(styles.backgroundColor)).toBeCloseTo(0.05, 2)
+      } else {
+        await expect(isPainted(styles.backgroundColor)).toBe(false)
+      }
+
+      // The divider is the ink on a frame or on nothing, the ink at 30% on
+      // a soft band, the ink at 50% inside a surface frame, and the label
+      // colour at 30% on a solid band.
+      const divider = paste.borderLeftColor
+      if (variant === 'outline' || variant === 'ghost') {
+        await expect(toRgb(divider)).toBe(ink)
+      } else if (variant === 'soft') {
+        await expect(alphaOf(divider)).toBeCloseTo(0.3, 2)
+      } else if (variant === 'surface') {
+        await expect(alphaOf(divider)).toBeCloseTo(0.5, 2)
+      } else {
+        // The label colour at 30%, not the ink at 30% — compared with the
+        // alpha stripped, since an `rgba()` string never equals an opaque hex
+        // whatever the channels are.
+        await expect(alphaOf(divider)).toBeCloseTo(0.3, 2)
+        await expect(toRgb(divider)).toBe(label)
+        await expect(toRgb(divider)).not.toBe(ink)
+      }
+
+      // The text cell must never cover the inset ring on a framed band, and
+      // there are two ways it does not: on `outline` it keeps its sunken
+      // background and stops it at the padding box, so the ring shows through
+      // its transparent border; on `surface` (and the two unframed bands) it
+      // has no background at all. `ghost` has no ring to protect, so it keeps
+      // the sunken background out to the border box.
+      const cell = group.querySelector<HTMLElement>('[data-slot="button-group-text"]')
+      if (!cell) throw new Error(`No text cell in the ${variant} group.`)
+      const cellStyles = getComputedStyle(cell)
+      if (variant === 'outline') {
+        await expect(isPainted(cellStyles.backgroundColor)).toBe(true)
+        await expect(cellStyles.backgroundClip).toBe('padding-box')
+      } else if (variant === 'ghost') {
+        await expect(isPainted(cellStyles.backgroundColor)).toBe(true)
+      } else {
+        await expect(isPainted(cellStyles.backgroundColor)).toBe(false)
+      }
+
+      // A segment drops its shadow, and a solid segment stops its background
+      // at the padding box only where a frame sits beneath it.
+      // `shadow-none` computes as transparent shadow parts, not `none`.
+      await expect(getComputedStyle(save, '::before').boxShadow).not.toMatch(
+        /rgba?\((?!0, 0, 0, 0\))/,
+      )
+      await expect(getComputedStyle(save).backgroundClip).toBe(
+        framed ? 'padding-box' : 'border-box',
+      )
+    }
   },
 }

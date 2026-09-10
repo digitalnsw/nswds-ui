@@ -28,7 +28,16 @@ import { Button } from './button.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-type ColorKey = 'white' | 'grey' | 'primary' | 'secondary' | 'tertiary' | 'accent' | 'danger'
+type ColorKey =
+  | 'white'
+  | 'grey'
+  | 'primary'
+  | 'secondary'
+  | 'tertiary'
+  | 'accent'
+  | 'danger'
+  | 'success'
+  | 'warning'
 
 const lowContrastColors = ['white', 'secondary'] as const
 const lowContrastSet = new Set<ColorKey>(lowContrastColors)
@@ -42,6 +51,13 @@ const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 // fix is a token retune. Until then a story that demonstrates compliance
 // must not render pairs that do not comply.
 const themeColors: readonly ColorKey[] = ['white', 'grey', 'primary', 'secondary', 'danger']
+
+// The solid band is a different pair — white on the -600 or -800 fill — and
+// it clears the floor for every colour, two of them by 0.03. Measured here in
+// light mode for the four colours above; the matrices in the Features folder
+// scope the contrast rule off entirely, so this is the only place a retune of
+// success-600 or warning-600 that drops under 4.5:1 would fail CI.
+const solidBandColors: readonly ColorKey[] = ['tertiary', 'accent', 'success', 'warning']
 
 const variants = ['outline', 'solid', 'soft', 'surface', 'ghost'] as const
 
@@ -258,7 +274,7 @@ export const ContrastMinimum: Story = {
           why: 'Segment labels must meet 4.5:1 against the frame or band behind them, and the frame and the dividers must meet 3:1 against the page, so the boundary of the control and the boundaries between its segments can be perceived.',
           how: 'Use a colour-contrast checker on each row: the label on the solid band, the label on the soft and surface tints, the outline frame against the surface, and the divider between two segments. Check both light and dark modes.',
           caveat:
-            'Low-contrast colours (white, secondary) are rendered on a grey-800 surface, which is where they are meant to be used. On a solid band every non-solid segment takes the label colour as its ink, so a soft segment on a band is white on a lighter blue rather than blue on blue. tertiary, accent, success and warning are not shown: their soft and surface tints measure 3.95:1 to 4.39:1 under a bold 16px label, a token-level shortfall Button shares.',
+            'Low-contrast colours (white, secondary) are rendered on a grey-800 surface, which is where they are meant to be used. On a solid band every non-solid segment takes the label colour as its ink, so a soft segment on a band is white on a lighter blue rather than blue on blue. tertiary, accent, success and warning appear only as solid bands, with ghost segments: their soft and surface tints measure 3.95:1 to 4.39:1 under a bold 16px label, a token-level shortfall Button shares, and a soft segment ON one of those bands paints white at 10% over a fill whose white label already sits near the floor (4.53 to 4.57:1), dropping it to 3.88 to 3.93:1 for tertiary, success and warning — measured in the browser, since axe reports a soft segment as incomplete rather than failing. This story renders only what complies.',
         }),
       },
     },
@@ -284,6 +300,22 @@ export const ContrastMinimum: Story = {
           </div>
         </ThemeSurface>
       ))}
+      <ThemeSurface color='primary'>
+        <h4 className='mb-3 text-sm font-semibold text-foreground'>Solid bands</h4>
+        <div className='flex flex-wrap items-center gap-3'>
+          {solidBandColors.map((color) => (
+            <ButtonGroup
+              key={`contrast-band-${color}`}
+              variant='solid'
+              color={color}
+              aria-label={`${color} solid band`}
+            >
+              <Button>{color}</Button>
+              <Button>Ghost</Button>
+            </ButtonGroup>
+          ))}
+        </div>
+      </ThemeSurface>
     </div>
   ),
 }

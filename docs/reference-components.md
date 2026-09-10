@@ -423,6 +423,19 @@ import { LinkProvider } from '@nswds/ui'
 | `labelWrap`                                           | `boolean`                                                                                                       | `false`     | Allow the label to wrap.                             |
 | `count` / `countLabel`                                | `number` / `string`                                                                                             | —           | Trailing count badge and its screen-reader label.    |
 
+Inside a `ButtonGroup` the defaults above change: the group's `color` and `size` become each segment's defaults, `variant` defaults to `ghost` and only `solid` and `soft` are honoured (an `outline`, `surface` or `link` child renders as a plain segment), and `size='icon'` renders as `iconOnly` at `sm`. A popup opened from a segment renders its own Buttons normally; an overlay from another library needs its contents wrapped in `ButtonGroupBoundary`.
+
+#### `ButtonGroup`
+
+| Prop          | Type                                                     | Default        | Notes                                                                 |
+| ------------- | -------------------------------------------------------- | -------------- | --------------------------------------------------------------------- |
+| `variant`     | `'outline' \| 'solid' \| 'soft' \| 'surface' \| 'ghost'` | `'outline'`    | The frame or band every segment sits in.                              |
+| `color`       | Button's `color` union                                   | `'primary'`    | The ink of the frame, band and dividers, and every segment's default. |
+| `size`        | `'sm' \| 'default' \| 'lg'`                              | `'default'`    | Every segment's default. `icon` is not a group step.                  |
+| `orientation` | `'horizontal' \| 'vertical'`                             | `'horizontal'` |                                                                       |
+
+Children are Buttons, `ButtonGroupText` and `ButtonGroupSeparator`, as direct children.
+
 `TouchTarget` expands a small control's hit area to the 44px WCAG 2.5.8 minimum without changing
 its painted size.
 
