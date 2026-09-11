@@ -1,6 +1,6 @@
 {
   "name": "@nswds/ui",
-  "version": "7.0.2",
+  "version": "8.0.0",
   "description": "UI components for NSW Government digital products, providing reusable design elements and patterns for consistent user interfaces.",
   "license": "MIT",
   "homepage": "https://github.com/digitalnsw/nswds-ui#readme",
@@ -47,6 +47,7 @@
     "check:cascade": "node scripts/check-cascade-safety.mjs",
     "check:drift": "node scripts/check-component-drift.mjs",
     "check:radius": "node scripts/check-radius.mjs",
+    "check:portal-boundary": "node scripts/check-portal-boundary.mjs",
     "check:registry-resolves": "node scripts/check-registry-resolves.mjs",
     "check:icons": "node scripts/generate-icons.mjs check",
     "check:package": "publint --strict && attw --pack . --profile esm-only --exclude-entrypoints ./postcss.config",

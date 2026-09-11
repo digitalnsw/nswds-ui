@@ -18,6 +18,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
+import { expect } from 'storybook/test'
 
 import { IconAdd, IconEast, IconSearch } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
@@ -180,7 +181,7 @@ export const ByVariantSemantic: Story = {
           why: 'Keeps status-conveying tokens together so success/warning/danger contrast and weight can be compared in isolation from brand colours.',
           how: 'Scan each row horizontally and verify the semantic meaning still reads correctly across every variant (e.g. ghost danger still reads as danger).',
           caveat:
-            'All semantic colours use high-contrast 600-step values on a white text baseline, so no grey surface treatment is needed.',
+            'Semantic colours use the 600 step for solid, outline, ghost and link; on the soft and surface tints success and warning step to the 700 ink (see styles.tintInk in button.tsx). No grey surface treatment is needed.',
         }),
       },
     },
@@ -857,4 +858,46 @@ export const Focused: Story = {
       ))}
     </div>
   ),
+}
+
+// ─── Dark mode ────────────────────────────────────────────────────────────────
+
+export const Dark: Story = {
+  name: 'Dark',
+  globals: { theme: 'dark' },
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'The By Variant matrix for every colour token under the dark theme.',
+          why: 'The ink flips to the -200 step in dark mode and the soft and surface tints are drawn from it, so the four tokens whose ink steps to -700 on a light tint (see styles.tintInk in button.tsx) must not carry that step onto the dark tint, where the -200 ink is what clears 4.5:1.',
+          how: 'Labels on the soft and surface tints should be pale, never a saturated mid-tone. The play reads the ink of each soft and surface cell for tertiary, accent, success and warning and asserts it is the -200 token, not the -700.',
+          caveat:
+            'Storybook applies the theme through the same class selector the package uses, so this is a faithful preview.',
+        }),
+      },
+    },
+  },
+  render: () => <ByVariantMatrix rowColors={colors} />,
+  play: async ({ canvasElement }) => {
+    const root = getComputedStyle(document.documentElement)
+    const inkOf = (el: Element) => getComputedStyle(el).getPropertyValue('--btn-bg').trim()
+    // The four tokens whose ink steps on a light tint, and the ramp each reads.
+    const stepped = {
+      tertiary: 'primary',
+      accent: 'accent',
+      success: 'success',
+      warning: 'warning',
+    }
+    for (const [color, ramp] of Object.entries(stepped)) {
+      const row = colors.indexOf(color as ColorKey)
+      const two = root.getPropertyValue(`--${ramp}-200`).trim()
+      const seven = root.getPropertyValue(`--${ramp}-700`).trim()
+      for (const variant of ['soft', 'surface']) {
+        const cell = canvasElement.querySelectorAll(`[data-variant='${variant}']`)[row]!
+        await expect(inkOf(cell)).toBe(two)
+        await expect(inkOf(cell)).not.toBe(seven)
+      }
+    }
+  },
 }

@@ -1,3 +1,129 @@
+## [8.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.2...@nswds/ui-v8.0.0) (2026-09-11)
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** ButtonGroup now owns the boundary and accepts Buttons as
+direct children only. Six changes need action:
+
+1. A bare `<Button>` inside a group renders as a ghost segment, not solid.
+   The group paints the frame or band and each segment paints its label on
+   top. For the primary action of a row, name it: `<Button variant='solid'>`.
+   `soft` is also honoured; `outline`, `surface`, `ghost` and `link` render
+   as plain segments, so the shadcn idiom of `variant='outline'` on every
+   child is now a no-op rather than a second border.
+
+2. `size='icon'` is no longer a group step. The group clips to its own box,
+   which would cut off the 40px square's 44px touch expansion, so a segment
+   asking for `icon` renders as `iconOnly` at the group's own step. Pair
+   `iconOnly` with the group's size instead.
+
+3. An `<input>` inside a group no longer flexes to fill it. The rule that
+   did this (`[&>input]:flex-1`) is gone. Use `InputGroup`, which owns the
+   input-with-attached-action composition.
+
+4. A `SelectTrigger` inside a group no longer gets its width or trailing
+   corner adjusted. Those two rules are gone. Compose the select and the
+   button yourself, or use `InputGroup`.
+
+5. A nested `<ButtonGroup>` no longer gets an 8px gap from its parent.
+   Groups are not meant to nest; lay the two groups out with your own
+   container.
+
+6. The group is `inline-flex`, not `flex`. Two sibling groups that used to
+   stack now sit on one line. Add `w-full` or a block wrapper to restore the
+   old layout.
+
+Also visual, needing no code change: `ButtonGroupText` is 16px rather than
+12px, since it shares a line with 16px button labels; segments no longer
+draw their own borders or corners, so a row reads as one control; and the
+focus ring sits inside a segment rather than 2px outside it, because the
+group clips its corners.
+
+No exported symbol was removed. `buttonGroupVariants` still accepts
+`orientation`, and gains `variant`. `ButtonGroupBoundary`, `ButtonGroupProps`
+and `ButtonGroupVariant` are new.
+
+* fix(ui): honour an explicit iconOnly={false}, and stop a prop desyncing the group's orientation
+
+Closes the last of the parallel review's findings.
+
+`iconOnly: iconOnly || iconStep` overruled an author who wrote
+`iconOnly={false}` beside `size='icon'`, since `||` cannot tell a stated
+false from an unstated one. It is `??` now, so only an unstated `iconOnly`
+falls through to the coercion.
+
+`data-variant` and `data-orientation` were stamped before the props spread,
+so a consumer could pass `data-orientation='vertical'` and switch every
+divider rule to the block axis while the flex direction — which comes from
+the cva variant and is out of a prop's reach — stayed a row. Both are
+stamped after the spread now. `data-slot` deliberately stays before it, the
+same relabelling escape hatch Button offers InputGroupButton.
+
+Pins the five Button props nothing rendered inside a group: `loading`,
+`block`, `alignContent`, `labelWrap` and `count`. `loading` is the one that
+matters — it derives `disabled`, so a busy segment joins the disabled
+divider contract and the hairline moves a pixel when a request starts. That
+is the contract holding rather than breaking, since the alternative is a
+half-strength hairline beside an enabled control for as long as the request
+runs; the comment and the play now say so instead of leaving it to be
+rediscovered.
+
+Adds the first RTL coverage. The dividers pair logical properties with
+DOM-order combinators, so right-to-left is where a physical property would
+betray them: swapping border-s for border-l now fails the Orientation play.
+
+Also records that the 2.5.8 target-size play cannot fail independently — it
+renders the same panel as the 2.5.5 story and asserts a lower floor, so any
+run failing 24px has already failed 44px. It names the AA criterion; the
+AAA story holds the line.
+
+* fix(ui): step soft and surface inks to -700 where the -600 cannot carry a label
+
+Button's `soft` and `surface` variants paint the colour token's ink over a
+10% / 5% tint of the same ink, and for tertiary, accent, success and
+warning that pair fails WCAG 1.4.3 for a bold 16px label. Those inks are
+-600 steps that sit at 4.53–5.18:1 on pure white, so on a 10% band they
+measure 3.96–4.39:1, and a lone Button, which paints the tint twice (its
+element background and its `before` fill layer), lands at 3.49–3.76:1. A
+paler tint cannot rescue them — at 3% three of the four still fail — and
+the -800 step would fold tertiary into primary, so on a tint the ink steps
+to the -700 token. Because it is `--btn-bg` that steps, the tint, the hover
+and active overlays and the focus ring step with it. Every other variant
+keeps its ink, and dark mode is untouched: its -200 inks already clear
+5.8:1 on their tints.
+
+The step is a cva compound on a new `onTint` axis × `color`. `buttonVariants`
+derives `onTint` from the variant, so a caller styling its own element with
+`buttonVariants({ variant: 'soft', … })` gets the stepped ink too, and it
+merges the class string before returning it, so one `--btn-bg` declaration
+reaches the DOM and the pair is never left to stylesheet order. The compound
+is a bare declaration at (0,1,0), so the colour's `dark:` ink at (0,2,0)
+still wins, and a surface that imposes its ink through `className` is
+merged later still. The -700 tokens are raw (`--primary-700`, not
+`--color-primary-700`) because no utility in the package uses those four
+-700 steps and their bridges do not survive the build.
+
+A ButtonGroup passes its variant through the group context, so a segment
+of a soft or surface band knows it sits on a tint and steps its own
+colour's ink — a danger segment on a tertiary band stays danger, the
+group's colour being a default and never an override — and the group
+applies the same compounds to its own band through `buttonColorVariants`.
+Measured in the browser across all nine colours in both modes, the lowest
+tint pair is now 5.54:1 on a band and 4.67:1 on a lone Button (danger,
+unchanged); the four fixed tokens sit at 5.88:1 or better.
+
+The ButtonGroup matrices no longer scope the colour-contrast rule off. The
+Contrast stories for Button and ButtonGroup render every colour token and
+assert the step itself, since axe cannot measure a label on Button's
+pseudo-element tint, and a dark-mode story for each asserts the -200 ink
+is what a dark tint carries.
+
+* fix(ui): drop a soft segment's tint on a solid band, and join an icon-only segment to it
+
+### Features
+
+* **ui:** give ButtonGroup Button's variant family and join its segments ([#186](https://github.com/digitalnsw/nswds-ui/issues/186)) ([aa2d185](https://github.com/digitalnsw/nswds-ui/commit/aa2d1852c4ca11a6f952eb1a91009d58b6b5e97e))
+
 ## [7.0.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.1...@nswds/ui-v7.0.2) (2026-09-08)
 
 ### Bug Fixes

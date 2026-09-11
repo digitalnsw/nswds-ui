@@ -97,6 +97,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -726,6 +731,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -752,6 +762,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -778,6 +793,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -858,6 +878,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -913,6 +938,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -947,6 +977,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1131,6 +1166,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1435,7 +1475,7 @@
       "name": "button-group",
       "type": "registry:ui",
       "title": "Button Group",
-      "description": "Groups related buttons into a single connected control.",
+      "description": "Joins Buttons into one control, with Button's variant family, colour tokens and size steps.",
       "dependencies": [
         "@base-ui/react",
         "class-variance-authority",
@@ -1444,6 +1484,7 @@
       ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
         "https://ui.digital.nsw.gov.au/registry/r/separator.json"
       ],
       "files": [
@@ -1456,6 +1497,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1541,6 +1587,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1770,6 +1821,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -2171,6 +2227,6 @@
     }
   ],
   "meta": {
-    "nswdsVersion": "7.0.2"
+    "nswdsVersion": "8.0.0"
   }
 }
