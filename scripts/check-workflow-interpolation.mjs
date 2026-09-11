@@ -48,7 +48,7 @@
  *     Add them to the file list if that changes.
  */
 
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, realpathSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -233,4 +233,21 @@ function main() {
   )
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main()
+// Run only when invoked directly, so the tests can import `findViolations`.
+// Compared as REAL paths: a `file://` + path template never matches from a
+// path containing a space (`import.meta.url` is percent-encoded), and even an
+// encoded URL misses through a symlink, because Node resolves symlinks for
+// `import.meta.url` but leaves `process.argv[1]` as typed — macOS's temp
+// directory under `/var` is one. Either way `main` would never run, and a gate
+// that never runs exits 0 with no output, which is indistinguishable from a
+// pass.
+function invokedDirectly() {
+  if (!process.argv[1]) return false
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))
+  } catch {
+    return false
+  }
+}
+
+if (invokedDirectly()) main()

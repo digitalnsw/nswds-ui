@@ -14,7 +14,9 @@
  */
 
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -289,4 +291,50 @@ test("the real release.yml is clean — the gate's original motivating file", ()
 test('shellLines does not treat a non-run key as script', () => {
   const yaml = ['jobs:', '  a:', '    steps:', '      - name: run: not really', ''].join('\n')
   assert.deepEqual(shellLines(yaml), [])
+})
+
+test('fails a violating workflow when run from a path with a space, through a symlink', () => {
+  // Every test above calls `findViolations` directly; this one tests that the
+  // script CALLS it. The command-line entry is guarded so these tests can
+  // import the module, and a guard that never fires leaves a gate that exits 0
+  // having scanned nothing — indistinguishable from a pass. Two paths broke
+  // the original `file://` + path template, and this one takes both: the
+  // directory name contains a space (`import.meta.url` is percent-encoded),
+  // and on macOS `tmpdir()` sits under `/var`, a symlink to `/private/var`
+  // (Node resolves symlinks for `import.meta.url`, not for `process.argv[1]`).
+  const root = mkdtempSync(join(tmpdir(), 'workflow gate '))
+  try {
+    mkdirSync(join(root, 'scripts'))
+    mkdirSync(join(root, '.github', 'workflows'), { recursive: true })
+    copyFileSync(
+      fileURLToPath(new URL('./check-workflow-interpolation.mjs', import.meta.url)),
+      join(root, 'scripts', 'check-workflow-interpolation.mjs'),
+    )
+    writeFileSync(
+      join(root, '.github', 'workflows', 'leak.yml'),
+      [
+        'name: leak',
+        'on: pull_request',
+        'jobs:',
+        '  echo:',
+        '    runs-on: ubuntu-latest',
+        '    steps:',
+        '      - name: Echo the title',
+        '        run: echo "${{ github.event.pull_request.title }}"',
+        '',
+      ].join('\n'),
+    )
+    const run = spawnSync(
+      process.execPath,
+      [join(root, 'scripts', 'check-workflow-interpolation.mjs')],
+      {
+        encoding: 'utf8',
+      },
+    )
+    assert.equal(run.status, 1, `expected the gate to fail; stdout: ${run.stdout}`)
+    assert.match(run.stderr, /\.github\/workflows\/leak\.yml:8/)
+    assert.match(run.stderr, /\$\{\{ github\.event\.pull_request\.title \}\}/)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })
