@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { Drawer as DrawerPrimitive } from 'vaul'
 
+import { ButtonGroupBoundary } from '../lib/button-group-context.js'
 import { cn } from '../lib/utils.js'
 
 function Drawer({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
@@ -13,8 +14,13 @@ function DrawerTrigger({ ...props }: React.ComponentProps<typeof DrawerPrimitive
   return <DrawerPrimitive.Trigger data-slot='drawer-trigger' {...props} />
 }
 
-function DrawerPortal({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Portal>) {
-  return <DrawerPrimitive.Portal data-slot='drawer-portal' {...props} />
+function DrawerPortal({ children, ...props }: React.ComponentProps<typeof DrawerPrimitive.Portal>) {
+  return (
+    <DrawerPrimitive.Portal data-slot='drawer-portal' {...props}>
+      {/* Stops a ButtonGroup's context at the portal — see ButtonGroupBoundary. */}
+      <ButtonGroupBoundary>{children}</ButtonGroupBoundary>
+    </DrawerPrimitive.Portal>
+  )
 }
 
 function DrawerClose({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Close>) {

@@ -89,6 +89,17 @@ jobs:
       - name: Icon module parity check
         run: npm run check:icons -w @nswds/ui
 
+      # ButtonGroup hands its segments a React context, which crosses a portal
+      # while the CSS half of the same treatment does not — so a Button inside
+      # a popup opened from a segment would render as a segment of it, on the
+      # popup's own surface. Every Portal resets the context; five of the nine
+      # cannot be pinned by a story (SiteSearch renders no Button inside its
+      # portal, Select and Combobox popups take their own item components), and
+      # removing a reset leaves a file that lints, typechecks and resolves
+      # exactly as before. This is the only guard that sees it.
+      - name: Portal boundary check
+        run: npm run check:portal-boundary -w @nswds/ui
+
       # release.yml commits with [skip ci], so the release pipeline is never
       # exercised by PR CI — a mistake in the release config is only visible
       # after it has published, or silently failed to. These tests cover the

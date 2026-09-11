@@ -5,6 +5,7 @@ import { Dialog } from '@base-ui/react/dialog'
 import React from 'react'
 
 import { IconSearch } from '../icons/search.js'
+import { ButtonGroupBoundary } from '../lib/button-group-context.js'
 import { cn } from '../lib/utils.js'
 
 import { Button } from '../components/button.js'
@@ -240,118 +241,121 @@ function SiteSearch({
       )}
 
       <Dialog.Portal>
-        <Dialog.Backdrop
-          data-slot='site-search-overlay'
-          className='fixed inset-0 z-50 bg-black/80 duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs motion-safe:transition-opacity'
-        />
-        <Dialog.Popup
-          data-slot='site-search-panel'
-          aria-label={label}
-          // The default focus target on touch is the panel itself (to keep the
-          // virtual keyboard closed) — wrong for a search palette, whose whole
-          // purpose is typing. Always focus the input.
-          initialFocus={inputRef}
-          className={cn(
-            // Centred panel on the house popup surface (popover.tsx / sheet.tsx).
-            'fixed top-[max(--spacing(4),15vh)] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2',
-            'rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden',
-            'duration-150 ease-out motion-safe:transition',
-            'data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
-            className,
-          )}
-        >
-          <Autocomplete.Root
-            items={groups}
-            filter={filter}
-            itemToStringValue={(item: SiteSearchItem) => item.title}
-            autoHighlight
-            // Inline mode: the list renders statically inside the dialog panel
-            // (no Autocomplete portal/positioner), with `open` pinned per the
-            // Base UI docs. Opening/closing belongs to the Dialog; the whole
-            // Autocomplete unmounts with it, resetting query and highlight.
-            inline
-            open
-            onOpenChange={(nextOpen, eventDetails) => {
-              // The pinned-open inline Autocomplete still *requests* closes;
-              // forward the ones that should dismiss the palette. Other
-              // reasons (input-clear, focus-out) must not close the dialog —
-              // clearing the query or tabbing within the trap isn't dismissal.
-              if (
-                !nextOpen &&
-                (eventDetails.reason === 'escape-key' || eventDetails.reason === 'item-press')
-              ) {
-                requestOpenChange(false)
-              }
-            }}
+        {/* Stops a ButtonGroup's context at the portal — see ButtonGroupBoundary. */}
+        <ButtonGroupBoundary>
+          <Dialog.Backdrop
+            data-slot='site-search-overlay'
+            className='fixed inset-0 z-50 bg-black/80 duration-150 data-ending-style:opacity-0 data-starting-style:opacity-0 supports-backdrop-filter:backdrop-blur-xs motion-safe:transition-opacity'
+          />
+          <Dialog.Popup
+            data-slot='site-search-panel'
+            aria-label={label}
+            // The default focus target on touch is the panel itself (to keep the
+            // virtual keyboard closed) — wrong for a search palette, whose whole
+            // purpose is typing. Always focus the input.
+            initialFocus={inputRef}
+            className={cn(
+              // Centred panel on the house popup surface (popover.tsx / sheet.tsx).
+              'fixed top-[max(--spacing(4),15vh)] left-1/2 z-50 w-[calc(100vw-2rem)] max-w-2xl -translate-x-1/2',
+              'rounded-md bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-hidden',
+              'duration-150 ease-out motion-safe:transition',
+              'data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
+              className,
+            )}
           >
-            <div
-              data-slot='site-search-input-row'
-              className='flex items-center gap-3 border-b border-foreground/10 px-4'
+            <Autocomplete.Root
+              items={groups}
+              filter={filter}
+              itemToStringValue={(item: SiteSearchItem) => item.title}
+              autoHighlight
+              // Inline mode: the list renders statically inside the dialog panel
+              // (no Autocomplete portal/positioner), with `open` pinned per the
+              // Base UI docs. Opening/closing belongs to the Dialog; the whole
+              // Autocomplete unmounts with it, resetting query and highlight.
+              inline
+              open
+              onOpenChange={(nextOpen, eventDetails) => {
+                // The pinned-open inline Autocomplete still *requests* closes;
+                // forward the ones that should dismiss the palette. Other
+                // reasons (input-clear, focus-out) must not close the dialog —
+                // clearing the query or tabbing within the trap isn't dismissal.
+                if (
+                  !nextOpen &&
+                  (eventDetails.reason === 'escape-key' || eventDetails.reason === 'item-press')
+                ) {
+                  requestOpenChange(false)
+                }
+              }}
             >
-              <IconSearch aria-hidden='true' className='size-5 shrink-0 text-muted-foreground' />
-              <Autocomplete.Input
-                data-slot='site-search-input'
-                aria-label={label}
-                placeholder={placeholder}
-                className='h-12 w-full bg-transparent text-base text-foreground outline-hidden placeholder:text-muted-foreground'
-                ref={inputRef}
-              />
-            </div>
+              <div
+                data-slot='site-search-input-row'
+                className='flex items-center gap-3 border-b border-foreground/10 px-4'
+              >
+                <IconSearch aria-hidden='true' className='size-5 shrink-0 text-muted-foreground' />
+                <Autocomplete.Input
+                  data-slot='site-search-input'
+                  aria-label={label}
+                  placeholder={placeholder}
+                  className='h-12 w-full bg-transparent text-base text-foreground outline-hidden placeholder:text-muted-foreground'
+                  ref={inputRef}
+                />
+              </div>
 
-            {/* Base UI renders Empty's children only while the list is empty;
+              {/* Base UI renders Empty's children only while the list is empty;
                 the padding lives on the inner div so the (always-mounted, for
                 polite announcements) outer element paints nothing otherwise. */}
-            <Autocomplete.Empty data-slot='site-search-empty'>
-              <div className='px-4 py-6 text-center text-sm text-muted-foreground'>
-                {emptyMessage}
-              </div>
-            </Autocomplete.Empty>
+              <Autocomplete.Empty data-slot='site-search-empty'>
+                <div className='px-4 py-6 text-center text-sm text-muted-foreground'>
+                  {emptyMessage}
+                </div>
+              </Autocomplete.Empty>
 
-            <Autocomplete.List
-              data-slot='site-search-list'
-              className='max-h-[min(--spacing(96),60vh)] overflow-y-auto overscroll-contain p-2 empty:hidden'
-            >
-              {(group: SiteSearchGroup) => (
-                <Autocomplete.Group
-                  key={group.title}
-                  items={group.items}
-                  data-slot='site-search-group'
-                >
-                  <Autocomplete.GroupLabel
-                    data-slot='site-search-group-label'
-                    className='px-3 pt-3 pb-1 text-xs font-semibold text-muted-foreground'
+              <Autocomplete.List
+                data-slot='site-search-list'
+                className='max-h-[min(--spacing(96),60vh)] overflow-y-auto overscroll-contain p-2 empty:hidden'
+              >
+                {(group: SiteSearchGroup) => (
+                  <Autocomplete.Group
+                    key={group.title}
+                    items={group.items}
+                    data-slot='site-search-group'
                   >
-                    {group.title}
-                  </Autocomplete.GroupLabel>
-                  <Autocomplete.Collection>
-                    {(item: SiteSearchItem) => (
-                      <Autocomplete.Item
-                        key={item.href}
-                        value={item}
-                        data-slot='site-search-item'
-                        onClick={() => handleSelect(item)}
-                        // Highlight treatment mirrors menubar.tsx: keyboard and
-                        // hover unify as data-highlighted, painted as 10% ink.
-                        className='flex min-h-11 cursor-default items-center gap-2 rounded-sm px-3 py-2 text-sm text-foreground outline-hidden select-none data-highlighted:bg-primary-800/10 data-highlighted:text-accent-foreground dark:data-highlighted:bg-primary-200/10'
-                      >
-                        {item.title}
-                      </Autocomplete.Item>
-                    )}
-                  </Autocomplete.Collection>
-                </Autocomplete.Group>
-              )}
-            </Autocomplete.List>
-          </Autocomplete.Root>
+                    <Autocomplete.GroupLabel
+                      data-slot='site-search-group-label'
+                      className='px-3 pt-3 pb-1 text-xs font-semibold text-muted-foreground'
+                    >
+                      {group.title}
+                    </Autocomplete.GroupLabel>
+                    <Autocomplete.Collection>
+                      {(item: SiteSearchItem) => (
+                        <Autocomplete.Item
+                          key={item.href}
+                          value={item}
+                          data-slot='site-search-item'
+                          onClick={() => handleSelect(item)}
+                          // Highlight treatment mirrors menubar.tsx: keyboard and
+                          // hover unify as data-highlighted, painted as 10% ink.
+                          className='flex min-h-11 cursor-default items-center gap-2 rounded-sm px-3 py-2 text-sm text-foreground outline-hidden select-none data-highlighted:bg-primary-800/10 data-highlighted:text-accent-foreground dark:data-highlighted:bg-primary-200/10'
+                        >
+                          {item.title}
+                        </Autocomplete.Item>
+                      )}
+                    </Autocomplete.Collection>
+                  </Autocomplete.Group>
+                )}
+              </Autocomplete.List>
+            </Autocomplete.Root>
 
-          {children != null ? (
-            <div
-              data-slot='site-search-footer'
-              className='border-t border-foreground/10 px-4 py-2 text-xs text-muted-foreground'
-            >
-              {children}
-            </div>
-          ) : null}
-        </Dialog.Popup>
+            {children != null ? (
+              <div
+                data-slot='site-search-footer'
+                className='border-t border-foreground/10 px-4 py-2 text-xs text-muted-foreground'
+              >
+                {children}
+              </div>
+            ) : null}
+          </Dialog.Popup>
+        </ButtonGroupBoundary>
       </Dialog.Portal>
     </Dialog.Root>
   )
