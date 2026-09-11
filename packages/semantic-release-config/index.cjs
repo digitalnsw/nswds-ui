@@ -6,6 +6,26 @@ const pkgRoot = 'packages/ui'
 // through the workspace symlink in the root node_modules.
 const releaseScope = '@workspace/semantic-release-config/release-scope.mjs'
 
+// Requires the COLON the Conventional Commits footer specifies. This config
+// passes no noteKeywords, so it runs on the preset's defaults — `BREAKING
+// CHANGE` and `BREAKING-CHANGE` — with the bundled parser's default note regex,
+// `^[\\s|*]*(KEYWORDS)[:\\s]+(.*)`. That `[:\\s]+` accepts a SPACE, so a body line
+// such as "breaking change in the upstream API was avoided" or "breaking-change
+// handling is unchanged" declared a breaking change and shipped a MAJOR. It
+// already did that elsewhere in the fleet (engagement v2.0.0, nswds-email
+// v3.0.0), and @nswds/ui publishes to npm, where a false major reaches
+// consumers on their next upgrade.
+//
+// Only the pattern is supplied, so the preset's keyword list survives — which
+// matters here: the fleet's hand-written list drops the spec's `BREAKING-CHANGE`
+// synonym and this repo was the one place still honouring it. Verified: with
+// this in place `BREAKING CHANGE:`, `BREAKING-CHANGE:` and `feat!:` still major,
+// and all the prose shapes above resolve as the plain fix they are.
+// See digitalnsw/nswds-devops#129.
+const parserOpts = {
+  notesPattern: (keywords) => new RegExp(`^[\\s|*]*(${keywords}):\\s+(.*)`, 'i'),
+}
+
 module.exports = {
   branches: ['main'],
   tagFormat: '@nswds/ui-v${version}',
@@ -24,6 +44,7 @@ module.exports = {
       {
         paths: [`${pkgRoot}/`],
         preset: 'conventionalcommits',
+        parserOpts,
         releaseRules: [
           { breaking: true, release: 'major' },
           { type: 'feat', release: 'minor' },
