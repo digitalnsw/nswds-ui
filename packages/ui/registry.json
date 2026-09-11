@@ -90,6 +90,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -634,6 +639,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -654,6 +664,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -674,6 +689,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -738,6 +758,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -782,6 +807,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -811,6 +841,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -973,6 +1008,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1227,10 +1267,11 @@
       "name": "button-group",
       "type": "registry:ui",
       "title": "Button Group",
-      "description": "Groups related buttons into a single connected control.",
+      "description": "Joins Buttons into one control, with Button's variant family, colour tokens and size steps.",
       "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
         "{{REGISTRY_LOCATION}}/r/separator.json"
       ],
       "files": [
@@ -1243,6 +1284,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1316,6 +1362,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },
@@ -1508,6 +1559,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
         }
       ]
     },

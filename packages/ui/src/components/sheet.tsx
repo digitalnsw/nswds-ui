@@ -5,6 +5,7 @@ import * as React from 'react'
 
 import { Button } from '../components/button.js'
 import { IconClose } from '../icons/close.js'
+import { ButtonGroupBoundary } from '../lib/button-group-context.js'
 import { cn } from '../lib/utils.js'
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
@@ -19,8 +20,13 @@ function SheetClose({ ...props }: SheetPrimitive.Close.Props) {
   return <SheetPrimitive.Close data-slot='sheet-close' {...props} />
 }
 
-function SheetPortal({ ...props }: SheetPrimitive.Portal.Props) {
-  return <SheetPrimitive.Portal data-slot='sheet-portal' {...props} />
+function SheetPortal({ children, ...props }: SheetPrimitive.Portal.Props) {
+  return (
+    <SheetPrimitive.Portal data-slot='sheet-portal' {...props}>
+      {/* Stops a ButtonGroup's context at the portal — see ButtonGroupBoundary. */}
+      <ButtonGroupBoundary>{children}</ButtonGroupBoundary>
+    </SheetPrimitive.Portal>
+  )
 }
 
 function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
