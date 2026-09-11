@@ -19,6 +19,6 @@
   ],
   "type": "registry:block",
   "meta": {
-    "nswdsVersion": "7.0.2"
+    "nswdsVersion": "8.0.0"
   }
 }
