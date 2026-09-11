@@ -30,7 +30,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
-import { expect, screen, userEvent, within } from 'storybook/test'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 
 import {
   IconContentCopy,
@@ -1182,6 +1182,25 @@ export const InPortal: Story = {
 
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 
+/**
+ * Presses Escape and resolves once the overlay element carrying
+ * `data-slot={slot}` has left the DOM — which is what the end-of-play axe pass
+ * cares about, since a removed element takes its focus guards with it. For the
+ * Base UI popups here removal lands after the exit transition; for the vaul
+ * drawer the portal unmounts synchronously on close, so its removal is all
+ * this proves, not a finished animation. The element must be present to begin
+ * with, so a renamed slot fails here rather than turning the wait into a no-op.
+ */
+async function closeOverlay(slot: string) {
+  const selector = `[data-slot="${slot}"]`
+  await expect(document.querySelector(selector)).toBeInTheDocument()
+  await userEvent.keyboard('{Escape}')
+  await waitFor(() => expect(document.querySelector(selector)).not.toBeInTheDocument(), {
+    timeout: 3000,
+    onTimeout: () => new Error(`[data-slot="${slot}"] was still mounted 3s after Escape.`),
+  })
+}
+
 export const InOverlays: Story = {
   name: 'In Overlays',
   parameters: {
@@ -1246,16 +1265,22 @@ export const InOverlays: Story = {
     const inSheet = await screen.findByRole('button', { name: 'Inside sheet' }, { timeout: 3000 })
     await expect(inSheet).not.toHaveAttribute('data-segment')
     await expect(getComputedStyle(inSheet).borderTopLeftRadius).not.toBe('0px')
-    await userEvent.keyboard('{Escape}')
+    await closeOverlay('sheet-content')
 
     await userEvent.click(canvas.getByRole('button', { name: 'Open drawer' }))
     const inDrawer = await screen.findByRole('button', { name: 'Inside drawer' }, { timeout: 3000 })
     await expect(inDrawer).not.toHaveAttribute('data-segment')
-    await userEvent.keyboard('{Escape}')
+    await closeOverlay('drawer-content')
 
     await userEvent.hover(canvas.getByRole('button', { name: 'Hover card' }))
     const inCard = await screen.findByRole('button', { name: 'Inside card' }, { timeout: 3000 })
     await expect(inCard).not.toHaveAttribute('data-segment')
+    // Close it here, while it is certainly open, rather than leaving it to
+    // auto-close: a hover card dismisses ~400ms after the pointer leaves, which
+    // would otherwise unmount right as the play ends and axe runs. It renders no
+    // focus guards of its own today, but a still-open overlay at the axe pass is
+    // the same shape of race this story exists to keep closed.
+    await closeOverlay('hover-card-content')
 
     // A NavigationMenu panel is the likeliest of the five to hold something
     // interactive in real markup, and a ButtonLink checks the boundary
@@ -1269,7 +1294,11 @@ export const InOverlays: Story = {
     // sentinels, which the axe run at the end of every story reports as
     // `aria-hidden-focus` — a real rule, firing on the primitive's own
     // focus-guard technique rather than on anything this component does.
-    await userEvent.keyboard('{Escape}')
+    // Escape only STARTS the close: the popup, sentinels included, stays
+    // mounted through its exit transition, and axe runs the moment the play
+    // resolves. Returning before the unmount was a race that failed on slow
+    // CI runners, so each overlay closed here is waited out of the DOM.
+    await closeOverlay('navigation-menu-popup')
   },
 }
 
