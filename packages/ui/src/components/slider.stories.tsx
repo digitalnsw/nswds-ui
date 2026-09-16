@@ -3,7 +3,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent } from 'storybook/test'
+import { expect, userEvent, waitFor } from 'storybook/test'
 
 import { Field, FieldLabel } from './field.js'
 import { Slider } from './slider.js'
@@ -78,8 +78,12 @@ export const Default: Story = {
     await expect(input).toHaveAttribute('max', String(args.max))
 
     // The FieldLabel must actually name the control, or the slider is
-    // unnamed to a screen reader (WCAG 2.1 AA, 4.1.2).
-    await expect(input).toHaveAccessibleName('Size')
+    // unnamed to a screen reader (WCAG 2.1 AA, 4.1.2). Base UI wires the
+    // label→control association from the Field context AFTER mount — one render
+    // later than the value attributes above — so poll for it rather than reading
+    // once: a single read races that association on a cold production load
+    // (Chromatic), where the input is queryable a frame before it is labelled.
+    await waitFor(() => expect(input).toHaveAccessibleName('Size'))
 
     // Keyboard stepping is inherited, not hand-rolled — prove it works with a
     // real key press. A synthetic KeyboardEvent would not move a native range

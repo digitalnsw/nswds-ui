@@ -48,6 +48,31 @@ function pressKey(target: Element, key: string) {
 }
 
 /**
+ * Wait until embla has initialised before driving the carousel.
+ *
+ * `canScrollPrev`/`canScrollNext` are React state that both START false, so a
+ * control being *disabled* is the component's first render — not proof the
+ * engine is ready. Embla's api is undefined until its mount effect runs, and
+ * `scrollPrev`/`scrollNext` are `api?.scroll*()`, so a key or click that lands
+ * before then is a silent no-op and the press is lost — nothing re-fires it, so
+ * the carousel never moves. A control only becomes ENABLED once embla has
+ * initialised and seeded the state from its own events, so a Next control
+ * turning enabled is the DOM-observable "engine ready" signal.
+ *
+ * The old gate here — "previous is disabled" — was already true at the first
+ * render and so waited for nothing; on a cold Chromatic production load embla
+ * settles a few frames later than in dev (~50–70ms), so the press raced ahead of
+ * the engine and the carousel never advanced. Default was unaffected only
+ * because it happened to gate on Next becoming enabled, which is exactly this.
+ */
+async function waitForReady(next: HTMLElement) {
+  await waitFor(
+    () => !next.hasAttribute('disabled'),
+    'Expected embla to initialise — the Next control becomes enabled once its api exists.',
+  )
+}
+
+/**
  * Index of the slide whose centre currently sits inside the embla viewport.
  *
  * Asserting on the controls' `disabled` state is NOT enough to test direction:
@@ -187,7 +212,9 @@ export const Keyboard: Story = {
     const canvas = within(canvasElement)
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
 
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // ArrowRight on the region advances (LTR, horizontal).
@@ -414,9 +441,11 @@ export const ConsumerKeyHandler: Story = {
     const canvas = within(canvasElement)
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
     const seen = canvasElement.querySelector<HTMLElement>('[data-testid="seen"]')!
     const suppress = canvasElement.querySelector<HTMLInputElement>('[data-testid="suppress"]')!
 
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // The consumer's handler fires AND the carousel still navigates.
@@ -471,7 +500,9 @@ export const DirectionFromOpts: Story = {
     const canvas = within(canvasElement)
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
 
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // Keys must follow `opts`, not the (ltr) provider: ArrowLeft is "next".
@@ -543,6 +574,13 @@ export const Nested: Story = {
     const canvas = within(canvasElement)
     const outerPrevious = canvas.getByRole('button', { name: 'Previous outer slide' })
     const innerPrevious = canvas.getByRole('button', { name: 'Previous inner slide 1' })
+    const outerNext = canvas.getByRole('button', { name: 'Next outer slide' })
+    const innerNext = canvas.getByRole('button', { name: 'Next inner slide 1' })
+
+    // Both engines must be initialised before the key press — it lands on the
+    // INNER carousel, whose api must exist, or the press is a lost no-op.
+    await waitForReady(outerNext)
+    await waitForReady(innerNext)
 
     // Both start at their first slide.
     await waitFor(
@@ -659,10 +697,12 @@ export const RightToLeft: Story = {
     const canvas = within(canvasElement)
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
 
     // Guard the premise — a story that quietly laid out LTR would pass the
     // assertions below for the wrong reason.
     await expect(getComputedStyle(region).direction).toBe('rtl')
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // Slide 1 is the one on screen to begin with.
