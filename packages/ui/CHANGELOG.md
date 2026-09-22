@@ -1,3 +1,9 @@
+## [8.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.1.0...@nswds/ui-v8.1.1) (2026-09-22)
+
+### Bug Fixes
+
+* **select:** ring the trigger on pointer click, not just keyboard ([#210](https://github.com/digitalnsw/nswds-ui/issues/210)) ([1e99e2a](https://github.com/digitalnsw/nswds-ui/commit/1e99e2a907e41acb339a82f7c3a4777eb56d2a49))
+
 ## [8.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.0.0...@nswds/ui-v8.1.0) (2026-09-22)
 
 ### Features
