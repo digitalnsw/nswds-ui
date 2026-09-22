@@ -48,7 +48,26 @@ The bridges must come first because both stylesheets emit an unlayered `:root` b
 
 ### Using it with your own Tailwind build
 
-`@import 'tailwindcss'` goes last for a different reason: it leaves you with two independently-sorted sets of utilities in the same `utilities` cascade layer, and a media query adds no specificity. Within one Tailwind build the sorter guarantees `.lg\:justify-start` is emitted after `.justify-center`; across two builds nothing does, so whichever half comes last wins any tie. Ours going first means your utilities win those ties, which is what you want: a class you wrote should beat one you didn't.
+If you run your own Tailwind build, the cleanest setup is a **single build**: import our entry and let your Tailwind compile the library's utilities and yours together.
+
+```css
+@import '@nswds/ui/tailwind.css';
+/* your own @source / @theme additions go here */
+```
+
+Install the peer dependencies this entry compiles against — they're declared as _optional_ peers, so your package manager won't add them for you:
+
+```bash
+npm i -D tailwindcss @nswds/tokens tw-animate-css
+```
+
+`@nswds/ui/tailwind.css` brings Tailwind itself, the full NSW token foundation, and an `@source` pointed at the shipped components. One build means one sort order: every utility is emitted once, and your `lg:` means the same `1200px` ours does. **Don't also `@import 'tailwindcss'`** — this entry already brings it, and importing it twice re-creates the two-build problem described below.
+
+This is the path we recommend. It needs no import-order rules and no cascade caveats: with a single sorter there are no ties to break, so the rest of this section applies only if you can't compile in one build.
+
+#### Fallback: the precompiled stylesheet plus your own Tailwind
+
+If a single build isn't an option (say another tool owns your Tailwind config), import the precompiled `@nswds/ui/styles.css` and put your own `@import 'tailwindcss'` **after** it, as in [Import order](#import-order) above. That leaves you with two independently-sorted sets of utilities in the same `utilities` cascade layer, and a media query adds no specificity. Within one Tailwind build the sorter guarantees `.lg\:justify-start` is emitted after `.justify-center`; across two builds nothing does, so whichever half comes last wins any tie. Ours going first means your utilities win those ties, which is what you want: a class you wrote should beat one you didn't.
 
 Reverse it and the same mechanism works against you — our plain `.inline-flex` (Button's base) would outrank your `hidden sm:inline-flex`, showing a button you meant to hide on mobile.
 

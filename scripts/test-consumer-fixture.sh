@@ -108,4 +108,91 @@ node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
   --css "$STYLESHEET" \
   --src "$ROOT/packages/ui/src"
 
-echo "✔ Consumer fixture: install, typecheck, build, tree-shaking and cascade safety all pass"
+# ── Single-build entry (@nswds/ui/tailwind.css): one build, both halves ──
+# The other consumption path: instead of the precompiled styles.css PLUS the
+# app's own Tailwind (the two builds above), the consumer imports ONE entry that
+# @sources the shipped components, so their utilities and the app's own compile
+# together in a single build. This proves that entry resolves with only the
+# OPTIONAL PEERS installed (tailwindcss, @nswds/tokens, tw-animate-css — the
+# fixture installs no shadcn; that layer is vendored), that both halves land in
+# one output, and that a utility both halves use is emitted ONCE — not twice as
+# it is in the two-build stylesheet asserted above.
+echo "── Assert: shadcn is NOT installed (the single-build entry must not need it)"
+[ -d node_modules/shadcn ] && {
+  echo "::error::shadcn is installed in the fixture — cannot prove @nswds/ui/tailwind.css compiles without it. Remove it from fixtures/consumer/package.json." >&2
+  exit 1
+} || true
+
+echo "── Compiling the single-build entry with the consumer's own Tailwind"
+SINGLE="$WORK/single-build.css"
+npx @tailwindcss/cli -i src/app-singlebuild.css -o "$SINGLE" --minify
+[ -s "$SINGLE" ] || {
+  echo "::error::single-build output is empty — @nswds/ui/tailwind.css failed to compile." >&2
+  exit 1
+}
+
+echo "── Assert: the app's own markup was scanned ('justify-evenly' present)"
+grep -qE "\.justify-evenly[{,]" "$SINGLE" || {
+  echo "::error::'justify-evenly' missing from the single build — the consumer's markup was not scanned." >&2
+  exit 1
+}
+
+echo "── Assert: the components were scanned via @source dist ('$PACKAGE_MARKER' present)"
+grep -qF "$PACKAGE_MARKER" "$SINGLE" || {
+  echo "::error::'$PACKAGE_MARKER' missing from the single build — @source '../../dist' did not compile the library's components." >&2
+  exit 1
+}
+
+# A utility BOTH halves use. The two-build stylesheet holds two copies (one per
+# build); a single build must emit exactly one. Prove it is genuinely shared
+# first, or the count proves nothing.
+SHARED_MARKER='.flex{'
+echo "── Assert: shared utility '$SHARED_MARKER' is emitted exactly once (de-duplicated)"
+grep -qF "$SHARED_MARKER" "$INSTALLED_CSS" || {
+  echo "::error::'$SHARED_MARKER' is not in the packaged stylesheet — pick another shared class for the de-dup check (here and above)." >&2
+  exit 1
+}
+SHARED_COUNT=$(grep -oF "$SHARED_MARKER" "$SINGLE" | wc -l | tr -d ' ')
+[ "$SHARED_COUNT" = "1" ] || {
+  echo "::error::'$SHARED_MARKER' appears $SHARED_COUNT time(s) in the single build; expected exactly 1 — a single build must not duplicate utilities." >&2
+  exit 1
+}
+
+# The order-dependent pairs #207 exists for are NOT covered by
+# check-cascade-safety below — by design it only guards a rule against a
+# CONDITIONAL (media/container) override of the same property (see its header),
+# not unconditional shorthand-vs-longhand. So assert those directly. A single
+# build emits each utility once in Tailwind's canonical order, longhand last, so
+# the longhand wins: SelectItem's `.shrink-0` after `.flex-1` (flex-shrink stays
+# 0), FieldSeparator's `.top-1\/2` after `.inset-0` (top stays 50%). In the
+# two-build stylesheet a second copy of the shorthand lands in the app's half,
+# after ours, and clobbers them — the whole reason for the single-build entry.
+assert_emitted_after() { # winner loser description
+  local winner="$1" loser="$2" desc="$3" w l
+  # `|| true`: a missing marker makes the pipeline exit non-zero (pipefail), and
+  # under `set -e` that would abort here before the `[ -n … ]` guard below can
+  # report it. Neutralise the exit so the guard emits its own clear diagnostic.
+  w=$(grep -boF "$winner" "$SINGLE" | head -1 | cut -d: -f1) || true
+  l=$(grep -boF "$loser" "$SINGLE" | head -1 | cut -d: -f1) || true
+  [ -n "$w" ] && [ -n "$l" ] || {
+    echo "::error::single build: '$winner' or '$loser' missing — cannot verify $desc." >&2
+    exit 1
+  }
+  [ "$w" -gt "$l" ] || {
+    echo "::error::single build: '$winner' (byte $w) is not emitted after '$loser' (byte $l) — $desc would be clobbered." >&2
+    exit 1
+  }
+}
+echo "── Assert: single-build canonical order resolves the shorthand/longhand pairs #207 targets"
+assert_emitted_after '.shrink-0{' '.flex-1{' "SelectItem shrink-0 vs flex-1"
+assert_emitted_after '.top-1\/2{' '.inset-0{' "FieldSeparator top-1/2 vs inset-0"
+
+# Belt-and-braces: the conditional-pair hazard check-cascade DOES cover can't
+# arise under a single sort order either, but run the guard over the combined
+# output so a future change to the entry can't regress it.
+echo "── Assert: the single-build stylesheet is cascade-safe too"
+node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
+  --css "$SINGLE" \
+  --src "$ROOT/packages/ui/src"
+
+echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup, order safety and cascade safety all pass"

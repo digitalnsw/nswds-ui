@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
+/* Owned copy of shadcn's custom-variant + @utility layer (was `shadcn/tailwind.css`).
+   Vendored so a consumer compiling this theme in their own build doesn't need the
+   shadcn CLI installed. See nswds-shadcn.css for provenance. */
+@import './nswds-shadcn.css';
 
 /* ── Tailwind utility bridges + bundled token values ──
    preset.css wires every non-theme token category into Tailwind @theme — colours

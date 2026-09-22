@@ -102,6 +102,8 @@ not identical; the published export surface is:
 ```
 .                →  ./dist/index.js        (types: ./dist/index.d.ts)
 ./styles.css     →  ./dist/styles.css       (compiled CSS, token values inlined)
+./theme.css      →  ./src/styles/theme.css  (SOURCE — for a consumer's own Tailwind build)
+./tailwind.css   →  ./src/styles/tailwind.css (SOURCE — single-build entry: imports theme.css + @sources dist)
 ./postcss.config →  ./postcss.config.mjs
 ./components/*   →  ./dist/components/*.js  (types: ./dist/components/*.d.ts)
 ./icons          →  ./dist/icons/index.js   (types: ./dist/icons/index.d.ts)
@@ -114,6 +116,20 @@ Differences from the tsconfig map worth knowing: the stylesheet is published as
 alias only (see `apps/storybook/.storybook/main.ts`) and is **not** a published subpath. There
 are no `@nswds/ui/hooks/*` or `@nswds/ui/lib/*` exports; `cn` (from `lib/utils`) is re-exported
 from the root barrel, so consumers import it as `import { cn } from '@nswds/ui'`.
+
+`@nswds/ui/theme.css` and `@nswds/ui/tailwind.css` are the exception to "published =
+compiled `dist/`": they ship as **source** (from `src/styles/`, listed in `files`) so a
+consumer with their own Tailwind build can compile the library in a single build —
+`@import '@nswds/ui/tailwind.css'` brings Tailwind, the token foundation, and an
+`@source '../../dist/**/*.js'` at the shipped components, so the library's utilities and
+the consumer's own compile in one sort order and each is emitted once. That entry compiles
+`theme.css`, which imports `tailwindcss`, `tw-animate-css`, the vendored `nswds-shadcn.css`
+(the owned copy of shadcn's variant/utility layer — never re-point this at
+`shadcn/tailwind.css`), and the `@nswds/tokens` layers. So `tailwindcss`, `@nswds/tokens`
+and `tw-animate-css` are declared as **optional `peerDependencies`**: single-build consumers
+install them, the precompiled-`styles.css` majority never does, and `packages/ui`'s own
+`engines.node` stays put because none of them is a hard runtime dependency (see §5 "Node
+version"). Keep `dist/styles.css` as the no-Tailwind fallback.
 
 **Files under `packages/ui/src/` themselves use relative imports** (`'../lib/utils.js'`),
 not either alias. Reason: `apps/web` consumes our source via `transpilePackages`, and its
@@ -413,6 +429,7 @@ Run from the **repo root** unless noted.
 | Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                   |
+| Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                      |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
 | Check published package         | `npm run check:package -w @nswds/ui`                           |
 | Run @nswds/ui unit tests        | `npm test -w @nswds/ui` (needs `dist/`)                        |
@@ -429,7 +446,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `lint` + `typecheck` + `build` is **not** the merge gate.
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:workflows`, `test:scripts`, `check:drift`,
-`check:radius`, `check:icons`, `check:portal-boundary`, the
+`check:radius`, `check:icons`, `check:portal-boundary`,
+`check:theme-parity`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
 `scripts/test-consumer-fixture.sh`, a
@@ -517,6 +535,21 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   merely begins with it. A self-closing `<X.Portal />` fails by construction —
   it wraps nothing, and that is the shape every one of these files had before
   the boundary landed.
+- **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
+  asserts the shadcn→NSW token map is identical across the two channels that
+  ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,
+  now also published as source for the single-build entry) and the
+  `registry:theme` item's `cssVars.light` in `registry.json` (the registry
+  surface). The two are hand-maintained copies of one map; publishing
+  `theme.css` made both consumer-facing, so a drift means an npm single-build
+  consumer and a registry consumer render different tokens — invisible to every
+  other gate. It also holds `cssVars.dark` empty (both channels rely on the
+  `@nswds/tokens` role tokens flipping underneath, so neither carries a `.dark`
+  override) and the reduced-motion rule in step. Scope is only `:root`: the
+  `@theme`/`@theme inline` bridges have no registry counterpart (shadcn
+  regenerates them from `cssVars`). Self-tested by
+  `check-theme-parity.test.mjs` under `test:scripts`, for the reason the portal
+  gate is (a gate guarding a path CI can't otherwise exercise).
 - **`check:radius`** (`packages/ui/scripts/check-radius.mjs`) holds every
   component to the `sm` / `md` / `full` / `none` radius scale, so a component
   cannot invent a one-off corner. See docs/reference-tokens.md for the scale.

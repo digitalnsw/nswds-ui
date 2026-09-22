@@ -62,6 +62,13 @@ Replace `src/index.css` entirely:
 @import 'tailwindcss';
 ```
 
+> **Shortcut:** because this app runs its own Tailwind, you can instead import the single entry
+> `@import '@nswds/ui/tailwind.css'` and drop the separate `@import 'tailwindcss'`. It compiles the
+> library and your utilities in one pass, so there is no import order to get right — the recommended
+> setup for a consumer with their own build. This tutorial keeps the explicit two-import form so the
+> ordering rule below stays visible. See
+> [Using it with your own Tailwind build](https://github.com/digitalnsw/nswds-ui/blob/main/packages/ui/README.md#using-it-with-your-own-tailwind-build).
+
 **That order is load-bearing.** Ours first, yours second. Both emit utilities into the same
 cascade layer, and a media query carries no extra specificity — so whichever comes last wins any
 tie. Yours going last means a class _you_ wrote beats one you didn't, which is what you want.

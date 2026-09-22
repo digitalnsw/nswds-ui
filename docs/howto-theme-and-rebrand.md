@@ -78,6 +78,11 @@ Pick one word for the whole chrome — the three top-of-page components are desi
 Override the masterbrand ramps at `:root`, after the stylesheet. Everything follows: buttons,
 links, focus rings, charts, the lot.
 
+> The example uses the two-import fallback. If you run your own Tailwind, prefer the single-build
+> entry — `@import '@nswds/ui/tailwind.css'` — and put the `:root` overrides after it; the rebrand
+> works the same either way. See
+> [Using it with your own Tailwind build](https://github.com/digitalnsw/nswds-ui/blob/main/packages/ui/README.md#using-it-with-your-own-tailwind-build).
+
 ```css
 @import '@nswds/ui/styles.css';
 @import 'tailwindcss';
