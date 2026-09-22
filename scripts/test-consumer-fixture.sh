@@ -169,8 +169,11 @@ SHARED_COUNT=$(grep -oF "$SHARED_MARKER" "$SINGLE" | wc -l | tr -d ' ')
 # after ours, and clobbers them — the whole reason for the single-build entry.
 assert_emitted_after() { # winner loser description
   local winner="$1" loser="$2" desc="$3" w l
-  w=$(grep -boF "$winner" "$SINGLE" | head -1 | cut -d: -f1)
-  l=$(grep -boF "$loser" "$SINGLE" | head -1 | cut -d: -f1)
+  # `|| true`: a missing marker makes the pipeline exit non-zero (pipefail), and
+  # under `set -e` that would abort here before the `[ -n … ]` guard below can
+  # report it. Neutralise the exit so the guard emits its own clear diagnostic.
+  w=$(grep -boF "$winner" "$SINGLE" | head -1 | cut -d: -f1) || true
+  l=$(grep -boF "$loser" "$SINGLE" | head -1 | cut -d: -f1) || true
   [ -n "$w" ] && [ -n "$l" ] || {
     echo "::error::single build: '$winner' or '$loser' missing — cannot verify $desc." >&2
     exit 1

@@ -23,5 +23,8 @@
    relative to this file (src/styles/), so ../../dist resolves to <pkg>/dist —
    i.e. node_modules/@nswds/ui/dist in the consumer's install. Node_modules is
    ignored by Tailwind's automatic detection, so this explicit source is what
-   makes the library's own utilities compile in the consumer's build. */
-@source '../../dist/**/*.js';
+   makes the library's own utilities compile in the consumer's build. Point it
+   at the whole dist directory, not a `*.js` glob, so a change to the build's
+   output extension (e.g. .mjs/.cjs) can't silently drop a component's
+   utilities. */
+@source '../../dist';

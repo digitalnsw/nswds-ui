@@ -48,10 +48,18 @@ function stripComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, '')
 }
 
-/** Collapse whitespace so a multi-line CSS selector and a single-string registry
- *  key (`*,\n  ::before` vs `"*, ::before"`) normalise to the same value. */
+/** Normalise a selector so a multi-line CSS selector and a single-string registry
+ *  key compare equal: collapse whitespace, then sort the comma-separated members
+ *  so a reordered list (`*, ::before, ::after` vs `::before, ::after, *`) is not
+ *  reported as a divergence. Assumes no comma nested inside `:is()`/`[attr]`,
+ *  which the reduced-motion selectors this handles never use. */
 function normalizeSelector(selector) {
-  return selector.replace(/\s+/g, ' ').trim()
+  return selector
+    .split(',')
+    .map((part) => part.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .sort()
+    .join(', ')
 }
 
 /**
@@ -73,8 +81,12 @@ function extractVarsFromBlocks(css, selectorRe) {
       else if (clean[i] === '}') depth--
     }
     const body = clean.slice(start, i - 1)
-    for (const decl of body.matchAll(/--([A-Za-z0-9-]+)\s*:\s*([^;]+);/g)) {
-      vars[decl[1]] = decl[2].trim().replace(/\s+/g, ' ')
+    // Split on `;` rather than requiring a trailing one, so a semicolon-less
+    // final declaration is still read; the name accepts any custom-property
+    // ident (underscores, non-ASCII), not only `[A-Za-z0-9-]`.
+    for (const decl of body.split(';')) {
+      const parsed = /^\s*--([^\s:]+)\s*:\s*([\s\S]+)$/.exec(decl)
+      if (parsed) vars[parsed[1]] = parsed[2].trim().replace(/\s+/g, ' ')
     }
   }
   return vars
@@ -123,8 +135,16 @@ function parseSelectorBlocks(body) {
  */
 export function parseReducedMotion(css) {
   const clean = stripComments(css)
+  // Whitespace-tolerant matcher for the SAME media query the registry key names
+  // (REDUCED_MOTION_AT_RULE, reused in registryReducedMotion) — DERIVED from that
+  // constant so the two can't drift: escape it, then let whitespace flex around
+  // each structural token (`(`, `)`, `:`, and after `@media`), so a reformat of
+  // theme.css can't leave the block silently unmatched.
   const openRe = new RegExp(
-    REDUCED_MOTION_AT_RULE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{',
+    REDUCED_MOTION_AT_RULE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(
+      /\s+|\\?[():]/g,
+      (token) => (/^\s+$/.test(token) ? '\\s*' : `\\s*${token}\\s*`),
+    ) + '\\s*\\{',
     'g',
   )
   const rules = {}
@@ -277,7 +297,9 @@ export function checkThemeParity(themeCss, registryJsonText) {
     failures,
   )
 
-  return { failures }
+  // `tokenCount` lets the CLI report the success count without re-reading and
+  // re-parsing theme.css (rootVars is already computed above).
+  return { failures, tokenCount: Object.keys(rootVars).length }
 }
 
 // ─── Command line ───────────────────────────────────────────────────────────
@@ -294,7 +316,10 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
       process.exit(1)
     }
   }
-  const { failures } = checkThemeParity(read('src/styles/theme.css'), read('registry.json'))
+  const { failures, tokenCount } = checkThemeParity(
+    read('src/styles/theme.css'),
+    read('registry.json'),
+  )
   if (failures.length > 0) {
     console.error(
       '✖ Theme parity: the npm (theme.css) and registry (cssVars/css) token maps disagree.\n',
@@ -305,8 +330,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
     )
     process.exit(1)
   }
-  const count = Object.keys(parseRootVars(read('src/styles/theme.css'))).length
   console.log(
-    `✔ Theme parity: ${count} tokens agree across theme.css :root and registry cssVars.light (dark + reduced-motion in step).`,
+    `✔ Theme parity: ${tokenCount} tokens agree across theme.css :root and registry cssVars.light (dark + reduced-motion in step).`,
   )
 }

@@ -134,9 +134,18 @@ test('parseReducedMotion is selector-aware and merges across media blocks', () =
     motionBlock('.marquee', { 'animation-iteration-count': '1 !important' }),
   ].join('\n')
   const rules = parseReducedMotion(css)
-  assert.deepEqual(Object.keys(rules).sort(), ['*, ::before, ::after', '.marquee'])
-  assert.equal(rules['*, ::before, ::after']['transition-duration'], '0.01ms !important')
+  // normalizeSelector sorts the list members, so `*, ::before, ::after` keys as
+  // `*, ::after, ::before`.
+  assert.deepEqual(Object.keys(rules).sort(), ['*, ::after, ::before', '.marquee'])
+  assert.equal(rules['*, ::after, ::before']['transition-duration'], '0.01ms !important')
   assert.equal(rules['.marquee']['animation-iteration-count'], '1 !important')
+})
+
+test('parseReducedMotion tolerates compact media-query spacing', () => {
+  const css =
+    '@media(prefers-reduced-motion:reduce){*,::before,::after{transition-duration:0.01ms !important;}}'
+  const only = Object.values(parseReducedMotion(css))[0]
+  assert.equal(only?.['transition-duration'], '0.01ms !important')
 })
 
 // ─── Shapes that must pass ──────────────────────────────────────────────────
@@ -148,6 +157,12 @@ test('passes when :root, dark and reduced-motion all agree (dark empty)', () => 
 test('passes when a dark override matches on both sides', () => {
   const theme = themeCss(MAP, { dark: { primary: 'var(--action-dark)' } })
   const registry = registryJson(MAP, { dark: { primary: 'var(--action-dark)' } })
+  assert.deepEqual(failures(theme, registry), [])
+})
+
+test('passes when the reduced-motion selector list is reordered between channels', () => {
+  const theme = themeCss(MAP) // selector `*, ::before, ::after`
+  const registry = registryJson(MAP, { motion: { '::after, ::before, *': REDUCED_MOTION } })
   assert.deepEqual(failures(theme, registry), [])
 })
 
