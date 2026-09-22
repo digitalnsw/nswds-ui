@@ -1,3 +1,9 @@
+## [8.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.0.0...@nswds/ui-v8.1.0) (2026-09-22)
+
+### Features
+
+* **select:** redesign as an NSW crisp field with a filled variant ([#208](https://github.com/digitalnsw/nswds-ui/issues/208)) ([a024b70](https://github.com/digitalnsw/nswds-ui/commit/a024b7087198b7ec0103d4adff767098e1b1e15e))
+
 ## [8.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v7.0.2...@nswds/ui-v8.0.0) (2026-09-11)
 
 ### ⚠ BREAKING CHANGES
