@@ -1544,7 +1544,7 @@
       "type": "registry:ui",
       "title": "Select",
       "description": "A dropdown for selecting a single value from a list.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/icons.json"
