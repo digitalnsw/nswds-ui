@@ -1,0 +1,27 @@
+/*
+ * Single-build entry — for consumers who run their OWN Tailwind build.
+ *
+ * Importing this one file gives a consumer the full NSW token foundation, the
+ * component styles, and Tailwind itself, all compiled in THEIR build: one sort
+ * order, each utility emitted once, and their `lg:` means the same 1200px ours
+ * does. This is the recommended path when the consumer already runs Tailwind.
+ *
+ * Do NOT also `@import 'tailwindcss'` — this entry brings it (via theme.css).
+ * Doing both re-introduces the two-independently-sorted-builds cascade hazard
+ * this entry exists to avoid.
+ *
+ * Requires the optional peer deps to be installed alongside @nswds/ui:
+ *   npm i -D tailwindcss @nswds/tokens tw-animate-css
+ *
+ * Consumers without a Tailwind build should import the precompiled
+ * `@nswds/ui/styles.css` instead. See packages/ui/README.md,
+ * "Using it with your own Tailwind build".
+ */
+@import './theme.css';
+
+/* Scan the shipped components for the utility classes they use. `@source` is
+   relative to this file (src/styles/), so ../../dist resolves to <pkg>/dist —
+   i.e. node_modules/@nswds/ui/dist in the consumer's install. Node_modules is
+   ignored by Tailwind's automatic detection, so this explicit source is what
+   makes the library's own utilities compile in the consumer's build. */
+@source '../../dist/**/*.js';

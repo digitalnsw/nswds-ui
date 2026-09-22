@@ -108,4 +108,59 @@ node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
   --css "$STYLESHEET" \
   --src "$ROOT/packages/ui/src"
 
-echo "✔ Consumer fixture: install, typecheck, build, tree-shaking and cascade safety all pass"
+# ── Single-build entry (@nswds/ui/tailwind.css): one build, both halves ──
+# The other consumption path: instead of the precompiled styles.css PLUS the
+# app's own Tailwind (the two builds above), the consumer imports ONE entry that
+# @sources the shipped components, so their utilities and the app's own compile
+# together in a single build. This proves that entry resolves with only the
+# OPTIONAL PEERS installed (tailwindcss, @nswds/tokens, tw-animate-css — the
+# fixture installs no shadcn; that layer is vendored), that both halves land in
+# one output, and that a utility both halves use is emitted ONCE — not twice as
+# it is in the two-build stylesheet asserted above.
+echo "── Assert: shadcn is NOT installed (the single-build entry must not need it)"
+[ -d node_modules/shadcn ] && {
+  echo "::error::shadcn is installed in the fixture — cannot prove @nswds/ui/tailwind.css compiles without it. Remove it from fixtures/consumer/package.json." >&2
+  exit 1
+} || true
+
+echo "── Compiling the single-build entry with the consumer's own Tailwind"
+SINGLE="$WORK/single-build.css"
+npx @tailwindcss/cli -i src/app-singlebuild.css -o "$SINGLE" --minify
+[ -s "$SINGLE" ] || {
+  echo "::error::single-build output is empty — @nswds/ui/tailwind.css failed to compile." >&2
+  exit 1
+}
+
+echo "── Assert: the app's own markup was scanned ('justify-evenly' present)"
+grep -qE "\.justify-evenly[{,]" "$SINGLE" || {
+  echo "::error::'justify-evenly' missing from the single build — the consumer's markup was not scanned." >&2
+  exit 1
+}
+
+echo "── Assert: the components were scanned via @source dist ('$PACKAGE_MARKER' present)"
+grep -qF "$PACKAGE_MARKER" "$SINGLE" || {
+  echo "::error::'$PACKAGE_MARKER' missing from the single build — @source '../../dist' did not compile the library's components." >&2
+  exit 1
+}
+
+# A utility BOTH halves use. The two-build stylesheet holds two copies (one per
+# build); a single build must emit exactly one. Prove it is genuinely shared
+# first, or the count proves nothing.
+SHARED_MARKER='.flex{'
+echo "── Assert: shared utility '$SHARED_MARKER' is emitted exactly once (de-duplicated)"
+grep -qF "$SHARED_MARKER" "$INSTALLED_CSS" || {
+  echo "::error::'$SHARED_MARKER' is not in the packaged stylesheet — pick another shared class for the de-dup check (here and above)." >&2
+  exit 1
+}
+SHARED_COUNT=$(grep -oF "$SHARED_MARKER" "$SINGLE" | wc -l | tr -d ' ')
+[ "$SHARED_COUNT" = "1" ] || {
+  echo "::error::'$SHARED_MARKER' appears $SHARED_COUNT time(s) in the single build; expected exactly 1 — a single build must not duplicate utilities." >&2
+  exit 1
+}
+
+echo "── Assert: the single-build stylesheet is cascade-safe too"
+node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
+  --css "$SINGLE" \
+  --src "$ROOT/packages/ui/src"
+
+echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup and cascade safety all pass"

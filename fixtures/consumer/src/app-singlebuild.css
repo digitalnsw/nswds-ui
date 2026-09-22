@@ -1,0 +1,16 @@
+/*
+ * The SINGLE-BUILD consumer setup, exactly as packages/ui/README.md documents
+ * it: one import, compiled in the consumer's own Tailwind build.
+ *
+ * `@nswds/ui/tailwind.css` brings Tailwind itself, the NSW token foundation, and
+ * an `@source` at the shipped components — so this one build emits the library's
+ * utilities AND the app's own, in one sort order, each utility once. There is
+ * deliberately NO separate `@import 'tailwindcss'` here (that is what would
+ * re-create the two-build cascade hazard app.css lives in).
+ *
+ * scripts/test-consumer-fixture.sh compiles this with @tailwindcss/cli against
+ * the cold-installed tarball and asserts: it resolves with only the optional
+ * peers installed (tailwindcss, @nswds/tokens, tw-animate-css — NOT shadcn),
+ * both halves land in the one output, and a shared utility is emitted once.
+ */
+@import '@nswds/ui/tailwind.css';

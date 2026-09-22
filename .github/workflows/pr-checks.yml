@@ -100,6 +100,12 @@ jobs:
       - name: Portal boundary check
         run: npm run check:portal-boundary -w @nswds/ui
 
+      # The shadcn→NSW token map is hand-maintained in two consumer-facing
+      # places — theme.css :root (npm) and registry.json cssVars.light
+      # (registry). Reads source only, so it runs here before the build.
+      - name: Theme parity check
+        run: npm run check:theme-parity -w @nswds/ui
+
       # release.yml commits with [skip ci], so the release pipeline is never
       # exercised by PR CI — a mistake in the release config is only visible
       # after it has published, or silently failed to. These tests cover the
