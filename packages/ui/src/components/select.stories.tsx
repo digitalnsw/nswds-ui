@@ -168,7 +168,7 @@ export const CssCheck: Story = {
     // colour rather than staying transparent.
     const borderColor = getComputedStyle(trigger).borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
+      throw new Error(`Expected the --input-border token to resolve, received "${borderColor}".`)
     }
   },
 }
