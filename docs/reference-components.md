@@ -501,15 +501,17 @@ the full set is npm-only.
 
 ## Export subpaths
 
-| Subpath                    | Contains                                                    |
-| -------------------------- | ----------------------------------------------------------- |
-| `@nswds/ui`                | All components, hooks, `cn`, and every `*Variants` function |
-| `@nswds/ui/styles.css`     | Precompiled stylesheet with token values inlined            |
-| `@nswds/ui/components/*`   | A single component module                                   |
-| `@nswds/ui/icons`          | Icon barrel (tree-shakeable)                                |
-| `@nswds/ui/icons/*`        | A single icon module                                        |
-| `@nswds/ui/icons/brands`   | The six brand marks                                         |
-| `@nswds/ui/postcss.config` | Shared PostCSS config                                       |
+| Subpath                    | Contains                                                                     |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `@nswds/ui`                | All components, hooks, `cn`, and every `*Variants` function                  |
+| `@nswds/ui/styles.css`     | Precompiled stylesheet with token values inlined                             |
+| `@nswds/ui/theme.css`      | Theme source (tokens + `@theme`) to compile in your own Tailwind build       |
+| `@nswds/ui/tailwind.css`   | Single-build entry — imports the theme and `@source`s the shipped components |
+| `@nswds/ui/components/*`   | A single component module                                                    |
+| `@nswds/ui/icons`          | Icon barrel (tree-shakeable)                                                 |
+| `@nswds/ui/icons/*`        | A single icon module                                                         |
+| `@nswds/ui/icons/brands`   | The six brand marks                                                          |
+| `@nswds/ui/postcss.config` | Shared PostCSS config                                                        |
 
 There is no `@nswds/ui/hooks/*` or `@nswds/ui/lib/*` — `cn` comes from the root barrel. The
 in-repo `@nswds/ui/globals.css` specifier is a Storybook alias, **not** a published subpath.

@@ -111,6 +111,23 @@ test('parseDarkVars is empty when there is no dark block (only the @custom-varia
   assert.deepEqual(parseDarkVars(css), {})
 })
 
+test('parseDarkVars reads a selector-list block like `.dark, .dark * { }`', () => {
+  // The .dark token is not immediately before `{`, yet the block must be read
+  // (a CSS-only dark override written this way would otherwise pass parity),
+  // while the @custom-variant reference above must still NOT be picked up.
+  const css = [
+    "@custom-variant dark (&:is(.dark, .dark *, [data-theme='dark']));",
+    ':root { --primary: var(--action-default); }',
+    '.dark, .dark * { --primary: var(--action-dark); }',
+  ].join('\n')
+  assert.deepEqual(parseDarkVars(css), { primary: 'var(--action-dark)' })
+})
+
+test('parseDarkVars ignores .dark-mode / .darker (not the dark selector)', () => {
+  const css = '.dark-mode { --primary: var(--x); }\n.darker { --primary: var(--y); }'
+  assert.deepEqual(parseDarkVars(css), {})
+})
+
 test('parseReducedMotion is selector-aware and merges across media blocks', () => {
   const css = [
     motionBlock(MOTION_SELECTOR, REDUCED_MOTION),

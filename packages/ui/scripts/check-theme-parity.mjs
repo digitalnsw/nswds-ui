@@ -86,15 +86,20 @@ export function parseRootVars(css) {
 }
 
 /**
- * Dark-scoped custom properties, from `.dark { }` / `[data-theme='dark'] { }`
- * declaration blocks, keyed without `--`. Deliberately does NOT match the
- * `@custom-variant dark (&:is(.dark, …))` reference (no `{` follows) or the
- * `.dark *` / `.dark,` fragments inside it (not immediately followed by `{`).
- * Empty on the current tree — which is the state the gate proves stays in step
- * with `cssVars.dark`.
+ * Dark-scoped custom properties, from any block whose selector prelude contains
+ * a `.dark` class or `[data-theme=dark]` attribute — `.dark { }`,
+ * `[data-theme='dark'] { }`, or a selector list such as `.dark, .dark * { }`.
+ * Keyed without `--`.
+ *
+ * The token may sit anywhere in the prelude, not only immediately before `{`.
+ * The prelude is bounded by `[^{};@]*` (no `;`, `{`, `}` or `@`) so a match
+ * cannot run from the `@custom-variant dark (&:is(.dark, …));` reference — which
+ * ends in `;` and opens no block — into an unrelated block's braces, and
+ * `(?![\w-])` keeps `.dark` from matching `.dark-mode` / `.darker`. Empty on the
+ * current tree: the state the gate proves stays in step with `cssVars.dark`.
  */
 export function parseDarkVars(css) {
-  return extractVarsFromBlocks(css, /(?:\.dark|\[data-theme=['"]?dark['"]?\])\s*\{/g)
+  return extractVarsFromBlocks(css, /(?:\.dark(?![\w-])|\[data-theme=['"]?dark['"]?\])[^{};@]*\{/g)
 }
 
 /** Split a `{ … }` body into { normalizedSelector: { prop: value } }. */

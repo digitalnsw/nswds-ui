@@ -158,9 +158,38 @@ SHARED_COUNT=$(grep -oF "$SHARED_MARKER" "$SINGLE" | wc -l | tr -d ' ')
   exit 1
 }
 
+# The order-dependent pairs #207 exists for are NOT covered by
+# check-cascade-safety below — by design it only guards a rule against a
+# CONDITIONAL (media/container) override of the same property (see its header),
+# not unconditional shorthand-vs-longhand. So assert those directly. A single
+# build emits each utility once in Tailwind's canonical order, longhand last, so
+# the longhand wins: SelectItem's `.shrink-0` after `.flex-1` (flex-shrink stays
+# 0), FieldSeparator's `.top-1\/2` after `.inset-0` (top stays 50%). In the
+# two-build stylesheet a second copy of the shorthand lands in the app's half,
+# after ours, and clobbers them — the whole reason for the single-build entry.
+assert_emitted_after() { # winner loser description
+  local winner="$1" loser="$2" desc="$3" w l
+  w=$(grep -boF "$winner" "$SINGLE" | head -1 | cut -d: -f1)
+  l=$(grep -boF "$loser" "$SINGLE" | head -1 | cut -d: -f1)
+  [ -n "$w" ] && [ -n "$l" ] || {
+    echo "::error::single build: '$winner' or '$loser' missing — cannot verify $desc." >&2
+    exit 1
+  }
+  [ "$w" -gt "$l" ] || {
+    echo "::error::single build: '$winner' (byte $w) is not emitted after '$loser' (byte $l) — $desc would be clobbered." >&2
+    exit 1
+  }
+}
+echo "── Assert: single-build canonical order resolves the shorthand/longhand pairs #207 targets"
+assert_emitted_after '.shrink-0{' '.flex-1{' "SelectItem shrink-0 vs flex-1"
+assert_emitted_after '.top-1\/2{' '.inset-0{' "FieldSeparator top-1/2 vs inset-0"
+
+# Belt-and-braces: the conditional-pair hazard check-cascade DOES cover can't
+# arise under a single sort order either, but run the guard over the combined
+# output so a future change to the entry can't regress it.
 echo "── Assert: the single-build stylesheet is cascade-safe too"
 node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
   --css "$SINGLE" \
   --src "$ROOT/packages/ui/src"
 
-echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup and cascade safety all pass"
+echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup, order safety and cascade safety all pass"
