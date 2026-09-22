@@ -4,30 +4,35 @@
 // `--primary: var(--action-default)`, … — is maintained BY HAND in two places:
 //
 //   npm channel:      the `:root { }` block of src/styles/theme.css, compiled
-//                     into dist/styles.css AND (once #207 lands) shipped as the
-//                     source a single-build consumer compiles via
-//                     @nswds/ui/tailwind.css.
+//                     into dist/styles.css AND shipped as the source a
+//                     single-build consumer compiles via @nswds/ui/tailwind.css.
 //   registry channel: the `registry:theme` item's `cssVars.light` in
 //                     registry.json, copied into a consumer's own CSS by
 //                     `shadcn add`.
 //
-// Before #207 the two copies were only semi-internal. Publishing theme.css as
-// source makes BOTH consumer-facing: an npm single-build consumer and a registry
-// consumer would silently get different tokens if the maps drift. This gate
-// fails the build when they do.
+// Publishing theme.css as source makes BOTH consumer-facing: an npm
+// single-build consumer and a registry consumer would silently get different
+// tokens if the maps drift. This gate fails the build when they do.
 //
-// It also holds two smaller invariants:
-//   - `cssVars.dark` stays empty, matching theme.css carrying no `.dark`
-//     override. Both channels rely on the @nswds/tokens role tokens flipping
-//     underneath (theme.css comment "No `.dark` override block"). If a real dark
-//     override is ever added it must land in BOTH channels — widen this gate then.
-//   - the reduced-motion rule (the one bit of raw `css` the registry item
-//     carries) matches theme.css's `@media (prefers-reduced-motion: reduce)`.
+// It holds the same invariant for dark and reduced-motion, in lockstep:
+//   - dark: the `.dark` / `[data-theme=dark]` declaration blocks in theme.css
+//     must match the registry's `cssVars.dark`. Both are empty today (the
+//     @nswds/tokens role tokens flip underneath, so theme.css carries no `.dark`
+//     override) — but a dark override added to ONE channel now fails instead of
+//     silently diverging, rather than the gate merely trusting `cssVars.dark` to
+//     stay empty.
+//   - reduced-motion: the `@media (prefers-reduced-motion: reduce)` rule must
+//     match the registry item's raw `css`, compared SELECTOR-BY-SELECTOR across
+//     every selector block and every such media block. Narrowing the published
+//     rule to one component, an extra registry selector, or a second media block
+//     is a behavioural divergence the gate catches — not just the declaration
+//     values under the first selector.
 //
-// Scope is deliberately ONLY the `:root` semantic block. theme.css's `@theme` /
-// `@theme inline` bridges (`--color-primary: var(--primary)`, the type scale,
-// motion) are NOT compared: shadcn regenerates those from `cssVars` on the
-// registry side, so they have no registry counterpart to drift against.
+// Scope is deliberately the `:root` / `.dark` custom-property blocks and the
+// reduced-motion rule. theme.css's `@theme` / `@theme inline` bridges
+// (`--color-primary: var(--primary)`, the type scale, motion) are NOT compared:
+// shadcn regenerates those from `cssVars` on the registry side, so they have no
+// registry counterpart to drift against.
 //
 // Tested by check-theme-parity.test.mjs (AGENTS.md §5: a gate guarding a path
 // CI cannot otherwise exercise gets a self-test so it cannot silently stop
@@ -43,20 +48,23 @@ function stripComments(css) {
   return css.replace(/\/\*[\s\S]*?\*\//g, '')
 }
 
+/** Collapse whitespace so a multi-line CSS selector and a single-string registry
+ *  key (`*,\n  ::before` vs `"*, ::before"`) normalise to the same value. */
+function normalizeSelector(selector) {
+  return selector.replace(/\s+/g, ' ').trim()
+}
+
 /**
- * Extract every top-level `:root { … }` declaration block from a CSS string and
- * return the merged custom-property map WITHOUT the leading `--` (so the keys
- * line up with shadcn's cssVars names). Brace-matched, so it is not confused by
- * `@theme`/`@layer` blocks elsewhere in the file. Matches `:root {` only — never
- * `:root:not(…)` or the `@custom-variant dark (&:is(.dark, …))` reference.
+ * Merge the custom-property declarations of every block whose selector matches
+ * `selectorRe` (which must match up to and including the block's opening `{`).
+ * Brace-matched, so `@theme`/`@layer` blocks elsewhere never leak in. Keys drop
+ * the leading `--` so they line up with shadcn's cssVars names.
  */
-export function parseRootVars(css) {
+function extractVarsFromBlocks(css, selectorRe) {
   const clean = stripComments(css)
   const vars = {}
-  const rootRe = /:root\s*\{/g
   let match
-  while ((match = rootRe.exec(clean)) !== null) {
-    // Walk from just after the opening brace to its match, counting depth.
+  while ((match = selectorRe.exec(clean)) !== null) {
     let depth = 1
     let i = match.index + match[0].length
     const start = i
@@ -72,52 +80,148 @@ export function parseRootVars(css) {
   return vars
 }
 
+/** `:root { }` custom properties, keyed WITHOUT the leading `--`. */
+export function parseRootVars(css) {
+  return extractVarsFromBlocks(css, /:root\s*\{/g)
+}
+
 /**
- * Extract the reduced-motion declarations from theme.css as a { prop: value }
- * map. Returns {} if the block is absent (a drift the gate then reports).
+ * Dark-scoped custom properties, from `.dark { }` / `[data-theme='dark'] { }`
+ * declaration blocks, keyed without `--`. Deliberately does NOT match the
+ * `@custom-variant dark (&:is(.dark, …))` reference (no `{` follows) or the
+ * `.dark *` / `.dark,` fragments inside it (not immediately followed by `{`).
+ * Empty on the current tree — which is the state the gate proves stays in step
+ * with `cssVars.dark`.
+ */
+export function parseDarkVars(css) {
+  return extractVarsFromBlocks(css, /(?:\.dark|\[data-theme=['"]?dark['"]?\])\s*\{/g)
+}
+
+/** Split a `{ … }` body into { normalizedSelector: { prop: value } }. */
+function parseSelectorBlocks(body) {
+  const rules = {}
+  for (const block of body.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = normalizeSelector(block[1])
+    const decls = rules[selector] ?? (rules[selector] = {})
+    for (const decl of block[2].matchAll(/([a-z-]+)\s*:\s*([^;{}]+);/g)) {
+      decls[decl[1]] = decl[2].trim().replace(/\s+/g, ' ')
+    }
+  }
+  return rules
+}
+
+/**
+ * Every reduced-motion rule in theme.css as { selector: { prop: value } },
+ * merged across however many `@media (prefers-reduced-motion: reduce)` blocks
+ * the file carries. Selector-aware: a narrowed selector or a second block
+ * changes this map.
  */
 export function parseReducedMotion(css) {
   const clean = stripComments(css)
-  const at = clean.indexOf(REDUCED_MOTION_AT_RULE)
-  if (at === -1) return {}
-  // The at-rule opens a block, which contains a selector block. Walk to the end
-  // of the OUTER block, then read declarations from whatever is inside.
-  let depth = 0
-  let i = clean.indexOf('{', at)
-  const start = i + 1
-  for (; i < clean.length; i++) {
-    if (clean[i] === '{') depth++
-    else if (clean[i] === '}') {
-      depth--
-      if (depth === 0) break
+  const openRe = new RegExp(
+    REDUCED_MOTION_AT_RULE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{',
+    'g',
+  )
+  const rules = {}
+  let match
+  while ((match = openRe.exec(clean)) !== null) {
+    let depth = 1
+    let i = match.index + match[0].length
+    const start = i
+    for (; i < clean.length && depth > 0; i++) {
+      if (clean[i] === '{') depth++
+      else if (clean[i] === '}') depth--
+    }
+    for (const [selector, decls] of Object.entries(
+      parseSelectorBlocks(clean.slice(start, i - 1)),
+    )) {
+      rules[selector] = { ...(rules[selector] ?? {}), ...decls }
     }
   }
-  const body = clean.slice(start, i)
-  const decls = {}
-  for (const decl of body.matchAll(/([a-z-]+)\s*:\s*([^;{}]+);/g)) {
-    decls[decl[1]] = decl[2].trim().replace(/\s+/g, ' ')
-  }
-  return decls
-}
-
-/** The registry theme item's reduced-motion declarations, flattened to a map. */
-function registryReducedMotion(themeItem) {
-  const atRule = themeItem?.css?.[REDUCED_MOTION_AT_RULE]
-  if (!atRule || typeof atRule !== 'object') return {}
-  // The single selector block underneath (`*, ::before, ::after`).
-  const selectorBlock = Object.values(atRule)[0]
-  if (!selectorBlock || typeof selectorBlock !== 'object') return {}
-  const decls = {}
-  for (const [prop, value] of Object.entries(selectorBlock)) {
-    decls[prop] = String(value).trim().replace(/\s+/g, ' ')
-  }
-  return decls
+  return rules
 }
 
 /**
- * Compare the two token maps and the two smaller invariants. Pure: takes the
- * two source strings, returns { failures: string[] }. The CLI wraps it around
- * the real files.
+ * The registry theme item's reduced-motion rule as { selector: { prop: value } },
+ * reading EVERY selector block under the media rule (not just the first).
+ */
+export function registryReducedMotion(themeItem) {
+  const atRule = themeItem?.css?.[REDUCED_MOTION_AT_RULE]
+  if (!atRule || typeof atRule !== 'object') return {}
+  const rules = {}
+  for (const [selector, decls] of Object.entries(atRule)) {
+    if (!decls || typeof decls !== 'object') continue
+    const norm = normalizeSelector(selector)
+    rules[norm] = {}
+    for (const [prop, value] of Object.entries(decls)) {
+      rules[norm][prop] = String(value).trim().replace(/\s+/g, ' ')
+    }
+  }
+  return rules
+}
+
+/**
+ * Compare two { name: value } custom-property maps. `cssName` / `registryName`
+ * name each side in the message (`:root` ⟺ `cssVars.light`, `.dark` ⟺
+ * `cssVars.dark`).
+ */
+function compareVarMaps({ cssName, registryName }, cssVars, registryVars, failures) {
+  for (const name of Object.keys(cssVars)) {
+    if (!(name in registryVars)) {
+      failures.push(
+        `theme.css ${cssName} defines --${name} but registry ${registryName} does not. Add "${name}": "${cssVars[name]}" to the theme item, or remove it from ${cssName}.`,
+      )
+    }
+  }
+  for (const name of Object.keys(registryVars)) {
+    if (!(name in cssVars)) {
+      failures.push(
+        `registry ${registryName} defines "${name}" but theme.css ${cssName} does not. Add --${name}: ${registryVars[name]}; to ${cssName}, or remove it from the theme item.`,
+      )
+    }
+  }
+  for (const name of Object.keys(cssVars)) {
+    if (!(name in registryVars)) continue
+    const cssValue = cssVars[name]
+    const registryValue = String(registryVars[name]).trim().replace(/\s+/g, ' ')
+    if (cssValue !== registryValue) {
+      failures.push(
+        `--${name} differs: theme.css ${cssName} = "${cssValue}", registry ${registryName} = "${registryValue}".`,
+      )
+    }
+  }
+}
+
+/** Compare two { selector: { prop: value } } rule maps, per (selector, prop). */
+function compareRuleMaps(label, cssRules, registryRules, failures) {
+  const selectors = new Set([...Object.keys(cssRules), ...Object.keys(registryRules)])
+  for (const selector of selectors) {
+    const css = cssRules[selector]
+    const registry = registryRules[selector]
+    if (!css) {
+      failures.push(`${label}: registry defines selector "${selector}" that theme.css does not.`)
+      continue
+    }
+    if (!registry) {
+      failures.push(
+        `${label}: theme.css defines selector "${selector}" that the registry does not.`,
+      )
+      continue
+    }
+    for (const prop of new Set([...Object.keys(css), ...Object.keys(registry)])) {
+      if (css[prop] !== registry[prop]) {
+        failures.push(
+          `${label}: "${selector}" { ${prop} } differs: theme.css = ${JSON.stringify(css[prop] ?? null)}, registry = ${JSON.stringify(registry[prop] ?? null)}.`,
+        )
+      }
+    }
+  }
+}
+
+/**
+ * Compare the token maps and the dark / reduced-motion invariants. Pure: takes
+ * the two source strings, returns { failures: string[] }. The CLI wraps it
+ * around the real files.
  */
 export function checkThemeParity(themeCss, registryJsonText) {
   const failures = []
@@ -142,55 +246,31 @@ export function checkThemeParity(themeCss, registryJsonText) {
       ],
     }
   }
-  const cssVarsLight = themeItem.cssVars?.light ?? {}
 
-  // Key-set parity.
-  for (const name of Object.keys(rootVars)) {
-    if (!(name in cssVarsLight)) {
-      failures.push(
-        `theme.css :root defines --${name} but registry cssVars.light does not. Add "${name}": "${rootVars[name]}" to the theme item, or remove it from :root.`,
-      )
-    }
-  }
-  for (const name of Object.keys(cssVarsLight)) {
-    if (!(name in rootVars)) {
-      failures.push(
-        `registry cssVars.light defines "${name}" but theme.css :root does not. Add --${name}: ${cssVarsLight[name]}; to :root, or remove it from the theme item.`,
-      )
-    }
-  }
+  // Light: :root ⟺ cssVars.light.
+  compareVarMaps(
+    { cssName: ':root', registryName: 'cssVars.light' },
+    rootVars,
+    themeItem.cssVars?.light ?? {},
+    failures,
+  )
 
-  // Per-key value parity (only for keys present on both sides).
-  for (const name of Object.keys(rootVars)) {
-    if (!(name in cssVarsLight)) continue
-    const cssValue = rootVars[name]
-    const registryValue = String(cssVarsLight[name]).trim().replace(/\s+/g, ' ')
-    if (cssValue !== registryValue) {
-      failures.push(
-        `--${name} differs: theme.css :root = "${cssValue}", registry cssVars.light = "${registryValue}".`,
-      )
-    }
-  }
+  // Dark: `.dark` / `[data-theme=dark]` ⟺ cssVars.dark. Both empty today; the
+  // point is that a dark override added to one channel fails here.
+  compareVarMaps(
+    { cssName: '.dark/[data-theme=dark]', registryName: 'cssVars.dark' },
+    parseDarkVars(themeCss),
+    themeItem.cssVars?.dark ?? {},
+    failures,
+  )
 
-  // Dark stays empty in both (role tokens flip underneath).
-  const cssVarsDark = themeItem.cssVars?.dark ?? {}
-  if (Object.keys(cssVarsDark).length > 0) {
-    failures.push(
-      'registry cssVars.dark is non-empty, but theme.css carries no `.dark` override (role tokens flip underneath). A real dark override must be added to BOTH channels — widen check-theme-parity to compare them.',
-    )
-  }
-
-  // Reduced-motion rule parity.
-  const themeMotion = parseReducedMotion(themeCss)
-  const registryMotion = registryReducedMotion(themeItem)
-  const motionKeys = new Set([...Object.keys(themeMotion), ...Object.keys(registryMotion)])
-  for (const prop of motionKeys) {
-    if (themeMotion[prop] !== registryMotion[prop]) {
-      failures.push(
-        `reduced-motion rule differs for ${prop}: theme.css = ${JSON.stringify(themeMotion[prop] ?? null)}, registry css = ${JSON.stringify(registryMotion[prop] ?? null)}.`,
-      )
-    }
-  }
+  // Reduced-motion: selector-aware, across every media block / selector.
+  compareRuleMaps(
+    'reduced-motion',
+    parseReducedMotion(themeCss),
+    registryReducedMotion(themeItem),
+    failures,
+  )
 
   return { failures }
 }
@@ -212,7 +292,7 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   const { failures } = checkThemeParity(read('src/styles/theme.css'), read('registry.json'))
   if (failures.length > 0) {
     console.error(
-      '✖ Theme parity: the npm (:root) and registry (cssVars.light) token maps disagree.\n',
+      '✖ Theme parity: the npm (theme.css) and registry (cssVars/css) token maps disagree.\n',
     )
     for (const failure of failures) console.error(`  ${failure}`)
     console.error(
@@ -222,6 +302,6 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
   }
   const count = Object.keys(parseRootVars(read('src/styles/theme.css'))).length
   console.log(
-    `✔ Theme parity: ${count} tokens agree across theme.css :root and registry cssVars.light.`,
+    `✔ Theme parity: ${count} tokens agree across theme.css :root and registry cssVars.light (dark + reduced-motion in step).`,
   )
 }

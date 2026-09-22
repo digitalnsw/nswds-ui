@@ -3,10 +3,10 @@
  *
  * These exist for the reason the portal-boundary and workflow-interpolation
  * tests exist (AGENTS.md §5): the gate guards a drift nothing else in CI can
- * see — the npm `:root` map and the registry `cssVars.light` map are
- * hand-maintained copies of one thing — so a bug in the gate lets them diverge
- * silently. Every way they can drift is a failing case below; the passing
- * cases keep the gate from being so strict it gets switched off.
+ * see — the npm (`theme.css`) and registry (`cssVars`/`css`) copies of one map
+ * — so a bug in the gate lets them diverge silently. Every way they can drift
+ * is a failing case below; the passing cases keep the gate from being so strict
+ * it gets switched off.
  *
  * Run: npm run test:scripts
  */
@@ -16,45 +16,56 @@ import { spawnSync } from 'node:child_process'
 import test from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { checkThemeParity, parseReducedMotion, parseRootVars } from './check-theme-parity.mjs'
+import {
+  checkThemeParity,
+  parseDarkVars,
+  parseReducedMotion,
+  parseRootVars,
+} from './check-theme-parity.mjs'
 
+const RM_AT_RULE = '@media (prefers-reduced-motion: reduce)'
+const MOTION_SELECTOR = '*, ::before, ::after'
 const REDUCED_MOTION = {
   'animation-duration': '0.01ms !important',
   'animation-iteration-count': '1 !important',
   'transition-duration': '0.01ms !important',
 }
 
-/** A theme.css with the given :root map and (by default) the reduced-motion block. */
-const themeCss = (vars, { motion = REDUCED_MOTION } = {}) => {
-  const root = Object.entries(vars)
+const declLines = (obj, indent) =>
+  Object.entries(obj)
+    .map(([k, v]) => `${indent}${k}: ${v};`)
+    .join('\n')
+
+const motionBlock = (selector, decls) =>
+  `${RM_AT_RULE} {\n  ${selector} {\n${declLines(decls, '    ')}\n  }\n}`
+
+/** A theme.css with the given :root map, optional .dark block, and a
+ *  reduced-motion block (selector + decls overridable), plus any extra raw CSS. */
+const varBlock = (selector, vars) =>
+  `${selector} {\n${Object.entries(vars)
     .map(([k, v]) => `  --${k}: ${v};`)
-    .join('\n')
-  const motionDecls = Object.entries(motion)
-    .map(([k, v]) => `    ${k}: ${v};`)
-    .join('\n')
-  return [
-    ':root {',
-    root,
-    '}',
-    '@media (prefers-reduced-motion: reduce) {',
-    '  *,',
-    '  ::before,',
-    '  ::after {',
-    motionDecls,
-    '  }',
-    '}',
-  ].join('\n')
+    .join('\n')}\n}`
+
+const themeCss = (
+  vars,
+  { dark = null, motionSelector = MOTION_SELECTOR, motion = REDUCED_MOTION, extra = '' } = {},
+) => {
+  const parts = [varBlock(':root', vars)]
+  if (dark) parts.push(varBlock('.dark', dark))
+  parts.push(motionBlock(motionSelector, motion))
+  if (extra) parts.push(extra)
+  return parts.join('\n')
 }
 
 /** A registry.json string with a registry:theme item carrying the given maps. */
-const registryJson = (light, { dark = {}, motion = REDUCED_MOTION } = {}) =>
+const registryJson = (light, { dark = {}, motion = { [MOTION_SELECTOR]: REDUCED_MOTION } } = {}) =>
   JSON.stringify({
     items: [
       {
         name: 'theme',
         type: 'registry:theme',
         cssVars: { theme: { 'font-heading': 'var(--font-sans)' }, light, dark },
-        css: { '@media (prefers-reduced-motion: reduce)': { '*, ::before, ::after': motion } },
+        css: { [RM_AT_RULE]: motion },
       },
       { name: 'button', type: 'registry:ui' },
     ],
@@ -63,7 +74,7 @@ const registryJson = (light, { dark = {}, motion = REDUCED_MOTION } = {}) =>
 const MAP = { background: 'var(--surface-default)', primary: 'var(--action-default)' }
 const failures = (theme, registry) => checkThemeParity(theme, registry).failures
 
-// ─── The parser ─────────────────────────────────────────────────────────────
+// ─── The parsers ────────────────────────────────────────────────────────────
 
 test('parseRootVars reads :root and ignores @theme blocks and comments', () => {
   const css = [
@@ -79,17 +90,51 @@ test('parseRootVars reads :root and ignores @theme blocks and comments', () => {
   assert.deepEqual(parseRootVars(css), MAP)
 })
 
-test('parseReducedMotion returns {} when the block is absent', () => {
-  assert.deepEqual(parseReducedMotion(':root { --x: 1; }'), {})
+test('parseDarkVars reads .dark / [data-theme=dark] blocks, not the @custom-variant', () => {
+  const css = [
+    "@custom-variant dark (&:is(.dark, .dark *, [data-theme='dark'], [data-theme='dark'] *));",
+    ':root { --primary: var(--action-default); }',
+    '.dark { --primary: var(--action-dark); }',
+    "[data-theme='dark'] { --ring: var(--border-dark); }",
+  ].join('\n')
+  assert.deepEqual(parseDarkVars(css), {
+    primary: 'var(--action-dark)',
+    ring: 'var(--border-dark)',
+  })
+})
+
+test('parseDarkVars is empty when there is no dark block (only the @custom-variant)', () => {
+  const css = [
+    "@custom-variant dark (&:is(.dark, .dark *, [data-theme='dark']));",
+    ':root { --primary: var(--action-default); }',
+  ].join('\n')
+  assert.deepEqual(parseDarkVars(css), {})
+})
+
+test('parseReducedMotion is selector-aware and merges across media blocks', () => {
+  const css = [
+    motionBlock(MOTION_SELECTOR, REDUCED_MOTION),
+    motionBlock('.marquee', { 'animation-iteration-count': '1 !important' }),
+  ].join('\n')
+  const rules = parseReducedMotion(css)
+  assert.deepEqual(Object.keys(rules).sort(), ['*, ::before, ::after', '.marquee'])
+  assert.equal(rules['*, ::before, ::after']['transition-duration'], '0.01ms !important')
+  assert.equal(rules['.marquee']['animation-iteration-count'], '1 !important')
 })
 
 // ─── Shapes that must pass ──────────────────────────────────────────────────
 
-test('passes when :root and cssVars.light agree (map, dark, reduced-motion)', () => {
+test('passes when :root, dark and reduced-motion all agree (dark empty)', () => {
   assert.deepEqual(failures(themeCss(MAP), registryJson(MAP)), [])
 })
 
-// ─── Drifts that must fail ──────────────────────────────────────────────────
+test('passes when a dark override matches on both sides', () => {
+  const theme = themeCss(MAP, { dark: { primary: 'var(--action-dark)' } })
+  const registry = registryJson(MAP, { dark: { primary: 'var(--action-dark)' } })
+  assert.deepEqual(failures(theme, registry), [])
+})
+
+// ─── Light-map drifts ───────────────────────────────────────────────────────
 
 test('fails when :root has a key cssVars.light lacks', () => {
   const [msg] = failures(themeCss({ ...MAP, ring: 'var(--border-strong)' }), registryJson(MAP))
@@ -101,23 +146,67 @@ test('fails when cssVars.light has a key :root lacks', () => {
   assert.match(msg, /registry cssVars\.light defines "ring" but theme\.css :root does not/)
 })
 
-test('fails when a shared key has different values', () => {
+test('fails when a shared light key has different values', () => {
   const [msg] = failures(themeCss(MAP), registryJson({ ...MAP, primary: 'var(--nsw-blue-800)' }))
   assert.match(msg, /--primary differs/)
 })
 
-test('fails when cssVars.dark is non-empty (no matching theme.css dark override)', () => {
-  const [msg] = failures(themeCss(MAP), registryJson(MAP, { dark: { primary: 'var(--x)' } }))
-  assert.match(msg, /cssVars\.dark is non-empty/)
+// ─── Dark-map drifts (qodo #1) ──────────────────────────────────────────────
+
+test('fails a CSS-only dark override (theme.css .dark, empty cssVars.dark)', () => {
+  const [msg] = failures(
+    themeCss(MAP, { dark: { primary: 'var(--action-dark)' } }),
+    registryJson(MAP),
+  )
+  assert.match(msg, /defines --primary but registry cssVars\.dark does not/)
 })
 
-test('fails when the reduced-motion rule differs', () => {
+test('fails a registry-only dark override (cssVars.dark, no theme.css .dark)', () => {
+  const [msg] = failures(
+    themeCss(MAP),
+    registryJson(MAP, { dark: { primary: 'var(--action-dark)' } }),
+  )
+  assert.match(msg, /registry cssVars\.dark defines "primary" but theme\.css/)
+})
+
+test('fails a differing dark value', () => {
+  const theme = themeCss(MAP, { dark: { primary: 'var(--a)' } })
+  const registry = registryJson(MAP, { dark: { primary: 'var(--b)' } })
+  assert.match(failures(theme, registry)[0], /--primary differs/)
+})
+
+// ─── Reduced-motion drifts (qodo #2) ────────────────────────────────────────
+
+test('fails when a reduced-motion value differs', () => {
   const registry = registryJson(MAP, {
-    motion: { ...REDUCED_MOTION, 'transition-duration': '0.02ms !important' },
+    motion: {
+      [MOTION_SELECTOR]: { ...REDUCED_MOTION, 'transition-duration': '0.02ms !important' },
+    },
   })
   const [msg] = failures(themeCss(MAP), registry)
-  assert.match(msg, /reduced-motion rule differs for transition-duration/)
+  assert.match(msg, /reduced-motion:.*transition-duration.*differs/)
 })
+
+test('fails when the theme narrows the reduced-motion selector', () => {
+  const [msg] = failures(themeCss(MAP, { motionSelector: '.only-this' }), registryJson(MAP))
+  assert.match(msg, /selector "\.only-this"|selector "\*, ::before, ::after"/)
+})
+
+test('fails when the registry adds an extra reduced-motion selector', () => {
+  const registry = registryJson(MAP, {
+    motion: { [MOTION_SELECTOR]: REDUCED_MOTION, '.extra': { 'animation-duration': '0s' } },
+  })
+  const [msg] = failures(themeCss(MAP), registry)
+  assert.match(msg, /registry defines selector "\.extra" that theme\.css does not/)
+})
+
+test('catches drift in a SECOND reduced-motion media block in theme.css', () => {
+  const theme = themeCss(MAP, { extra: motionBlock('.second', { 'animation-duration': '0s' }) })
+  const [msg] = failures(theme, registryJson(MAP))
+  assert.match(msg, /theme\.css defines selector "\.second" that the registry does not/)
+})
+
+// ─── Structural failures ────────────────────────────────────────────────────
 
 test('fails when there is no registry:theme item', () => {
   const registry = JSON.stringify({ items: [{ name: 'button', type: 'registry:ui' }] })
@@ -142,8 +231,5 @@ test('runs the check when invoked directly, and passes the real source tree', ()
   const cwd = fileURLToPath(new URL('..', import.meta.url)) // packages/ui
   const run = spawnSync(process.execPath, [script], { cwd, encoding: 'utf8' })
   assert.equal(run.status, 0, run.stderr)
-  assert.match(
-    run.stdout,
-    /✔ Theme parity: \d+ tokens agree across theme\.css :root and registry cssVars\.light\./,
-  )
+  assert.match(run.stdout, /✔ Theme parity: \d+ tokens agree/)
 })
