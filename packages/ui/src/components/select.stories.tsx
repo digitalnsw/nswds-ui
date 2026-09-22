@@ -74,6 +74,31 @@ export const Default: Story = {
 export const Variants: Story = {
   render: () => (
     <div className='flex flex-col items-start gap-6'>
+      {/* Default (crisp field) alongside the filled-band variant */}
+      <div className='flex flex-wrap items-start gap-4'>
+        <Select defaultValue='nsw'>
+          <SelectTrigger className='w-56' aria-label='State (crisp field)'>
+            <SelectValue placeholder='Select a state' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='nsw'>New South Wales</SelectItem>
+            <SelectItem value='vic'>Victoria</SelectItem>
+            <SelectItem value='qld'>Queensland</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select defaultValue='nsw'>
+          <SelectTrigger variant='filled' className='w-56' aria-label='State (filled band)'>
+            <SelectValue placeholder='Select a state' />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value='nsw'>New South Wales</SelectItem>
+            <SelectItem value='vic'>Victoria</SelectItem>
+            <SelectItem value='qld'>Queensland</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Grouped items with labels and a separator */}
       <Select defaultValue='syd'>
         <SelectTrigger className='w-56' aria-label='City'>
@@ -106,6 +131,17 @@ export const Variants: Story = {
         </SelectContent>
       </Select>
 
+      {/* Invalid — 2px danger border, danger focus ring (matches Input) */}
+      <Select>
+        <SelectTrigger aria-invalid className='w-56' aria-label='State (invalid)'>
+          <SelectValue placeholder='Select a state' />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='nsw'>New South Wales</SelectItem>
+          <SelectItem value='vic'>Victoria</SelectItem>
+        </SelectContent>
+      </Select>
+
       {/* Disabled */}
       <Select disabled>
         <SelectTrigger className='w-56' aria-label='Disabled'>
@@ -128,11 +164,11 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="select-trigger"].')
     }
 
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
+    // Proves globals.css loaded: the --input-border token resolves to a real
+    // colour rather than staying transparent.
     const borderColor = getComputedStyle(trigger).borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
+      throw new Error(`Expected the --input-border token to resolve, received "${borderColor}".`)
     }
   },
 }

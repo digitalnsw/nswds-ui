@@ -1698,6 +1698,7 @@
       "title": "Native Select",
       "description": "A styled native HTML select control.",
       "dependencies": [
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
@@ -1804,6 +1805,7 @@
       "description": "A dropdown for selecting a single value from a list.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
