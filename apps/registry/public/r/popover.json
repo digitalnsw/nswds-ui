@@ -33,6 +33,6 @@
   ],
   "type": "registry:ui",
   "meta": {
-    "nswdsVersion": "8.0.0"
+    "nswdsVersion": "8.1.0"
   }
 }
