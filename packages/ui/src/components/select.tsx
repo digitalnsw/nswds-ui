@@ -35,10 +35,19 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
 const selectTriggerVariants = cva(
   // Field foundation shared with Input (input.tsx): the same --input-* semantic
   // tokens, 16px text, and an outline-based focus ring. No `outline-none` here —
-  // it sets --tw-outline-style:none on the element and would suppress the
-  // focus-visible outline below. Dark mode and brand themes restyle via tokens,
-  // so there are no dark: variants.
-  "flex w-fit items-center justify-between gap-2 rounded-sm text-base whitespace-nowrap text-(--input-foreground) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--input-ring) disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-(--input-invalid-border) aria-invalid:hover:bg-(--input-invalid-surface-hover) aria-invalid:focus-visible:outline-(--input-invalid-ring) data-placeholder:text-(--input-placeholder) *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 motion-safe:transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  // it sets --tw-outline-style:none on the element and would suppress the focus
+  // outline below. Dark mode and brand themes restyle via tokens, so there are
+  // no dark: variants.
+  //
+  // Focus is `focus:`, not the `focus-visible:` Input uses — like Button, and
+  // for the same reason (see button.tsx). This trigger is a <button>, and a
+  // button focused by MOUSE does not match :focus-visible, so on a pointer click
+  // the ring never painted. A native <select> DOES match :focus-visible on click
+  // (the browser's form-control heuristic), which is why NativeSelect keeps
+  // focus-visible; this custom trigger cannot, so `focus:` rings on click too and
+  // the control reads as focused like the rest of the field family. Do not
+  // "unify" it back to focus-visible.
+  "flex w-fit items-center justify-between gap-2 rounded-sm text-base whitespace-nowrap text-(--input-foreground) focus:outline focus:outline-2 focus:outline-offset-2 focus:outline-(--input-ring) disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-2 aria-invalid:border-(--input-invalid-border) aria-invalid:hover:bg-(--input-invalid-surface-hover) aria-invalid:focus:outline-(--input-invalid-ring) data-placeholder:text-(--input-placeholder) *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 motion-safe:transition-colors [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
