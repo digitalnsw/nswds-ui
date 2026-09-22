@@ -69,6 +69,16 @@ export const Variants: Story = {
         <NativeSelectOption value='b'>Second option</NativeSelectOption>
       </NativeSelect>
 
+      <NativeSelect aria-label='Filled band' variant='filled' defaultValue='a'>
+        <NativeSelectOption value='a'>Filled band</NativeSelectOption>
+        <NativeSelectOption value='b'>Second option</NativeSelectOption>
+      </NativeSelect>
+
+      <NativeSelect aria-label='Invalid' aria-invalid defaultValue='a'>
+        <NativeSelectOption value='a'>Invalid</NativeSelectOption>
+        <NativeSelectOption value='b'>Second option</NativeSelectOption>
+      </NativeSelect>
+
       <NativeSelect aria-label='Grouped options' defaultValue='syd'>
         <NativeSelectOptGroup label='New South Wales'>
           <NativeSelectOption value='syd'>Sydney</NativeSelectOption>
@@ -95,8 +105,8 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="native-select"].')
     }
 
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
+    // Proves globals.css loaded: the --input-border token resolves to a real
+    // colour rather than staying transparent.
     const borderColor = getComputedStyle(select).borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
       throw new Error(`Expected border-input to resolve, received "${borderColor}".`)

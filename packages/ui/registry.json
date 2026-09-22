@@ -1457,7 +1457,7 @@
       "type": "registry:ui",
       "title": "Native Select",
       "description": "A styled native HTML select control.",
-      "dependencies": ["clsx", "tailwind-merge"],
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/icons.json"
