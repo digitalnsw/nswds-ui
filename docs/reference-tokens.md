@@ -216,6 +216,11 @@ for the attribute form.
 
 ### The import-order trap
 
+> This trap applies only to the two-build fallback. The single-build entry
+> `@import '@nswds/ui/tailwind.css'` compiles everything in one pass and has no import-order trap —
+> prefer it if you run your own Tailwind. See
+> [Using it with your own Tailwind build](https://github.com/digitalnsw/nswds-ui/blob/main/packages/ui/README.md#using-it-with-your-own-tailwind-build).
+
 `@nswds/ui/styles.css` must come **after** any `@nswds/tokens` Tailwind colour bridge:
 
 ```css
