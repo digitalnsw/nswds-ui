@@ -1,3 +1,9 @@
+## [8.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.1.1...@nswds/ui-v8.2.0) (2026-09-22)
+
+### Features
+
+* **ui:** ship the Tailwind theme so consumers can compile one build ([#209](https://github.com/digitalnsw/nswds-ui/issues/209)) ([4a7f025](https://github.com/digitalnsw/nswds-ui/commit/4a7f025ef7ba524900598356e3808d177a42a163)), closes [#207](https://github.com/digitalnsw/nswds-ui/issues/207) [#207](https://github.com/digitalnsw/nswds-ui/issues/207)
+
 ## [8.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.1.0...@nswds/ui-v8.1.1) (2026-09-22)
 
 ### Bug Fixes
