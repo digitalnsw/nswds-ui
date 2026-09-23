@@ -14,6 +14,36 @@
  */
 
 import type { ReactNode } from 'react'
+import { expect, userEvent, waitFor } from 'storybook/test'
+
+// ─── Overlay teardown ─────────────────────────────────────────────────────────
+
+/**
+ * Resolves once the overlay element carrying `data-slot={slot}` has left the
+ * DOM — which is what the end-of-play axe pass cares about, since a removed
+ * element takes its focus guards with it (the CI `aria-hidden-focus` race).
+ * For the Base UI popups removal lands after the exit transition; for the vaul
+ * drawer the portal unmounts synchronously on close, so its removal is all
+ * this proves, not a finished animation.
+ */
+export async function waitForUnmount(slot: string) {
+  const selector = `[data-slot="${slot}"]`
+  await waitFor(() => expect(document.querySelector(selector)).not.toBeInTheDocument(), {
+    timeout: 3000,
+    onTimeout: () => new Error(`[data-slot="${slot}"] was still mounted after 3s.`),
+  })
+}
+
+/**
+ * Presses Escape and waits for the overlay to unmount (see `waitForUnmount`).
+ * The element must be present to begin with, so a renamed slot fails here
+ * rather than turning the wait into a no-op.
+ */
+export async function closeOverlay(slot: string) {
+  await expect(document.querySelector(`[data-slot="${slot}"]`)).toBeInTheDocument()
+  await userEvent.keyboard('{Escape}')
+  await waitForUnmount(slot)
+}
 
 // ─── docsTemplate ─────────────────────────────────────────────────────────────
 

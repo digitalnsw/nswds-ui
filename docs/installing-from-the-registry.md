@@ -65,7 +65,7 @@ npx shadcn@latest add @nswds/button @nswds/link @nswds/badge
 
 ### Available components
 
-The registry serves **78 items**: 62 components, 2 icon items, 12 blocks, 1 hook, and the
+The registry serves **83 items**: 67 components, 2 icon items, 12 blocks, 1 hook, and the
 `theme` foundation that every one of them depends on.
 
 The complete list — with each item's exports and a one-line description — is in the

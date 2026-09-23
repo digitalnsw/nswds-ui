@@ -168,20 +168,20 @@ import {
 
 ## Components
 
-62 components, plus 12 copy-and-adapt blocks on the registry channel. The complete catalogue —
+67 components, plus 12 copy-and-adapt blocks on the registry channel. The complete catalogue —
 with every export and a description per item — is in the
 [component reference](https://github.com/digitalnsw/nswds-ui/blob/main/docs/reference-components.md).
 
 **NSW-original** (no upstream equivalent — the reference is their only documentation):
-Callout, Container, DescriptionList, ExpandableSearch, Footer, Header, LabeledSeparator, Link,
+Callout (also exported as `Alert`), Container, DescriptionList, ExpandableSearch, Footer, Header, LabeledSeparator, Link,
 LinkCard, Logo, MainNav, Masthead, OnThisPage, PushMenu, Section, SideNav, SiteSearch, SkipLink,
 StepIndicator, TabNav, ThemeSwitcher.
 
 **Shadcn shapes on Base UI primitives, NSW-styled:**
-Accordion, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Card, Carousel, Checkbox,
-Collapsible, Combobox, DirectionProvider, Drawer, Field, HoverCard, Input, InputGroup, InputOTP,
+Accordion, AlertDialog, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Card, Carousel, Checkbox,
+Collapsible, Combobox, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP,
 Kbd, Label, NativeSelect, Pagination, Popover, Progress, RadioGroup, ResizablePanelGroup, ScrollArea, Select,
-Separator, Sheet, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup,
+Separator, Sheet, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup,
 Tooltip.
 
 Plus the icon set under `@nswds/ui/icons` and the brand marks under `@nswds/ui/icons/brands`.

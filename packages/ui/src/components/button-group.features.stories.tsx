@@ -30,7 +30,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ReactNode } from 'react'
-import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
+import { expect, screen, userEvent, within } from 'storybook/test'
 
 import {
   IconContentCopy,
@@ -56,6 +56,7 @@ import {
 } from './navigation-menu.js'
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './sheet.js'
+import { closeOverlay } from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1181,25 +1182,6 @@ export const InPortal: Story = {
 }
 
 // ─── Overlays ─────────────────────────────────────────────────────────────────
-
-/**
- * Presses Escape and resolves once the overlay element carrying
- * `data-slot={slot}` has left the DOM — which is what the end-of-play axe pass
- * cares about, since a removed element takes its focus guards with it. For the
- * Base UI popups here removal lands after the exit transition; for the vaul
- * drawer the portal unmounts synchronously on close, so its removal is all
- * this proves, not a finished animation. The element must be present to begin
- * with, so a renamed slot fails here rather than turning the wait into a no-op.
- */
-async function closeOverlay(slot: string) {
-  const selector = `[data-slot="${slot}"]`
-  await expect(document.querySelector(selector)).toBeInTheDocument()
-  await userEvent.keyboard('{Escape}')
-  await waitFor(() => expect(document.querySelector(selector)).not.toBeInTheDocument(), {
-    timeout: 3000,
-    onTimeout: () => new Error(`[data-slot="${slot}"] was still mounted 3s after Escape.`),
-  })
-}
 
 export const InOverlays: Story = {
   name: 'In Overlays',
