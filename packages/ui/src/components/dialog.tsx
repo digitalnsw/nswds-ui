@@ -142,7 +142,9 @@ function DialogContent({
                 size='icon'
                 aria-label={closeLabel}
                 className={cn(
-                  'absolute end-4 top-4',
+                  // z-10, as Sheet's: the button comes first in the DOM, so any
+                  // positioned content after it would otherwise paint over it.
+                  'absolute end-4 top-4 z-10',
                   // On the band the button takes the band's inverse ink — only
                   // when a header is there to paint the band. The extra
                   // data-slot keeps this above Button's own dark ink at any
