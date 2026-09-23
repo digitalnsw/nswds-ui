@@ -70,7 +70,13 @@ function SheetContent({
         )}
         {...props}
       >
-        {children}
+        {/* The close button comes FIRST in the DOM (it is absolutely placed, so
+            the visual order is unchanged). Base UI focuses the first tabbable
+            element on open; after the content, that is a footer button, and a
+            long sheet opens scrolled to the bottom with the reader past
+            everything above it. Being first also means it would paint UNDER
+            any later positioned child in the corner (a Button is `relative`),
+            so it carries its own z-index. */}
         {showCloseButton && (
           <SheetPrimitive.Close
             data-slot='sheet-close'
@@ -80,13 +86,14 @@ function SheetContent({
                 color='grey'
                 size='icon'
                 aria-label={closeLabel}
-                className='absolute end-4 top-4'
+                className='absolute end-4 top-4 z-10'
               />
             }
           >
             <IconClose />
           </SheetPrimitive.Close>
         )}
+        {children}
       </SheetPrimitive.Popup>
     </SheetPortal>
   )
