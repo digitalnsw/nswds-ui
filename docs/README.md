@@ -12,7 +12,7 @@ design system — organised by what you're trying to do.
 | [Build your first NSW page](tutorial-build-your-first-page.md)  | **Tutorial** — install to a working, accessible NSW page in ten minutes                    |
 | [Installing from the registry](installing-from-the-registry.md) | **How-to** — the copy-the-source channel, with the one-time `@nswds` namespace setup       |
 | [Theme and re-brand](howto-theme-and-rebrand.md)                | **How-to** — colour variants, agency palettes, scoped overrides, call-site tweaks          |
-| [Component reference](reference-components.md)                  | **Reference** — all 62 components, 12 blocks, the hook, and props for the NSW-original set |
+| [Component reference](reference-components.md)                  | **Reference** — all 67 components, 12 blocks, the hook, and props for the NSW-original set |
 | [Design token reference](reference-tokens.md)                   | **Reference** — the four token layers, every token, dark mode                              |
 | [Migrating from 1.x to 2.0](migrating-to-v2.md)                 | **How-to** — the API-surface release                                                       |
 

@@ -202,6 +202,14 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 - **Focus:** 2px `border-strong` outline, offset 2px.
 - **Error:** border thickens to 2px in `danger-border`, hover surface tints `danger-surface`, focus ring flips to `danger-solid`. Placeholder text uses `text-muted` (contrast-safe), never `text-subtle`.
 
+### Dialogs, alert dialogs and menus
+
+- **Character:** the line system applied to overlays. A dialog or menu is a raised surface drawn with the 1px `foreground/10` ring — no shadow, and no blur on the page behind it (the scrim is a flat `grey-950` at 70%, shared with Sheet and Drawer through `src/lib/overlay.ts`). The package's other popups — Popover, Select, Combobox, HoverCard — cast no shadow either.
+- **Three looks, one vocabulary.** `DialogContent`, `AlertDialogContent`, `DropdownMenuContent` and `Skeleton` take `variant`: `default` (Hairline) divides the header and footer off with hairlines that bleed to the edges; `band` paints the header as a solid action-colour band with an inverse title and sets the footer on a subtle band; `rule` caps the top edge with a 4px rule in the ink and puts the title on a hairline in the text colour, with actions aligned to the start. A submenu inherits the look of the menu it opens from.
+- **The alert colour follows the decision.** Under `band` and `rule` an alert dialog takes the danger ramp only when its `AlertDialogAction` is `color='danger'`; any other confirm keeps the action colour, so a "Sign out?" never borrows the alarm of a "Delete?".
+- **Menu focus is drawn, not tinted.** A highlight tint is ~1.1:1 against the menu surface, which is no focus cue on its own. `default` adds a 2px inset `border-strong` ring for keyboard focus; `band` fills the row solid; `rule` marks it with a 4px start-edge rail in the ink, like SideNav's current-page rail. Rows are 44px and 16px at every look.
+- **Loading fills are ink tints.** In dark mode `--muted` and `--background` are the same token, so a `bg-muted` fill vanishes on the page; Skeleton and icon tiles use `foreground/10` instead.
+
 ### Links (signature component)
 
 GOV.UK-lineage halo links: medium-weight text in the link ink (`primary-800` light / `primary-200` dark), always underlined at 4px offset. On hover the underline thickens to 2px and a 10% ink halo paints behind the text, extended 2px above and 4px below the line box by box-shadow — with `box-decoration-break: clone` so every wrapped line gets its own halo. Active deepens the halo to 18%. This halo is the system's most distinctive interactive signature; Button's `link` variant reproduces it exactly.

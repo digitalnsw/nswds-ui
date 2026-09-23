@@ -20,6 +20,9 @@
 import './app.css'
 
 import type {
+  AlertDialogVariant,
+  AlertProps,
+  AlertStatus,
   BadgeButtonProps,
   BadgeLinkProps,
   BadgeProps,
@@ -38,6 +41,8 @@ import type {
   DescriptionDetailsProps,
   DescriptionListProps,
   DescriptionTermProps,
+  DialogVariant,
+  DropdownMenuVariant,
   ExpandableSearchButtonProps,
   ExpandableSearchFieldProps,
   ExpandableSearchProps,
@@ -111,6 +116,19 @@ import type {
   UseChromeHeightResult,
 } from '@nswds/ui'
 import {
+  Alert,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogOverlay,
+  AlertDialogPortal,
+  AlertDialogTitle,
+  AlertDialogTrigger,
   AspectRatio,
   Badge,
   BadgeButton,
@@ -132,6 +150,16 @@ import {
   DescriptionDetails,
   DescriptionList,
   DescriptionTerm,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  DialogTrigger,
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -142,6 +170,28 @@ import {
   DrawerPortal,
   DrawerTitle,
   DrawerTrigger,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuLinkItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
   ExpandableSearch,
   ExpandableSearchField,
   ExternalLink,
@@ -204,6 +254,7 @@ import {
   SheetTrigger,
   SideNav,
   SiteSearch,
+  Skeleton,
   SkipLink,
   SkipLinks,
   Slider,
@@ -217,12 +268,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
   TouchTarget,
+  alertDialogContentVariants,
+  alertVariants,
   badgeVariants,
   buttonVariants,
   calloutVariants,
   cn,
   containerVariants,
   descriptionListVariants,
+  dialogContentVariants,
+  dropdownMenuContentVariants,
+  emptyMediaVariants,
   expandableSearchVariants,
   footerColors,
   footerContainerVariants,
@@ -241,6 +297,7 @@ import {
   mastheadVariants,
   sectionVariants,
   sideNavRowVariants,
+  skeletonVariants,
   skipLinkVariants,
   stepStatusStyles,
   useChromeHeight,
@@ -364,6 +421,13 @@ const currentSideNavRow: SideNavRowVariantProps = { current: true }
 // cannot drift apart — and so a member removed from the union is a compile
 // error rather than a literal that quietly stops matching.
 const calloutStatus: CalloutStatus = 'warning'
+// Alert is Callout under shadcn's name — the alias types must stay assignable.
+const alertStatus: AlertStatus = calloutStatus
+const alertProps: AlertProps = { status: alertStatus, title: 'Alert alias' }
+// The overlay looks share one vocabulary; each union is exported per component.
+const dialogLook: DialogVariant = 'band'
+const alertDialogLook: AlertDialogVariant = 'rule'
+const menuLook: DropdownMenuVariant = 'rule'
 
 // Masthead, ExpandableSearch and Footer each take their surface as a union.
 // Only Footer publishes the vocabulary the union is derived from, so index
@@ -383,6 +447,12 @@ const _classNames: string = cn(
   containerVariants({ size: 'contained' }),
   sectionVariants({ spacing: 'tight', divider: true }),
   calloutVariants({ status: calloutStatus }),
+  alertVariants({ status: alertStatus }),
+  emptyMediaVariants({ variant: 'icon' }),
+  skeletonVariants({ variant: 'rule' }),
+  dialogContentVariants({ variant: dialogLook }),
+  alertDialogContentVariants({ variant: alertDialogLook, size: 'sm' }),
+  dropdownMenuContentVariants({ variant: menuLook }),
   descriptionListVariants({ layout: 'columns' }),
   headerVariants({ color: headerColor }),
   headerContainerVariants({ container: 'contained' }),
@@ -809,6 +879,95 @@ function App() {
             </SheetFooter>
           </SheetContent>
         </Sheet>
+
+        <Alert {...alertProps}>Alert is Callout under shadcn's name.</Alert>
+
+        {/* Dialog — DialogContent renders its own Portal + Overlay; the bare
+            parts are composed below so their exports are exercised too. */}
+        <Dialog>
+          <DialogTrigger>Open dialog</DialogTrigger>
+          <DialogContent variant={dialogLook} closeLabel='Close dialog'>
+            <DialogHeader>
+              <DialogTitle>Dialog title</DialogTitle>
+              <DialogDescription>Dialog description</DialogDescription>
+            </DialogHeader>
+            <DialogFooter showCloseButton>
+              <DialogClose>Cancel</DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogPortal>
+            <DialogOverlay />
+          </DialogPortal>
+        </Dialog>
+
+        <AlertDialog>
+          <AlertDialogTrigger>Open alert dialog</AlertDialogTrigger>
+          <AlertDialogContent size='sm' variant={alertDialogLook} tone='danger'>
+            <AlertDialogHeader>
+              <AlertDialogMedia>
+                <IconAdd />
+              </AlertDialogMedia>
+              <AlertDialogTitle>Alert dialog title</AlertDialogTitle>
+              <AlertDialogDescription>Alert dialog description</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction color='danger'>Confirm</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <AlertDialog>
+          <AlertDialogPortal>
+            <AlertDialogOverlay />
+          </AlertDialogPortal>
+        </AlertDialog>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger>Open menu</DropdownMenuTrigger>
+          <DropdownMenuContent align='end' variant={menuLook}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel inset>Account</DropdownMenuLabel>
+              <DropdownMenuItem>
+                Profile
+                <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+              </DropdownMenuItem>
+              <DropdownMenuLinkItem href='/help'>Help</DropdownMenuLinkItem>
+              <DropdownMenuItem variant='destructive'>Sign out</DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuCheckboxItem checked>Show status</DropdownMenuCheckboxItem>
+            <DropdownMenuRadioGroup value='newest'>
+              <DropdownMenuRadioItem value='newest'>Newest</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem>Archive</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuPortal />
+        </DropdownMenu>
+
+        <Skeleton className='h-4 w-48' />
+        <Skeleton variant='band' className='h-4 w-48' />
+
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant='icon'>
+              <IconAdd />
+            </EmptyMedia>
+            <EmptyTitle>Nothing here yet</EmptyTitle>
+            <EmptyDescription>Items you add appear here.</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button>Add an item</Button>
+          </EmptyContent>
+        </Empty>
 
         {/* Drawer — DrawerContent renders its own Portal + Overlay, so it is
             composed directly (no outer portal). */}

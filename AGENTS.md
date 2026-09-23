@@ -232,6 +232,18 @@ Two `@theme` blocks make all the above available as Tailwind utility classes:
 'bg-[#0055a4]'
 ```
 
+**Recorded exception — fixed pairs no semantic role carries.** Three values are
+palette steps on purpose, because no layer-3 token holds them: the interactive
+**ink** (`primary-800` light / `primary-200` dark, DESIGN.md's Role-Flip Rule —
+`--primary` is the _fill_, which flips to a bright `blue-500` in dark), the
+modal **scrim** (`grey-950` at 70%), and **Button's danger pairing**
+(`danger-600` fill with white text, 6.6:1 in both modes, where
+`--destructive` with `--text-inverse` falls to 4.06:1 in dark). Button, Header
+and the overlays use them. Don't restate them per component: the overlays read
+the ink and scrim from `src/lib/overlay.ts` (`overlayInk`, `overlayScrim`), so
+a retune is one edit. A brand theme re-points these by overriding the palette
+steps, not `--primary`.
+
 ### Adding a new theme / brand
 
 1. Add a selector block that overrides the shadcn semantic tokens (layer 3), e.g. `.nsw-health { --primary: oklch(…); }`.
