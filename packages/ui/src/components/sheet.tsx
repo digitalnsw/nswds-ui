@@ -68,11 +68,25 @@ function SheetContent({
   closeLabel?: string
 }) {
   const popupRef = React.useRef<HTMLDivElement | null>(null)
+  // Returns its own cleanup, so React 19 never calls this with null. That
+  // cleanup must run the consumer's in turn: React keeps a callback ref's
+  // return value as its teardown, and dropping it would skip that teardown.
   const mergedRef = React.useCallback(
     (node: HTMLDivElement | null) => {
       popupRef.current = node
-      if (typeof ref === 'function') ref(node)
-      else if (ref) ref.current = node
+      if (typeof ref === 'function') {
+        const cleanup = ref(node)
+        return () => {
+          popupRef.current = null
+          if (typeof cleanup === 'function') cleanup()
+          else ref(null)
+        }
+      }
+      if (ref) ref.current = node
+      return () => {
+        popupRef.current = null
+        if (ref) ref.current = null
+      }
     },
     [ref],
   )

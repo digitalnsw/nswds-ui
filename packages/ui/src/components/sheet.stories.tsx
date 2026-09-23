@@ -302,6 +302,57 @@ export const CloseButtonStaysOnTop: Story = {
   },
 }
 
+// Module scope so the ref keeps one identity across renders, as a consumer's
+// stable callback ref would.
+const cleanupRefCalls: Array<HTMLElement | null | 'cleanup'> = []
+function cleanupRef(node: HTMLDivElement | null) {
+  cleanupRefCalls.push(node)
+  return () => {
+    cleanupRefCalls.push('cleanup')
+  }
+}
+
+/**
+ * SheetContent merges a consumer's `ref` with its own. React 19 keeps a
+ * callback ref's return value as its cleanup and, when there is one, never
+ * calls the ref with null — so the merge must hand that cleanup back rather
+ * than swallow it, or a consumer's teardown never runs.
+ */
+export const ForwardsCleanupRef: Story = {
+  name: 'Forwards a cleanup-returning ref',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open ref sheet</SheetTrigger>
+      <SheetContent ref={cleanupRef}>
+        <SheetHeader>
+          <SheetTitle>Ref sheet</SheetTitle>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    cleanupRefCalls.length = 0
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open ref sheet' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Ref sheet' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      await expect(cleanupRefCalls.at(-1)).toBe(sheet)
+    })
+
+    // Every attach was torn down by the consumer's own cleanup, never by a
+    // null call. Counted rather than matched exactly so a StrictMode
+    // double-attach would still pass.
+    const attaches = cleanupRefCalls.filter((call) => call instanceof HTMLElement).length
+    const cleanups = cleanupRefCalls.filter((call) => call === 'cleanup').length
+    await expect(cleanupRefCalls).not.toContain(null)
+    await expect(attaches).toBeGreaterThan(0)
+    await expect(cleanups).toBe(attaches)
+  },
+}
+
 export const Variants: Story = {
   name: 'Variants',
   render: () => (
