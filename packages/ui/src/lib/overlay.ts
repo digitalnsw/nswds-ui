@@ -20,4 +20,13 @@ const overlayScrim = 'bg-grey-950/70'
  */
 const overlayInk = '[--overlay-ink:var(--primary-800)] dark:[--overlay-ink:var(--primary-200)]'
 
-export { overlayInk, overlayScrim }
+/**
+ * Sets `--overlay-danger` and `--overlay-danger-text`, the fill and text of a
+ * danger band — AlertDialog's destructive band, the band-look destructive menu
+ * row. Button's own danger pairing, danger-600 with white: 6.6:1 in both modes,
+ * where `--destructive` with `--text-inverse` falls to 4.06:1 in dark. One
+ * declaration, so the two cannot drift apart (AGENTS.md §3).
+ */
+const overlayDanger = '[--overlay-danger:var(--danger-600)] [--overlay-danger-text:var(--white)]'
+
+export { overlayDanger, overlayInk, overlayScrim }

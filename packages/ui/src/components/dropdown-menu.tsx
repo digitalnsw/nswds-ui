@@ -1,12 +1,15 @@
 'use client'
 
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
+import { mergeProps } from '@base-ui/react/merge-props'
+import { useRender } from '@base-ui/react/use-render'
+import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
 import { IconCheck } from '../icons/check.js'
 import { IconChevronRight } from '../icons/chevron-right.js'
 import { ButtonGroupBoundary } from '../lib/button-group-context.js'
-import { overlayInk } from '../lib/overlay.js'
+import { overlayDanger, overlayInk } from '../lib/overlay.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -24,6 +27,29 @@ import { cn } from '../lib/utils.js'
  * No shadow — depth is drawn (DESIGN.md, The Hairline Rule).
  */
 type DropdownMenuVariant = 'default' | 'band' | 'rule'
+
+/**
+ * The popup's own classes and its look; the rows and labels read the look from
+ * `data-variant` through `group-data-*`, since cva sees only its own props.
+ * Radius and padding sit in every branch, not the base, so no branch competes
+ * with a base value at equal specificity. The base is at least as wide as the
+ * trigger and never narrower than 12rem — shadcn pins the menu to the
+ * trigger's width, which squeezes a menu opened from an icon button to a sliver.
+ */
+const dropdownMenuContentVariants = cva(
+  'group/dropdown-menu-content z-50 max-h-(--available-height) w-max max-w-(--available-width) min-w-[max(var(--anchor-width),12rem)] origin-(--transform-origin) overflow-x-hidden overflow-y-auto bg-popover text-popover-foreground ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95',
+  {
+    variants: {
+      variant: {
+        default: 'rounded-md p-1',
+        band: 'rounded-md p-0',
+        // rule: the rows run edge to edge under a 4px ink cap.
+        rule: 'rounded-t-sm rounded-b-md border-t-4 border-t-(--overlay-ink) pb-1',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
+)
 
 /** Lets a submenu default to the variant of the menu it opens from. */
 const DropdownMenuVariantContext = React.createContext<DropdownMenuVariant>('default')
@@ -101,14 +127,11 @@ function DropdownMenuContent({
           data-slot='dropdown-menu-content'
           data-variant={variant}
           className={cn(
-            // At least as wide as the trigger and never narrower than 12rem —
-            // shadcn pins the menu to the trigger's width, which squeezes a
-            // menu opened from an icon button down to a sliver.
-            'group/dropdown-menu-content z-50 max-h-(--available-height) w-max max-w-(--available-width) min-w-[max(var(--anchor-width),12rem)] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-md bg-popover p-1 text-popover-foreground ring-1 ring-foreground/10 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95',
+            dropdownMenuContentVariants({ variant }),
             // The ink `rule` paints its cap and rail with (see overlayInk).
             overlayInk,
-            'data-[variant=band]:p-0',
-            'data-[variant=rule]:rounded-t-sm data-[variant=rule]:border-t-4 data-[variant=rule]:border-t-(--overlay-ink) data-[variant=rule]:px-0 data-[variant=rule]:pt-0',
+            // The fill and text of band's destructive row (see overlayDanger).
+            overlayDanger,
             className,
           )}
           {...props}
@@ -131,9 +154,35 @@ function DropdownMenuGroup({ ...props }: MenuPrimitive.Group.Props) {
 }
 
 /**
+ * A label outside any group, as plain text. Base UI's group label throws with
+ * no group around it, and wrapping it in a group of its own would label an
+ * empty group — so it renders as a styled element with no group semantics.
+ */
+function DropdownMenuPlainLabel({
+  className,
+  style,
+  render,
+  ...props
+}: MenuPrimitive.GroupLabel.Props) {
+  return useRender({
+    defaultTagName: 'div',
+    render,
+    props: mergeProps<'div'>(
+      {
+        className: typeof className === 'function' ? className({}) : className,
+        style: typeof style === 'function' ? style({}) : style,
+      },
+      props,
+    ),
+  })
+}
+
+/**
  * A heading for a `DropdownMenuGroup`, which it names for assistive tech.
- * Outside a group — the shadcn/Radix habit of dropping a label straight into
- * the content — it wraps itself in a group of its own rather than crash.
+ * Only a label inside a group can do that: outside one — the shadcn/Radix
+ * habit of dropping a label straight into the content — it renders as plain
+ * visible text, naming nothing. Wrap labelled actions in `DropdownMenuGroup`
+ * when the label should name them.
  */
 function DropdownMenuLabel({
   className,
@@ -143,25 +192,23 @@ function DropdownMenuLabel({
   inset?: boolean
 }) {
   const inGroup = React.useContext(DropdownMenuGroupContext)
-  const label = (
-    <MenuPrimitive.GroupLabel
-      data-slot='dropdown-menu-label'
-      data-inset={inset || undefined}
-      className={cn(
-        'px-4 py-2 text-base font-semibold text-muted-foreground data-inset:ps-10',
-        'group-data-[variant=band]/dropdown-menu-content:bg-muted group-data-[variant=band]/dropdown-menu-content:py-2.5',
-        // rule: the label sits on a hairline in the text colour; mx-4 + ps-6
-        // puts an inset label's text on the inset items' 40px line.
-        'group-data-[variant=rule]/dropdown-menu-content:mx-4 group-data-[variant=rule]/dropdown-menu-content:mb-1 group-data-[variant=rule]/dropdown-menu-content:border-b group-data-[variant=rule]/dropdown-menu-content:border-foreground group-data-[variant=rule]/dropdown-menu-content:px-0 group-data-[variant=rule]/dropdown-menu-content:text-foreground group-data-[variant=rule]/dropdown-menu-content:data-inset:ps-6',
-        className,
-      )}
-      {...props}
-    />
-  )
+  const labelProps = {
+    'data-slot': 'dropdown-menu-label',
+    'data-inset': inset || undefined,
+    className: cn(
+      'px-4 py-2 text-base font-semibold text-muted-foreground data-inset:ps-10',
+      'group-data-[variant=band]/dropdown-menu-content:bg-muted group-data-[variant=band]/dropdown-menu-content:py-2.5',
+      // rule: the label sits on a hairline in the text colour; mx-4 + ps-6
+      // puts an inset label's text on the inset items' 40px line.
+      'group-data-[variant=rule]/dropdown-menu-content:mx-4 group-data-[variant=rule]/dropdown-menu-content:mb-1 group-data-[variant=rule]/dropdown-menu-content:border-b group-data-[variant=rule]/dropdown-menu-content:border-foreground group-data-[variant=rule]/dropdown-menu-content:px-0 group-data-[variant=rule]/dropdown-menu-content:text-foreground group-data-[variant=rule]/dropdown-menu-content:data-inset:ps-6',
+      typeof className === 'function' ? className({}) : className,
+    ),
+    ...props,
+  }
   return inGroup ? (
-    label
+    <MenuPrimitive.GroupLabel {...labelProps} />
   ) : (
-    <MenuPrimitive.Group data-slot='dropdown-menu-group'>{label}</MenuPrimitive.Group>
+    <DropdownMenuPlainLabel {...labelProps} />
   )
 }
 
@@ -189,7 +236,7 @@ function DropdownMenuItem({
         // A destructive row keeps the danger colour under each look. These
         // carry one more attribute than the look's own highlight, so they win
         // at any emission order.
-        'group-data-[variant=band]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:bg-(--danger-600) group-data-[variant=band]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:text-(--white)',
+        'group-data-[variant=band]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:bg-(--overlay-danger) group-data-[variant=band]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:text-(--overlay-danger-text)',
         'group-data-[variant=rule]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:border-s-destructive group-data-[variant=rule]/dropdown-menu-content:data-[variant=destructive]:data-highlighted:bg-(--danger-surface)',
         className,
       )}
@@ -386,6 +433,7 @@ export {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  dropdownMenuContentVariants,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,

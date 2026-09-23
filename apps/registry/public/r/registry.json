@@ -2007,6 +2007,7 @@
       "description": "A modal window centred over the page, built on the Base UI dialog primitive, with an optional translatable close button.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
@@ -2045,6 +2046,7 @@
       "description": "A modal that interrupts to confirm or cancel a consequential action, built on the Base UI alert-dialog primitive.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
@@ -2082,6 +2084,7 @@
       "description": "A menu of actions, links, checkboxes and radio options opened from a trigger, built on the Base UI menu primitive.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],

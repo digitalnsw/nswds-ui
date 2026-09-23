@@ -1,6 +1,7 @@
 'use client'
 
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
+import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
 import { Button } from '../components/button.js'
@@ -46,6 +47,31 @@ function DialogPortal({ children, ...props }: DialogPrimitive.Portal.Props) {
  */
 type DialogVariant = 'default' | 'band' | 'rule'
 
+/**
+ * The popup's own classes and its look. The parts (header, footer, title,
+ * description, close button) read the look from `data-variant` through
+ * `group-data-*` instead: cva sees only its own props, not an ancestor's.
+ * Radius sits in every branch, not the base, so rule's square top never
+ * competes with a base `rounded-md` at equal specificity.
+ */
+const dialogContentVariants = cva(
+  // `w-[calc(100%-2rem)]` + `max-w-lg` rather than shadcn's
+  // `max-w-[calc(100%-2rem)] sm:max-w-sm`: two different properties, so there
+  // is no bare/responsive pair for a consumer's build to reorder (see
+  // check:cascade).
+  'group/dialog-content fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto bg-popover p-6 text-base/relaxed text-popover-foreground ring-1 ring-foreground/10 outline-hidden transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
+  {
+    variants: {
+      variant: {
+        default: 'rounded-md',
+        band: 'rounded-md',
+        rule: 'rounded-t-sm rounded-b-md border-t-4 border-t-(--overlay-ink)',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
+)
+
 function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) {
   return (
     <DialogPrimitive.Backdrop
@@ -83,14 +109,9 @@ function DialogContent({
         data-slot='dialog-content'
         data-variant={variant}
         className={cn(
-          // `w-[calc(100%-2rem)]` + `max-w-lg` rather than shadcn's
-          // `max-w-[calc(100%-2rem)] sm:max-w-sm`: two different properties, so
-          // there is no bare/responsive pair for a consumer's build to reorder
-          // (see check:cascade).
-          'group/dialog-content fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto rounded-md bg-popover p-6 text-base/relaxed text-popover-foreground ring-1 ring-foreground/10 outline-hidden transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
-          // rule: the ink cap (see overlayInk).
+          dialogContentVariants({ variant }),
+          // The ink rule's cap is drawn in (see overlayInk).
           overlayInk,
-          'data-[variant=rule]:rounded-t-sm data-[variant=rule]:border-t-4 data-[variant=rule]:border-t-(--overlay-ink)',
           // The header rules below match it at any depth, not only as a direct
           // child: an edit dialog usually wraps its content in a <form>.
           // A header with nothing below it draws no divider over empty space.
@@ -233,6 +254,7 @@ export {
   Dialog,
   DialogClose,
   DialogContent,
+  dialogContentVariants,
   DialogDescription,
   DialogFooter,
   DialogHeader,

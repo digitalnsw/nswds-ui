@@ -1,11 +1,12 @@
 'use client'
 
 import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog'
+import { cva } from 'class-variance-authority'
 import * as React from 'react'
 
 import { Button } from '../components/button.js'
 import { ButtonGroupBoundary } from '../lib/button-group-context.js'
-import { overlayInk, overlayScrim } from '../lib/overlay.js'
+import { overlayDanger, overlayInk, overlayScrim } from '../lib/overlay.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -44,6 +45,30 @@ function AlertDialogPortal({ children, ...props }: AlertDialogPrimitive.Portal.P
  * No shadow, no backdrop blur — depth is drawn (DESIGN.md, The Hairline Rule).
  */
 type AlertDialogVariant = 'default' | 'band' | 'rule'
+
+/**
+ * The popup's own classes, its size and its look. The parts read the look
+ * from `data-variant` (and the size from `data-size`) through `group-data-*`:
+ * cva sees only its own props, not an ancestor's. Radius sits in every branch,
+ * not the base, so rule's square top never ties with a base `rounded-md`.
+ */
+const alertDialogContentVariants = cva(
+  'group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto bg-popover p-6 text-base/relaxed text-popover-foreground ring-1 ring-foreground/10 outline-hidden transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0',
+  {
+    variants: {
+      size: {
+        default: 'max-w-lg',
+        sm: 'max-w-sm',
+      },
+      variant: {
+        default: 'rounded-md',
+        band: 'rounded-md',
+        rule: 'rounded-t-sm rounded-b-md border-t-4 border-t-(--alert-dialog-ink)',
+      },
+    },
+    defaultVariants: { size: 'default', variant: 'default' },
+  },
+)
 
 function AlertDialogOverlay({ className, ...props }: AlertDialogPrimitive.Backdrop.Props) {
   return (
@@ -85,16 +110,15 @@ function AlertDialogContent({
         data-variant={variant}
         data-tone={tone}
         className={cn(
-          'group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-6 overflow-y-auto rounded-md bg-popover p-6 text-base/relaxed text-popover-foreground ring-1 ring-foreground/10 outline-hidden transition-[opacity,scale] duration-150 data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0 data-[size=default]:max-w-lg data-[size=sm]:max-w-sm',
+          alertDialogContentVariants({ variant, size }),
           // The decision's colour, read by the band and the rule: the action
           // colour, or danger when the confirming action is a danger button.
-          // Danger bands use Button's danger pairing — a fixed danger-600 fill
-          // with white text, 6.6:1 in both modes and the same red as the
-          // action beside it. danger-solid with text-inverse is 4.06:1 in dark.
-          '[--alert-dialog-band-text:var(--text-inverse)] [--alert-dialog-band:var(--action-default)] has-[[data-slot=alert-dialog-action][data-color=danger]]:[--alert-dialog-band-text:var(--white)] has-[[data-slot=alert-dialog-action][data-color=danger]]:[--alert-dialog-band:var(--danger-600)] data-[tone=danger]:[--alert-dialog-band-text:var(--white)] data-[tone=danger]:[--alert-dialog-band:var(--danger-600)]',
+          // Danger bands use the shared danger pairing (see overlayDanger) —
+          // the same red as the danger action beside it.
+          overlayDanger,
+          '[--alert-dialog-band-text:var(--text-inverse)] [--alert-dialog-band:var(--action-default)] has-[[data-slot=alert-dialog-action][data-color=danger]]:[--alert-dialog-band-text:var(--overlay-danger-text)] has-[[data-slot=alert-dialog-action][data-color=danger]]:[--alert-dialog-band:var(--overlay-danger)] data-[tone=danger]:[--alert-dialog-band-text:var(--overlay-danger-text)] data-[tone=danger]:[--alert-dialog-band:var(--overlay-danger)]',
           overlayInk,
           '[--alert-dialog-ink:var(--overlay-ink)] has-[[data-slot=alert-dialog-action][data-color=danger]]:[--alert-dialog-ink:var(--danger-solid)] data-[tone=danger]:[--alert-dialog-ink:var(--danger-solid)]',
-          'data-[variant=rule]:rounded-t-sm data-[variant=rule]:border-t-4 data-[variant=rule]:border-t-(--alert-dialog-ink)',
           className,
         )}
         {...props}
@@ -227,6 +251,7 @@ export {
   AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
+  alertDialogContentVariants,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,

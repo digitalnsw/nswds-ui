@@ -283,8 +283,9 @@ export const Inset: Story = {
 
 /**
  * A label dropped straight into the content, outside any group — the shadcn /
- * Radix habit. Base UI's group label throws there on first open; the wrapper
- * supplies a group so the menu opens and the label renders.
+ * Radix habit. Base UI's group label throws there on first open, so the label
+ * renders as plain visible text instead. It names nothing for assistive tech:
+ * wrap labelled actions in `DropdownMenuGroup` when the label should name them.
  */
 export const LabelOutsideGroup: Story = {
   name: 'Label outside a group',
@@ -303,6 +304,10 @@ export const LabelOutsideGroup: Story = {
     const menu = await within(document.body).findByRole('menu')
     // Waits out the open animation, which starts from opacity 0.
     await waitFor(() => expect(within(menu).getByText('Signed in as Alex')).toBeVisible())
+    // Plain text, not a group label: no empty group wrapped around it.
+    const label = within(menu).getByText('Signed in as Alex')
+    await expect(label).toHaveAttribute('data-slot', 'dropdown-menu-label')
+    await expect(label.closest('[role="group"]')).toBeNull()
     await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toBeInTheDocument()
     await closeWithEscape()
   },
@@ -360,6 +365,13 @@ export const Looks: Story = {
     await expect(band.style.backgroundColor).not.toBe(defaultBg)
     await expect(band.style.outlineStyle).toBe('none')
     await expect(band.style.color).not.toBe(getComputedStyle(band.menu).color)
+    const bandHighlight = band.style.backgroundColor
+    // Band's destructive row takes the shared danger pairing: white on danger-600.
+    const signOut = within(band.menu).getByRole('menuitem', { name: 'Sign out' })
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}')
+    await waitFor(() => expect(signOut).toHaveFocus())
+    await expect(getComputedStyle(signOut).color).toBe('oklch(1 0 0)')
+    await expect(getComputedStyle(signOut).backgroundColor).not.toBe(bandHighlight)
     await closeWithEscape()
 
     const rule = await open('rule')
