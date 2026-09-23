@@ -1,3 +1,9 @@
+## [8.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.2.1...@nswds/ui-v8.3.0) (2026-09-23)
+
+### Features
+
+* **ui:** add Dialog, AlertDialog, DropdownMenu, Skeleton and Empty, and an Alert alias for Callout ([#213](https://github.com/digitalnsw/nswds-ui/issues/213)) ([af35e4b](https://github.com/digitalnsw/nswds-ui/commit/af35e4beedcf07d9a3f59779efd4141e830689cd))
+
 ## [8.2.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.2.0...@nswds/ui-v8.2.1) (2026-09-23)
 
 ### Bug Fixes
