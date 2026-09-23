@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "skeleton",
+  "title": "Skeleton",
+  "description": "A pulsing placeholder block shown where content is still loading, in default, band and rule looks.",
+  "dependencies": [
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/skeleton.tsx",
+      "content": "import { cva, type VariantProps } from 'class-variance-authority'\nimport * as React from 'react'\n\nimport { cn } from '@/lib/utils'\n\n/**\n * The three approved looks (design-shotgun, overlays-20260923), matching the\n * `variant` of Dialog, AlertDialog and DropdownMenu so a loading state can\n * wear the same family as the surface around it:\n *\n * - `default` (Hairline): a filled block, 8px corners.\n * - `band`: a square-cornered band.\n * - `rule`: an outlined block in the strong border colour, no fill.\n *\n * The fills are the ink at 10–12%, not `bg-muted`: in dark mode `--muted` and\n * `--background` resolve to the same token, so a muted block vanishes on the\n * page, while an ink tint reads on the page, a card and a popover alike.\n */\nconst skeletonVariants = cva('motion-safe:animate-pulse', {\n  variants: {\n    variant: {\n      default: 'rounded-md bg-foreground/10',\n      band: 'rounded-none bg-foreground/12',\n      rule: 'rounded-sm border border-(--border-strong) bg-transparent',\n    },\n  },\n  defaultVariants: { variant: 'default' },\n})\n\n/**\n * A placeholder block shown where content is still loading. Size it with\n * utilities (`h-4 w-48`, `size-12 rounded-full`) to echo the shape of what\n * will replace it.\n *\n * It is purely visual, so announce the wait yourself: put `aria-busy=\"true\"`\n * on the region being loaded, and give screen-reader users a text status\n * (a visually hidden \"Loading…\") rather than relying on these shapes. The\n * pulse only runs under `prefers-reduced-motion: no-preference`.\n */\nfunction Skeleton({\n  className,\n  variant,\n  ...props\n}: React.ComponentProps<'div'> & VariantProps<typeof skeletonVariants>) {\n  // Coalesce before cva: it treats `null` as \"no variant\" and skips the\n  // default, which would leave the block with no fill at all.\n  const look = variant ?? 'default'\n  return (\n    <div\n      data-slot='skeleton'\n      data-variant={look}\n      className={cn(skeletonVariants({ variant: look, className }))}\n      {...props}\n    />\n  )\n}\n\nexport { Skeleton, skeletonVariants }\n",
+      "type": "registry:ui",
+      "target": "components/skeleton.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "8.2.1"
+  }
+}

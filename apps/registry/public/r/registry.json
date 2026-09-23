@@ -736,6 +736,11 @@
           "path": "src/lib/button-group-context.tsx",
           "type": "registry:lib",
           "target": "lib/button-group-context.tsx"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },
@@ -883,6 +888,11 @@
           "path": "src/lib/button-group-context.tsx",
           "type": "registry:lib",
           "target": "lib/button-group-context.tsx"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },
@@ -1982,6 +1992,173 @@
           "path": "src/components/toggle-group.tsx",
           "type": "registry:ui",
           "target": "components/toggle-group.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "A modal window centred over the page, built on the Base UI dialog primitive, with an optional translatable close button.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/dialog.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
+        }
+      ]
+    },
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "Alert Dialog",
+      "description": "A modal that interrupts to confirm or cancel a consequential action, built on the Base UI alert-dialog primitive.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/alert-dialog.tsx",
+          "type": "registry:ui",
+          "target": "components/alert-dialog.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
+        }
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "Dropdown Menu",
+      "description": "A menu of actions, links, checkboxes and radio options opened from a trigger, built on the Base UI menu primitive.",
+      "dependencies": [
+        "@base-ui/react",
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/dropdown-menu.tsx",
+          "type": "registry:ui",
+          "target": "components/dropdown-menu.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/button-group-context.tsx",
+          "type": "registry:lib",
+          "target": "lib/button-group-context.tsx"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
+        }
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "A pulsing placeholder block shown where content is still loading, in default, band and rule looks.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/skeleton.tsx",
+          "type": "registry:ui",
+          "target": "components/skeleton.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "empty",
+      "type": "registry:ui",
+      "title": "Empty",
+      "description": "An empty state for a list, table or search with nothing to show, with media, title, description and actions slots.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/empty.tsx",
+          "type": "registry:ui",
+          "target": "components/empty.tsx"
         },
         {
           "path": "src/lib/utils.ts",

@@ -61,6 +61,7 @@ export default defineConfig({
       // (grep @base-ui/react/).
       '@base-ui/react',
       '@base-ui/react/accordion',
+      '@base-ui/react/alert-dialog',
       '@base-ui/react/autocomplete',
       '@base-ui/react/avatar',
       '@base-ui/react/button',
@@ -70,6 +71,7 @@ export default defineConfig({
       '@base-ui/react/direction-provider',
       '@base-ui/react/field',
       '@base-ui/react/input',
+      '@base-ui/react/menu',
       '@base-ui/react/merge-props',
       '@base-ui/react/navigation-menu',
       '@base-ui/react/popover',

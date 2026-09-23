@@ -4,7 +4,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { Callout } from './callout.js'
+import { Alert, alertVariants, Callout, calloutVariants } from './callout.js'
 
 const meta = {
   title: 'Components/Callout',
@@ -124,6 +124,29 @@ export const CssCheck: Story = {
       throw new Error(
         `Expected the danger surface token to resolve to a colour, received "${background}".`,
       )
+    }
+  },
+}
+
+/**
+ * `Alert` is `Callout` under shadcn's name — the same component, not a copy
+ * that could drift. Pins both halves of the alias: the component renders a
+ * callout, and the variants function is the same one.
+ */
+export const AlertAlias: Story = {
+  name: 'Alert alias',
+  render: () => (
+    <Alert status='warning' title='Check before you continue'>
+      This service will be unavailable on Sunday between 2am and 4am.
+    </Alert>
+  ),
+  play: async ({ canvasElement }) => {
+    const callout = getCallout(canvasElement)
+    if (callout.getAttribute('data-status') !== 'warning') {
+      throw new Error('Expected <Alert status="warning"> to render a warning callout.')
+    }
+    if (Alert !== Callout || alertVariants !== calloutVariants) {
+      throw new Error('Alert and alertVariants must be the Callout exports, not copies.')
     }
   },
 }

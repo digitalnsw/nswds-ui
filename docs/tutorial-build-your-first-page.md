@@ -283,7 +283,7 @@ More usefully, you now know the three things that trip people up:
   `Sheet` for mobile. Start from the `mobile-nav` block.
 - **Forms** — `Field` and its slots handle label, description and error wiring; `login-form` and
   `sign-up-form` are worked examples.
-- **[Component reference](reference-components.md)** — all 62 components and 12 blocks.
+- **[Component reference](reference-components.md)** — all 67 components and 12 blocks.
 - **[Theme and re-brand](howto-theme-and-rebrand.md)** — making it your agency's colours.
 - **Storybook** — every component with live controls and interaction tests.
 

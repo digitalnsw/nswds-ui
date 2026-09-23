@@ -138,5 +138,18 @@ function Callout({ className, status, title, icon, children, ref, ...props }: Ca
   )
 }
 
-export { Callout, calloutVariants }
-export type { CalloutProps, CalloutStatus }
+/**
+ * `Callout` under shadcn's name, so code and habits carried over from shadcn's
+ * `<Alert>` find it. It is the same component with the same props, which
+ * differ from shadcn's in three ways: the tone is `status` (`info`, `success`,
+ * `warning`, `danger`) rather than `variant`; the title is the `title` prop and
+ * the body is `children`, so there is no `AlertTitle` / `AlertDescription`;
+ * and it carries no `role="alert"`, for the reason given on `Callout`.
+ */
+const Alert = Callout
+const alertVariants = calloutVariants
+type AlertProps = CalloutProps
+type AlertStatus = CalloutStatus
+
+export { Alert, alertVariants, Callout, calloutVariants }
+export type { AlertProps, AlertStatus, CalloutProps, CalloutStatus }

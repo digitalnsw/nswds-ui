@@ -1,0 +1,32 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "empty",
+  "title": "Empty",
+  "description": "An empty state for a list, table or search with nothing to show, with media, title, description and actions slots.",
+  "dependencies": [
+    "class-variance-authority",
+    "clsx",
+    "tailwind-merge"
+  ],
+  "registryDependencies": [
+    "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+  ],
+  "files": [
+    {
+      "path": "src/components/empty.tsx",
+      "content": "import { cva, type VariantProps } from 'class-variance-authority'\nimport * as React from 'react'\n\nimport { cn } from '@/lib/utils'\n\n/**\n * An empty state — what a list, table or search shows when it has nothing to\n * show, with a way forward. Add `border` for a dashed outline; the dashed\n * style is already set.\n */\nfunction Empty({ className, ...props }: React.ComponentProps<'div'>) {\n  return (\n    <div\n      data-slot='empty'\n      className={cn(\n        'flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-6 rounded-md border-dashed p-8 text-center text-balance',\n        className,\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction EmptyHeader({ className, ...props }: React.ComponentProps<'div'>) {\n  return (\n    <div\n      data-slot='empty-header'\n      className={cn('flex max-w-md flex-col items-center gap-2', className)}\n      {...props}\n    />\n  )\n}\n\nconst emptyMediaVariants = cva(\n  'mb-2 flex shrink-0 items-center justify-center [&_svg]:pointer-events-none [&_svg]:shrink-0',\n  {\n    variants: {\n      variant: {\n        default: 'bg-transparent',\n        icon: \"size-12 rounded-md bg-foreground/10 text-foreground [&_svg:not([class*='size-'])]:size-6\",\n      },\n    },\n    defaultVariants: {\n      variant: 'default',\n    },\n  },\n)\n\nfunction EmptyMedia({\n  className,\n  variant = 'default',\n  ...props\n}: React.ComponentProps<'div'> & VariantProps<typeof emptyMediaVariants>) {\n  return (\n    <div\n      data-slot='empty-icon'\n      data-variant={variant}\n      className={cn(emptyMediaVariants({ variant, className }))}\n      {...props}\n    />\n  )\n}\n\n/**\n * Rendered as a `div`, because the right heading level depends on where the\n * empty state sits. Where it stands in for a section's content, pass a heading\n * as the child (`<EmptyTitle><h2>No results</h2></EmptyTitle>`) so it appears\n * in the page outline.\n */\nfunction EmptyTitle({ className, ...props }: React.ComponentProps<'div'>) {\n  return (\n    <div\n      data-slot='empty-title'\n      className={cn('font-heading text-2xl font-medium text-foreground', className)}\n      {...props}\n    />\n  )\n}\n\nfunction EmptyDescription({ className, ...props }: React.ComponentProps<'div'>) {\n  return (\n    <div\n      data-slot='empty-description'\n      className={cn(\n        // Bare anchors only: a class-carrying link (the package's Link) keeps its\n        // own ink, underline and halo rather than being restyled here.\n        'text-base/relaxed text-muted-foreground [&_a:not([class])]:underline [&_a:not([class])]:underline-offset-4 [&_a:not([class]):hover]:text-primary',\n        className,\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction EmptyContent({ className, ...props }: React.ComponentProps<'div'>) {\n  return (\n    <div\n      data-slot='empty-content'\n      className={cn(\n        'flex w-full max-w-md min-w-0 flex-col items-center gap-4 text-base/relaxed text-balance',\n        className,\n      )}\n      {...props}\n    />\n  )\n}\n\nexport {\n  Empty,\n  EmptyContent,\n  EmptyDescription,\n  EmptyHeader,\n  EmptyMedia,\n  emptyMediaVariants,\n  EmptyTitle,\n}\n",
+      "type": "registry:ui",
+      "target": "components/empty.tsx"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
+      "type": "registry:lib",
+      "target": "lib/utils.ts"
+    }
+  ],
+  "type": "registry:ui",
+  "meta": {
+    "nswdsVersion": "8.2.1"
+  }
+}

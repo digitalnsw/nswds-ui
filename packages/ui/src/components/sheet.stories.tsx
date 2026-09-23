@@ -17,6 +17,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from './sheet.js'
+import { closeOverlay, waitForUnmount } from './story-helpers.js'
 
 const triggerClasses = 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
 
@@ -54,36 +55,20 @@ type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Waits for the portaled sheet to unmount, exit transition included. */
-async function waitForSheetToClose() {
-  await waitFor(
-    () => expect(document.querySelector('[data-slot="sheet-content"]')).not.toBeInTheDocument(),
-    { timeout: 3000 },
-  )
-}
-
 /**
- * Closes the open sheet so the suite's next story starts from a clean body and
- * the a11y pass does not run against a mounted dialog's focus guards.
- */
-async function closeSheet() {
-  await userEvent.keyboard('{Escape}')
-  await waitForSheetToClose()
-}
-
-/**
- * Runs a play's assertions, then closes the sheet — on failure too, so a
- * leftover dialog never adds an axe failure on top of the real one. A failed
- * close after a failed assertion is dropped so the first error is reported.
+ * Runs a play's assertions, then closes the sheet with the shared
+ * `closeOverlay` — on failure too, so a leftover dialog never adds an axe
+ * failure on top of the real one. A failed close after a failed assertion is
+ * dropped so the first error is reported.
  */
 async function thenCloseSheet(assertions: () => Promise<void>) {
   try {
     await assertions()
   } catch (error) {
-    await closeSheet().catch(() => {})
+    await closeOverlay('sheet-content').catch(() => {})
     throw error
   }
-  await closeSheet()
+  await closeOverlay('sheet-content')
 }
 
 /**
@@ -156,7 +141,7 @@ export const TranslatedCloseLabel: Story = {
     // Close again so the suite's next story starts from a clean body and the
     // a11y pass does not run against a mounted dialog's focus guards.
     close.click()
-    await waitForSheetToClose()
+    await waitForUnmount('sheet-content')
   },
 }
 
