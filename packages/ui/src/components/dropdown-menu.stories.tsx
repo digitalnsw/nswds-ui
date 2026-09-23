@@ -4,7 +4,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useState } from 'react'
+import { type ComponentProps, useState } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { IconMoreHoriz } from '../icons/more-horiz.js'
@@ -25,8 +25,17 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
+  type DropdownMenuVariant,
 } from './dropdown-menu.js'
 import { closeOverlay } from './story-helpers.js'
+
+/**
+ * The menu stories take the look as an arg, so the Controls panel can switch
+ * any of them between default, band and rule. It is a prop of
+ * `DropdownMenuContent`, not of the root the meta documents, hence the
+ * widened args type.
+ */
+type StoryArgs = ComponentProps<typeof DropdownMenu> & { variant?: DropdownMenuVariant }
 
 const meta = {
   title: 'Components/Dropdown Menu',
@@ -41,10 +50,20 @@ const meta = {
       },
     },
   },
-  render: (args) => (
+  args: { variant: 'default' },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'band', 'rule'],
+      description:
+        "The look, set on DropdownMenuContent: default (Hairline), band or rule. Stories that pin a look ('Looks', 'Submenu alignment') ignore it.",
+      table: { category: 'Appearance' },
+    },
+  },
+  render: ({ variant, ...args }) => (
     <DropdownMenu {...args}>
       <DropdownMenuTrigger render={<Button variant='outline' />}>My account</DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent variant={variant}>
         <DropdownMenuGroup>
           <DropdownMenuLabel>Signed in as Alex</DropdownMenuLabel>
           <DropdownMenuItem>
@@ -60,7 +79,7 @@ const meta = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-} satisfies Meta<typeof DropdownMenu>
+} satisfies Meta<StoryArgs>
 
 export default meta
 
@@ -136,14 +155,14 @@ export const LinkItemCloses: Story = {
 
 export const CheckboxesAndRadios: Story = {
   name: 'Checkboxes and radios',
-  render: function Render() {
+  render: function Render({ variant }) {
     const [showStatus, setShowStatus] = useState(true)
     const [showArchived, setShowArchived] = useState(false)
     const [sort, setSort] = useState('newest')
     return (
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant='outline' />}>View</DropdownMenuTrigger>
-        <DropdownMenuContent>
+        <DropdownMenuContent variant={variant}>
           <DropdownMenuGroup>
             <DropdownMenuLabel>Columns</DropdownMenuLabel>
             <DropdownMenuCheckboxItem checked={showStatus} onCheckedChange={setShowStatus}>
@@ -190,10 +209,10 @@ export const CheckboxesAndRadios: Story = {
 
 export const Submenu: Story = {
   name: 'Submenu',
-  render: () => (
+  render: ({ variant }) => (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant='outline' />}>Actions</DropdownMenuTrigger>
-      <DropdownMenuContent variant='rule'>
+      <DropdownMenuContent variant={variant}>
         <DropdownMenuItem>Rename</DropdownMenuItem>
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>Move to</DropdownMenuSubTrigger>
@@ -219,8 +238,6 @@ export const Submenu: Story = {
       if (!el) throw new Error('Submenu not mounted.')
       return el
     })
-    // It portals out of the parent menu, so it inherits the look by context.
-    await expect(sub).toHaveAttribute('data-variant', 'rule')
     await waitFor(() => expect(within(sub).getByRole('menuitem', { name: 'Drafts' })).toHaveFocus())
 
     await userEvent.keyboard('{ArrowLeft}')
@@ -236,10 +253,10 @@ export const Submenu: Story = {
  */
 export const Inset: Story = {
   name: 'Inset',
-  render: () => (
+  render: ({ variant }) => (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant='outline' />}>Share</DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent variant={variant}>
         <DropdownMenuGroup>
           <DropdownMenuLabel inset>Share</DropdownMenuLabel>
           <DropdownMenuItem inset>Copy link</DropdownMenuItem>
@@ -271,10 +288,10 @@ export const Inset: Story = {
  */
 export const LabelOutsideGroup: Story = {
   name: 'Label outside a group',
-  render: () => (
+  render: ({ variant }) => (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant='outline' />}>Account</DropdownMenuTrigger>
-      <DropdownMenuContent>
+      <DropdownMenuContent variant={variant}>
         <DropdownMenuLabel>Signed in as Alex</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>Profile</DropdownMenuItem>
@@ -389,6 +406,11 @@ export const SubmenuAlignment: Story = {
       await userEvent.keyboard('{ArrowRight}')
       const drafts = await within(document.body).findByRole('menuitem', { name: 'Drafts' })
       await waitFor(() => expect(drafts).toHaveFocus())
+      // The submenu portals out of its parent, so it inherits the look by
+      // context rather than from the DOM.
+      await expect(
+        document.querySelector('[data-slot="dropdown-menu-sub-content"]'),
+      ).toHaveAttribute('data-variant', look)
       // Positioning settles after the popup mounts, so poll the offset.
       await waitFor(() =>
         expect(
@@ -403,13 +425,13 @@ export const SubmenuAlignment: Story = {
 
 export const Variants: Story = {
   name: 'Variants',
-  render: () => (
+  render: ({ variant }) => (
     <div className='flex flex-wrap gap-4'>
       <DropdownMenu>
         <DropdownMenuTrigger render={<Button variant='ghost' iconOnly aria-label='More actions' />}>
           <IconMoreHoriz />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align='end'>
+        <DropdownMenuContent align='end' variant={variant}>
           <DropdownMenuItem>Rename</DropdownMenuItem>
           <DropdownMenuItem>Duplicate</DropdownMenuItem>
           <DropdownMenuSub>
