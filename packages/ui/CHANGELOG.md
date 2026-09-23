@@ -1,3 +1,9 @@
+## [8.2.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.2.0...@nswds/ui-v8.2.1) (2026-09-23)
+
+### Bug Fixes
+
+* **sheet:** focus the close button, not a footer action, on open ([#212](https://github.com/digitalnsw/nswds-ui/issues/212)) ([45022cb](https://github.com/digitalnsw/nswds-ui/commit/45022cb8917c58e05ad3401a633f626aea43cd29))
+
 ## [8.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.1.1...@nswds/ui-v8.2.0) (2026-09-22)
 
 ### Features
