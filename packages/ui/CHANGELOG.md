@@ -1,3 +1,9 @@
+## [8.3.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.1...@nswds/ui-v8.3.2) (2026-09-24)
+
+### Bug Fixes
+
+* **dialog:** keep the close button above positioned content in the corner ([#216](https://github.com/digitalnsw/nswds-ui/issues/216)) ([d0e841c](https://github.com/digitalnsw/nswds-ui/commit/d0e841c83afbffb6a8d008cbe392717cf9d3a6d4))
+
 ## [8.3.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.0...@nswds/ui-v8.3.1) (2026-09-24)
 
 ### Bug Fixes
