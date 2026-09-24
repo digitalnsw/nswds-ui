@@ -51,11 +51,13 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
  * never opens scrolled to a footer action. Pass `initialFocus` to choose a
  * different target, such as a search field the sheet exists to fill in.
  *
- * With the close button shown, the header (or, with no header, the first
- * visible child) reserves room at the end edge so text cannot run under the
- * button. Add `data-sheet-bleed` to that element — a SheetHeader included — to
- * opt out, e.g. for a full-bleed banner or a wrapper whose rows should reach
- * the edge. "Visible" means not `sr-only` or `[hidden]`: a child hidden only
+ * With the close button shown, content in the button's corner reserves room
+ * at the end edge so text cannot run under it: the SheetHeader, and also the
+ * first visible child when that is not (and does not contain) the header —
+ * with no header at all, or an intro placed before the header. Add
+ * `data-sheet-bleed` to a padded element — a SheetHeader included — to opt
+ * out, e.g. for a full-bleed banner or a wrapper whose rows should reach the
+ * edge. "Visible" means not `sr-only` or `[hidden]`: a child hidden only
  * at some breakpoints (`hidden sm:block`, `sr-only sm:not-sr-only`) cannot be
  * told apart in CSS, so give that content its own end padding.
  */

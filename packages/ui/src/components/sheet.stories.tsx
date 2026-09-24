@@ -389,16 +389,18 @@ export const IntroBeforeHeaderKeepsClear: Story = {
 }
 
 /**
- * A visually hidden first element (the common sr-only SheetTitle that names a
- * sheet without a visible title) is skipped: the padding goes to the first
- * VISIBLE content, which is what actually sits in the button's corner.
+ * Visually hidden first children are skipped — a `[hidden]` element, and the
+ * common sr-only SheetTitle that names a sheet without a visible title — so
+ * the padding goes to the first VISIBLE content, which is what actually sits
+ * in the button's corner.
  */
 export const HiddenTitleFirstKeepsClear: Story = {
-  name: 'An sr-only title first still keeps the visible content clear',
+  name: 'Hidden and sr-only first children still keep the visible content clear',
   render: () => (
     <Sheet>
       <SheetTrigger render={<Button />}>Open filters</SheetTrigger>
       <SheetContent>
+        <div hidden>Advanced filters</div>
         <SheetTitle className='sr-only'>Filters</SheetTitle>
         <p className='px-6 pt-6'>Choose the services you want to see listed below.</p>
       </SheetContent>
