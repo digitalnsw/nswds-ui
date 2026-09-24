@@ -279,6 +279,50 @@ export const HeaderInsideForm: Story = {
 }
 
 /**
+ * With no SheetHeader at all, the first thing after the close button — here a
+ * bare SheetTitle — reserves the button's room instead, so a long title does
+ * not run under it. The popup has no gutter of its own and the button reaches
+ * 56px from the end edge, so that is 64px (Dialog's 48px sits on a 24px
+ * gutter).
+ */
+export const NoHeaderKeepsClearOfCloseButton: Story = {
+  name: 'Without a header, the first content keeps clear of the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open notice</SheetTrigger>
+      <SheetContent>
+        <SheetTitle>Your application has been received and is being assessed</SheetTitle>
+        <p className='px-6'>We will contact you within 10 business days.</p>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open notice' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Your application has been received and is being assessed' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const title = within(sheet).getByText(
+        'Your application has been received and is being assessed',
+      )
+      const close = within(sheet).getByRole('button', { name: 'Close' })
+      await expect(getComputedStyle(title).paddingInlineEnd).toBe('64px')
+
+      // The title's text box ends before the close button begins.
+      await waitForSlideIn(sheet)
+      const textRight = title.getBoundingClientRect().right - 64
+      await expect(textRight).toBeLessThanOrEqual(close.getBoundingClientRect().left)
+
+      // Only the first element: later content keeps its own padding.
+      const body = within(sheet).getByText('We will contact you within 10 business days.')
+      await expect(getComputedStyle(body).paddingInlineEnd).toBe('24px')
+    })
+  },
+}
+
+/**
  * The close button is first in the DOM, and positioned elements paint in DOM
  * order when their z-index ties, so a later positioned child in the corner —
  * a Button is `relative`, a sticky header is conventionally z-10 — would draw
