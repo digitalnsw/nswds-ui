@@ -323,6 +323,49 @@ export const NoHeaderKeepsClearOfCloseButton: Story = {
 }
 
 /**
+ * The padding goes to whatever sits beside the close button, so an intro that
+ * comes BEFORE the header is padded too: it is the content in the button's
+ * corner. Gating on "no header anywhere in the sheet" would let the intro run
+ * under the button. The header further down keeps its own padding.
+ */
+export const IntroBeforeHeaderKeepsClear: Story = {
+  name: 'Intro before the header keeps clear of the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open intro sheet</SheetTrigger>
+      <SheetContent>
+        <p className='px-6 pt-6'>
+          Before you start, have your licence number and renewal notice ready.
+        </p>
+        <SheetHeader>
+          <SheetTitle>Renew your licence</SheetTitle>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open intro sheet' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Renew your licence' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const intro = within(sheet).getByText(/^Before you start/)
+      const close = within(sheet).getByRole('button', { name: 'Close' })
+      await expect(getComputedStyle(intro).paddingInlineEnd).toBe('64px')
+
+      await waitForSlideIn(sheet)
+      const textRight = intro.getBoundingClientRect().right - 64
+      await expect(textRight).toBeLessThanOrEqual(close.getBoundingClientRect().left)
+
+      const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
+      await expect(getComputedStyle(header).paddingInlineEnd).toBe('64px')
+    })
+  },
+}
+
+/**
  * The close button is first in the DOM, and positioned elements paint in DOM
  * order when their z-index ties, so a later positioned child in the corner —
  * a Button is `relative`, a sticky header is conventionally z-10 — would draw

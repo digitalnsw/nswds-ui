@@ -110,8 +110,12 @@ function SheetContent({
           // spans 1rem-3.5rem from the end edge, so pe-16 clears it. The header
           // matches at any depth (a form often wraps it), as Dialog's does.
           '[&:has(>[data-slot=sheet-close])_[data-slot=sheet-header]]:pe-16',
-          // With no header at all, the first content after the close button
-          // reserves the same room instead, so its text cannot run under it.
+          // Whatever sits beside the close button reserves the same room, so its
+          // text cannot run under it: the first element after the button,
+          // unless it is (or wraps) the header, which the rule above pads. The
+          // check is on that element only, not the whole sheet, so an intro
+          // placed before a header is padded too — it is the content in the
+          // button's corner. Same shape as Dialog's rule.
           '[&>[data-slot=sheet-close]+:not([data-slot=sheet-header]):not(:has([data-slot=sheet-header]))]:pe-16',
           className,
         )}
