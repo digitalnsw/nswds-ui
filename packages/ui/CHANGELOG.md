@@ -1,3 +1,9 @@
+## [8.3.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.0...@nswds/ui-v8.3.1) (2026-09-24)
+
+### Bug Fixes
+
+* **sheet:** scroll long content, focus the sheet without a close button ([#214](https://github.com/digitalnsw/nswds-ui/issues/214)) ([e7720bd](https://github.com/digitalnsw/nswds-ui/commit/e7720bdadd8b4b182c62bd6bf1c09ee0a847d9b8)), closes [#212](https://github.com/digitalnsw/nswds-ui/issues/212)
+
 ## [8.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.2.1...@nswds/ui-v8.3.0) (2026-09-23)
 
 ### Features
