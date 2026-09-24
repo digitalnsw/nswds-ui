@@ -107,8 +107,9 @@ function SheetContent({
         className={cn(
           'fixed z-50 flex max-h-dvh flex-col overflow-y-auto bg-popover bg-clip-padding text-base/relaxed text-popover-foreground transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-e data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-s data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm rtl:data-[side=left]:data-ending-style:-translate-x-[-2.5rem] rtl:data-[side=left]:data-starting-style:-translate-x-[-2.5rem] rtl:data-[side=right]:data-ending-style:-translate-x-[2.5rem] rtl:data-[side=right]:data-starting-style:-translate-x-[2.5rem]',
           // Keep a long title clear of the absolutely placed close button: it
-          // spans 1rem-3.5rem from the end edge, so pe-16 clears it.
-          '[&:has(>[data-slot=sheet-close])>[data-slot=sheet-header]]:pe-16',
+          // spans 1rem-3.5rem from the end edge, so pe-16 clears it. The header
+          // matches at any depth (a form often wraps it), as Dialog's does.
+          '[&:has(>[data-slot=sheet-close])_[data-slot=sheet-header]]:pe-16',
           className,
         )}
         {...props}

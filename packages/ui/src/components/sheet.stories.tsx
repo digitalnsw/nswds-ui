@@ -245,6 +245,40 @@ export const WithoutCloseButtonOpensAtTop: Story = {
 }
 
 /**
+ * An edit panel commonly wraps everything in a `<form>`, so the header is not
+ * a direct child of the sheet. It still reserves room for the close button,
+ * or a long title runs underneath it.
+ */
+export const HeaderInsideForm: Story = {
+  name: 'Header inside a form keeps clear of the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Edit preferences</SheetTrigger>
+      <SheetContent>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <SheetHeader>
+            <SheetTitle>Update your contact and delivery preferences</SheetTitle>
+          </SheetHeader>
+        </form>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Edit preferences' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Update your contact and delivery preferences' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
+      await expect(header.parentElement?.tagName).toBe('FORM')
+      await expect(getComputedStyle(header).paddingInlineEnd).toBe('64px')
+    })
+  },
+}
+
+/**
  * The close button is first in the DOM, and positioned elements paint in DOM
  * order when their z-index ties, so a later positioned child in the corner —
  * a Button is `relative`, a sticky header is conventionally z-10 — would draw
