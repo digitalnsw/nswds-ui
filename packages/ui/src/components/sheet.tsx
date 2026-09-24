@@ -50,6 +50,11 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
  * `showCloseButton={false}` the sheet itself takes focus, so a long sheet
  * never opens scrolled to a footer action. Pass `initialFocus` to choose a
  * different target, such as a search field the sheet exists to fill in.
+ *
+ * With the close button shown, the header (or, with no header, the first
+ * visible child) reserves room at the end edge so text cannot run under the
+ * button. Add `data-sheet-bleed` to that first child to opt out, e.g. for a
+ * full-bleed banner or a wrapper whose rows should reach the edge.
  */
 function SheetContent({
   className,
@@ -111,12 +116,14 @@ function SheetContent({
           // matches at any depth (a form often wraps it), as Dialog's does.
           '[&:has(>[data-slot=sheet-close])_[data-slot=sheet-header]]:pe-16',
           // Whatever sits beside the close button reserves the same room, so its
-          // text cannot run under it: the first element after the button,
-          // unless it is (or wraps) the header, which the rule above pads. The
-          // check is on that element only, not the whole sheet, so an intro
-          // placed before a header is padded too — it is the content in the
-          // button's corner. Same shape as Dialog's rule.
-          '[&>[data-slot=sheet-close]+:not([data-slot=sheet-header]):not(:has([data-slot=sheet-header]))]:pe-16',
+          // text cannot run under it: the first VISIBLE child (an sr-only title
+          // or a [hidden] element is skipped), checked on that element only,
+          // not the whole sheet — an intro placed before a header is the
+          // content in the button's corner. A child that is or directly wraps
+          // the header is left to the rule above. If that child wraps the whole
+          // sheet, all of it is padded; `data-sheet-bleed` on it opts out, as
+          // it does for full-bleed media meant to run under the button.
+          '[&:has(>[data-slot=sheet-close])>:nth-child(1_of_:not([data-slot=sheet-close],.sr-only,[hidden])):not(:has(>[data-slot=sheet-header])):not([data-sheet-bleed])]:pe-16',
           className,
         )}
         {...props}

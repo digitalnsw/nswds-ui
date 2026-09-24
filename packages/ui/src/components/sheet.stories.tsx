@@ -87,6 +87,33 @@ async function waitForSlideIn(sheet: HTMLElement) {
   )
 }
 
+/**
+ * Asserts an element's content box does not intersect the close button, in
+ * both axes and either writing direction, after the slide-in settles. Also
+ * requires the border boxes to overlap first — otherwise the element was never
+ * in the button's corner and "clear" would pass on nothing.
+ */
+async function expectClearOfClose(sheet: HTMLElement, element: HTMLElement) {
+  await waitForSlideIn(sheet)
+  const close = within(sheet).getByRole('button', { name: 'Close' }).getBoundingClientRect()
+  const border = element.getBoundingClientRect()
+  const style = getComputedStyle(element)
+  const px = (value: string) => parseFloat(value) || 0
+  const content = {
+    left: border.left + px(style.borderLeftWidth) + px(style.paddingLeft),
+    right: border.right - px(style.borderRightWidth) - px(style.paddingRight),
+    top: border.top + px(style.borderTopWidth) + px(style.paddingTop),
+    bottom: border.bottom - px(style.borderBottomWidth) - px(style.paddingBottom),
+  }
+  const intersects = (box: { left: number; right: number; top: number; bottom: number }) =>
+    box.left < close.right &&
+    box.right > close.left &&
+    box.top < close.bottom &&
+    box.bottom > close.top
+  await expect(intersects(border)).toBe(true)
+  await expect(intersects(content)).toBe(false)
+}
+
 const conditions = (
   <div className='flex flex-col gap-4 px-6'>
     {Array.from({ length: 30 }, (_, i) => (
@@ -274,16 +301,19 @@ export const HeaderInsideForm: Story = {
       const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
       await expect(header.parentElement?.tagName).toBe('FORM')
       await expect(getComputedStyle(header).paddingInlineEnd).toBe('64px')
+      // The form wraps the header, so it is left to the header rule rather
+      // than padded as a whole.
+      await expect(getComputedStyle(header.parentElement!).paddingInlineEnd).toBe('0px')
     })
   },
 }
 
 /**
- * With no SheetHeader at all, the first thing after the close button — here a
- * bare SheetTitle — reserves the button's room instead, so a long title does
- * not run under it. The popup has no gutter of its own and the button reaches
- * 56px from the end edge, so that is 64px (Dialog's 48px sits on a 24px
- * gutter).
+ * With no SheetHeader, the first visible thing after the close button — here a
+ * SheetTitle given its own gutter — reserves the button's room instead, so a
+ * long title does not run under it. The popup has no gutter of its own and the
+ * button reaches 56px from the end edge, so that is 64px (Dialog's 48px sits
+ * on a 24px gutter).
  */
 export const NoHeaderKeepsClearOfCloseButton: Story = {
   name: 'Without a header, the first content keeps clear of the close button',
@@ -291,7 +321,9 @@ export const NoHeaderKeepsClearOfCloseButton: Story = {
     <Sheet>
       <SheetTrigger render={<Button />}>Open notice</SheetTrigger>
       <SheetContent>
-        <SheetTitle>Your application has been received and is being assessed</SheetTitle>
+        <SheetTitle className='px-6 pt-6'>
+          Your application has been received and is being assessed
+        </SheetTitle>
         <p className='px-6'>We will contact you within 10 business days.</p>
       </SheetContent>
     </Sheet>
@@ -307,13 +339,8 @@ export const NoHeaderKeepsClearOfCloseButton: Story = {
       const title = within(sheet).getByText(
         'Your application has been received and is being assessed',
       )
-      const close = within(sheet).getByRole('button', { name: 'Close' })
       await expect(getComputedStyle(title).paddingInlineEnd).toBe('64px')
-
-      // The title's text box ends before the close button begins.
-      await waitForSlideIn(sheet)
-      const textRight = title.getBoundingClientRect().right - 64
-      await expect(textRight).toBeLessThanOrEqual(close.getBoundingClientRect().left)
+      await expectClearOfClose(sheet, title)
 
       // Only the first element: later content keeps its own padding.
       const body = within(sheet).getByText('We will contact you within 10 business days.')
@@ -352,15 +379,105 @@ export const IntroBeforeHeaderKeepsClear: Story = {
     )
     await thenCloseSheet(async () => {
       const intro = within(sheet).getByText(/^Before you start/)
-      const close = within(sheet).getByRole('button', { name: 'Close' })
       await expect(getComputedStyle(intro).paddingInlineEnd).toBe('64px')
-
-      await waitForSlideIn(sheet)
-      const textRight = intro.getBoundingClientRect().right - 64
-      await expect(textRight).toBeLessThanOrEqual(close.getBoundingClientRect().left)
+      await expectClearOfClose(sheet, intro)
 
       const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
       await expect(getComputedStyle(header).paddingInlineEnd).toBe('64px')
+    })
+  },
+}
+
+/**
+ * A visually hidden first element (the common sr-only SheetTitle that names a
+ * sheet without a visible title) is skipped: the padding goes to the first
+ * VISIBLE content, which is what actually sits in the button's corner.
+ */
+export const HiddenTitleFirstKeepsClear: Story = {
+  name: 'An sr-only title first still keeps the visible content clear',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open filters</SheetTrigger>
+      <SheetContent>
+        <SheetTitle className='sr-only'>Filters</SheetTitle>
+        <p className='px-6 pt-6'>Choose the services you want to see listed below.</p>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open filters' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Filters' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const intro = within(sheet).getByText(/^Choose the services/)
+      await expect(getComputedStyle(intro).paddingInlineEnd).toBe('64px')
+      await expectClearOfClose(sheet, intro)
+    })
+  },
+}
+
+/**
+ * `data-sheet-bleed` opts the first element out of the reserved room, for
+ * content meant to run under the close button — a full-bleed banner, or a
+ * wrapper holding the whole sheet whose rows should reach the edge.
+ */
+export const BleedOptOut: Story = {
+  name: 'data-sheet-bleed lets the first element run under the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open banner sheet</SheetTrigger>
+      <SheetContent>
+        <div data-sheet-bleed='' data-testid='banner' className='h-24 bg-muted' />
+        <SheetHeader>
+          <SheetTitle>Banner sheet</SheetTitle>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open banner sheet' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Banner sheet' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const banner = within(sheet).getByTestId('banner')
+      await expect(getComputedStyle(banner).paddingInlineEnd).toBe('0px')
+    })
+  },
+}
+
+/**
+ * Without the close button there is nothing to keep clear of, so the first
+ * element keeps its own padding.
+ */
+export const NoCloseButtonNoReservedRoom: Story = {
+  name: 'Without the close button, no room is reserved',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open plain sheet</SheetTrigger>
+      <SheetContent showCloseButton={false}>
+        <SheetTitle className='px-6 pt-6'>Plain sheet</SheetTitle>
+        <SheetFooter>
+          <SheetClose render={<Button />}>Done</SheetClose>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open plain sheet' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Plain sheet' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const title = within(sheet).getByText('Plain sheet')
+      await expect(getComputedStyle(title).paddingInlineEnd).toBe('24px')
     })
   },
 }
