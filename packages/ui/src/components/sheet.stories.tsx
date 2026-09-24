@@ -430,7 +430,7 @@ export const BleedOptOut: Story = {
     <Sheet>
       <SheetTrigger render={<Button />}>Open banner sheet</SheetTrigger>
       <SheetContent>
-        <div data-sheet-bleed='' data-testid='banner' className='h-24 bg-muted' />
+        <div data-sheet-bleed='' data-testid='banner' className='h-24 bg-foreground/10' />
         <SheetHeader>
           <SheetTitle>Banner sheet</SheetTitle>
         </SheetHeader>
@@ -478,6 +478,178 @@ export const NoCloseButtonNoReservedRoom: Story = {
     await thenCloseSheet(async () => {
       const title = within(sheet).getByText('Plain sheet')
       await expect(getComputedStyle(title).paddingInlineEnd).toBe('24px')
+    })
+  },
+}
+
+/**
+ * A consumer's own SheetClose carries the same `data-slot` as the built-in
+ * button, but it is not the corner button: with `showCloseButton={false}` it
+ * must not switch the reserved room on for the content after it.
+ */
+export const ConsumerCloseWithoutBuiltIn: Story = {
+  name: "A consumer SheetClose doesn't reserve room without the close button",
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open results</SheetTrigger>
+      <SheetContent showCloseButton={false}>
+        <SheetClose render={<Button variant='ghost' />}>Back</SheetClose>
+        <SheetTitle className='px-6 pt-6'>Search results</SheetTitle>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open results' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Search results' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const title = within(sheet).getByText('Search results')
+      await expect(getComputedStyle(title).paddingInlineEnd).toBe('24px')
+      // Nor is the Back button itself given the corner's room.
+      const back = within(sheet).getByRole('button', { name: 'Back' })
+      await expect(getComputedStyle(back).paddingInlineEnd).not.toBe('64px')
+    })
+  },
+}
+
+/**
+ * With the close button shown, a consumer SheetClose placed first IS the
+ * content in the corner, so it is padded like any other first child.
+ */
+export const ConsumerCloseFirstKeepsClear: Story = {
+  name: 'A consumer SheetClose placed first keeps clear of the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open result</SheetTrigger>
+      <SheetContent>
+        <SheetClose render={<Button variant='ghost' className='w-full justify-start' />}>
+          Back to all search results
+        </SheetClose>
+        <SheetHeader>
+          <SheetTitle>Result details</SheetTitle>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open result' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Result details' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const back = within(sheet).getByRole('button', { name: 'Back to all search results' })
+      await expect(getComputedStyle(back).paddingInlineEnd).toBe('64px')
+      await expectClearOfClose(sheet, back)
+    })
+  },
+}
+
+/**
+ * A header nested more than one level deep (a form holding a layout div) is
+ * padded once, by the header rule; the wrappers around it are not padded as
+ * well, or the title would end 128px from the edge.
+ */
+export const HeaderTwoLevelsDeep: Story = {
+  name: 'A header nested two levels deep is padded once',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Edit contact</SheetTrigger>
+      <SheetContent>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <div className='flex flex-col'>
+            <SheetHeader>
+              <SheetTitle>Update your contact preferences</SheetTitle>
+            </SheetHeader>
+          </div>
+        </form>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Edit contact' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Update your contact preferences' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
+      const layout = header.parentElement!
+      const form = layout.parentElement!
+      await expect(getComputedStyle(header).paddingInlineEnd).toBe('64px')
+      await expect(getComputedStyle(layout).paddingInlineEnd).toBe('0px')
+      await expect(getComputedStyle(form).paddingInlineEnd).toBe('0px')
+    })
+  },
+}
+
+/**
+ * An intro inside the form that wraps the header is still the content in the
+ * button's corner, so it is padded, as it is when it sits directly in the
+ * sheet.
+ */
+export const IntroInsideHeaderForm: Story = {
+  name: 'An intro inside a header-wrapping form keeps clear of the close button',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Renew in a form</SheetTrigger>
+      <SheetContent>
+        <form onSubmit={(event) => event.preventDefault()}>
+          <p className='px-6 pt-6'>Before you start, have your licence number ready.</p>
+          <SheetHeader>
+            <SheetTitle>Renew your licence online</SheetTitle>
+          </SheetHeader>
+        </form>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Renew in a form' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Renew your licence online' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const intro = within(sheet).getByText(/^Before you start, have your licence number ready/)
+      await expect(getComputedStyle(intro).paddingInlineEnd).toBe('64px')
+      await expectClearOfClose(sheet, intro)
+      await expect(getComputedStyle(intro.parentElement!).paddingInlineEnd).toBe('0px')
+    })
+  },
+}
+
+/**
+ * `data-sheet-bleed` opts a SheetHeader out as well — the most common first
+ * child — e.g. for a full-bleed header band meant to run under the button.
+ */
+export const BleedHeaderOptOut: Story = {
+  name: 'data-sheet-bleed opts a header out too',
+  render: () => (
+    <Sheet>
+      <SheetTrigger render={<Button />}>Open band sheet</SheetTrigger>
+      <SheetContent>
+        <SheetHeader data-sheet-bleed=''>
+          <SheetTitle>Band sheet</SheetTitle>
+        </SheetHeader>
+      </SheetContent>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open band sheet' }))
+    const sheet = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Band sheet' },
+      { timeout: 3000 },
+    )
+    await thenCloseSheet(async () => {
+      const header = sheet.querySelector<HTMLElement>('[data-slot="sheet-header"]')!
+      await expect(getComputedStyle(header).paddingInlineEnd).toBe('24px')
     })
   },
 }

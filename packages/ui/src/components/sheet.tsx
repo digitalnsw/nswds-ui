@@ -53,8 +53,11 @@ function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
  *
  * With the close button shown, the header (or, with no header, the first
  * visible child) reserves room at the end edge so text cannot run under the
- * button. Add `data-sheet-bleed` to that first child to opt out, e.g. for a
- * full-bleed banner or a wrapper whose rows should reach the edge.
+ * button. Add `data-sheet-bleed` to that element — a SheetHeader included — to
+ * opt out, e.g. for a full-bleed banner or a wrapper whose rows should reach
+ * the edge. "Visible" means not `sr-only` or `[hidden]`: a child hidden only
+ * at some breakpoints (`hidden sm:block`, `sr-only sm:not-sr-only`) cannot be
+ * told apart in CSS, so give that content its own end padding.
  */
 function SheetContent({
   className,
@@ -111,19 +114,28 @@ function SheetContent({
         data-side={side}
         className={cn(
           'fixed z-50 flex max-h-dvh flex-col overflow-y-auto bg-popover bg-clip-padding text-base/relaxed text-popover-foreground transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-e data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-s data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem] data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm rtl:data-[side=left]:data-ending-style:-translate-x-[-2.5rem] rtl:data-[side=left]:data-starting-style:-translate-x-[-2.5rem] rtl:data-[side=right]:data-ending-style:-translate-x-[2.5rem] rtl:data-[side=right]:data-starting-style:-translate-x-[2.5rem]',
+          // These rules anchor on `data-sheet-corner-close`, the built-in button
+          // only: a consumer's own SheetClose shares its `data-slot` but is not
+          // in the corner, and must not switch the reserved room on.
+          //
           // Keep a long title clear of the absolutely placed close button: it
           // spans 1rem-3.5rem from the end edge, so pe-16 clears it. The header
           // matches at any depth (a form often wraps it), as Dialog's does.
-          '[&:has(>[data-slot=sheet-close])_[data-slot=sheet-header]]:pe-16',
+          '[&:has(>[data-sheet-corner-close])_[data-slot=sheet-header]:not([data-sheet-bleed])]:pe-16',
           // Whatever sits beside the close button reserves the same room, so its
           // text cannot run under it: the first VISIBLE child (an sr-only title
           // or a [hidden] element is skipped), checked on that element only,
           // not the whole sheet — an intro placed before a header is the
-          // content in the button's corner. A child that is or directly wraps
-          // the header is left to the rule above. If that child wraps the whole
-          // sheet, all of it is padded; `data-sheet-bleed` on it opts out, as
-          // it does for full-bleed media meant to run under the button.
-          '[&:has(>[data-slot=sheet-close])>:nth-child(1_of_:not([data-slot=sheet-close],.sr-only,[hidden])):not(:has(>[data-slot=sheet-header])):not([data-sheet-bleed])]:pe-16',
+          // content in the button's corner. A child that is or wraps the header
+          // (at any depth) is left to the rule above, so a header is never
+          // padded twice. If that child wraps the whole sheet with no header,
+          // all of it is padded; `data-sheet-bleed` on it opts out, as it does
+          // for full-bleed media meant to run under the button.
+          '[&:has(>[data-sheet-corner-close])>:nth-child(1_of_:not([data-sheet-corner-close],.sr-only,[hidden])):not(:has([data-slot=sheet-header])):not([data-sheet-bleed])]:pe-16',
+          // One level into a first child that wraps the header (the usual
+          // <form>): its own first visible child is the content in the corner,
+          // e.g. an intro above the header, so it gets the same room.
+          '[&:has(>[data-sheet-corner-close])>:nth-child(1_of_:not([data-sheet-corner-close],.sr-only,[hidden])):has([data-slot=sheet-header])>:nth-child(1_of_:not(.sr-only,[hidden])):not(:has([data-slot=sheet-header])):not([data-sheet-bleed])]:pe-16',
           className,
         )}
         {...props}
@@ -140,6 +152,7 @@ function SheetContent({
         {showCloseButton && (
           <SheetPrimitive.Close
             data-slot='sheet-close'
+            data-sheet-corner-close=''
             render={
               <Button
                 variant='ghost'
