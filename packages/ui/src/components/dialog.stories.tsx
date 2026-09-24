@@ -59,6 +59,37 @@ type Story = StoryObj<typeof meta>
 
 const closeWithEscape = () => closeOverlay('dialog-content')
 
+/**
+ * Runs the assertions, then closes the dialog even when one of them throws, so
+ * a failure does not leave the popup (and its focus guards) behind for the
+ * end-of-play axe pass.
+ */
+async function thenCloseDialog(assertions: () => Promise<void>) {
+  try {
+    await assertions()
+  } catch (error) {
+    await closeWithEscape().catch(() => {})
+    throw error
+  }
+  await closeWithEscape()
+}
+
+/**
+ * Waits out the open transition (a scale from 95%) so rects are final.
+ * getAnimations() alone can be empty before the transition registers, so also
+ * require that the starting style has gone — once it has, reading animations
+ * flushes style and the running transition shows up until it ends.
+ */
+async function waitForOpen(dialog: HTMLElement) {
+  await waitFor(
+    () => {
+      expect(dialog).not.toHaveAttribute('data-starting-style')
+      expect(dialog.getAnimations()).toHaveLength(0)
+    },
+    { timeout: 3000 },
+  )
+}
+
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
@@ -141,6 +172,51 @@ export const LongContentOpensAtTop: Story = {
     await expect(dialog.scrollHeight).toBeGreaterThan(dialog.clientHeight)
     await expect(dialog.scrollTop).toBe(0)
     await closeWithEscape()
+  },
+}
+
+/**
+ * The close button is first in the DOM, and equal z-indexes paint in DOM
+ * order, so a later positioned child in the corner — a sticky header at the
+ * conventional z-10, or a Button given z-10 — would paint over it and take its
+ * clicks. It carries z-20 to stay on top.
+ */
+export const CloseButtonStaysOnTop: Story = {
+  name: 'Close button stays on top',
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button />}>Open toolbar dialog</DialogTrigger>
+      <DialogContent>
+        <Button className='z-10'>Action spanning the top edge</Button>
+        <DialogTitle>Toolbar dialog</DialogTitle>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(
+      within(canvasElement).getByRole('button', { name: 'Open toolbar dialog' }),
+    )
+    const dialog = await within(document.body).findByRole(
+      'dialog',
+      { name: 'Toolbar dialog' },
+      { timeout: 3000 },
+    )
+    await thenCloseDialog(async () => {
+      const close = within(dialog).getByRole('button', { name: 'Close' })
+      const action = within(dialog).getByRole('button', { name: 'Action spanning the top edge' })
+
+      // Prove the two really overlap once the rects are final, or the hit
+      // test below passes on nothing.
+      await waitForOpen(dialog)
+      const c = close.getBoundingClientRect()
+      const a = action.getBoundingClientRect()
+      await expect(
+        a.bottom > c.top && a.top < c.bottom && a.right > c.left && a.left < c.right,
+      ).toBe(true)
+
+      const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2)
+      await expect(close.contains(hit)).toBe(true)
+    })
   },
 }
 
