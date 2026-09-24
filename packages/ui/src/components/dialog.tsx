@@ -142,9 +142,12 @@ function DialogContent({
                 size='icon'
                 aria-label={closeLabel}
                 className={cn(
-                  // z-10, as Sheet's: the button comes first in the DOM, so any
-                  // positioned content after it would otherwise paint over it.
-                  'absolute end-4 top-4 z-10',
+                  // z-20, as Sheet's: the button comes first in the DOM, and
+                  // equal z-indexes paint in DOM order, so any later positioned
+                  // child in the corner (a Button is `relative`) would paint
+                  // over it and take its clicks. z-20 clears children up to and
+                  // including the conventional sticky-header z-10.
+                  'absolute end-4 top-4 z-20',
                   // On the band the button takes the band's inverse ink — only
                   // when a header is there to paint the band. The extra
                   // data-slot keeps this above Button's own dark ink at any
