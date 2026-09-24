@@ -1,3 +1,9 @@
+## [8.3.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.2...@nswds/ui-v8.3.3) (2026-09-24)
+
+### Bug Fixes
+
+* **sheet:** keep headerless content clear of the close button ([#215](https://github.com/digitalnsw/nswds-ui/issues/215)) ([14df25b](https://github.com/digitalnsw/nswds-ui/commit/14df25b38fe7f294f988bb09bf1f83a8483a0fed))
+
 ## [8.3.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.1...@nswds/ui-v8.3.2) (2026-09-24)
 
 ### Bug Fixes
