@@ -162,6 +162,12 @@ function FieldContent({ className, ref, ...props }: React.ComponentProps<'div'>)
   )
 }
 
+// Radio/checkbox options need their own label scope inside a shared Field.
+// Base UI keeps the outer validation state while associating each option label.
+function FieldItem({ ref, ...props }: React.ComponentProps<typeof FieldPrimitive.Item>) {
+  return <FieldPrimitive.Item ref={ref} data-slot='field-item' {...props} />
+}
+
 const fieldLabelClassName = cn(
   'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-disabled/field:opacity-50 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-md has-[>[data-slot=field]]:border *:data-[slot=field]:p-2 dark:has-data-checked:bg-primary/10',
   'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
@@ -354,6 +360,7 @@ export {
   FieldDescription,
   FieldError,
   FieldGroup,
+  FieldItem,
   FieldLabel,
   FieldLegend,
   FieldSeparator,
@@ -366,6 +373,7 @@ export type FieldProps = React.ComponentProps<typeof Field>
 export type FieldSetProps = React.ComponentProps<typeof FieldSet>
 export type FieldLegendProps = React.ComponentProps<typeof FieldLegend>
 export type FieldGroupProps = React.ComponentProps<typeof FieldGroup>
+export type FieldItemProps = React.ComponentProps<typeof FieldItem>
 export type FieldContentProps = React.ComponentProps<typeof FieldContent>
 export type FieldLabelProps = React.ComponentProps<typeof FieldLabel>
 export type FieldTitleProps = React.ComponentProps<typeof FieldTitle>

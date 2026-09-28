@@ -202,6 +202,20 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 - **Focus:** 2px `border-strong` outline, offset 2px.
 - **Error:** border thickens to 2px in `danger-border`, hover surface tints `danger-surface`, focus ring flips to `danger-solid`. Placeholder text uses `text-muted` (contrast-safe), never `text-subtle`.
 
+### Checkbox
+
+- **Shape:** 32px square, 1px `text-default` border, 4px radius and a 44px hit area. Pair with a regular-weight label, 16px away.
+- **Selection:** a centred 22px square inset carries a 24px `IconCheck` or `IconRemove` for the mixed state. Use the theme bridge `--color-primary-800` in light mode and `--color-primary-200` in dark mode, with `surface-default` for the mark. The bridge follows the selected brand palette. Centre the SVG independently of its smaller inset to avoid shifting it by a pixel.
+- **Focus:** 2px ink outline, offset 3px. Disabled controls use `text-subtle` for both the border and inset, without stacking opacity reductions.
+- **Error:** share Input's invalid border, hover surface and focus tokens. Selected and mixed insets use `danger-solid` with a white mark; the error outline has a 2px offset. Base UI owns state and Field integration.
+
+### RadioGroup
+
+- **Shape:** follow Checkbox's 32px control, 1px neutral border, 44px hit area and 16px label gap, with fully circular corners.
+- **Selection:** a centred 22px solid circle uses the same theme bridge ink as Checkbox. The radio dot is a CSS shape, not an icon.
+- **States:** use Checkbox's hover, focus, disabled and invalid treatments. A selected invalid dot uses `danger-solid`; Base UI owns single selection, arrow-key navigation and Field integration.
+- **Labels:** inside a shared `Field`, wrap each option and its `FieldLabel` in `FieldItem`. This gives each radio its own label scope while preserving the group's validation and disabled state.
+
 ### Dialogs, alert dialogs and menus
 
 - **Character:** the line system applied to overlays. A dialog or menu is a raised surface drawn with the 1px `foreground/10` ring — no shadow, and no blur on the page behind it (the scrim is a flat `grey-950` at 70%, shared with Sheet and Drawer through `src/lib/overlay.ts`). The package's other popups — Popover, Select, Combobox, HoverCard — cast no shadow either.
