@@ -168,7 +168,7 @@ import {
 
 ## Components
 
-67 components, plus 12 copy-and-adapt blocks on the registry channel. The complete catalogue —
+68 components, plus 12 copy-and-adapt blocks on the registry channel. The complete catalogue —
 with every export and a description per item — is in the
 [component reference](https://github.com/digitalnsw/nswds-ui/blob/main/docs/reference-components.md).
 
@@ -181,7 +181,7 @@ StepIndicator, TabNav, ThemeSwitcher.
 Accordion, AlertDialog, AspectRatio, Avatar, Badge, Breadcrumb, Button, ButtonGroup, Card, Carousel, Checkbox,
 Collapsible, Combobox, Dialog, DirectionProvider, Drawer, DropdownMenu, Empty, Field, HoverCard, Input, InputGroup, InputOTP,
 Kbd, Label, NativeSelect, Pagination, Popover, Progress, RadioGroup, ResizablePanelGroup, ScrollArea, Select,
-Separator, Sheet, Skeleton, Slider, Spinner, Switch, Table, Tabs, Textarea, Toaster, Toggle, ToggleGroup,
+Separator, Sheet, Skeleton, Slider, Spinner, Switch, Table, Tabs, Tag, Textarea, Toaster, Toggle, ToggleGroup,
 Tooltip.
 
 Plus the icon set under `@nswds/ui/icons` and the brand marks under `@nswds/ui/icons/brands`.
