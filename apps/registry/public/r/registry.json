@@ -64,7 +64,7 @@
           "input-surface": "var(--surface-default)",
           "input-surface-hover": "var(--surface-sunken)",
           "input-ring": "var(--border-strong)",
-          "input-invalid-border": "var(--danger-border)",
+          "input-invalid-border": "var(--danger-solid)",
           "input-invalid-surface-hover": "var(--danger-surface)",
           "input-invalid-ring": "var(--danger-solid)"
         },
@@ -2407,6 +2407,6 @@
     }
   ],
   "meta": {
-    "nswdsVersion": "8.4.0"
+    "nswdsVersion": "8.4.1"
   }
 }

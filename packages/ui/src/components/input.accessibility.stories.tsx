@@ -9,7 +9,8 @@
  * Criteria covered:
  *   1.3.1 Info and Relationships          (A)   — LabelAssociation
  *   1.3.5 Identify Input Purpose          (AA)  — InputPurpose
- *   1.4.11 Non-text Contrast              (AA)  — FocusAppearance (focus ring contrast)
+ *   1.4.11 Non-text Contrast              (AA)  — FocusAppearance (focus ring contrast),
+ *                                                  InvalidBorderContrast (invalid boundary)
  *   2.4.7 Focus Visible                   (AA)  — FocusAppearance
  *   2.4.13 Focus Appearance               (AAA, new in 2.2) — FocusAppearance
  *   3.3.1 Error Identification            (A)   — ErrorIdentification
@@ -23,8 +24,16 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { waitFor } from 'storybook/test'
 
+import { Checkbox } from './checkbox.js'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from './input-group.js'
 import { Input } from './input.js'
+import { NativeSelect, NativeSelectOption } from './native-select.js'
+import { RadioGroup, RadioGroupItem } from './radio-group.js'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.js'
+import { expectContrast, resolveColor } from './story-helpers.js'
+import { Textarea } from './textarea.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -308,6 +317,146 @@ export const ErrorIdentification: Story = {
   },
 }
 
+// ─── 1.4.11 — Invalid Border Contrast ─────────────────────────────────────────
+
+// Resolve a custom property to a computed colour string the canvas can parse.
+// The probe goes on the parent: an <input> or <textarea> cannot hold children.
+function tokenColour(element: HTMLElement, token: string): string {
+  const probe = document.createElement('span')
+  probe.style.color = `var(${token})`
+  ;(element.parentElement ?? element).append(probe)
+  const colour = getComputedStyle(probe).color
+  probe.remove()
+  return colour
+}
+
+// Computed colour strings differ in rounding, so compare the painted pixels.
+function sameColour(a: string, b: string): boolean {
+  const [x, y] = [resolveColor(a), resolveColor(b)]
+  return x.r === y.r && x.g === y.g && x.b === y.b && x.a === y.a
+}
+
+// The page colour the control's border meets on its outer side.
+function pageBackdrop(element: HTMLElement): string {
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    const colour = getComputedStyle(node).backgroundColor
+    if (colour !== 'rgba(0, 0, 0, 0)' && colour !== 'transparent') return colour
+  }
+  return tokenColour(element, '--background-default')
+}
+
+export const InvalidBorderContrast: Story = {
+  name: '1.4.11 Invalid Border Contrast',
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: "Every control that shares Input's invalid roles draws its invalid boundary in --input-invalid-border: Input, Textarea, InputGroup, Select (both variants), NativeSelect, Checkbox and Radio.",
+          why: 'WCAG 1.4.11 Non-text Contrast (AA) requires a 3:1 ratio for the visual boundary that identifies a control and its state. The invalid border is that boundary for a field in error. The previous mapping, danger-border, measured 2.32:1 in light mode and 1.72:1 in dark mode.',
+          how: "The play() function reads each control's rendered border colour and measures it against the control's own fill, the invalid hover surface and the page behind it, requiring 3:1 against all three. It runs again in dark mode.",
+          caveat:
+            'Colours are resolved through a canvas, so oklch values are measured as painted rather than parsed as strings. The ratio is asserted rather than a specific token, so a later retune only has to stay above 3:1.',
+        }),
+      },
+    },
+  },
+  // pointer-events-none: the test browser's real pointer can rest wherever an
+  // earlier story left it, and a hovered control swaps its fill for the hover
+  // surface. Both are measured below anyway, but the reading should not depend
+  // on where the pointer happens to be.
+  render: () => (
+    <div className='pointer-events-none grid w-full max-w-md gap-6'>
+      <Input aria-label='Invalid input' aria-invalid defaultValue='not-an-email' />
+      <Textarea aria-label='Invalid textarea' aria-invalid defaultValue='Too short' />
+      <InputGroup>
+        <InputGroupInput aria-label='Invalid input group' aria-invalid defaultValue='12.5' />
+        <InputGroupAddon align='inline-end'>
+          <InputGroupText>kg</InputGroupText>
+        </InputGroupAddon>
+      </InputGroup>
+      <Select defaultValue='nsw'>
+        <SelectTrigger aria-label='Invalid select' aria-invalid>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='nsw'>New South Wales</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select defaultValue='nsw'>
+        <SelectTrigger aria-label='Invalid filled select' variant='filled' aria-invalid>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='nsw'>New South Wales</SelectItem>
+        </SelectContent>
+      </Select>
+      <NativeSelect aria-label='Invalid native select' aria-invalid defaultValue='nsw'>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
+      <Checkbox aria-label='Invalid checkbox' aria-invalid />
+      <RadioGroup aria-label='Invalid radio group'>
+        <RadioGroupItem aria-label='Invalid radio' value='a' aria-invalid />
+      </RadioGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const named = (label: string) => {
+      const element = canvasElement.querySelector<HTMLElement>(`[aria-label="${label}"]`)
+      if (!element) throw new Error(`Could not find "${label}".`)
+      return element
+    }
+    // The element that draws each boundary. InputGroup draws it on the group,
+    // not on the borderless input that carries aria-invalid.
+    const controls = [
+      ['Invalid input', named('Invalid input')],
+      ['Invalid textarea', named('Invalid textarea')],
+      [
+        'Invalid input group',
+        named('Invalid input group').closest<HTMLElement>('[data-slot="input-group"]')!,
+      ],
+      ['Invalid select', named('Invalid select')],
+      ['Invalid filled select', named('Invalid filled select')],
+      ['Invalid native select', named('Invalid native select')],
+      ['Invalid checkbox', named('Invalid checkbox')],
+      ['Invalid radio', named('Invalid radio')],
+    ] as const
+
+    for (const [name, control] of controls) {
+      // Prove the control really draws the shared token, so the ratio below
+      // is measuring --input-invalid-border and not some local colour. Story
+      // globals apply after mount, so let a colour transition settle first;
+      // the expected value is resolved outside waitFor, because the token probe
+      // mutates the DOM and waitFor re-runs its callback on every mutation.
+      const token = tokenColour(control, '--input-invalid-border')
+      await waitFor(() => {
+        if (!sameColour(getComputedStyle(control).borderTopColor, token)) {
+          throw new Error(
+            `${name}: border is ${getComputedStyle(control).borderTopColor}, not --input-invalid-border.`,
+          )
+        }
+      })
+      const style = getComputedStyle(control)
+      const border = style.borderTopColor
+      if (parseFloat(style.borderTopWidth) < 2) {
+        throw new Error(`${name}: invalid border is ${style.borderTopWidth}, expected 2px.`)
+      }
+
+      expectContrast(border, style.backgroundColor, {
+        minimum: 3,
+        label: `${name} invalid border against its own fill`,
+      })
+      expectContrast(border, tokenColour(control, '--input-invalid-surface-hover'), {
+        minimum: 3,
+        label: `${name} invalid border against the invalid hover surface`,
+      })
+      expectContrast(border, pageBackdrop(control), {
+        minimum: 3,
+        label: `${name} invalid border against the page`,
+      })
+    }
+  },
+}
+
 // ─── Dark-mode variants ───────────────────────────────────────────────────────
 //
 // Each light-mode story above is re-exported with `globals.theme = 'dark'`.
@@ -342,5 +491,11 @@ export const FocusAppearanceDark: Story = {
 export const ErrorIdentificationDark: Story = {
   ...ErrorIdentification,
   name: '3.3.1 Error Identification (Dark)',
+  globals: { theme: 'dark' },
+}
+
+export const InvalidBorderContrastDark: Story = {
+  ...InvalidBorderContrast,
+  name: '1.4.11 Invalid Border Contrast (Dark)',
   globals: { theme: 'dark' },
 }
