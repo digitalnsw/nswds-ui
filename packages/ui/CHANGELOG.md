@@ -1,3 +1,9 @@
+## [8.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.4.1...@nswds/ui-v8.5.0) (2026-09-28)
+
+### Features
+
+* **forms:** redesign switch with a shape-coded thumb ([#223](https://github.com/digitalnsw/nswds-ui/issues/223)) ([14e4186](https://github.com/digitalnsw/nswds-ui/commit/14e418651a27af886f40c8d36c3f5319629d517c))
+
 ## [8.4.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.4.0...@nswds/ui-v8.4.1) (2026-09-28)
 
 ### Bug Fixes
