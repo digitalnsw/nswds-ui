@@ -54,6 +54,9 @@ pick up your `LinkProvider` framework link (e.g. next/link):
 <BadgeLink href="/tags/x" color="accent">x</BadgeLink>
 ```
 
+`BadgeButton` and `BadgeLink` were removed in a later major release. Use `TagButton` and
+`TagLink` instead, or `TagCheckbox` for selectable filters.
+
 ### Spinner accessibility
 
 `Spinner` now has an accessible name by default. If a parent already conveys

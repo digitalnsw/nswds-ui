@@ -154,9 +154,9 @@ Components use **four values and no others**:
 
 | tier                  | value              | what it covers                                                                                     |
 | --------------------- | ------------------ | -------------------------------------------------------------------------------------------------- |
-| Controls and labels   | `rounded-sm` (4px) | buttons, inputs, rows, badges, tooltips                                                            |
+| Controls and labels   | `rounded-sm` (4px) | buttons, inputs, rows, tags, tooltips                                                              |
 | Containers and popups | `rounded-md` (8px) | cards, popovers, menus, drawers, sheets — surfaces that hold content. The system's base `--radius` |
-| Pills and circles     | `rounded-full`     | avatars, switches, step dots, drag handles                                                         |
+| Pills and circles     | `rounded-full`     | avatars, status badges, switches, step dots, drag handles                                          |
 | Full-bleed chrome     | `rounded-none`     | masthead, main nav                                                                                 |
 
 `lg` (16px), `xl` (12px) and `xs` (2px) remain in the token scale — they ship from `@nswds/tokens` and a consuming app may want them — but **no component in this package uses them**. `check:radius` enforces that.
@@ -306,3 +306,15 @@ Follow the masterbrand's order of preference, which `footerLogoType` encodes. **
 - **Don't** imitate the legacy `nsw-design-system`'s rendered look; translate the masterbrand through this system's tokens instead.
 - **Don't** use `nsw-red-600` for errors (that's the `danger` ramp) or spend it freely — the waratah red stays scarce.
 - **Don't** hand-roll accessibility or restate dark-mode colours per component; Base UI primitives and role tokens own those.
+
+### Badges and tags
+
+Badge is a static, flat `rounded-full` label for status and counts. Its default is a
+soft tint with readable ink from Button’s colour family; an optional decorative dot
+reinforces a visible status label. It has no hover, press or focus treatment.
+
+Tag uses `rounded-sm` for categories and topics. Static tags use a quiet outline;
+interactive tags use a stronger outline and a real 48px minimum target. Linked tags
+have no underline in any state, with hover feedback and a visible keyboard focus
+outline. Selectable tags use Base UI Checkbox and a visible check indicator; removable
+tags have a separately named remove button.

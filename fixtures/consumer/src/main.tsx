@@ -23,8 +23,6 @@ import type {
   AlertDialogVariant,
   AlertProps,
   AlertStatus,
-  BadgeButtonProps,
-  BadgeLinkProps,
   BadgeProps,
   ButtonLinkProps,
   ButtonProps,
@@ -110,6 +108,11 @@ import type {
   StepNavProps,
   StepNavSection,
   StepStatus,
+  TagButtonProps,
+  TagCheckboxProps,
+  TagLinkProps,
+  TagProps,
+  TagRemovableProps,
   ThemeSwitcherProps,
   ThemeSwitcherTheme,
   UseChromeHeightOptions,
@@ -131,8 +134,6 @@ import {
   AlertDialogTrigger,
   AspectRatio,
   Badge,
-  BadgeButton,
-  BadgeLink,
   Button,
   ButtonLink,
   Callout,
@@ -261,6 +262,11 @@ import {
   Spinner,
   StepIndicator,
   StepNav,
+  Tag,
+  TagButton,
+  TagCheckbox,
+  TagLink,
+  TagRemovable,
   ThemeSwitcher,
   Toaster,
   Tooltip,
@@ -300,6 +306,7 @@ import {
   skeletonVariants,
   skipLinkVariants,
   stepStatusStyles,
+  tagVariants,
   useChromeHeight,
 } from '@nswds/ui'
 import { IconSearch } from '@nswds/ui/icons'
@@ -315,9 +322,12 @@ import { createRoot } from 'react-dom/client'
 // Every exported prop type must remain resolvable. A removed/renamed type
 // breaks this tuple at compile time.
 type PublicPropTypes = [
+  TagProps,
+  TagButtonProps,
+  TagLinkProps,
+  TagCheckboxProps,
+  TagRemovableProps,
   BadgeProps,
-  BadgeButtonProps,
-  BadgeLinkProps,
   ButtonProps,
   ButtonLinkProps,
   IconSlot,
@@ -443,6 +453,7 @@ const footerColor: FooterColor = footerColors[0]
 const _classNames: string = cn(
   buttonVariants({ variant: 'solid', color: 'primary', size: 'default' }),
   badgeVariants({ variant: 'soft', color: 'primary', size: 'default' }),
+  tagVariants({ variant: 'outline', color: 'primary', size: 'sm', interactive: true }),
   linkVariants({ variant: 'primary' }),
   containerVariants({ size: 'contained' }),
   sectionVariants({ spacing: 'tight', divider: true }),
@@ -723,11 +734,21 @@ function App() {
         </ButtonLink>
 
         {/* Badges */}
-        <Badge color='primary'>New</Badge>
-        <BadgeButton color='primary'>Filter</BadgeButton>
-        <BadgeLink href='/tag/news' color='primary'>
-          News
-        </BadgeLink>
+        <Badge color='primary' dot>
+          New
+        </Badge>
+        {/* Tags */}
+        <Tag>Environment</Tag>
+        <TagButton onClick={() => {}}>Choose topic</TagButton>
+        <TagLink href='/tag/grants' ref={linkRef}>
+          Grants
+        </TagLink>
+        <TagCheckbox name='topic' value='regional' defaultChecked>
+          Regional NSW
+        </TagCheckbox>
+        <TagRemovable removeLabel='Remove Education filter' onRemove={() => {}}>
+          Education
+        </TagRemovable>
 
         {/* Card */}
         <Card>

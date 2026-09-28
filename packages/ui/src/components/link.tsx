@@ -59,7 +59,7 @@ const linkVariants = cva('', {
         ...styledBase,
         '[--link-color:var(--color-white)] dark:[--link-color:var(--color-grey-800)]',
       ],
-      // Zero classes — the consumer (typically Button / BadgeButton) is
+      // Zero classes — the consumer (typically Button / TagLink) is
       // supplying its own complete visual treatment and doesn't want any
       // Link styling to compose on top. Intentionally omits the icon defaults
       // too, so the wrapping component has full control of icon sizing.

@@ -384,3 +384,49 @@ export function expectContrast(
   }
   return ratio
 }
+
+/** Consumer documentation layout, shared by the Badge and Tag examples. */
+export function ExampleSection({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <section className='space-y-5'>
+      <div className='space-y-2'>
+        <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
+        {description && (
+          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>{description}</p>
+        )}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+export function ExamplePreview({ children }: { children: ReactNode }) {
+  return <div className='rounded-md border border-border bg-muted/20 p-6'>{children}</div>
+}
+
+export function ExampleCell({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className='flex flex-col items-start gap-3'>
+      <div className='flex min-h-12 items-center'>{children}</div>
+      <span className='text-sm text-muted-foreground'>{label}</span>
+    </div>
+  )
+}
+
+export function ExampleCode({ children }: { children: string }) {
+  return (
+    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-sm text-foreground'>
+      <code>{children}</code>
+    </pre>
+  )
+}
+
+export const exampleDocsClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
