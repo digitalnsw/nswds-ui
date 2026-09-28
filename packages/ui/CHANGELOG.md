@@ -1,3 +1,9 @@
+## [8.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.3...@nswds/ui-v8.4.0) (2026-09-28)
+
+### Features
+
+* **forms:** align checkbox and radio controls with NSW design ([#220](https://github.com/digitalnsw/nswds-ui/issues/220)) ([7ae4273](https://github.com/digitalnsw/nswds-ui/commit/7ae4273321806bc4acbe5e5cf4aa72d46465c623))
+
 ## [8.3.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.2...@nswds/ui-v8.3.3) (2026-09-24)
 
 ### Bug Fixes
