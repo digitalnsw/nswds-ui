@@ -1,3 +1,30 @@
+## [9.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.5.0...@nswds/ui-v9.0.0) (2026-09-28)
+
+### ⚠ BREAKING CHANGES
+
+* **ui:** Remove BadgeButton, BadgeLink and their prop types; use
+TagButton, TagLink or TagCheckbox. Remove primary/grey and primary/white
+colour aliases in favour of primary. Badge now uses static pill styling.
+
+* fix(ui): restore light badge contrast and inset tag focus
+
+* docs: restore release history and correct the tag reference
+
+Restore the released 2.0 CHANGELOG entry, the v2 migration guide and the
+archived v2 plan to their published wording; the BadgeButton/BadgeLink
+removal is recorded by this branch's BREAKING CHANGE footer instead. Note
+the later replacement by TagButton/TagLink in the v2 guide.
+
+Update the component reference totals for Tag (410 exports, 68 components,
+84 registry items), list every Tag export and prop type, and give the
+TagCheckbox usage snippet the boolean state Base UI's checked expects.
+
+* docs: move badges and tags reference above related links
+
+### Features
+
+* **ui:** separate status badges from interactive tags ([#222](https://github.com/digitalnsw/nswds-ui/issues/222)) ([1f084e8](https://github.com/digitalnsw/nswds-ui/commit/1f084e882d6b8a760feb0db55b05aa7109a80b8b))
+
 ## [8.5.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.4.1...@nswds/ui-v8.5.0) (2026-09-28)
 
 ### Features
