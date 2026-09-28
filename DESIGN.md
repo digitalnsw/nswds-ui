@@ -200,14 +200,14 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 - **Style:** 48px tall, white surface, 1px `border-default` stroke, 4px radius, 8px×16px padding.
 - **Hover:** surface shifts to the sunken grey.
 - **Focus:** 2px `border-strong` outline, offset 2px.
-- **Error:** border thickens to 2px in `danger-border`, hover surface tints `danger-surface`, focus ring flips to `danger-solid`. Placeholder text uses `text-muted` (contrast-safe), never `text-subtle`.
+- **Error:** border thickens to 2px in `danger-solid` (via `--input-invalid-border`), hover surface tints `danger-surface`, focus ring flips to `danger-solid`. The invalid border is the control's boundary, so it holds WCAG 1.4.11's 3:1 against the input surface, the hover tint and the page in both modes (6.6:1 light, 3.81:1 dark); `danger-border` is a divider tone and falls to 1.72:1 in dark, so never use it for a control. Placeholder text uses `text-muted` (contrast-safe), never `text-subtle`.
 
 ### Checkbox
 
 - **Shape:** 32px square, 1px `text-default` border, 4px radius and a 44px hit area. Pair with a regular-weight label, 16px away.
 - **Selection:** a centred 22px square inset carries a 24px `IconCheck` or `IconRemove` for the mixed state. Use the theme bridge `--color-primary-800` in light mode and `--color-primary-200` in dark mode, with `surface-default` for the mark. The bridge follows the selected brand palette. Centre the SVG independently of its smaller inset to avoid shifting it by a pixel.
 - **Focus:** 2px ink outline, offset 3px. Disabled controls use `text-subtle` for both the border and inset, without stacking opacity reductions.
-- **Error:** share Input's invalid border, hover surface and focus tokens. Selected and mixed insets use `danger-solid` with a white mark; the error outline has a 2px offset. Base UI owns state and Field integration.
+- **Error:** share Input's invalid border, hover surface and focus tokens, so the 2px `danger-solid` border meets the same 3:1. Selected and mixed insets use `danger-solid` with a white mark; the 3px band of input surface between border and inset keeps the two apart. The error outline has a 2px offset. Base UI owns state and Field integration.
 
 ### RadioGroup
 

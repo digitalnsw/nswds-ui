@@ -1,3 +1,9 @@
+## [8.4.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.4.0...@nswds/ui-v8.4.1) (2026-09-28)
+
+### Bug Fixes
+
+* **ui:** meet WCAG 1.4.11 contrast for invalid field borders ([#224](https://github.com/digitalnsw/nswds-ui/issues/224)) ([ac0947f](https://github.com/digitalnsw/nswds-ui/commit/ac0947fcb084e4bb86fef3717645cf89d5a793ec))
+
 ## [8.4.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.3.3...@nswds/ui-v8.4.0) (2026-09-28)
 
 ### Features
