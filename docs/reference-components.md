@@ -529,14 +529,6 @@ in-repo `@nswds/ui/globals.css` specifier is a Storybook alias, **not** a publis
 
 ---
 
-## Related
-
-- [Build your first NSW page](tutorial-build-your-first-page.md) — start here if you have not used the system before
-- [Design tokens](reference-tokens.md) — what the components' colours resolve to
-- [Theme and re-brand](howto-theme-and-rebrand.md) — changing those values
-- [Installing from the registry](installing-from-the-registry.md) — the copy-the-source channel
-- [Architecture](explanation-architecture.md) — why there are two channels at all
-
 ## Badges and tags
 
 Use `Badge` for static status and counts. It has full pill corners, a flat soft fill
@@ -581,3 +573,13 @@ links or other controls in its label. `disabled` disables the remove button.
 
 Install the registry item with `npx shadcn add @nswds/tag`; both distribution channels
 include the same components and colour definitions.
+
+---
+
+## Related
+
+- [Build your first NSW page](tutorial-build-your-first-page.md) — start here if you have not used the system before
+- [Design tokens](reference-tokens.md) — what the components' colours resolve to
+- [Theme and re-brand](howto-theme-and-rebrand.md) — changing those values
+- [Installing from the registry](installing-from-the-registry.md) — the copy-the-source channel
+- [Architecture](explanation-architecture.md) — why there are two channels at all
