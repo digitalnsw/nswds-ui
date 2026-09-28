@@ -158,6 +158,11 @@ export const WithField: Story = {
     await expect(updates).toHaveAccessibleDescription(
       'Get an email when your application status changes.',
     )
+    // The label is part of the target; the description is not.
+    await userEvent.click(canvas.getByText('Get an email when your application status changes.'))
+    await expect(updates).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(canvas.getByText('Email updates'))
+    await expect(updates).toHaveAttribute('aria-checked', 'false')
     const invalid = canvas.getByRole('switch', { name: 'Two-step verification' })
     await expect(invalid).toHaveAttribute('aria-invalid', 'true')
     await expect(invalid).toHaveAccessibleDescription(
@@ -239,8 +244,9 @@ function SwitchDocs() {
       <section className='space-y-4'>
         <h2 className='text-2xl font-bold tracking-normal'>In a settings list</h2>
         <p className='text-base text-muted-foreground'>
-          Put the label and description first and the switch at the end of the row. The label stays
-          the target, so the whole row can be pressed.
+          Put the label and description first and the switch at the end of the row. Pressing the
+          label toggles the switch as well as the switch itself; the description is not part of the
+          target.
         </p>
         <SettingsList />
       </section>
