@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import React, { useRef, useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 
+import { IconCheck } from '../icons/check.js'
 import { LinkProvider } from './link.js'
 import { ThemeSurface } from './story-helpers.js'
 import { Tag, TagButton, TagCheckbox, TagLink, TagRemovable } from './tag.js'
@@ -184,6 +185,30 @@ export const DisabledRemoval: Story = {
     await expect(
       within(canvasElement).getByRole('button', { name: 'Remove locked filter' }),
     ).toBeDisabled()
+  },
+}
+
+export const RemoveIconSize: Story = {
+  render: () => (
+    <div className='flex flex-wrap items-center gap-3'>
+      <TagRemovable removeLabel='Remove Approved filter' onRemove={fn()}>
+        <IconCheck data-testid='label-icon' /> Approved
+      </TagRemovable>
+      <TagCheckbox defaultChecked>Selected</TagCheckbox>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const size = (el: Element) => {
+      const { width, height } = el.getBoundingClientRect()
+      return [width, height]
+    }
+    // The Tag root's descendant icon rule must not shrink the remove glyph.
+    const remove = canvas.getByRole('button', { name: 'Remove Approved filter' })
+    await expect(size(remove.querySelector('[data-slot=icon]')!)).toEqual([20, 20])
+    await expect(size(canvas.getByTestId('label-icon'))).toEqual([16, 16])
+    const checkbox = canvas.getByRole('checkbox', { name: 'Selected' })
+    await expect(size(checkbox.querySelector('[data-slot=icon]')!)).toEqual([16, 16])
   },
 }
 

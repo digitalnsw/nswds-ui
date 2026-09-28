@@ -15,7 +15,9 @@ import { Link } from './link.js'
 const tagCva = cva(
   [
     'relative isolate inline-flex max-w-full items-center justify-center gap-2 rounded-sm border text-start align-middle font-normal',
-    '[&_[data-slot=icon]]:inline-block [&_[data-slot=icon]]:size-4 [&_[data-slot=icon]]:shrink-0 [&_[data-slot=icon]]:align-middle',
+    // A variable rather than a fixed size: this descendant rule outranks a
+    // class on the icon itself, so a nested control resizes by resetting it.
+    '[--tag-icon-size:--spacing(4)] [&_[data-slot=icon]]:inline-block [&_[data-slot=icon]]:size-(--tag-icon-size) [&_[data-slot=icon]]:shrink-0 [&_[data-slot=icon]]:align-middle',
     '[--btn-hover-overlay:color-mix(in_oklab,var(--btn-bg)_10%,transparent)]',
     '[--btn-active-overlay:color-mix(in_oklab,var(--btn-bg)_20%,transparent)]',
   ],
@@ -216,9 +218,9 @@ function TagRemovable({
         aria-label={removeLabel}
         disabled={disabled}
         onClick={onRemove}
-        className='flex size-12 shrink-0 items-center justify-center rounded-sm not-data-disabled:hover:bg-(--btn-hover-overlay) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg) group-data-[variant=solid]/tag-removable:focus-visible:-outline-offset-2 group-data-[variant=solid]/tag-removable:focus-visible:outline-(--btn-text) not-data-disabled:active:bg-(--btn-active-overlay) forced-colors:focus-visible:outline-[Highlight] data-disabled:cursor-not-allowed data-disabled:opacity-50'
+        className='flex size-12 shrink-0 items-center justify-center rounded-sm [--tag-icon-size:--spacing(5)] not-data-disabled:hover:bg-(--btn-hover-overlay) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg) group-data-[variant=solid]/tag-removable:focus-visible:-outline-offset-2 group-data-[variant=solid]/tag-removable:focus-visible:outline-(--btn-text) not-data-disabled:active:bg-(--btn-active-overlay) forced-colors:focus-visible:outline-[Highlight] data-disabled:cursor-not-allowed data-disabled:opacity-50'
       >
-        <IconClose aria-hidden className='size-5' />
+        <IconClose aria-hidden />
       </ButtonPrimitive>
     </span>
   )
