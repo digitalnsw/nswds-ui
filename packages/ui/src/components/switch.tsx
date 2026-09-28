@@ -2,6 +2,7 @@
 
 import { Switch as SwitchPrimitive } from '@base-ui/react/switch'
 
+import { IconCheck } from '../icons/check.js'
 import { cn } from '../lib/utils.js'
 
 function Switch({
@@ -16,14 +17,43 @@ function Switch({
       data-slot='switch'
       data-size={size}
       className={cn(
-        'peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-transparent transition-all outline-none group-has-[:focus-visible]/field-label:border-transparent group-has-[:focus-visible]/field-label:ring-0 after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 data-[size=default]:h-[16.6px] data-[size=default]:w-[28px] data-[size=sm]:h-[14px] data-[size=sm]:w-[24px] dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:bg-primary data-unchecked:bg-input dark:data-unchecked:bg-input/80 data-disabled:cursor-not-allowed data-disabled:opacity-50',
+        'peer group/switch relative inline-flex shrink-0 items-center rounded-full border border-(--text-default) bg-(--input-surface) motion-safe:transition-colors',
+        // Checkbox's theme bridge, so brand overrides reach both modes. The
+        // thumb reads these too: ink for the fill and tick, mark for the thumb
+        // on a selected track, off for the ring on an unselected one.
+        '[--switch-ink:var(--color-primary-800)] [--switch-mark:var(--surface-default)] [--switch-off:var(--text-default)] dark:not-data-disabled:not-aria-invalid:[--switch-ink:var(--color-primary-200)]',
+        // The padding puts the thumb 5px (sm: 4px) inside the outer edge,
+        // Checkbox's inset, and fixes its travel at the track minus both insets.
+        'data-[size=default]:h-8 data-[size=default]:w-14 data-[size=default]:px-1 data-[size=sm]:h-6 data-[size=sm]:w-10 data-[size=sm]:px-0.75',
+        // A 44px hit area without making the visible control larger. The
+        // pseudo-element sizes from the padding box, so add the border back.
+        'after:absolute after:top-1/2 after:left-1/2 after:h-11 after:w-[calc(100%+2px)] after:min-w-11 after:-translate-1/2',
+        'data-checked:border-(--switch-ink) data-checked:bg-(--switch-ink)',
+        'not-data-disabled:data-checked:hover:bg-[color-mix(in_srgb,var(--switch-ink)_88%,var(--input-surface))] not-data-disabled:data-unchecked:hover:bg-[color-mix(in_srgb,var(--switch-ink)_10%,var(--input-surface))]',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--switch-ink)',
+        // Input's invalid roles. The second pixel of the off border is an inset
+        // ring rather than border-2, so the thumb does not shift by a pixel.
+        'aria-invalid:not-data-disabled:[--switch-ink:var(--danger-solid)] aria-invalid:not-data-disabled:[--switch-mark:var(--white)] aria-invalid:focus-visible:outline-offset-2 aria-invalid:focus-visible:outline-(--input-invalid-ring) aria-invalid:not-data-disabled:data-unchecked:border-(--input-invalid-border) aria-invalid:not-data-disabled:data-unchecked:inset-ring aria-invalid:not-data-disabled:data-unchecked:inset-ring-(--input-invalid-border) aria-invalid:not-data-disabled:data-unchecked:hover:bg-(--input-invalid-surface-hover)',
+        // Base UI renders a span: data-disabled covers both the prop and Field.
+        'data-disabled:cursor-not-allowed data-disabled:border-(--text-subtle) data-disabled:[--switch-ink:var(--text-subtle)] data-disabled:[--switch-off:var(--text-subtle)]',
         className,
       )}
       {...props}
     >
+      {/* Off is a hollow ring, on is a solid thumb with a tick, so the state
+          reads by shape as well as by colour and side. */}
       <SwitchPrimitive.Thumb
         data-slot='switch-thumb'
-        className='pointer-events-none block rounded-full bg-background ring-0 transition-transform group-data-[size=default]/switch:size-3.5 group-data-[size=sm]/switch:size-3 group-data-[size=default]/switch:data-checked:translate-x-[calc(100%-2px)] group-data-[size=sm]/switch:data-checked:translate-x-[calc(100%-2px)] rtl:group-data-[size=default]/switch:data-checked:-translate-x-[calc(100%-2px)] rtl:group-data-[size=sm]/switch:data-checked:-translate-x-[calc(100%-2px)] dark:data-checked:bg-primary-foreground group-data-[size=default]/switch:data-unchecked:translate-x-0 group-data-[size=sm]/switch:data-unchecked:translate-x-0 rtl:group-data-[size=default]/switch:data-unchecked:-translate-x-0 rtl:group-data-[size=sm]/switch:data-unchecked:-translate-x-0 dark:data-unchecked:bg-foreground'
+        className={cn(
+          'pointer-events-none grid shrink-0 place-items-center rounded-full bg-(--input-surface) text-(--switch-ink) inset-ring-2 inset-ring-(--switch-off) motion-safe:transition-[translate,background-color,box-shadow]',
+          'group-data-[size=default]/switch:size-5.5 group-data-[size=sm]/switch:size-4 group-data-[size=default]/switch:[&>svg]:size-4.5 group-data-[size=sm]/switch:[&>svg]:size-3',
+          'not-data-disabled:data-unchecked:group-hover/switch:bg-[color-mix(in_srgb,var(--switch-ink)_10%,var(--input-surface))] group-aria-invalid/switch:not-data-disabled:data-unchecked:group-hover/switch:bg-(--input-invalid-surface-hover)',
+          'data-checked:bg-(--switch-mark) data-checked:inset-ring-0',
+          'group-data-[size=default]/switch:data-checked:translate-x-6 group-data-[size=sm]/switch:data-checked:translate-x-4 rtl:group-data-[size=default]/switch:data-checked:-translate-x-6 rtl:group-data-[size=sm]/switch:data-checked:-translate-x-4',
+        )}
+        render={(thumbProps, state) => (
+          <span {...thumbProps}>{state.checked ? <IconCheck aria-hidden /> : null}</span>
+        )}
       />
     </SwitchPrimitive.Root>
   )

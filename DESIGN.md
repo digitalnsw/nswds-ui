@@ -216,6 +216,13 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 - **States:** use Checkbox's hover, focus, disabled and invalid treatments. A selected invalid dot uses `danger-solid`; Base UI owns single selection, arrow-key navigation and Field integration.
 - **Labels:** inside a shared `Field`, wrap each option and its `FieldLabel` in `FieldItem`. This gives each radio its own label scope while preserving the group's validation and disabled state.
 
+### Switch
+
+- **Shape:** a 56×32px pill (40×24px at `sm`) with Checkbox's 1px `text-default` border, input surface and 44px hit area. A leading switch sits 16px from a regular-weight label; in a settings row the label and description lead and the switch trails.
+- **Thumb:** 22px (16px at `sm`), 5px (4px) inside the outer edge, which is Checkbox's inset. Off is a hollow ring with a 2px `text-default` stroke; on fills the track with Checkbox's theme bridge ink and turns the thumb solid `surface-default` with an 18px (12px) `IconCheck` in the ink. The state reads by shape as well as colour and side.
+- **Hover / Focus:** off tints the track and the inside of the ring 10% toward the ink (Input's hover surface when invalid), while the ring's `text-default` stroke holds so the outline never fades; on eases the fill 12% toward the surface. Focus is Checkbox's 2px ink outline, offset 3px. Disabled uses `text-subtle` for the border, ring and fill, with no opacity reduction.
+- **Error:** share Input's invalid border, hover surface and focus tokens. The off border's second pixel is an inset ring, not a wider border, so the thumb does not move; an invalid switch that is on uses `danger-solid` with a white thumb. Base UI owns the `switch` role, keyboard toggling and Field integration.
+
 ### Dialogs, alert dialogs and menus
 
 - **Character:** the line system applied to overlays. A dialog or menu is a raised surface drawn with the 1px `foreground/10` ring — no shadow, and no blur on the page behind it (the scrim is a flat `grey-950` at 70%, shared with Sheet and Drawer through `src/lib/overlay.ts`). The package's other popups — Popover, Select, Combobox, HoverCard — cast no shadow either.
