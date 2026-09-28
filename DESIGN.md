@@ -220,7 +220,7 @@ Buttons draw _optical_ borders: the border width is a variable (1px, or 2px for 
 
 - **Shape:** a 56×32px pill (40×24px at `sm`) with Checkbox's 1px `text-default` border, input surface and 44px hit area. A leading switch sits 16px from a regular-weight label; in a settings row the label and description lead and the switch trails.
 - **Thumb:** 22px (16px at `sm`), 5px (4px) inside the outer edge, which is Checkbox's inset. Off is a hollow ring with a 2px `text-default` stroke; on fills the track with Checkbox's theme bridge ink and turns the thumb solid `surface-default` with an 18px (12px) `IconCheck` in the ink. The state reads by shape as well as colour and side.
-- **Hover / Focus:** off tints the track and ring 10% toward the ink; on eases the fill 12% toward the surface. Focus is Checkbox's 2px ink outline, offset 3px. Disabled uses `text-subtle` for the border, ring and fill, with no opacity reduction.
+- **Hover / Focus:** off tints the track and the inside of the ring 10% toward the ink (Input's hover surface when invalid), while the ring's `text-default` stroke holds so the outline never fades; on eases the fill 12% toward the surface. Focus is Checkbox's 2px ink outline, offset 3px. Disabled uses `text-subtle` for the border, ring and fill, with no opacity reduction.
 - **Error:** share Input's invalid border, hover surface and focus tokens. The off border's second pixel is an inset ring, not a wider border, so the thumb does not move; an invalid switch that is on uses `danger-solid` with a white thumb. Base UI owns the `switch` role, keyboard toggling and Field integration.
 
 ### Dialogs, alert dialogs and menus
