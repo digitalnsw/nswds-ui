@@ -85,9 +85,12 @@ export const Sizes: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    // No size may render text below the 16px floor.
-    for (const badge of canvasElement.querySelectorAll('[data-slot=badge]'))
-      await expect(parseFloat(getComputedStyle(badge).fontSize)).toBeGreaterThanOrEqual(16)
+    // No size may render text below the 16px floor or tighter than 1.5 line spacing.
+    for (const badge of canvasElement.querySelectorAll('[data-slot=badge]')) {
+      const { fontSize, lineHeight } = getComputedStyle(badge)
+      await expect(parseFloat(fontSize)).toBeGreaterThanOrEqual(16)
+      await expect(parseFloat(lineHeight)).toBeGreaterThanOrEqual(1.5 * parseFloat(fontSize))
+    }
   },
 }
 
