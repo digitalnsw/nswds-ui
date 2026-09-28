@@ -3,6 +3,7 @@
 import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox'
 
 import { IconCheck } from '../icons/check.js'
+import { IconRemove } from '../icons/remove.js'
 import { cn } from '../lib/utils.js'
 
 function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
@@ -10,17 +11,31 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
     <CheckboxPrimitive.Root
       data-slot='checkbox'
       className={cn(
-        'peer relative flex size-4 shrink-0 items-center justify-center rounded-sm border border-input transition-shadow outline-none group-has-disabled/field:opacity-50 group-has-[:focus-visible]/field-label:ring-0 group-has-[:focus-visible]/field-label:not-data-checked:border-input after:absolute after:-inset-x-3 after:-inset-y-2 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 aria-invalid:aria-checked:border-primary dark:bg-input/30 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 data-checked:border-primary data-checked:bg-primary data-checked:text-primary-foreground group-has-[:focus-visible]/field-label:data-checked:border-primary dark:data-checked:bg-primary',
+        'peer relative inline-flex size-8 shrink-0 items-center justify-center rounded-sm border border-(--text-default) bg-(--input-surface) motion-safe:transition-colors',
+        // Use the theme's bridge scale so brand overrides reach both modes.
+        // The inset stays centred at 22px even with a 2px invalid border.
+        '[--checkbox-ink:var(--color-primary-800)] [--checkbox-mark:var(--surface-default)] dark:not-data-disabled:not-aria-invalid:[--checkbox-ink:var(--color-primary-200)]',
+        // A 44px hit area without making the visible 32px control larger.
+        'after:absolute after:top-1/2 after:left-1/2 after:size-11 after:-translate-1/2',
+        'not-data-disabled:hover:bg-[color-mix(in_srgb,var(--checkbox-ink)_10%,var(--input-surface))]',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-(--checkbox-ink)',
+        // Use Input's invalid roles, including its focus and hover treatment.
+        'aria-invalid:not-data-disabled:border-2 aria-invalid:not-data-disabled:border-(--input-invalid-border) aria-invalid:not-data-disabled:[--checkbox-ink:var(--danger-solid)] aria-invalid:not-data-disabled:[--checkbox-mark:var(--white)] aria-invalid:not-data-disabled:hover:bg-(--input-invalid-surface-hover) aria-invalid:focus-visible:outline-offset-2 aria-invalid:focus-visible:outline-(--input-invalid-ring)',
+        // Base UI renders a span: data-disabled covers both the prop and Field.
+        'data-disabled:cursor-not-allowed data-disabled:border-(--text-subtle) data-disabled:[--checkbox-ink:var(--text-subtle)]',
         className,
       )}
       {...props}
     >
       <CheckboxPrimitive.Indicator
         data-slot='checkbox-indicator'
-        className='grid place-content-center text-current transition-none [&>svg]:size-3.5'
-      >
-        <IconCheck />
-      </CheckboxPrimitive.Indicator>
+        className='pointer-events-none absolute top-1/2 left-1/2 size-5.5 -translate-1/2 bg-(--checkbox-ink) text-(--checkbox-mark) [&>svg]:absolute [&>svg]:top-1/2 [&>svg]:left-1/2 [&>svg]:size-6 [&>svg]:-translate-1/2'
+        render={(indicatorProps, state) => (
+          <span {...indicatorProps}>
+            {state.indeterminate ? <IconRemove aria-hidden /> : <IconCheck aria-hidden />}
+          </span>
+        )}
+      />
     </CheckboxPrimitive.Root>
   )
 }
