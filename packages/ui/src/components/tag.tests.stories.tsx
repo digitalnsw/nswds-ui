@@ -295,6 +295,12 @@ export const SizesAndWrapping: Story = {
       await expect(link.getBoundingClientRect().height).toBeGreaterThanOrEqual(48)
       await expect(getComputedStyle(link).textDecorationLine).toBe('none')
     }
+    // No size may render text below the 16px floor or tighter than 1.5 line spacing.
+    for (const tag of canvasElement.querySelectorAll('[data-slot^=tag]')) {
+      const { fontSize, lineHeight } = getComputedStyle(tag)
+      await expect(parseFloat(fontSize)).toBeGreaterThanOrEqual(16)
+      await expect(parseFloat(lineHeight)).toBeGreaterThanOrEqual(1.5 * parseFloat(fontSize))
+    }
   },
 }
 

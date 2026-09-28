@@ -109,7 +109,9 @@ function ColourExamples() {
           {group.colors.map((color) => (
             <ThemeSurface key={color} color={color}>
               <div className='flex flex-wrap items-center gap-3'>
-                <span className={`w-20 text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+                <span className={`w-24 text-base font-semibold ${titleClasses(color)}`}>
+                  {color}
+                </span>
                 {variants.map((variant) => (
                   <Badge key={variant} color={color} variant={variant}>
                     {variant}
@@ -135,7 +137,7 @@ function ApplicationExample() {
       <p className='text-muted-foreground'>
         Your application has been approved. We will email you the funding agreement.
       </p>
-      <p className='text-sm text-muted-foreground'>Application reference: CG-1042</p>
+      <p className='text-base text-muted-foreground'>Application reference: CG-1042</p>
     </article>
   )
 }
@@ -187,7 +189,7 @@ function BadgeDocs() {
       </ExampleSection>
       <ExampleSection
         title='Sizes'
-        description='Small uses 14px text. Default and large use 16px text with different padding.'
+        description='Every size uses 16px text. Small has the tightest padding; default and large add more.'
       >
         <ExamplePreview>
           <SizeExamples />

@@ -557,7 +557,7 @@ import { Badge, Tag, TagLink, TagCheckbox, TagRemovable } from '@nswds/ui'
 `surface`, `outline`), and `size` (`sm`, `default`, `lg`). Badge defaults to `soft`;
 Tag and TagLink default to `outline`; TagRemovable defaults to `surface`.
 White and secondary are intended for dark backgrounds. Badge adds `dot?: boolean`.
-Default and large labels use 16px text; the small size uses 14px.
+All sizes use 16px text; the small size has tighter padding.
 
 TagLink uses LinkProvider and never underlines its text, including on hover and
 focus. Hover tint and keyboard outlines identify it as interactive. TagCheckbox
