@@ -289,8 +289,12 @@ const geometry = {
 
 export const CssCheck: Story = {
   name: 'CssCheck',
+  // pointer-events-none: the test browser's real pointer can rest wherever the
+  // previous story left it, and a pointer over the first switch paints the
+  // hover tint on its thumb, which is correct behaviour and a wrong reading
+  // here. Focus is driven with .focus(), so it is unaffected.
   render: () => (
-    <div className='grid gap-6'>
+    <div className='pointer-events-none grid gap-6'>
       {(['default', 'sm'] as const).flatMap((size) =>
         states.map(({ label, ...props }) => (
           <Switch key={`${size} ${label}`} aria-label={`${size} ${label}`} size={size} {...props} />
