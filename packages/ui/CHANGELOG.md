@@ -1,3 +1,9 @@
+## [9.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.0.0...@nswds/ui-v9.0.1) (2026-09-28)
+
+### Bug Fixes
+
+* **ui:** raise Tag and Badge sm text to the 16px floor ([#227](https://github.com/digitalnsw/nswds-ui/issues/227)) ([9bea9fc](https://github.com/digitalnsw/nswds-ui/commit/9bea9fc39f9e82bfb738be90c2e55a57414d530c))
+
 ## [9.0.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v8.5.0...@nswds/ui-v9.0.0) (2026-09-28)
 
 ### ⚠ BREAKING CHANGES
