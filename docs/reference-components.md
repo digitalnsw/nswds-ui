@@ -60,7 +60,8 @@ Familiar shadcn shapes rebuilt on Base UI primitives and NSW tokens. Composition
 | `@nswds/alert-dialog`  | `AlertDialog`, `AlertDialogAction`, `AlertDialogCancel`, `AlertDialogContent`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogHeader`, `AlertDialogMedia`, `AlertDialogOverlay`, `AlertDialogPortal`, `AlertDialogTitle`, `AlertDialogTrigger`, `AlertDialogVariant`, `alertDialogContentVariants`                                                                                                                        | A modal that interrupts to confirm or cancel a consequential action, built on the Base UI alert-dialog primitive.        |
 | `@nswds/aspect-ratio`  | `AspectRatio`                                                                                                                                                                                                                                                                                                                                                                                                                         | Constrains its content to a given width-to-height ratio.                                                                 |
 | `@nswds/avatar`        | `Avatar`, `AvatarBadge`, `AvatarFallback`, `AvatarGroup`, `AvatarGroupCount`, `AvatarImage`                                                                                                                                                                                                                                                                                                                                           | Avatar image with a text fallback, badge, and grouping.                                                                  |
-| `@nswds/badge`         | `Badge`, `BadgeButton`, `BadgeButtonProps`, `BadgeLink`, `BadgeLinkProps`, `BadgeProps`, `badgeVariants`                                                                                                                                                                                                                                                                                                                              | A badge component with variants, colours, sizes, and interactive button/link variants.                                   |
+| `@nswds/badge`         | `Badge`, `BadgeProps`, `badgeVariants`                                                                                                                                                                                                                                                                                                                                                                                                | Static pill badges for status and counts, with optional status dots.                                                     |
+| `@nswds/tag`           | `Tag`, `TagButton`, `TagLink`, `TagCheckbox`, `TagRemovable`, `tagVariants`, and their props types                                                                                                                                                                                                                                                                                                                                    | Categories, links without underlines, selectable filters and removable tags.                                             |
 | `@nswds/breadcrumb`    | `Breadcrumb`, `BreadcrumbEllipsis`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbList`, `BreadcrumbPage`, `BreadcrumbSeparator`                                                                                                                                                                                                                                                                                                     | Breadcrumb trail showing the current page location.                                                                      |
 | `@nswds/button`        | `Button`, `ButtonLink`, `ButtonLinkProps`, `ButtonProps`, `IconSlot`, `TouchTarget`, `buttonColorVariants`, `buttonVariants`                                                                                                                                                                                                                                                                                                          | A button component with variants and sizes.                                                                              |
 | `@nswds/button-group`  | `ButtonGroup`, `ButtonGroupBoundary`, `ButtonGroupProps`, `ButtonGroupSeparator`, `ButtonGroupText`, `ButtonGroupVariant`, `buttonGroupVariants`                                                                                                                                                                                                                                                                                      | Joins Buttons into one control, with Button's variant family, colour tokens and size steps.                              |
@@ -535,3 +536,48 @@ in-repo `@nswds/ui/globals.css` specifier is a Storybook alias, **not** a publis
 - [Theme and re-brand](howto-theme-and-rebrand.md) — changing those values
 - [Installing from the registry](installing-from-the-registry.md) — the copy-the-source channel
 - [Architecture](explanation-architecture.md) — why there are two channels at all
+
+## Badges and tags
+
+Use `Badge` for static status and counts. It has full pill corners, a flat soft fill
+by default, and an optional decorative `dot` beside a visible status label.
+Use `Tag` for a category or topic, `TagLink` for category navigation,
+`TagCheckbox` for selectable filters, and `TagRemovable` for an applied filter
+with a remove action. Tags have 4px corners. Interactive tags reserve at least
+48px in layout, including at the small size; use `gap-2` or larger between tags.
+
+```tsx
+import { Badge, Tag, TagLink, TagCheckbox, TagRemovable } from '@nswds/ui'
+
+<Badge color="success" dot>Approved</Badge>
+<Badge color="grey">3</Badge>
+<Tag>Environment</Tag>
+<TagLink href="/grants">Grants</TagLink>
+<TagCheckbox name="topic" value="regional" checked={regional} onCheckedChange={setRegional}>
+  Regional NSW
+</TagCheckbox>
+<TagRemovable removeLabel="Remove Education filter" onRemove={removeEducation}>
+  Education
+</TagRemovable>
+```
+
+`Badge` and `Tag` accept `color` from Button’s palette, `variant` (`solid`, `soft`,
+`surface`, `outline`), and `size` (`sm`, `default`, `lg`). Badge defaults to `soft`;
+Tag and TagLink default to `outline`; TagRemovable defaults to `surface`.
+White and secondary are intended for dark backgrounds. Badge adds `dot?: boolean`.
+Default and large labels use 16px text; the small size uses 14px.
+
+TagLink uses LinkProvider and never underlines its text, including on hover and
+focus. Hover tint and keyboard outlines identify it as interactive. TagCheckbox
+uses Base UI Checkbox: `checked` / `defaultChecked`, `onCheckedChange`, `disabled`,
+`readOnly`, `indeterminate`, `name` and `value` retain their primitive semantics.
+Its selected appearance is fixed, so it does not take `variant`.
+
+TagRemovable requires `removeLabel` (the full accessible action, such as
+“Remove Education filter”) and `onRemove`. The consumer owns the selection state
+and removes the tag in that callback. When removing the currently focused tag,
+place focus on the next relevant filter or the filter heading/control. Do not nest
+links or other controls in its label. `disabled` disables the remove button.
+
+Install the registry item with `npx shadcn add @nswds/tag`; both distribution channels
+include the same components and colour definitions.

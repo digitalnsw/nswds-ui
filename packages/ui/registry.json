@@ -102,18 +102,52 @@
       "name": "badge",
       "type": "registry:ui",
       "title": "Badge",
-      "description": "A badge component with variants, colours, sizes, and interactive button/link variants.",
-      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
+      "description": "Static pill badges for status and counts, with optional status dots.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/button.json",
-        "{{REGISTRY_LOCATION}}/r/link.json"
+        "{{REGISTRY_LOCATION}}/r/button.json"
       ],
       "files": [
         {
           "path": "src/components/badge.tsx",
           "type": "registry:ui",
           "target": "components/badge.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/label-colors.ts",
+          "type": "registry:lib",
+          "target": "lib/label-colors.ts"
+        }
+      ]
+    },
+    {
+      "name": "tag",
+      "type": "registry:ui",
+      "title": "Tag",
+      "description": "Category labels, links without underlines, selectable filters and removable tags.",
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/link.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/tag.tsx",
+          "type": "registry:ui",
+          "target": "components/tag.tsx"
+        },
+        {
+          "path": "src/lib/label-colors.ts",
+          "type": "registry:lib",
+          "target": "lib/label-colors.ts"
         },
         {
           "path": "src/lib/utils.ts",

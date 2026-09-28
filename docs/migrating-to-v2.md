@@ -11,7 +11,6 @@ unaffected unless they re-add components — installed copies keep working.
 | `Icons.arrow_forward` (from `@nswds/ui`)                              | `import { IconArrowForward } from '@nswds/ui/icons'`                                       |
 | `import { Icons, type IconName } from '@nswds/ui'`                    | Removed — import icons by name from `@nswds/ui/icons` (or `@nswds/ui/icons/arrow-forward`) |
 | `<Button href="…">`                                                   | `<ButtonLink href="…">`                                                                    |
-| `<BadgeButton href="…">`                                              | `<BadgeLink href="…">`                                                                     |
 | `import '@nswds/ui/globals.css'`                                      | `import '@nswds/ui/styles.css'`                                                            |
 | `import { cn } from '@nswds/ui/lib/utils'`                            | `import { cn } from '@nswds/ui'`                                                           |
 | `truncate` / `kebabCase` / `camelCase` / `humaniseVariant`            | Removed (internal tooling; copy them if you relied on them)                                |
@@ -44,14 +43,15 @@ contains only the icons you import.
 
 ### Button-styled navigation
 
-`Button`/`BadgeButton` no longer switch element type on an `href` prop — the
+`Button` no longer switches element type on an `href` prop — the
 union typing made TS errors unreadable and hid Base UI's `render` escape
 hatch. Use the dedicated link components, which render through `Link` and
 pick up your `LinkProvider` framework link (e.g. next/link):
 
 ```tsx
-<ButtonLink href="/docs" variant="outline">View documentation</ButtonLink>
-<BadgeLink href="/tags/x" color="accent">x</BadgeLink>
+<ButtonLink href='/docs' variant='outline'>
+  View documentation
+</ButtonLink>
 ```
 
 ### Spinner accessibility

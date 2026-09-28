@@ -724,17 +724,17 @@ installed transitively.
 imports are removed. Import the compiled stylesheet from
 '@nswds/ui/styles.css' and cn() from the package root ('@nswds/ui').
 
-* refactor(ui)!: split Button/ButtonLink and BadgeButton/BadgeLink
+* refactor(ui)!: split Button/ButtonLink
 
 The href-discriminated prop unions produced unreadable TS errors, typed
 refs as bare HTMLElement, and Omit'ted Base UI's render prop — its
 official composition escape hatch. Each component now has one rendering
-path: Button/BadgeButton wrap the Base UI button primitive (render
-exposed, HTMLButtonElement refs); ButtonLink/BadgeLink render through
+path: Button wraps the Base UI button primitive (render
+exposed, HTMLButtonElement refs); ButtonLink renders through
 Link, picking up LinkProvider framework links and carrying the
 aria-disabled click-guard semantics. All prop types are exported.
-* **ui:** Button and BadgeButton no longer accept href. Use
-ButtonLink / BadgeLink for button- and badge-styled navigation. Button
+* **ui:** Button no longer accepts href. Use
+ButtonLink for button-styled navigation. Button
 refs are now typed HTMLButtonElement (previously HTMLElement).
 
 * refactor(ui)!: split the icons monolith into per-icon modules
