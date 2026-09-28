@@ -158,7 +158,11 @@ export const WithField: Story = {
     await expect(updates).toHaveAccessibleDescription(
       'Get an email when your application status changes.',
     )
-    // The label is part of the target; the description is not.
+    // The label is part of the target; the description is not. Pin the start
+    // state so an unchanged value after the description click reads as "did
+    // not toggle", and toggle from the label afterwards so a late toggle from
+    // that click would leave the final state wrong.
+    await expect(updates).toHaveAttribute('aria-checked', 'true')
     await userEvent.click(canvas.getByText('Get an email when your application status changes.'))
     await expect(updates).toHaveAttribute('aria-checked', 'true')
     await userEvent.click(canvas.getByText('Email updates'))
@@ -288,6 +292,17 @@ async function expectColour(read: () => string, expected: string, label: string)
   })
 }
 
+// The off thumb's ring is an inset box-shadow that Tailwind composes with empty
+// shadow layers, so pick out the inset layer with a spread. Read-only, so it is
+// safe inside expectColour's retry.
+function insetRing(element: HTMLElement) {
+  for (const layer of getComputedStyle(element).boxShadow.split(/,(?![^(]*\))/)) {
+    const match = layer.trim().match(/^(.+?)\s+0px 0px 0px (\d+(?:\.\d+)?)px inset$/)
+    if (match && Number(match[2]) > 0) return { colour: match[1]!, width: Number(match[2]) }
+  }
+  return { colour: 'transparent', width: 0 }
+}
+
 const geometry = {
   default: { width: 56, height: 32, thumb: 22, inset: 5, icon: 18 },
   sm: { width: 40, height: 24, thumb: 16, inset: 4, icon: 12 },
@@ -388,7 +403,13 @@ export const CssCheck: Story = {
             tokenColour(control, '--input-surface'),
             `${name} thumb`,
           )
-          await expect(getComputedStyle(thumb).boxShadow).not.toBe('none')
+          // Off by shape: a 2px ring in the text colour, not just any shadow.
+          await expectColour(
+            () => insetRing(thumb).colour,
+            tokenColour(control, label.startsWith('Disabled') ? '--text-subtle' : '--text-default'),
+            `${name} thumb ring`,
+          )
+          await expect(insetRing(thumb).width).toBe(2)
           if (label.startsWith('Invalid')) {
             // Border plus a 1px inset ring: Input's 2px invalid edge.
             await expect(getComputedStyle(control).boxShadow).not.toBe('none')
