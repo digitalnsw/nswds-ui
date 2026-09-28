@@ -24,10 +24,14 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { waitFor } from 'storybook/test'
 
 import { Checkbox } from './checkbox.js'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from './input-group.js'
 import { Input } from './input.js'
+import { NativeSelect, NativeSelectOption } from './native-select.js'
 import { RadioGroup, RadioGroupItem } from './radio-group.js'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.js'
 import { expectContrast, resolveColor } from './story-helpers.js'
 import { Textarea } from './textarea.js'
 
@@ -347,7 +351,7 @@ export const InvalidBorderContrast: Story = {
     docs: {
       description: {
         story: docsTemplate({
-          what: "Every control that shares Input's invalid roles draws its invalid boundary in --input-invalid-border: Input, Textarea, Checkbox and Radio.",
+          what: "Every control that shares Input's invalid roles draws its invalid boundary in --input-invalid-border: Input, Textarea, InputGroup, Select (both variants), NativeSelect, Checkbox and Radio.",
           why: 'WCAG 1.4.11 Non-text Contrast (AA) requires a 3:1 ratio for the visual boundary that identifies a control and its state. The invalid border is that boundary for a field in error. The previous mapping, danger-border, measured 2.32:1 in light mode and 1.72:1 in dark mode.',
           how: "The play() function reads each control's rendered border colour and measures it against the control's own fill, the invalid hover surface and the page behind it, requiring 3:1 against all three. It runs again in dark mode.",
           caveat:
@@ -356,10 +360,39 @@ export const InvalidBorderContrast: Story = {
       },
     },
   },
+  // pointer-events-none: the test browser's real pointer can rest wherever an
+  // earlier story left it, and a hovered control swaps its fill for the hover
+  // surface. Both are measured below anyway, but the reading should not depend
+  // on where the pointer happens to be.
   render: () => (
-    <div className='grid w-full max-w-md gap-6'>
+    <div className='pointer-events-none grid w-full max-w-md gap-6'>
       <Input aria-label='Invalid input' aria-invalid defaultValue='not-an-email' />
       <Textarea aria-label='Invalid textarea' aria-invalid defaultValue='Too short' />
+      <InputGroup>
+        <InputGroupInput aria-label='Invalid input group' aria-invalid defaultValue='12.5' />
+        <InputGroupAddon align='inline-end'>
+          <InputGroupText>kg</InputGroupText>
+        </InputGroupAddon>
+      </InputGroup>
+      <Select defaultValue='nsw'>
+        <SelectTrigger aria-label='Invalid select' aria-invalid>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='nsw'>New South Wales</SelectItem>
+        </SelectContent>
+      </Select>
+      <Select defaultValue='nsw'>
+        <SelectTrigger aria-label='Invalid filled select' variant='filled' aria-invalid>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value='nsw'>New South Wales</SelectItem>
+        </SelectContent>
+      </Select>
+      <NativeSelect aria-label='Invalid native select' aria-invalid defaultValue='nsw'>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
       <Checkbox aria-label='Invalid checkbox' aria-invalid />
       <RadioGroup aria-label='Invalid radio group'>
         <RadioGroupItem aria-label='Invalid radio' value='a' aria-invalid />
@@ -367,23 +400,43 @@ export const InvalidBorderContrast: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const controls = [
-      ...canvasElement.querySelectorAll<HTMLElement>('[aria-invalid="true"]'),
-    ].filter((element) => element.getAttribute('role') !== 'radiogroup')
-    if (controls.length !== 4) {
-      throw new Error(`Expected 4 invalid controls, found ${controls.length}.`)
+    const named = (label: string) => {
+      const element = canvasElement.querySelector<HTMLElement>(`[aria-label="${label}"]`)
+      if (!element) throw new Error(`Could not find "${label}".`)
+      return element
     }
+    // The element that draws each boundary. InputGroup draws it on the group,
+    // not on the borderless input that carries aria-invalid.
+    const controls = [
+      ['Invalid input', named('Invalid input')],
+      ['Invalid textarea', named('Invalid textarea')],
+      [
+        'Invalid input group',
+        named('Invalid input group').closest<HTMLElement>('[data-slot="input-group"]')!,
+      ],
+      ['Invalid select', named('Invalid select')],
+      ['Invalid filled select', named('Invalid filled select')],
+      ['Invalid native select', named('Invalid native select')],
+      ['Invalid checkbox', named('Invalid checkbox')],
+      ['Invalid radio', named('Invalid radio')],
+    ] as const
 
-    for (const control of controls) {
-      const style = getComputedStyle(control)
-      const name = control.getAttribute('aria-label') ?? control.tagName
-      const border = style.borderTopColor
-
+    for (const [name, control] of controls) {
       // Prove the control really draws the shared token, so the ratio below
-      // is measuring --input-invalid-border and not some local colour.
-      if (!sameColour(border, tokenColour(control, '--input-invalid-border'))) {
-        throw new Error(`${name}: border is ${border}, not --input-invalid-border.`)
-      }
+      // is measuring --input-invalid-border and not some local colour. Story
+      // globals apply after mount, so let a colour transition settle first;
+      // the expected value is resolved outside waitFor, because the token probe
+      // mutates the DOM and waitFor re-runs its callback on every mutation.
+      const token = tokenColour(control, '--input-invalid-border')
+      await waitFor(() => {
+        if (!sameColour(getComputedStyle(control).borderTopColor, token)) {
+          throw new Error(
+            `${name}: border is ${getComputedStyle(control).borderTopColor}, not --input-invalid-border.`,
+          )
+        }
+      })
+      const style = getComputedStyle(control)
+      const border = style.borderTopColor
       if (parseFloat(style.borderTopWidth) < 2) {
         throw new Error(`${name}: invalid border is ${style.borderTopWidth}, expected 2px.`)
       }
