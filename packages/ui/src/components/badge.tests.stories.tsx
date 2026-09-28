@@ -109,6 +109,48 @@ export const CssCheck: Story = {
 
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
 
+/** The retained light colour must stay readable on the normal page surface. */
+export const LightColour: Story = {
+  globals: { theme: 'light' },
+  render: () => (
+    <div className='flex flex-wrap gap-3 bg-background'>
+      <Badge color='light'>Default appearance</Badge>
+      {variants.map((variant) => (
+        <Badge key={variant} color='light' variant={variant}>
+          {variant}
+        </Badge>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    // Let Chromium resolve OKLCH and composite translucent fills onto the page.
+    const context = document.createElement('canvas').getContext('2d')!
+    const luminance = () => {
+      const channels = [...context.getImageData(0, 0, 1, 1).data].slice(0, 3).map((value) => {
+        const channel = value / 255
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+      })
+      return channels[0]! * 0.2126 + channels[1]! * 0.7152 + channels[2]! * 0.0722
+    }
+    const surface = canvasElement.firstElementChild!
+    for (const badge of surface.querySelectorAll('[data-slot=badge]')) {
+      const style = getComputedStyle(badge)
+      context.fillStyle = getComputedStyle(surface).backgroundColor
+      context.fillRect(0, 0, 1, 1)
+      context.fillStyle = style.backgroundColor
+      context.fillRect(0, 0, 1, 1)
+      const background = luminance()
+      context.fillStyle = style.color
+      context.fillRect(0, 0, 1, 1)
+      const foreground = luminance()
+      const contrast =
+        (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05)
+      await expect(contrast).toBeGreaterThanOrEqual(4.5)
+    }
+  },
+}
+export const LightColourDark: Story = { ...LightColour, globals: { theme: 'dark' } }
+
 /** Colours remain shared with Button, while badge surfaces are deliberately flat. */
 export const ColourParity: Story = {
   render: () => (

@@ -187,6 +187,49 @@ export const DisabledRemoval: Story = {
   },
 }
 
+export const RemovableFocus: Story = {
+  render: () => (
+    <div className='space-y-4'>
+      {colors.map((color) => (
+        <ThemeSurface key={color} color={color}>
+          <div className='flex flex-wrap gap-3'>
+            {variants.map((variant) => (
+              <TagRemovable
+                key={variant}
+                color={color}
+                variant={variant}
+                removeLabel={`Remove ${color} ${variant}`}
+                onRemove={fn()}
+              >
+                {color} {variant}
+              </TagRemovable>
+            ))}
+          </div>
+        </ThemeSurface>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const button of within(canvasElement).getAllByRole('button')) {
+      await userEvent.tab()
+      await expect(button).toHaveFocus()
+      const style = getComputedStyle(button)
+      await expect(style.outlineStyle).toBe('solid')
+      await expect(parseFloat(style.outlineWidth)).toBeGreaterThanOrEqual(2)
+      if (button.closest('[data-variant=solid]')) {
+        // All four sides must sit inside the coloured tag, including at its edges.
+        await expect(parseFloat(style.outlineOffset)).toBeLessThanOrEqual(
+          -parseFloat(style.outlineWidth),
+        )
+        await expect(style.outlineColor).toBe(style.color)
+      } else {
+        await expect(parseFloat(style.outlineOffset)).toBeGreaterThanOrEqual(2)
+      }
+    }
+  },
+}
+export const RemovableFocusDark: Story = { ...RemovableFocus, globals: { theme: 'dark' } }
+
 export const WithLinkProvider: Story = {
   render: () => (
     <LinkProvider

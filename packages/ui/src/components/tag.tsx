@@ -216,7 +216,7 @@ function TagRemovable({
         aria-label={removeLabel}
         disabled={disabled}
         onClick={onRemove}
-        className='flex size-12 shrink-0 items-center justify-center rounded-sm not-data-disabled:hover:bg-(--btn-hover-overlay) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg) group-data-[variant=solid]/tag-removable:focus-visible:outline-(--btn-text) not-data-disabled:active:bg-(--btn-active-overlay) forced-colors:focus-visible:outline-[Highlight] data-disabled:cursor-not-allowed data-disabled:opacity-50'
+        className='flex size-12 shrink-0 items-center justify-center rounded-sm not-data-disabled:hover:bg-(--btn-hover-overlay) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--btn-bg) group-data-[variant=solid]/tag-removable:focus-visible:-outline-offset-2 group-data-[variant=solid]/tag-removable:focus-visible:outline-(--btn-text) not-data-disabled:active:bg-(--btn-active-overlay) forced-colors:focus-visible:outline-[Highlight] data-disabled:cursor-not-allowed data-disabled:opacity-50'
       >
         <IconClose aria-hidden className='size-5' />
       </ButtonPrimitive>

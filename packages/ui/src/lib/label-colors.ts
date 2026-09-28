@@ -8,5 +8,7 @@ export function labelColorVariants(
   color: LabelColor | 'light' | null = 'primary',
   variant: 'solid' | 'soft' | 'surface' | 'outline' | null = 'soft',
 ) {
-  return buttonColorVariants({ color: color === 'light' ? 'white' : color, variant })
+  // Keep the light solid fill, but use neutral ink for labels on the page surface.
+  const resolvedColor = color === 'light' ? (variant === 'solid' ? 'white' : 'grey') : color
+  return buttonColorVariants({ color: resolvedColor, variant })
 }
