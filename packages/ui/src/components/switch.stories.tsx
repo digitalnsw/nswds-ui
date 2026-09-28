@@ -11,6 +11,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from './field.js'
 import { Input } from './input.js'
+import { resolveColor } from './story-helpers.js'
 import { Switch } from './switch.js'
 
 const meta = {
@@ -257,6 +258,30 @@ function tokenColour(element: HTMLElement, token: string) {
   return colour
 }
 
+// A story's theme globals apply after mount, so the track and thumb can still
+// be transitioning when play() reads them, and Chromium reports a colour caught
+// mid-transition in oklab rather than the token's oklch. Retry until it
+// settles, and compare painted pixels rather than colour strings.
+//
+// Resolve `expected` before calling: waitFor re-runs its callback on every DOM
+// mutation, and tokenColour() appends a probe, so calling it inside the retry
+// re-triggers the callback forever and the timeout never fires. `read` must
+// only read styles for the same reason.
+async function expectColour(read: () => string, expected: string, label: string) {
+  const target = resolveColor(expected)
+  await waitFor(() => {
+    const actual = resolveColor(read())
+    if (
+      actual.r !== target.r ||
+      actual.g !== target.g ||
+      actual.b !== target.b ||
+      actual.a !== target.a
+    ) {
+      throw new Error(`${label}: painted ${read()}, expected ${expected}.`)
+    }
+  })
+}
+
 const geometry = {
   default: { width: 56, height: 32, thumb: 22, inset: 5, icon: 18 },
   sm: { width: 40, height: 24, thumb: 16, inset: 4, icon: 12 },
@@ -318,24 +343,40 @@ export const CssCheck: Story = {
               ? '--color-primary-200'
               : '--color-primary-800'
         if (on) {
-          await expect(getComputedStyle(control).backgroundColor).toBe(tokenColour(control, ink))
-          await expect(getComputedStyle(thumb).backgroundColor).toBe(
-            tokenColour(control, label.startsWith('Invalid') ? '--white' : '--surface-default'),
+          const name = `${size} ${label}`
+          await expectColour(
+            () => getComputedStyle(control).backgroundColor,
+            tokenColour(control, ink),
+            `${name} track fill`,
           )
-          await expect(getComputedStyle(thumb).color).toBe(tokenColour(control, ink))
+          await expectColour(
+            () => getComputedStyle(thumb).backgroundColor,
+            tokenColour(control, label.startsWith('Invalid') ? '--white' : '--surface-default'),
+            `${name} thumb`,
+          )
+          await expectColour(
+            () => getComputedStyle(thumb).color,
+            tokenColour(control, ink),
+            `${name} tick`,
+          )
         } else {
           // The off track keeps its full-contrast hairline; the old one was a
           // border-default fill at 1.34:1 against the page.
-          await expect(getComputedStyle(control).borderTopColor).toBe(
+          const name = `${size} ${label}`
+          await expectColour(
+            () => getComputedStyle(control).borderTopColor,
             label.startsWith('Invalid')
               ? getComputedStyle(input).borderTopColor
               : tokenColour(
                   control,
                   label.startsWith('Disabled') ? '--text-subtle' : '--text-default',
                 ),
+            `${name} track border`,
           )
-          await expect(getComputedStyle(thumb).backgroundColor).toBe(
+          await expectColour(
+            () => getComputedStyle(thumb).backgroundColor,
             tokenColour(control, '--input-surface'),
+            `${name} thumb`,
           )
           await expect(getComputedStyle(thumb).boxShadow).not.toBe('none')
           if (label.startsWith('Invalid')) {
@@ -359,8 +400,11 @@ export const CssCheck: Story = {
     const invalid = canvas.getByRole('switch', { name: 'default Invalid on' })
     invalid.focus()
     await expect(getComputedStyle(invalid).outlineOffset).toBe('2px')
-    const focusColour = tokenColour(invalid, '--input-invalid-ring')
-    await waitFor(() => expect(getComputedStyle(invalid).outlineColor).toBe(focusColour))
+    await expectColour(
+      () => getComputedStyle(invalid).outlineColor,
+      tokenColour(invalid, '--input-invalid-ring'),
+      'invalid focus ring',
+    )
   },
 }
 
