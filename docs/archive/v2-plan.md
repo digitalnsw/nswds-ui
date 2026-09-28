@@ -59,11 +59,12 @@ that nobody imports `theme-palette` before assuming.
 
 **Problem.** `ButtonProps` is an undiscriminated union (`ButtonPrimitive.Props | LinkProps`)
 branched on `'href' in props` — TS errors are unreadable, `ref` is typed `HTMLElement`, and
-Base UI's `render` prop (the official composition escape hatch) is `Omit`ted.
+Base UI's `render` prop (the official composition escape hatch) is `Omit`ted. Same pattern in
+`BadgeButton`.
 
 **Change.** Split into `Button` (Base UI button, `ref: HTMLButtonElement`, `render` exposed)
 and `ButtonLink` (wraps `Link`, anchor props). Keep `href` accepted on `Button` for one
-deprecation minor with a dev warning, remove in 2.0.
+deprecation minor with a dev warning, remove in 2.0. Mirror with `BadgeButton`/`BadgeLink`.
 Export all prop types.
 
 ## 4. `DescriptionList` class-merge order

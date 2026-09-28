@@ -323,7 +323,7 @@ function TagDocs() {
         </ExamplePreview>
         <ExampleCode>
           {
-            '<TagCheckbox name="topic" value="environment"\n  checked={selected} onCheckedChange={setSelected}>\n  Environment\n</TagCheckbox>'
+            '<TagCheckbox name="topic" value="environment"\n  checked={isEnvironment} onCheckedChange={setIsEnvironment}>\n  Environment\n</TagCheckbox>'
           }
         </ExampleCode>
       </ExampleSection>
