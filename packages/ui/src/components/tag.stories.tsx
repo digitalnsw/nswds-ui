@@ -85,7 +85,9 @@ function ColourExamples() {
           {group.colors.map((color) => (
             <ThemeSurface key={color} color={color}>
               <div className='flex flex-wrap items-center gap-3'>
-                <span className={`w-20 text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+                <span className={`w-24 text-base font-semibold ${titleClasses(color)}`}>
+                  {color}
+                </span>
                 {variants.map((variant) => (
                   <Tag key={variant} color={color} variant={variant}>
                     {variant}
@@ -145,7 +147,7 @@ function SelectableExample() {
           ))}
         </div>
       </fieldset>
-      <p aria-live='polite' className='text-sm text-muted-foreground'>
+      <p aria-live='polite' className='text-base text-muted-foreground'>
         Selected topics: {selected.length ? selected.join(', ') : 'All topics'}
       </p>
     </div>
@@ -358,7 +360,7 @@ function TagDocs() {
       </ExampleSection>
       <ExampleSection
         title='Sizes'
-        description='Small uses 14px text; default and large use 16px. Interactive tags keep a minimum 48px target at every size. Use a wrapping layout with space between tags.'
+        description='Every size uses 16px text; small has the tightest padding. Interactive tags keep a minimum 48px target at every size. Use a wrapping layout with space between tags.'
       >
         <ExamplePreview>
           <SizeExamples />

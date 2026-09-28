@@ -84,6 +84,11 @@ export const Sizes: Story = {
       ))}
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    // No size may render text below the 16px floor.
+    for (const badge of canvasElement.querySelectorAll('[data-slot=badge]'))
+      await expect(parseFloat(getComputedStyle(badge).fontSize)).toBeGreaterThanOrEqual(16)
+  },
 }
 
 export const CssCheck: Story = {
