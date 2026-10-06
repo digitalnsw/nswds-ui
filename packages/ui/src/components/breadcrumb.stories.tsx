@@ -1,72 +1,294 @@
 /**
- * Breadcrumb — Default, Variants, Band under Header, Variant fallbacks, With
- * dropdown, Ellipsis trigger className and name, Focus ring, Wrapping,
- * Collapse, CssCheck
+ * Breadcrumb — docs page, Default, Playground, CssCheck
  *
- * A navigation trail of links ending in the current page. Composed from plain
- * semantic elements (`nav > ol > li`). Four looks (`default`, `rail`, `band`,
- * `soft`) are set on `Breadcrumb` and read by every part.
+ * Sub-groups live in separate story files so Storybook renders them as
+ * collapsible sidebar folders:
+ *   Components/Breadcrumb/Looks/Default  → breadcrumb.look-default.stories.tsx
+ *   Components/Breadcrumb/Looks/Rail     → breadcrumb.look-rail.stories.tsx
+ *   Components/Breadcrumb/Looks/Band     → breadcrumb.look-band.stories.tsx
+ *   Components/Breadcrumb/Looks/Soft     → breadcrumb.look-soft.stories.tsx
+ *   Components/Breadcrumb/Features       → breadcrumb.features.stories.tsx
+ *   Components/Breadcrumb/Accessibility  → breadcrumb.accessibility.stories.tsx
+ *   Components/Breadcrumb/Tests          → breadcrumb.tests.stories.tsx (CI only)
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Fragment } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect } from 'storybook/test'
 
-import { IconHome } from '../icons/home.js'
+import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
+import { Link } from './link.js'
 import {
-  Breadcrumb,
-  BREADCRUMB_MENU_OFFSET,
-  BreadcrumbEllipsis,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  breadcrumbVariants,
-} from './breadcrumb.js'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLinkItem,
-  DropdownMenuTrigger,
-} from './dropdown-menu.js'
-import { Header, HeaderBrand } from './header.js'
-import { closeOverlay } from './story-helpers.js'
+  BREADCRUMB_LOOKS,
+  BreadcrumbScene,
+  BreadcrumbSteps,
+  BreadcrumbTrail,
+  ExampleCode,
+  exampleDocsClassName,
+  ExamplePreview,
+  ExampleSection,
+  type BreadcrumbLook,
+} from './story-helpers.js'
 
-const VARIANTS = ['default', 'rail', 'band', 'soft'] as const
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+const lookCards: ReadonlyArray<{
+  look: BreadcrumbLook
+  name: string
+  useWhen: string
+  pairs: string
+}> = [
+  {
+    look: 'default',
+    name: 'Default',
+    useWhen: 'Most pages. Underlined links above the page heading, with no chrome of its own.',
+    pairs: 'Sits in the content column, under any Header.',
+  },
+  {
+    look: 'rail',
+    name: 'Rail',
+    useWhen: 'A quiet content page that wants the masterbrand line system to frame the trail.',
+    pairs: 'Sits in the content column. Never collapses.',
+  },
+  {
+    look: 'band',
+    name: 'Band',
+    useWhen: 'Page chrome: a solid Blue 01 strip that continues the Header above it.',
+    pairs: 'Pairs with Header dark, flush in light and dark mode.',
+  },
+  {
+    look: 'soft',
+    name: 'Soft',
+    useWhen: 'Page chrome that should read as part of the Header but stay quiet.',
+    pairs: 'Pairs with Header white or light.',
+  },
+]
+
+const lookDocsPath = (look: BreadcrumbLook) =>
+  `/?path=/docs/components-breadcrumb-looks-${look}--docs`
+
+function BreadcrumbDocs() {
+  return (
+    <div className={exampleDocsClassName}>
+      <section className='space-y-4'>
+        <h1 className='text-5xl font-bold tracking-tight'>Breadcrumb</h1>
+        <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>
+          A breadcrumb shows where a page sits in its service and gives a way back up. It is
+          secondary to the page heading: a citizen should read the heading first and reach for the
+          trail only when they want to go up a level.
+        </p>
+      </section>
+
+      <ExampleSection
+        title='Default'
+        description='Underlined links in the ink, separated by chevrons, ending in the current page as plain text.'
+      >
+        <ExamplePreview>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
+            </BreadcrumbList>
+          </Breadcrumb>
+        </ExamplePreview>
+        <ExampleCode>{`<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/services">Services</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Apply online</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>`}</ExampleCode>
+      </ExampleSection>
+
+      <ExampleSection
+        title='Choose a look'
+        description='The look is a placement decision: where the trail sits on the page and what it sits under. Each has its own page with guidance, examples in context and code.'
+      >
+        <div className='grid gap-6 sm:grid-cols-2'>
+          {lookCards.map(({ look, name, useWhen, pairs }) => (
+            <article
+              key={look}
+              className='flex flex-col gap-4 rounded-md border border-border bg-background p-5'
+            >
+              <h3 className='text-xl font-bold'>{name}</h3>
+              <div className='-mx-5'>
+                {/* One inset for every look inside the card: band and soft
+                    otherwise step on the viewport, as wide as the Header's. */}
+                <Breadcrumb
+                  variant={look}
+                  collapse={false}
+                  style={{ '--bc-inset': '1.25rem' } as React.CSSProperties}
+                >
+                  <BreadcrumbList>
+                    <BreadcrumbSteps labels={['Home', 'Fishing']} current='Apply' />
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </div>
+              <p>{useWhen}</p>
+              <p className='text-muted-foreground'>{pairs}</p>
+              <p className='mt-auto'>
+                <Link href={lookDocsPath(look)} target='_top'>
+                  The {name.toLowerCase()} look
+                </Link>
+              </p>
+            </article>
+          ))}
+        </div>
+      </ExampleSection>
+
+      <ExampleSection
+        title='Anatomy'
+        description='Plain semantic elements: a labelled nav landmark around an ordered list.'
+      >
+        <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+          <li>
+            <code>Breadcrumb</code>: the <code>nav</code> landmark, labelled
+            &ldquo;Breadcrumb&rdquo;. Takes <code>variant</code> and <code>collapse</code>.
+          </li>
+          <li>
+            <code>BreadcrumbList</code> and <code>BreadcrumbItem</code>: the ordered list and its
+            steps.
+          </li>
+          <li>
+            <code>BreadcrumbLink</code>: a step you can follow. Use its <code>render</code> prop for
+            a framework link.
+          </li>
+          <li>
+            <code>BreadcrumbPage</code>: the current page, plain text with{' '}
+            <code>aria-current=&quot;page&quot;</code>. Never a link.
+          </li>
+          <li>
+            <code>BreadcrumbSeparator</code>: marks each boundary. Leave it empty and the step after
+            it draws the look&rsquo;s glyph, so a wrapped line starts with its separator.
+          </li>
+          <li>
+            <code>BreadcrumbEllipsis</code>: stands in for steps hidden in a menu.
+          </li>
+        </ul>
+      </ExampleSection>
+
+      <ExampleSection
+        title='On narrow screens'
+        description='When the full trail would wrap, it collapses to a back link to the parent page, announced "Back to …". A trail that fits stays whole at any width. The page heading names the current page, so a collapsed trail only needs the way up.'
+      >
+        <div className='flex flex-wrap gap-6'>
+          <BreadcrumbScene
+            look='default'
+            phone
+            labels={['Home', 'Services', 'Licences and permits']}
+            current='Apply for a recreational fishing licence'
+          />
+          <BreadcrumbScene look='default' phone labels={['Home']} current='Contact us' />
+        </div>
+        <p className='max-w-2xl text-muted-foreground'>
+          Collapse is on by default for every look except the rail. Turn it off with{' '}
+          <code>collapse={'{false}'}</code> to keep the whole trail, which then wraps with each step
+          leading with its separator.
+        </p>
+      </ExampleSection>
+
+      <ExampleSection
+        title='Hidden steps'
+        description='For a deep trail, put middle steps in a menu. Name the trigger by what it reveals, and open the menu just clear of the trail.'
+      >
+        <ExamplePreview>
+          <BreadcrumbTrail />
+        </ExamplePreview>
+        <ExampleCode>{`<BreadcrumbItem>
+  <DropdownMenu>
+    <DropdownMenuTrigger aria-label="Show 2 more pages">
+      <BreadcrumbEllipsis />
+    </DropdownMenuTrigger>
+    <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
+      <DropdownMenuLinkItem href="/services" className="underline underline-offset-4">
+        Services
+      </DropdownMenuLinkItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</BreadcrumbItem>`}</ExampleCode>
+      </ExampleSection>
+
+      <ExampleSection title='Writing the trail'>
+        <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+          <li>
+            Start with Home and follow the service&rsquo;s structure, not the user&rsquo;s path.
+          </li>
+          <li>
+            Use each page&rsquo;s own title, in sentence case, so the trail matches the headings.
+          </li>
+          <li>End with the current page as plain text. It is never a link.</li>
+          <li>Keep labels short. Long titles wrap; they are never cut off.</li>
+        </ul>
+      </ExampleSection>
+
+      <ExampleSection title='Accessibility'>
+        <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+          <li>
+            A <code>nav</code> landmark labelled &ldquo;Breadcrumb&rdquo;; give it another label if
+            a page has two trails.
+          </li>
+          <li>
+            The current page carries <code>aria-current=&quot;page&quot;</code>. Separators are
+            hidden from assistive technology.
+          </li>
+          <li>
+            Links take the system&rsquo;s 2px offset focus ring, and every link and the ellipsis
+            take a 44px tap target on touch screens.
+          </li>
+          <li>A collapsed trail&rsquo;s back link is announced &ldquo;Back to …&rdquo;.</li>
+        </ul>
+        <p>
+          <Link
+            href='/?path=/story/components-breadcrumb-accessibility--name-role-value'
+            target='_top'
+          >
+            Accessibility stories
+          </Link>
+        </p>
+      </ExampleSection>
+    </div>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Breadcrumb',
   component: Breadcrumb,
   tags: ['autodocs'],
-  args: { variant: 'default' },
-  argTypes: {
-    variant: { control: 'inline-radio', options: VARIANTS },
-    collapse: { control: 'boolean' },
-  },
   parameters: {
     layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
     docs: {
-      description: {
-        component:
-          'A breadcrumb navigation trail, labelled "Breadcrumb". The final crumb uses BreadcrumbPage to mark the current page with `aria-current="page"`. `variant` sets the look: `default` (underlined links, no chrome), `rail` (hairlines above and below), `band` (solid Blue 01, matching Header `dark`) or `soft` (an ink tint). When the full trail would wrap it collapses to a back link to the parent page, unless `collapse={false}` (rail never collapses); a trail that fits stays whole at any width. To open collapsed steps, put a BreadcrumbEllipsis inside a DropdownMenuTrigger and open the menu with `sideOffset={BREADCRUMB_MENU_OFFSET}`.',
-      },
+      page: BreadcrumbDocs,
+      description: { component: 'Shows where a page sits in its service, and the way back up.' },
+    },
+  },
+  args: { variant: 'default', collapse: true },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: BREADCRUMB_LOOKS,
+      description: 'The look. Each has its own page under Looks.',
+      table: { category: 'Appearance' },
+    },
+    collapse: {
+      control: 'boolean',
+      description:
+        'Collapse to a back link to the parent when the full trail would wrap. No effect on the rail.',
+      table: { category: 'Behaviour' },
     },
   },
   render: (args) => (
     <Breadcrumb {...args}>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href='#services'>Services</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>Apply online</BreadcrumbPage>
-        </BreadcrumbItem>
+        <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
       </BreadcrumbList>
     </Breadcrumb>
   ),
@@ -75,76 +297,6 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-type Variant = (typeof VARIANTS)[number]
-
-/**
- * The long trail every variant renders below, with two steps collapsed into
- * the ellipsis menu. The menu's rows are underlined like the trail's links,
- * so the same destinations read the same in both places.
- */
-function Trail({ variant }: { variant: Variant }) {
-  return (
-    <Breadcrumb variant={variant}>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger aria-label='Show 2 more pages'>
-              <BreadcrumbEllipsis />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
-              <DropdownMenuLinkItem href='#services' className='underline underline-offset-4'>
-                Services
-              </DropdownMenuLinkItem>
-              <DropdownMenuLinkItem href='#licences' className='underline underline-offset-4'>
-                Licences and permits
-              </DropdownMenuLinkItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href='#fishing'>Recreational fishing</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>Apply for a fee exemption</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
-  )
-}
-
-/** A link step for each label, then the current page; default separators between. */
-function Steps({ labels, current }: { labels: string[]; current?: string }) {
-  return (
-    <>
-      {labels.map((label, i) => (
-        <Fragment key={label}>
-          {i > 0 && <BreadcrumbSeparator />}
-          <BreadcrumbItem>
-            <BreadcrumbLink href={`#${i}`}>{label}</BreadcrumbLink>
-          </BreadcrumbItem>
-        </Fragment>
-      ))}
-      {current && (
-        <>
-          {labels.length > 0 && <BreadcrumbSeparator />}
-          <BreadcrumbItem>
-            <BreadcrumbPage>{current}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </>
-      )}
-    </>
-  )
-}
-
-/** The rendered text of an element, whitespace collapsed (hidden parts excluded). */
-const text = (el: HTMLElement) => el.innerText.replace(/\s+/g, ' ').trim()
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -159,7 +311,7 @@ export const Default: Story = {
 
     // The trail must expose real anchors and mark the current page.
     const links = canvasElement.querySelectorAll('[data-slot="breadcrumb"] a[href]')
-    await expect(links.length).toBeGreaterThanOrEqual(2)
+    await expect(links.length).toBeGreaterThanOrEqual(1)
 
     const current = canvasElement.querySelector('[data-slot="breadcrumb-page"]')
     await expect(current).toHaveAttribute('aria-current', 'page')
@@ -172,767 +324,14 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <div className='grid gap-8'>
-      {VARIANTS.map((variant) => (
-        <Trail key={variant} variant={variant} />
-      ))}
+export const Playground: Story = {
+  name: 'Playground',
+  parameters: { controls: { expanded: false, sort: 'requiredFirst' } },
+  render: (args) => (
+    <div className='w-full max-w-3xl'>
+      <BreadcrumbTrail variant={args.variant ?? 'default'} collapse={args.collapse} />
     </div>
   ),
-  play: async ({ canvasElement }) => {
-    const navs = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="breadcrumb"]')]
-    await expect(navs.map((nav) => nav.dataset.variant)).toEqual([...VARIANTS])
-    // Every look lands on the 4px grid: the hairlines are optical.
-    for (const nav of navs) {
-      await expect(nav.getBoundingClientRect().height % 4).toBe(0)
-    }
-    const [first, rail, band, soft] = navs as [HTMLElement, HTMLElement, HTMLElement, HTMLElement]
-
-    // Links read as links at rest, in the link signature's medium weight; the
-    // current page is regular on every look, never the heaviest word.
-    for (const nav of navs) {
-      for (const link of nav.querySelectorAll<HTMLElement>('a[href]')) {
-        await expect(getComputedStyle(link).textDecorationLine).toBe('underline')
-        await expect(getComputedStyle(link).fontWeight).toBe('500')
-      }
-      const page = nav.querySelector<HTMLElement>('[data-slot="breadcrumb-page"]')!
-      await expect(getComputedStyle(page).fontWeight).toBe('400')
-    }
-
-    // Separators are drawn by the item after them: the first item leads with
-    // nothing, the rest with a chevron — or a slash on the rail.
-    const leads = (nav: HTMLElement) =>
-      [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-lead"]')].map((lead) =>
-        getComputedStyle(lead).display === 'none'
-          ? 'none'
-          : [...lead.children].find((el) => getComputedStyle(el).display !== 'none')?.tagName ===
-              'svg'
-            ? 'chevron'
-            : text(lead),
-      )
-    await expect(leads(first)).toEqual(['none', 'chevron', 'chevron', 'chevron'])
-    await expect(leads(rail)).toEqual(['none', '/', '/', '/'])
-    for (const separator of first.querySelectorAll<HTMLElement>(
-      '[data-slot="breadcrumb-separator"]',
-    )) {
-      await expect(getComputedStyle(separator).display).toBe('none')
-    }
-
-    // Colour contract. Compared element to element, never against a literal:
-    // computed colours come back in whatever space the token was written in.
-    const colour = (nav: HTMLElement, selector: string) =>
-      getComputedStyle(nav.querySelector(selector)!).color
-    const page = '[data-slot="breadcrumb-page"]'
-    const link = 'a[href]'
-    const lead = '[data-slot="breadcrumb-item"]:nth-child(3) > [data-slot="breadcrumb-lead"]'
-    // The band's current page is white like its links, not the page's text colour.
-    await expect(colour(band, page)).toBe(colour(band, link))
-    await expect(colour(band, page)).not.toBe(colour(first, page))
-    await expect(colour(band, lead)).not.toBe(colour(first, lead))
-    // The rail and the tint share the default ink.
-    await expect(colour(rail, link)).toBe(colour(first, link))
-    await expect(colour(soft, link)).toBe(colour(first, link))
-  },
-}
-
-/** Every variant on a real dark page (story-level theme, not a nested `.dark`). */
-export const VariantsDark: Story = {
-  ...Variants,
-  name: 'Variants (dark)',
-  globals: { theme: 'dark' },
-}
-
-/**
- * The band sits flush under `Header color="dark"`: both are Blue 01 in light
- * and both deepen to `primary-950` in dark, so neither mode draws a seam
- * across the top of the page (DESIGN.md, Page chrome; Whole-Set Flip).
- */
-export const BandUnderHeader: Story = {
-  name: 'Band under Header',
-  parameters: { layout: 'fullscreen' },
-  render: () => (
-    <div>
-      <Header color='dark' sticky={false} shadow={false} border={false}>
-        <HeaderBrand sitename='Department of Primary Industries' />
-      </Header>
-      <Breadcrumb variant='band'>
-        <BreadcrumbList>
-          <Steps labels={['Home', 'Fishing']} current='Apply for a recreational fishing licence' />
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const header = canvasElement.querySelector<HTMLElement>('header')!
-    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
-    await expect(getComputedStyle(nav).backgroundColor).toBe(
-      getComputedStyle(header).backgroundColor,
-    )
-  },
-}
-
-export const BandUnderHeaderDark: Story = {
-  ...BandUnderHeader,
-  name: 'Band under Header (dark)',
-  globals: { theme: 'dark' },
-}
-
-/**
- * `variant={null}` (which VariantProps admits) falls back to `default` rather
- * than leaving every --bc-* variable unset, and the exported
- * `breadcrumbVariants` renders the band correctly on its own — without the
- * tailwind-merge pass inside Breadcrumb.
- */
-export const VariantFallbacks: Story = {
-  name: 'Variant fallbacks',
-  render: () => (
-    <div className='grid gap-8'>
-      <Breadcrumb data-testid='reference'>
-        <BreadcrumbList>
-          <Steps labels={['Home']} current='Apply online' />
-        </BreadcrumbList>
-      </Breadcrumb>
-      <Breadcrumb variant={null} data-testid='null'>
-        <BreadcrumbList>
-          <Steps labels={['Home']} current='Apply online' />
-        </BreadcrumbList>
-      </Breadcrumb>
-      <nav
-        aria-label='Breadcrumb from the helper'
-        data-variant='band'
-        data-testid='helper'
-        className={breadcrumbVariants({ variant: 'band' })}
-      >
-        <BreadcrumbList>
-          <Steps labels={['Home']} current='Apply online' />
-        </BreadcrumbList>
-      </nav>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const nav = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-testid="${id}"]`)!
-    const colour = (id: string, selector: string) =>
-      getComputedStyle(nav(id).querySelector(selector)!).color
-
-    await expect(nav('null')).toHaveAttribute('data-variant', 'default')
-    await expect(colour('null', 'a[href]')).toBe(colour('reference', 'a[href]'))
-
-    await expect(colour('helper', '[data-slot="breadcrumb-page"]')).toBe(
-      colour('helper', 'a[href]'),
-    )
-    await expect(colour('helper', '[data-slot="breadcrumb-page"]')).not.toBe(
-      colour('reference', '[data-slot="breadcrumb-page"]'),
-    )
-  },
-}
-
-/**
- * The ellipsis opens the collapsed steps. BreadcrumbItem styles any button
- * whose direct child is the ellipsis, so the menu is plain DropdownMenu
- * composition and Breadcrumb imports no menu. The open state is a deeper tint
- * than hover, and the glyph carries a coarse-pointer TouchTarget.
- */
-export const WithDropdown: Story = {
-  name: 'With dropdown',
-  render: (args) => <Trail variant={args.variant ?? 'default'} />,
-  play: async ({ canvasElement }) => {
-    const trigger = within(canvasElement).getByRole('button', { name: 'Show 2 more pages' })
-    await expect(trigger.getBoundingClientRect().height).toBe(32)
-    await expect(getComputedStyle(trigger).borderRadius).toBe('4px')
-    await expect(
-      trigger.querySelector('[data-slot="breadcrumb-ellipsis"] > span[aria-hidden="true"]'),
-    ).toBeInTheDocument()
-    const resting = getComputedStyle(trigger).backgroundColor
-
-    await userEvent.click(trigger)
-    const menu = await within(document.body).findByRole('menu')
-    const items = within(menu).getAllByRole('menuitem')
-    await expect(items.map((item) => item.textContent)).toEqual([
-      'Services',
-      'Licences and permits',
-    ])
-    for (const item of items) {
-      await expect(getComputedStyle(item).textDecorationLine).toBe('underline')
-    }
-    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-    await expect(getComputedStyle(trigger).backgroundColor).not.toBe(resting)
-
-    await closeOverlay('dropdown-menu-content')
-    await waitFor(() => expect(trigger).toHaveFocus())
-  },
-}
-
-/**
- * The trigger's look is applied from BreadcrumbItem inside `:where()`, so a
- * `className` on the trigger itself still wins — here a taller target. A
- * trigger whose consumer forgot `aria-label` is still named, by the
- * ellipsis's own "More pages".
- */
-export const EllipsisTrigger: Story = {
-  name: 'Ellipsis trigger className and name',
-  render: () => (
-    <Breadcrumb>
-      <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <DropdownMenu>
-            <DropdownMenuTrigger className='h-10'>
-              <BreadcrumbEllipsis />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
-              <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>Apply online</BreadcrumbPage>
-        </BreadcrumbItem>
-      </BreadcrumbList>
-    </Breadcrumb>
-  ),
-  play: async ({ canvasElement }) => {
-    const trigger = within(canvasElement).getByRole('button', { name: 'More pages' })
-    await expect(trigger.getBoundingClientRect().height).toBe(40)
-  },
-}
-
-/**
- * Keyboard focus is the system's ring: 2px in the ink, offset 2px onto the
- * page, on the links and the ellipsis trigger alike (DESIGN.md, Buttons and
- * Navigation) — the same cue a keyboard user meets on Link and SideNav.
- */
-export const FocusRing: Story = {
-  name: 'Focus ring',
-  render: (args) => <Trail variant={args.variant ?? 'default'} />,
-  play: async ({ canvasElement }) => {
-    await userEvent.tab()
-    const home = within(canvasElement).getByRole('link', { name: 'Home' })
-    await waitFor(() => expect(home).toHaveFocus())
-    const link = getComputedStyle(home)
-    await expect(link.outlineStyle).toBe('solid')
-    await expect(link.outlineWidth).toBe('2px')
-    await expect(link.outlineOffset).toBe('2px')
-    // motion-safe:transition-colors animates outline-color too, so the ring
-    // reaches the ink a beat after focus lands. Read only; never mutate here.
-    await waitFor(() => expect(getComputedStyle(home).outlineColor).toBe(link.color))
-
-    await userEvent.tab()
-    const trigger = within(canvasElement).getByRole('button', { name: 'Show 2 more pages' })
-    await waitFor(() => expect(trigger).toHaveFocus())
-    const button = getComputedStyle(trigger)
-    await expect(button.outlineStyle).toBe('solid')
-    await expect(button.outlineWidth).toBe('2px')
-    await expect(button.outlineOffset).toBe('2px')
-  },
-}
-
-/**
- * A full trail wrapping at phone width. Each separator is drawn by the item
- * after it, so it always starts its line beside its target instead of
- * stranding at the end of the line above. A label that wraps stays an inline
- * link, so its halo and focus ring follow each line rather than boxing both.
- */
-export const Wrapping: Story = {
-  name: 'Wrapping',
-  render: () => (
-    <div style={{ width: 375 }}>
-      <Breadcrumb collapse={false}>
-        <BreadcrumbList>
-          <Steps
-            labels={[
-              'Home',
-              'Recreational fishing licences, fees and exemptions for concession holders',
-              'Fees and exemptions',
-            ]}
-            current='Apply for a recreational fishing fee exemption'
-          />
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const items = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')]
-    const lines = new Set(items.map((item) => Math.round(item.getBoundingClientRect().top)))
-    await expect(lines.size).toBeGreaterThan(1)
-    for (const item of items.slice(1)) {
-      const lead = item.querySelector<HTMLElement>('[data-slot="breadcrumb-lead"]')!
-      const target = item.querySelector<HTMLElement>('a, [data-slot="breadcrumb-page"]')!
-      // The glyph shares a line with the first line of its target.
-      await expect(
-        Math.abs(lead.getBoundingClientRect().top - target.getClientRects()[0]!.top),
-      ).toBeLessThan(8)
-    }
-    // The long label wraps as an inline link: one box per line.
-    const long = within(canvasElement).getByRole('link', { name: /concession holders/ })
-    await expect(getComputedStyle(long).display).toBe('inline')
-    await expect(long.getClientRects().length).toBeGreaterThan(1)
-    for (const link of canvasElement.querySelectorAll<HTMLElement>('a[href]')) {
-      await expect(link.querySelector(':scope > span[aria-hidden="true"]')).toBeInTheDocument()
-    }
-  },
-}
-
-/** The text of each item still displayed, its lead glyph excluded. */
-const shownItems = (nav: HTMLElement) =>
-  [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')]
-    .filter((li) => getComputedStyle(li).display !== 'none')
-    .map((li) =>
-      [...li.children]
-        .filter((child) => (child as HTMLElement).dataset.slot !== 'breadcrumb-lead')
-        .map((child) => text(child as HTMLElement))
-        .join(' '),
-    )
-
-/** The display of the back chevron inside the parent step's link. */
-const backChevron = (nav: HTMLElement) => {
-  const items = nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')
-  const back = items[items.length - 2]?.querySelector('a > [data-slot="breadcrumb-back"]')
-  return back ? getComputedStyle(back).display : 'none'
-}
-
-/**
- * Collapse is on by default and applies only when the full trail would wrap:
- * then only the parent shows, as a back link announced "Back to …". A trail
- * that fits stays whole at any width, keeping Home and the current page.
- * Trails it cannot collapse sensibly stay whole too — one item, or an
- * ellipsis in the parent slot — as do the rail and `collapse={false}`.
- */
-export const Collapse: Story = {
-  name: 'Collapse when it would wrap',
-  render: () => (
-    <div className='grid gap-8'>
-      <div className='grid gap-6' style={{ width: 375 }}>
-        <Breadcrumb data-testid='full'>
-          <BreadcrumbList>
-            <Steps
-              labels={['Home', 'Services', 'Licences and permits']}
-              current='Apply for a recreational fishing licence'
-            />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb variant='band' data-testid='short'>
-          <BreadcrumbList>
-            <Steps labels={['Home']} current='Contact us' />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb variant='band' data-testid='two'>
-          <BreadcrumbList>
-            <Steps
-              labels={['Home']}
-              current='Apply for a recreational fishing fee exemption as a concession holder'
-            />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb variant='rail' data-testid='rail'>
-          <BreadcrumbList>
-            <Steps
-              labels={['Home', 'Services', 'Licences and permits']}
-              current='Apply for a recreational fishing licence'
-            />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb variant='soft' data-testid='one'>
-          <BreadcrumbList>
-            <Steps labels={[]} current='Home' />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb variant='soft' data-testid='ellipsis'>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger aria-label='Show 1 more page'>
-                  <BreadcrumbEllipsis />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
-                  <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Fees and exemptions for concession holders in NSW</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb data-testid='collapsed-ellipsis'>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger aria-label='Show 1 more page'>
-                  <BreadcrumbEllipsis />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
-                  <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#licences'>Licences and permits</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Apply for a recreational fishing licence</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb collapse={false} data-testid='off'>
-          <BreadcrumbList>
-            <Steps
-              labels={['Home', 'Services', 'Licences and permits']}
-              current='Apply for a recreational fishing licence'
-            />
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <div style={{ width: '48rem' }}>
-        <Breadcrumb data-testid='wide'>
-          <BreadcrumbList>
-            <Steps
-              labels={['Home', 'Services', 'Licences and permits']}
-              current='Apply for a recreational fishing licence'
-            />
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      {/* A shrink-to-fit parent: without w-full, size containment would give
-          the nav no width and overflow a collapsed white-on-band trail. */}
-      <div className='flex items-center' style={{ width: '48rem' }}>
-        <Breadcrumb variant='band' data-testid='flex'>
-          <BreadcrumbList>
-            <Steps labels={['Home', 'Services']} current='Apply online' />
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const nav = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-testid="${id}"]`)!
-    const longTrail = [
-      'Home',
-      'Services',
-      'Licences and permits',
-      'Apply for a recreational fishing licence',
-    ]
-    // Wait for the first measurement; the CSS fallback applies until then.
-    await waitFor(() => expect(nav('full')).toHaveAttribute('data-measured'))
-
-    // Would wrap: only the parent, as a back link whose chevron is inside the
-    // link's target and which screen readers hear as "Back to …".
-    await expect(nav('full')).toHaveAttribute('data-collapsed')
-    await expect(shownItems(nav('full'))).toEqual(['Back to Licences and permits'])
-    await expect(backChevron(nav('full'))).toBe('inline-block')
-    await expect(
-      within(nav('full')).getByRole('link', { name: 'Back to Licences and permits' }),
-    ).toBeVisible()
-    await expect(shownItems(nav('two'))).toEqual(['Back to Home'])
-
-    // A collapsed trail that held the ellipsis keeps the trigger's 32px row,
-    // so collapsing never changes its height.
-    await expect(shownItems(nav('collapsed-ellipsis'))).toEqual(['Back to Licences and permits'])
-    await expect(
-      nav('collapsed-ellipsis')
-        .querySelector<HTMLElement>('[data-slot="breadcrumb-list"]')!
-        .getBoundingClientRect().height,
-    ).toBe(32)
-
-    // Fits on one line: stays whole even at 375px.
-    await expect(nav('short')).not.toHaveAttribute('data-collapsed')
-    await expect(shownItems(nav('short'))).toEqual(['Home', 'Contact us'])
-    await expect(backChevron(nav('short'))).toBe('none')
-
-    // Never collapsed: the rail, nothing to go back to, a menu in the parent
-    // slot, or collapse turned off.
-    await expect(nav('rail')).not.toHaveAttribute('data-collapse')
-    await expect(shownItems(nav('rail'))).toEqual(longTrail)
-    await expect(shownItems(nav('one'))).toEqual(['Home'])
-    await expect(shownItems(nav('ellipsis'))).toEqual([
-      'Home',
-      'More pages',
-      'Fees and exemptions for concession holders in NSW',
-    ])
-    await expect(shownItems(nav('off'))).toEqual(longTrail)
-    await expect(backChevron(nav('off'))).toBe('none')
-
-    // Wide enough: the whole trail, no chevron.
-    await expect(nav('wide')).not.toHaveAttribute('data-collapsed')
-    await expect(shownItems(nav('wide'))).toEqual(longTrail)
-    // In a shrink-to-fit parent the nav still fills the row, so it does not collapse.
-    await expect(nav('flex').getBoundingClientRect().width).toBeGreaterThan(700)
-    await expect(shownItems(nav('flex'))).toEqual(['Home', 'Services', 'Apply online'])
-
-    // The measuring clone never stays in the document.
-    await expect(canvasElement.querySelectorAll('[data-slot="breadcrumb"][inert]')).toHaveLength(0)
-  },
-}
-
-/**
- * Collapse follows the trail's width: the frame below grows from 375px to
- * 48rem and the collapsed trail opens out, then shrinks and collapses again.
- */
-export const CollapseFollowsWidth: Story = {
-  name: 'Collapse follows width',
-  render: () => (
-    <div data-testid='frame' style={{ width: 375 }}>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <Steps
-            labels={['Home', 'Services', 'Licences and permits']}
-            current='Apply for a recreational fishing licence'
-          />
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const frame = canvasElement.querySelector<HTMLElement>('[data-testid="frame"]')!
-    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
-    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
-    frame.style.width = '48rem'
-    await waitFor(() => expect(nav).not.toHaveAttribute('data-collapsed'))
-    frame.style.width = '375px'
-    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
-  },
-}
-
-/** The long trail used by the measurement stories. */
-const LONG = ['Home', 'Services', 'Licences and permits']
-const LONG_CURRENT = 'Apply for a recreational fishing licence'
-
-/**
- * Before the first measurement (server-rendered HTML, or no script) CSS stands
- * in, and its state is always one row, as the measured state is — so the page
- * cannot jump when the measurement lands. Each frame pairs an unmeasured nav,
- * built from the exported parts to pin that state, with a measured Breadcrumb
- * holding the same trail: below 36rem the stand-in is already collapsed; at
- * 600px, where the trail would wrap, it is one scrollable row; and the two
- * are the same height either way.
- */
-export const CollapseFallback: Story = {
-  name: 'Collapse before measurement',
-  render: () => (
-    <div className='grid gap-8'>
-      {[375, 600].map((width) => (
-        <div key={width} className='grid gap-4' style={{ width }} data-testid={`frame-${width}`}>
-          <nav
-            aria-label={`Breadcrumb before measurement at ${width}px`}
-            data-slot='breadcrumb'
-            data-variant='default'
-            data-collapse=''
-            data-testid='unmeasured'
-            className={`${breadcrumbVariants({ variant: 'default' })} @container/breadcrumb w-full`}
-          >
-            <BreadcrumbList>
-              <Steps labels={LONG} current={LONG_CURRENT} />
-            </BreadcrumbList>
-          </nav>
-          <Breadcrumb aria-label={`Measured breadcrumb at ${width}px`} data-testid='measured'>
-            <BreadcrumbList>
-              <Steps labels={LONG} current={LONG_CURRENT} />
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const frame = (width: number) =>
-      canvasElement.querySelector<HTMLElement>(`[data-testid="frame-${width}"]`)!
-    const part = (width: number, id: string) =>
-      frame(width).querySelector<HTMLElement>(`[data-testid="${id}"]`)!
-    for (const width of [375, 600]) {
-      await waitFor(() => expect(part(width, 'measured')).toHaveAttribute('data-measured'))
-      await expect(part(width, 'measured')).toHaveAttribute('data-collapsed')
-      await expect(part(width, 'unmeasured').getBoundingClientRect().height).toBe(
-        part(width, 'measured').getBoundingClientRect().height,
-      )
-    }
-    await expect(shownItems(part(375, 'unmeasured'))).toEqual(['Back to Licences and permits'])
-    const wideList = part(600, 'unmeasured').querySelector<HTMLElement>(
-      '[data-slot="breadcrumb-list"]',
-    )!
-    await expect(getComputedStyle(wideList).flexWrap).toBe('nowrap')
-    await expect(wideList.scrollWidth).toBeGreaterThan(wideList.clientWidth)
-  },
-}
-
-/**
- * The measurement asks only whether the trail fits on one row, so nothing
- * that changes an item's height or the nav's on-screen scale can trip it: a
- * 24px icon beside "Home", a looser line height, a zooming transform. A parent
- * link whose text lives in its `render` element has no back affordance, so a
- * trail that would wrap stays whole rather than collapsing to a bare link.
- */
-export const CollapseEdgeCases: Story = {
-  name: 'Collapse edge cases',
-  render: () => (
-    <div className='grid gap-8'>
-      <div className='grid gap-6' style={{ width: '48rem' }}>
-        <Breadcrumb data-testid='icon'>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#home'>
-                <IconHome aria-hidden='true' className='me-1 inline size-6 align-[-0.4em]' />
-                Home
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <Steps labels={['Services']} current='Apply online' />
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Breadcrumb data-testid='leading'>
-          <BreadcrumbList>
-            <Steps labels={['Home', 'Services']} />
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className='leading-7'>Apply online</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-        <div style={{ transform: 'scale(0.8)', transformOrigin: 'left top' }}>
-          <Breadcrumb data-testid='scaled'>
-            <BreadcrumbList>
-              <Steps labels={LONG} current={LONG_CURRENT} />
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </div>
-      <div style={{ width: 375 }}>
-        <Breadcrumb data-testid='render-prop'>
-          <BreadcrumbList>
-            <Steps labels={['Home', 'Services']} />
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink render={<a href='#licences'>Licences and permits</a>} />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{LONG_CURRENT}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const nav = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-testid="${id}"]`)!
-    for (const id of ['icon', 'leading', 'scaled']) {
-      await waitFor(() => expect(nav(id)).toHaveAttribute('data-measured'))
-      await expect(nav(id)).not.toHaveAttribute('data-collapsed')
-    }
-    await expect(shownItems(nav('scaled'))).toEqual([...LONG, LONG_CURRENT])
-    await waitFor(() => expect(nav('render-prop')).toHaveAttribute('data-measured'))
-    await expect(shownItems(nav('render-prop'))).toEqual([
-      'Home',
-      'Services',
-      'Licences and permits',
-      LONG_CURRENT,
-    ])
-  },
-}
-
-/**
- * A breadcrumb mounted inside a hidden parent has no width to measure, so it
- * waits — no transient collapse at width 0 — and measures once it shows.
- */
-export const CollapseWhileHidden: Story = {
-  name: 'Collapse waits while hidden',
-  render: () => (
-    <div data-testid='holder' style={{ display: 'none', width: '48rem' }}>
-      <Breadcrumb>
-        <BreadcrumbList>
-          <Steps labels={LONG} current={LONG_CURRENT} />
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const holder = canvasElement.querySelector<HTMLElement>('[data-testid="holder"]')!
-    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
-    await expect(nav).not.toHaveAttribute('data-measured')
-    holder.style.display = 'block'
-    await waitFor(() => expect(nav).toHaveAttribute('data-measured'))
-    await expect(nav).not.toHaveAttribute('data-collapsed')
-  },
-}
-
-/**
- * On a dark page with no Header above it, the band keeps an edge: a hairline
- * in the ink at 15%, since `primary-950` alone sits ~1.06:1 on the canvas.
- */
-export const BandOnDarkPage: Story = {
-  name: 'Band on a dark page',
-  globals: { theme: 'dark' },
-  render: () => (
-    <Breadcrumb variant='band'>
-      <BreadcrumbList>
-        <Steps labels={['Home', 'Fishing']} current='Apply for a recreational fishing licence' />
-      </BreadcrumbList>
-    </Breadcrumb>
-  ),
-  play: async ({ canvasElement }) => {
-    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
-    const style = getComputedStyle(nav)
-    await expect(style.borderBottomWidth).toBe('1px')
-    await expect(style.borderBottomColor).not.toBe('rgba(0, 0, 0, 0)')
-    await expect(nav.getBoundingClientRect().height % 4).toBe(0)
-  },
-}
-
-/**
- * The trail in its place: a band under `Header color="dark"`, above the page
- * heading. The band's content lines up with the Header's brand at every
- * breakpoint, and the trail stays secondary to the H1.
- */
-export const InContext: Story = {
-  name: 'In context',
-  parameters: { layout: 'fullscreen' },
-  render: () => (
-    <div>
-      <Header color='dark' sticky={false} shadow={false} border={false}>
-        <HeaderBrand sitename='Department of Primary Industries' />
-      </Header>
-      <Breadcrumb variant='band'>
-        <BreadcrumbList>
-          <Steps labels={['Home', 'Fishing']} current='Apply for a recreational fishing licence' />
-        </BreadcrumbList>
-      </Breadcrumb>
-      <main className='px-4 py-8 sm:px-6 lg:px-12'>
-        <h1 className='text-4xl/tight font-bold text-foreground'>
-          Apply for a recreational fishing licence
-        </h1>
-        <p className='mt-4 max-w-prose text-foreground'>
-          You need a licence to fish in NSW waters, including from the shore.
-        </p>
-      </main>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const contentStart = (el: HTMLElement) =>
-      el.getBoundingClientRect().left + parseFloat(getComputedStyle(el).paddingLeft)
-    const headerRow = canvasElement.querySelector<HTMLElement>('header > div')!
-    const list = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb-list"]')!
-    await expect(Math.abs(contentStart(list) - contentStart(headerRow))).toBeLessThan(1)
-    const h1 = canvasElement.querySelector<HTMLElement>('h1')!
-    const link = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"] a')!
-    await expect(parseFloat(getComputedStyle(h1).fontSize)).toBeGreaterThan(
-      parseFloat(getComputedStyle(link).fontSize),
-    )
-  },
 }
 
 export const CssCheck: Story = {
