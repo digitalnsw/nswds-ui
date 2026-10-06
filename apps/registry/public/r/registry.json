@@ -1517,6 +1517,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },

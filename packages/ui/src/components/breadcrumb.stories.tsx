@@ -1,5 +1,6 @@
 /**
- * Breadcrumb — Default, Variants, With dropdown, Focus bar, CssCheck
+ * Breadcrumb — Default, Variants, Variant fallbacks, With dropdown, Ellipsis
+ * trigger className, Focus bar, Collapse, CssCheck
  *
  * A navigation trail of links ending in the current page. Composed from plain
  * semantic elements (`nav > ol > li`); the separator and ellipsis carry their
@@ -13,12 +14,14 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import {
   Breadcrumb,
+  BREADCRUMB_MENU_OFFSET,
   BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
+  breadcrumbVariants,
 } from './breadcrumb.js'
 import {
   DropdownMenu,
@@ -86,9 +89,7 @@ function Trail({ variant }: { variant: Variant }) {
             <DropdownMenuTrigger aria-label='Show 2 more pages'>
               <BreadcrumbEllipsis />
             </DropdownMenuTrigger>
-            {/* 14px clears the 44px row and the band/rail edge, so the menu
-                opens below the trail rather than over it. */}
-            <DropdownMenuContent sideOffset={14}>
+            <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
               <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
               <DropdownMenuLinkItem href='#licences'>Licences and permits</DropdownMenuLinkItem>
             </DropdownMenuContent>
@@ -165,6 +166,22 @@ export const Variants: Story = {
       getComputedStyle(nav.querySelector('[data-slot="breadcrumb-page"]')!).fontWeight
     await expect(weight(first!)).toBe('400')
     await expect(weight(rail!)).toBe('600')
+
+    // Colour contract. Compared element to element, never against a literal:
+    // computed colours come back in whatever space the token was written in.
+    const [, , band, soft] = navs
+    const colour = (nav: HTMLElement, selector: string) =>
+      getComputedStyle(nav.querySelector(selector)!).color
+    const page = '[data-slot="breadcrumb-page"]'
+    const link = 'a[href]'
+    const separator = '[data-slot="breadcrumb-separator"]'
+    // The band's current page is white like its links, not the page's text colour.
+    await expect(colour(band!, page)).toBe(colour(band!, link))
+    await expect(colour(band!, page)).not.toBe(colour(first!, page))
+    await expect(colour(band!, separator)).not.toBe(colour(first!, separator))
+    // The rail and the tint share the default ink.
+    await expect(colour(rail!, link)).toBe(colour(first!, link))
+    await expect(colour(soft!, link)).toBe(colour(first!, link))
   },
 }
 
@@ -173,7 +190,56 @@ export const VariantsDark: Story = {
   ...Variants,
   name: 'Variants (dark)',
   globals: { theme: 'dark' },
-  play: undefined,
+}
+
+/**
+ * `variant={null}` (which VariantProps admits) falls back to `default` rather
+ * than leaving every --bc-* variable unset, and the exported
+ * `breadcrumbVariants` renders the band correctly on its own — without the
+ * tailwind-merge pass inside Breadcrumb, which used to be what kept the band's
+ * white current page from losing to the base text colour.
+ */
+export const VariantFallbacks: Story = {
+  name: 'Variant fallbacks',
+  render: () => (
+    <div className='grid gap-8'>
+      <Breadcrumb data-testid='reference'>
+        <BreadcrumbList>
+          <Steps labels={['Home']} current='Apply online' />
+        </BreadcrumbList>
+      </Breadcrumb>
+      <Breadcrumb variant={null} data-testid='null'>
+        <BreadcrumbList>
+          <Steps labels={['Home']} current='Apply online' />
+        </BreadcrumbList>
+      </Breadcrumb>
+      <nav
+        aria-label='breadcrumb'
+        data-variant='band'
+        data-testid='helper'
+        className={breadcrumbVariants({ variant: 'band' })}
+      >
+        <BreadcrumbList>
+          <Steps labels={['Home']} current='Apply online' />
+        </BreadcrumbList>
+      </nav>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-testid="${id}"]`)!
+    const colour = (id: string, selector: string) =>
+      getComputedStyle(nav(id).querySelector(selector)!).color
+
+    await expect(nav('null')).toHaveAttribute('data-variant', 'default')
+    await expect(colour('null', 'a[href]')).toBe(colour('reference', 'a[href]'))
+
+    await expect(colour('helper', '[data-slot="breadcrumb-page"]')).toBe(
+      colour('helper', 'a[href]'),
+    )
+    await expect(colour('helper', '[data-slot="breadcrumb-page"]')).not.toBe(
+      colour('reference', '[data-slot="breadcrumb-page"]'),
+    )
+  },
 }
 
 /**
@@ -201,6 +267,42 @@ export const WithDropdown: Story = {
 
     await closeOverlay('dropdown-menu-content')
     await waitFor(() => expect(trigger).toHaveFocus())
+  },
+}
+
+/**
+ * The trigger's look is applied from BreadcrumbItem inside `:where()`, so a
+ * `className` on the trigger itself still wins — here a taller target.
+ */
+export const EllipsisTriggerClassName: Story = {
+  name: 'Ellipsis trigger takes className',
+  render: () => (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label='Show 1 more page' className='h-10'>
+              <BreadcrumbEllipsis />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
+              <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Apply online</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole('button', { name: 'Show 1 more page' })
+    await expect(trigger.getBoundingClientRect().height).toBe(40)
   },
 }
 
@@ -265,7 +367,7 @@ export const Collapse: Story = {
   name: 'Collapse when narrow',
   render: () => (
     <div className='grid gap-8'>
-      <div className='grid w-[375px] gap-6' data-testid='narrow'>
+      <div className='grid gap-6' style={{ width: 375 }}>
         <Breadcrumb collapse data-testid='full'>
           <BreadcrumbList>
             <Steps
@@ -295,7 +397,7 @@ export const Collapse: Story = {
                 <DropdownMenuTrigger aria-label='Show 1 more page'>
                   <BreadcrumbEllipsis />
                 </DropdownMenuTrigger>
-                <DropdownMenuContent sideOffset={14}>
+                <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
                   <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -312,8 +414,17 @@ export const Collapse: Story = {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <div className='w-[48rem]'>
+      <div style={{ width: '48rem' }}>
         <Breadcrumb collapse data-testid='wide'>
+          <BreadcrumbList>
+            <Steps labels={['Home', 'Services']} current='Apply online' />
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      {/* A shrink-to-fit parent: without w-full, size containment would give
+          the nav no width and overflow a collapsed white-on-band trail. */}
+      <div className='flex items-center' style={{ width: '48rem' }}>
+        <Breadcrumb collapse variant='band' data-testid='flex'>
           <BreadcrumbList>
             <Steps labels={['Home', 'Services']} current='Apply online' />
           </BreadcrumbList>
@@ -328,20 +439,20 @@ export const Collapse: Story = {
       [...nav(id).querySelectorAll<HTMLElement>('[data-slot="breadcrumb-list"] > li')]
         .filter((li) => getComputedStyle(li).display !== 'none')
         .map((li) => (li.dataset.slot === 'breadcrumb-separator' ? '|' : li.textContent))
-    /** The masked back chevron on the parent step, or 'none'. */
+    /** The display of the back chevron inside the parent step's link. */
     const chevron = (id: string) => {
       const items = nav(id).querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')
-      const parent = items[items.length - 2]
-      return parent ? getComputedStyle(parent, '::before').maskImage : 'none'
+      const icon = items[items.length - 2]?.querySelector('a > [data-slot="breadcrumb-back"]')
+      return icon ? getComputedStyle(icon).display : 'none'
     }
 
     // Narrow: only the parent, as a back link.
     await expect(shown('full')).toEqual(['Licences and permits'])
-    await expect(chevron('full')).toContain('url(')
+    await expect(chevron('full')).toBe('inline-block')
     await expect(shown('two')).toEqual(['Home'])
-    await expect(chevron('two')).toContain('url(')
-    // The parent stays a real link, named by its text alone (the chevron is a
-    // pseudo-element, so it adds nothing to the name).
+    await expect(chevron('two')).toBe('inline-block')
+    // The parent stays a real link, named by its text alone (the chevron is
+    // aria-hidden) — and the chevron is inside it, so tapping the arrow follows it.
     await expect(
       within(nav('full')).getByRole('link', { name: 'Licences and permits' }),
     ).toBeVisible()
@@ -355,6 +466,9 @@ export const Collapse: Story = {
     // Wide enough: the whole trail, no chevron, even with collapse on.
     await expect(shown('wide')).toEqual(['Home', '|', 'Services', '|', 'Apply online'])
     await expect(chevron('wide')).toBe('none')
+    // In a shrink-to-fit parent the nav still fills the row, so it does not collapse.
+    await expect(nav('flex').getBoundingClientRect().width).toBeGreaterThan(700)
+    await expect(shown('flex')).toEqual(['Home', '|', 'Services', '|', 'Apply online'])
   },
 }
 

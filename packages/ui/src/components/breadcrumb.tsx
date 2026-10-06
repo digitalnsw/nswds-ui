@@ -3,9 +3,23 @@ import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
+import { IconChevronLeft } from '../icons/chevron-left.js'
 import { IconChevronRight } from '../icons/chevron-right.js'
 import { IconMoreHoriz } from '../icons/more-horiz.js'
+import { overlayInk } from '../lib/overlay.js'
 import { cn } from '../lib/utils.js'
+
+/**
+ * The three variables every non-band look shares: the interactive ink (read
+ * from `overlayInk`, so a retune of the ink is one edit — AGENTS.md §3), the
+ * current page in the text colour and muted separators. Each variant sets all
+ * three itself rather than overriding a base value, so the class string never
+ * holds two declarations of one property — the exported `breadcrumbVariants`
+ * stays correct without tailwind-merge, where the stylesheet's emission order
+ * would otherwise pick the winner.
+ */
+const onSurface =
+  '[--bc-current:var(--foreground)] [--bc-ink:var(--overlay-ink)] [--bc-separator:var(--muted-foreground)]'
 
 /**
  * The four approved looks (design-shotgun, breadcrumb-20261006), set on
@@ -14,31 +28,34 @@ import { cn } from '../lib/utils.js'
  * - `default` (Ink trail): no chrome; underlined ink links and chevrons.
  * - `rail`: the masterbrand line system — 1px hairlines above and below in the
  *   text colour, Light-weight slash separators.
- * - `band`: a solid Blue 01 band with white links. `primary-800` is a palette
- *   step on purpose and stays put in dark, like Header's `dark` band; the
- *   labels are white in both modes for the same reason Button's solid labels
- *   are (`--text-inverse` flips).
+ * - `band`: the solid brand band — Blue 01 with white links, theme-invariant
+ *   (AGENTS.md §3's recorded brand-band exception, as Header's `dark` colour).
+ *   The labels are white in both modes for the reason Button's solid labels
+ *   are: `--text-inverse` flips.
  * - `soft`: a 10% ink tint with a 30% ink hairline under it.
  *
- * Every part speaks through three variables the variant sets: `--bc-ink` (the
- * links, the focus bar, the ellipsis trigger), `--bc-current` and
- * `--bc-separator`. The ink is primary-800 light / primary-200 dark, the same
- * pair as Link's `primary` variant.
+ * Every part speaks through `--bc-ink` (the links, the focus bar, the ellipsis
+ * trigger, the back chevron), `--bc-current` and `--bc-separator`.
  */
-const breadcrumbVariants = cva(
-  'group/breadcrumb text-base/6 [--bc-current:var(--foreground)] [--bc-separator:var(--muted-foreground)]',
-  {
-    variants: {
-      variant: {
-        default: '[--bc-ink:var(--color-primary-800)] dark:[--bc-ink:var(--color-primary-200)]',
-        rail: 'border-y border-foreground py-0.5 [--bc-ink:var(--color-primary-800)] dark:[--bc-ink:var(--color-primary-200)]',
-        band: 'bg-primary-800 px-4 py-1 [--bc-current:var(--color-white)] [--bc-ink:var(--color-white)] [--bc-separator:color-mix(in_oklab,var(--color-white)_72%,transparent)]',
-        soft: 'border-b border-(--bc-ink)/30 bg-(--bc-ink)/10 px-4 py-1 [--bc-ink:var(--color-primary-800)] dark:[--bc-ink:var(--color-primary-200)]',
-      },
+const breadcrumbVariants = cva(['group/breadcrumb text-base/6', overlayInk], {
+  variants: {
+    variant: {
+      default: onSurface,
+      rail: ['border-y border-foreground py-0.5', onSurface],
+      band: 'bg-primary-800 px-4 py-1 [--bc-current:var(--color-white)] [--bc-ink:var(--color-white)] [--bc-separator:color-mix(in_oklab,var(--color-white)_72%,transparent)]',
+      soft: ['border-b border-(--bc-ink)/30 bg-(--bc-ink)/10 px-4 py-1', onSurface],
     },
-    defaultVariants: { variant: 'default' },
   },
-)
+  defaultVariants: { variant: 'default' },
+})
+
+/**
+ * The `sideOffset` to give a DropdownMenuContent opened from the ellipsis. The
+ * trigger is 32px in a 44px row and the band and rail add their own edge, so
+ * the menu's default 4px would open it over that edge; 14px clears all four
+ * looks by 4px.
+ */
+const BREADCRUMB_MENU_OFFSET = 14
 
 /**
  * `collapse` opts in to the narrow trail: when the breadcrumb is narrower than
@@ -49,28 +66,32 @@ const breadcrumbVariants = cva(
  *
  * It measures the breadcrumb, not the viewport: with `collapse` the nav is a
  * named size container, so a trail in a narrow column collapses on a wide
- * screen too. That containment means the nav must get its width from its
- * parent (block or stretched flex item); in a shrink-to-fit context it would
- * size to zero, which is why it is only applied when `collapse` is on.
+ * screen too. Size containment gives the nav no intrinsic width, so it also
+ * takes `w-full` — without it a shrink-to-fit parent (a `flex items-center`
+ * header) would size it to zero and overflow the trail. Both are plain classes
+ * added only when `collapse` is on, so a consumer `w-*` still wins.
  */
 function Breadcrumb({
   className,
-  variant = 'default',
+  variant,
   collapse = false,
   ...props
 }: React.ComponentProps<'nav'> &
   VariantProps<typeof breadcrumbVariants> & {
     collapse?: boolean
   }) {
+  // VariantProps admits null, which cva reads as "no variant" and would leave
+  // every --bc-* variable unset.
+  const look = variant ?? 'default'
   return (
     <nav
       aria-label='breadcrumb'
       data-slot='breadcrumb'
-      data-variant={variant}
+      data-variant={look}
       data-collapse={collapse || undefined}
       className={cn(
-        breadcrumbVariants({ variant }),
-        'data-collapse:@container/breadcrumb',
+        breadcrumbVariants({ variant: look }),
+        collapse && '@container/breadcrumb w-full',
         className,
       )}
       {...props}
@@ -84,9 +105,8 @@ function Breadcrumb({
  * separator between it and the current page. They apply only when that parent
  * holds a link, so a trail of one item, or one whose parent slot is the
  * ellipsis, stays whole instead of collapsing to nothing or to a menu button.
- * (One `:has()` per condition: `:has()` cannot nest.) The back chevron is a
- * masked `::before` in the ink, so no extra element is added to every link;
- * it is the chevron-left icon's own path.
+ * (One `:has()` per condition: `:has()` cannot nest.) The second rule reveals
+ * the back chevron BreadcrumbLink carries, so it sits inside the link's target.
  */
 function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
   return (
@@ -95,7 +115,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
       className={cn(
         'flex flex-wrap items-center gap-x-2 wrap-break-word text-(--bc-separator) group-data-[variant=rail]/breadcrumb:gap-x-3',
         'group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
-        'group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:before:-me-1 group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:before:size-5 group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:before:shrink-0 group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:before:bg-(--bc-ink) group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:before:[mask:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%20-960%20960%20960%27%3E%3Cpath%20d=%27m432-480%20156%20156q11%2011%2011%2028t-11%2028q-11%2011-28%2011t-28-11L348-452q-6-6-8.5-13t-2.5-15q0-8%202.5-15t8.5-13l184-184q11-11%2028-11t28%2011q11%2011%2011%2028t-11%2028L432-480Z%27/%3E%3C/svg%3E)_center/contain_no-repeat] group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)]:rtl:before:rotate-180',
+        'group-data-collapse/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>a>[data-slot=breadcrumb-back]]:inline-block',
         className,
       )}
       {...props}
@@ -114,6 +134,10 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
  * the same focus bar as the links: a 4px ink bar along the bottom edge on a 14%
  * ink tint. The transparent outline keeps a ring in forced-colors mode, where
  * box-shadow and backgrounds are dropped.
+ *
+ * The selector sits inside `:where()` so it carries no specificity: styled from
+ * the item, it would otherwise outrank any `className` a consumer puts on the
+ * trigger itself.
  */
 function BreadcrumbItem({ className, ...props }: React.ComponentProps<'li'>) {
   return (
@@ -121,9 +145,9 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<'li'>) {
       data-slot='breadcrumb-item'
       className={cn(
         'inline-flex min-h-11 min-w-0 items-center gap-2',
-        '[&>button:has(>[data-slot=breadcrumb-ellipsis])]:inline-flex [&>button:has(>[data-slot=breadcrumb-ellipsis])]:h-8 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:min-w-8 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:cursor-pointer [&>button:has(>[data-slot=breadcrumb-ellipsis])]:items-center [&>button:has(>[data-slot=breadcrumb-ellipsis])]:justify-center [&>button:has(>[data-slot=breadcrumb-ellipsis])]:border-0 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:bg-transparent [&>button:has(>[data-slot=breadcrumb-ellipsis])]:px-1 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:text-(--bc-ink)',
-        '[&>button:has(>[data-slot=breadcrumb-ellipsis])]:hover:bg-(--bc-ink)/14 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:aria-expanded:bg-(--bc-ink)/14',
-        '[&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:bg-(--bc-ink)/14 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:shadow-[inset_0_-4px_0_var(--bc-ink)] [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:ring-4 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:ring-(--bc-ink)/14 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:outline-2 [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:outline-transparent [&>button:has(>[data-slot=breadcrumb-ellipsis])]:focus-visible:outline-solid',
+        '[:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:inline-flex [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:h-8 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:min-w-8 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:cursor-pointer [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:items-center [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:justify-center [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:border-0 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:bg-transparent [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:px-1 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:text-(--bc-ink)',
+        '[:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:hover:bg-(--bc-ink)/14 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:aria-expanded:bg-(--bc-ink)/14',
+        '[:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:bg-(--bc-ink)/14 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:shadow-[inset_0_-4px_0_var(--bc-ink)] [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:ring-4 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:ring-(--bc-ink)/14 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-2 [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-transparent [:where(&>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-solid',
         className,
       )}
       {...props}
@@ -135,19 +159,37 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<'li'>) {
  * A link in the trail: underlined in the ink at rest, so it reads as a link
  * without hovering, thickening to 2px on hover. Keyboard focus is the bar —
  * a 4px underline on a 14% ink tint, padded out by a 4px ring of the same tint
- * so it never shifts layout. `box-decoration-break: clone` gives each line of a
+ * so it never shifts layout. `box-decoration-clone` gives each line of a
  * wrapped link its own tint.
+ *
+ * Every link carries a hidden back chevron that BreadcrumbList reveals on the
+ * parent step of a collapsed trail, so the arrow is part of the link's target
+ * rather than a dead glyph beside it. It is only added when the link's text
+ * comes through `children`; a link whose text lives inside its `render`
+ * element keeps that text, and collapses without the arrow.
  */
-function BreadcrumbLink({ className, render, ...props }: useRender.ComponentProps<'a'>) {
+function BreadcrumbLink({ className, render, children, ...props }: useRender.ComponentProps<'a'>) {
   return useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
       {
         className: cn(
-          '[box-decoration-break:clone] text-(--bc-ink) underline decoration-1 underline-offset-4 [-webkit-box-decoration-break:clone] hover:decoration-2',
-          'focus-visible:bg-(--bc-ink)/14 focus-visible:decoration-(--bc-ink) focus-visible:decoration-4 focus-visible:ring-4 focus-visible:ring-(--bc-ink)/14 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-solid',
+          'box-decoration-clone text-(--bc-ink) underline decoration-1 underline-offset-4 hover:decoration-2',
+          'focus-visible:bg-(--bc-ink)/14 focus-visible:decoration-4 focus-visible:ring-4 focus-visible:ring-(--bc-ink)/14 focus-visible:outline-2 focus-visible:outline-transparent focus-visible:outline-solid',
           className,
         ),
+        ...(children !== undefined && {
+          children: (
+            <>
+              <IconChevronLeft
+                data-slot='breadcrumb-back'
+                aria-hidden='true'
+                className='-ms-1.5 hidden size-5 align-[-0.3em] rtl:rotate-180'
+              />
+              {children}
+            </>
+          ),
+        }),
       },
       props,
     ),
@@ -215,8 +257,8 @@ function BreadcrumbSeparator({ children, className, ...props }: React.ComponentP
  * steps, put it as the only child of a trigger and give the trigger the
  * accessible name, e.g.
  * `<DropdownMenuTrigger aria-label='Show 2 more pages'><BreadcrumbEllipsis /></DropdownMenuTrigger>`.
- * BreadcrumbItem styles that trigger. Give the menu `sideOffset={14}`: the trigger
- * is 32px in a 44px row, so the default 4px opens it over the band or rail edge.
+ * BreadcrumbItem styles that trigger; open the menu with
+ * `sideOffset={BREADCRUMB_MENU_OFFSET}`.
  */
 function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'>) {
   return (
@@ -234,6 +276,7 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<'span'
 
 export {
   Breadcrumb,
+  BREADCRUMB_MENU_OFFSET,
   BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
