@@ -1289,7 +1289,7 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Breadcrumb trail showing the current page location.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/icons.json"

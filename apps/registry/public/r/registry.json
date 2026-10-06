@@ -1499,6 +1499,7 @@
       "description": "Breadcrumb trail showing the current page location.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
