@@ -548,46 +548,37 @@ export const breadcrumbShownItems = (nav: HTMLElement) =>
         .join(' '),
     )
 
-/** The display of the back chevron inside the parent step's link. */
-export const breadcrumbBackChevron = (nav: HTMLElement) => {
-  const items = nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')
-  const back = items[items.length - 2]?.querySelector('a > [data-slot="breadcrumb-back"]')
-  return back ? getComputedStyle(back).display : 'none'
-}
-
 /**
  * A breadcrumb in its place on a service page: an optional Header, the trail
  * (full-bleed under the Header for `band` and `soft`, in the content column
  * for `default` and `rail`), then the page heading and a line of body copy.
+ * Its gutters step on the viewport exactly as Header's do, so the trail lines
+ * up with the brand at every width.
  *
  * `heading` is `h1` in canvas stories, where the outline is the page's own;
  * docs pages pass `p`, so their examples do not add headings to the docs
- * page's outline. `phone` renders a 375px frame with phone gutters — the
- * Header and band insets step on the viewport, which a docs page cannot narrow.
+ * page's outline.
  */
 export function BreadcrumbScene({
   look,
   header,
   heading = 'p',
-  phone = false,
   labels = ['Home', 'Fishing'],
   current = 'Apply for a recreational fishing licence',
+  framed = true,
 }: {
   look: BreadcrumbLook
   header?: 'dark' | 'white' | 'light'
   heading?: 'h1' | 'p'
-  phone?: boolean
   labels?: string[]
   current?: string
+  /** A bordered card in docs; a bare page in a phone-width story. */
+  framed?: boolean
 }) {
   const Heading = heading
   const chrome = look === 'band' || look === 'soft'
-  const gutter = phone ? 'px-4' : 'max-sm:px-4 sm:max-lg:px-6 lg:px-12'
   const trail = (
-    <Breadcrumb
-      variant={look}
-      style={phone && chrome ? ({ '--bc-inset': '1rem' } as React.CSSProperties) : undefined}
-    >
+    <Breadcrumb variant={look}>
       <BreadcrumbList>
         <BreadcrumbSteps labels={labels} current={current} />
       </BreadcrumbList>
@@ -595,16 +586,15 @@ export function BreadcrumbScene({
   )
   return (
     <div
-      className='overflow-hidden rounded-md border border-border bg-background'
-      style={phone ? { width: 375 } : undefined}
+      className={cn('bg-background', framed && 'overflow-hidden rounded-md border border-border')}
     >
-      {header && !phone && (
+      {header && (
         <Header color={header} sticky={false} shadow={false} border={header !== 'dark'}>
           <HeaderBrand sitename='Department of Primary Industries' />
         </Header>
       )}
       {chrome && trail}
-      <div className={cn('space-y-4 py-8', gutter)}>
+      <div className='space-y-4 py-8 max-sm:px-4 sm:max-lg:px-6 lg:px-12'>
         {!chrome && trail}
         <Heading className='text-3xl/tight font-bold text-foreground'>{current}</Heading>
         <p className='max-w-prose text-foreground'>
@@ -612,6 +602,32 @@ export function BreadcrumbScene({
         </p>
       </div>
     </div>
+  )
+}
+
+/**
+ * A story rendered in its own phone-width iframe. An iframe has its own
+ * viewport, so the story behaves exactly as it would on a 375px phone — the
+ * Header's and the band's insets, the collapse, everything — with nothing
+ * overridden to fake it. `storyId` is the story's Storybook id.
+ */
+export function PhoneFrame({
+  storyId,
+  title,
+  height = 360,
+}: {
+  storyId: string
+  title: string
+  height?: number
+}) {
+  return (
+    <iframe
+      title={title}
+      src={`iframe.html?id=${storyId}&viewMode=story`}
+      loading='lazy'
+      className='shrink-0 rounded-md border border-border bg-background'
+      style={{ width: 375, height }}
+    />
   )
 }
 
@@ -732,20 +748,17 @@ export function BreadcrumbLookPage({
       </ExampleSection>
       <ExampleSection
         title='On a phone'
-        description={
-          look === 'rail'
-            ? 'The rail never collapses: it is chosen for a quiet page where the whole line is the point, so a long trail wraps, each step leading with its separator.'
-            : 'When the full trail would wrap, only the parent shows, as a back link announced "Back to …". A trail that fits stays whole.'
-        }
+        description='Real stories at 375px, each in its own viewport. When the full trail would wrap, it shortens to Home and the parent page; a trail that fits stays whole.'
       >
         <div className='flex flex-wrap gap-6'>
-          <BreadcrumbScene
-            look={look}
-            phone
-            labels={['Home', 'Services', 'Licences and permits']}
-            current='Apply for a recreational fishing licence'
+          <PhoneFrame
+            storyId={`components-breadcrumb-looks-${look}--phone`}
+            title={`${name} look on a phone, long trail`}
           />
-          <BreadcrumbScene look={look} phone labels={['Home']} current='Contact us' />
+          <PhoneFrame
+            storyId={`components-breadcrumb-looks-${look}--phone-short`}
+            title={`${name} look on a phone, short trail`}
+          />
         </div>
       </ExampleSection>
       <ExampleSection title="Do and don't">

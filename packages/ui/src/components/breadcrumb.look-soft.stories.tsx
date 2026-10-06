@@ -82,14 +82,38 @@ export const InContextDark: Story = {
   globals: { theme: 'dark' },
 }
 
+/**
+ * The page at phone width. Embedded in the docs page in a 375px iframe, and
+ * opened at a phone viewport in the canvas, so it is the real behaviour: this
+ * trail would wrap, so it shortens to Home and the parent page.
+ */
 export const Phone: Story = {
   name: 'On a phone',
+  parameters: { layout: 'fullscreen' },
+  globals: { viewport: { value: 'mobile2', isRotated: false } },
   render: () => (
     <BreadcrumbScene
       look='soft'
-      phone
+      header='white'
       heading='h1'
+      framed={false}
       labels={['Home', 'Services', 'Licences and permits']}
+    />
+  ),
+}
+
+/** The page at phone width with a trail that fits: it stays whole. */
+export const PhoneShort: Story = {
+  ...Phone,
+  name: 'On a phone, short trail',
+  render: () => (
+    <BreadcrumbScene
+      look='soft'
+      header='white'
+      heading='h1'
+      framed={false}
+      labels={['Home']}
+      current='Contact us'
     />
   ),
 }

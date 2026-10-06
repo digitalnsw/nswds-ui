@@ -58,8 +58,8 @@ export const NameRoleValue: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: ['4.1.2', '1.3.1'],
-          why: 'A screen reader user finds the trail as a named landmark, hears it as a list of steps, knows which step is the current page, and knows what the ellipsis and a collapsed back link do.',
-          how: 'With a screen reader, jump to landmarks: "Breadcrumb navigation". Read the list: each link by name, the last step announced as current page. The ellipsis is "Show 2 more pages"; on a phone the collapsed link is "Back to Licences and permits".',
+          why: 'A screen reader user finds the trail as a named landmark, hears it as a list of steps, knows which step is the current page, and knows what the ellipsis does.',
+          how: 'With a screen reader, jump to landmarks: "Breadcrumb navigation". Read the list: each link by name, the last step announced as current page. The ellipsis is "Show 2 more pages"; on a phone a collapsed trail is a two-link list, Home and the parent.',
           caveat:
             'Separators are hidden from assistive technology; the list structure carries the order.',
         }),
@@ -98,8 +98,10 @@ export const NameRoleValue: Story = {
     const collapsed = canvas.getByRole('navigation', { name: 'Breadcrumb, collapsed' })
     await waitFor(() => expect(collapsed).toHaveAttribute('data-collapsed'))
     await expect(
-      within(collapsed).getByRole('link', { name: 'Back to Licences and permits' }),
-    ).toBeVisible()
+      within(collapsed)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Home', 'Licences and permits'])
   },
 }
 

@@ -13,7 +13,6 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
 import {
   BREADCRUMB_LOOKS,
-  breadcrumbBackChevron,
   breadcrumbShownItems,
   BreadcrumbSteps,
   BreadcrumbTrail,
@@ -221,8 +220,8 @@ export const Collapse: Story = {
       description: {
         story: docsTemplate({
           what: 'Trails at 375px and 48rem: long and short, every look, and the cases collapse leaves alone.',
-          why: 'A trail collapses to a back link only when it would wrap, and only when it can do so sensibly.',
-          how: 'At 375px the long default and long band trails show only "‹ Licences and permits" / "‹ Home"; the short band trail stays whole; the rail, the one-item trail, the ellipsis-parent trail and collapse={false} stay whole; at 48rem nothing collapses.',
+          why: 'A trail shortens to Home and the parent only when it would wrap, and only when it can do so sensibly.',
+          how: 'At 375px the long default and rail trails show "Home › Licences and permits" and the long band trail just "Home"; the short band trail stays whole; the one-item trail and collapse={false} stay whole; at 48rem nothing collapses.',
           caveat:
             'Measurement runs after mount; the CSS stand-in before it is covered by the Tests stories.',
         }),
@@ -290,27 +289,26 @@ export const Collapse: Story = {
     // Wait for the first measurement; the CSS stand-in applies until then.
     await waitFor(() => expect(nav('full')).toHaveAttribute('data-measured'))
 
-    // Would wrap: only the parent, as a back link whose chevron is inside the
-    // link's target and which screen readers hear as "Back to …".
+    // Would wrap: it shortens to the first step and the parent, still a
+    // breadcrumb of real links, the parent leading with its separator.
     await expect(nav('full')).toHaveAttribute('data-collapsed')
-    await expect(breadcrumbShownItems(nav('full'))).toEqual(['Back to Licences and permits'])
-    await expect(breadcrumbBackChevron(nav('full'))).toBe('inline-block')
+    await expect(breadcrumbShownItems(nav('full'))).toEqual(['Home', 'Licences and permits'])
     await expect(
-      within(nav('full')).getByRole('link', { name: 'Back to Licences and permits' }),
+      within(nav('full')).getByRole('link', { name: 'Licences and permits' }),
     ).toBeVisible()
-    await expect(breadcrumbShownItems(nav('two'))).toEqual(['Back to Home'])
+    // When the parent is the first step, that one step is all that is left.
+    await expect(breadcrumbShownItems(nav('two'))).toEqual(['Home'])
+    // The rail collapses like every other look.
+    await expect(nav('rail')).toHaveAttribute('data-collapsed')
+    await expect(breadcrumbShownItems(nav('rail'))).toEqual(['Home', 'Licences and permits'])
 
     // Fits on one line: stays whole even at 375px.
     await expect(nav('short')).not.toHaveAttribute('data-collapsed')
     await expect(breadcrumbShownItems(nav('short'))).toEqual(['Home', 'Contact us'])
-    await expect(breadcrumbBackChevron(nav('short'))).toBe('none')
 
-    // Never collapsed: the rail, nothing to go back to, or collapse turned off.
-    await expect(nav('rail')).not.toHaveAttribute('data-collapse')
-    await expect(breadcrumbShownItems(nav('rail'))).toEqual(longTrail)
+    // Never collapsed: nothing to keep, or collapse turned off.
     await expect(breadcrumbShownItems(nav('one'))).toEqual(['Home'])
     await expect(breadcrumbShownItems(nav('off'))).toEqual(longTrail)
-    await expect(breadcrumbBackChevron(nav('off'))).toBe('none')
 
     // Wide enough: the whole trail.
     await expect(nav('wide')).not.toHaveAttribute('data-collapsed')

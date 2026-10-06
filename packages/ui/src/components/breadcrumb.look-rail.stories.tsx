@@ -2,7 +2,7 @@
  * Breadcrumb — Looks / Rail
  *
  * The masterbrand line system: hairlines above and below in the text colour,
- * slash separators. The rail never collapses.
+ * slash separators.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -20,11 +20,9 @@ function RailLookDocs() {
       useWhen={[
         'A quiet content page with no hero, where the trail benefits from a frame.',
         'The page already uses hairlines to divide its sections.',
-        'You want every step visible at every width: the rail never collapses.',
       ]}
       avoidWhen={[
         'The trail sits directly under a Header with its own bottom rule (two lines stack).',
-        'Phones are the main audience and long trails are common (use Default, which collapses).',
         'The trail should continue a coloured Header (use Band or Soft).',
       ]}
       pairing='Sits in the content column. Its hairlines are a recorded exception to the Hairline Rule: they take the text colour because the line is the look.'
@@ -82,20 +80,38 @@ export const InContextDark: Story = {
   globals: { theme: 'dark' },
 }
 
+/**
+ * The page at phone width. Embedded in the docs page in a 375px iframe, and
+ * opened at a phone viewport in the canvas, so it is the real behaviour: this
+ * trail would wrap, so it shortens to Home and the parent page.
+ */
 export const Phone: Story = {
   name: 'On a phone',
+  parameters: { layout: 'fullscreen' },
+  globals: { viewport: { value: 'mobile2', isRotated: false } },
   render: () => (
     <BreadcrumbScene
       look='rail'
-      phone
+      header='white'
       heading='h1'
+      framed={false}
       labels={['Home', 'Services', 'Licences and permits']}
     />
   ),
-  play: async ({ canvasElement }) => {
-    // The rail never collapses: every step is still there.
-    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
-    await expect(nav).not.toHaveAttribute('data-collapse')
-    await expect(nav.querySelectorAll('a[href]')).toHaveLength(3)
-  },
+}
+
+/** The page at phone width with a trail that fits: it stays whole. */
+export const PhoneShort: Story = {
+  ...Phone,
+  name: 'On a phone, short trail',
+  render: () => (
+    <BreadcrumbScene
+      look='rail'
+      header='white'
+      heading='h1'
+      framed={false}
+      labels={['Home']}
+      current='Contact us'
+    />
+  ),
 }

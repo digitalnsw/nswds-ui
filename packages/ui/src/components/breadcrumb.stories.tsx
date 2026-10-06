@@ -19,13 +19,13 @@ import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
 import { Link } from './link.js'
 import {
   BREADCRUMB_LOOKS,
-  BreadcrumbScene,
   BreadcrumbSteps,
   BreadcrumbTrail,
   ExampleCode,
   exampleDocsClassName,
   ExamplePreview,
   ExampleSection,
+  PhoneFrame,
   type BreadcrumbLook,
 } from './story-helpers.js'
 
@@ -47,7 +47,7 @@ const lookCards: ReadonlyArray<{
     look: 'rail',
     name: 'Rail',
     useWhen: 'A quiet content page that wants the masterbrand line system to frame the trail.',
-    pairs: 'Sits in the content column. Never collapses.',
+    pairs: 'Sits in the content column, under any Header.',
   },
   {
     look: 'band',
@@ -175,19 +175,20 @@ function BreadcrumbDocs() {
 
       <ExampleSection
         title='On narrow screens'
-        description='When the full trail would wrap, it collapses to a back link to the parent page, announced "Back to …". A trail that fits stays whole at any width. The page heading names the current page, so a collapsed trail only needs the way up.'
+        description='When the full trail would wrap, it shortens to its first step and the current page’s parent — the way GOV.UK’s breadcrumb collapses on mobile — so the site root and the way up stay visible on one row. A trail that fits stays whole at any width. These are real stories at 375px, each in its own viewport.'
       >
         <div className='flex flex-wrap gap-6'>
-          <BreadcrumbScene
-            look='default'
-            phone
-            labels={['Home', 'Services', 'Licences and permits']}
-            current='Apply for a recreational fishing licence'
+          <PhoneFrame
+            storyId='components-breadcrumb-looks-default--phone'
+            title='Breadcrumb on a phone, long trail'
           />
-          <BreadcrumbScene look='default' phone labels={['Home']} current='Contact us' />
+          <PhoneFrame
+            storyId='components-breadcrumb-looks-default--phone-short'
+            title='Breadcrumb on a phone, short trail'
+          />
         </div>
         <p className='max-w-2xl text-muted-foreground'>
-          Collapse is on by default for every look except the rail. Turn it off with{' '}
+          Collapse is on by default for every look. Turn it off with{' '}
           <code>collapse={'{false}'}</code> to keep the whole trail, which then wraps with each step
           leading with its separator.
         </p>
@@ -241,7 +242,6 @@ function BreadcrumbDocs() {
             Links take the system&rsquo;s 2px offset focus ring, and every link and the ellipsis
             take a 44px tap target on touch screens.
           </li>
-          <li>A collapsed trail&rsquo;s back link is announced &ldquo;Back to …&rdquo;.</li>
         </ul>
         <p>
           <Link
@@ -280,8 +280,7 @@ const meta = {
     },
     collapse: {
       control: 'boolean',
-      description:
-        'Collapse to a back link to the parent when the full trail would wrap. No effect on the rail.',
+      description: 'When the full trail would wrap, shorten it to Home and the parent page.',
       table: { category: 'Behaviour' },
     },
   },

@@ -94,22 +94,42 @@ export const InContextDark: Story = {
   globals: { theme: 'dark' },
 }
 
+/**
+ * The page at phone width. Embedded in the docs page in a 375px iframe, and
+ * opened at a phone viewport in the canvas, so it is the real behaviour: this
+ * trail would wrap, so it shortens to Home and the parent page.
+ */
 export const Phone: Story = {
   name: 'On a phone',
+  parameters: { layout: 'fullscreen' },
+  globals: { viewport: { value: 'mobile2', isRotated: false } },
   render: () => (
     <BreadcrumbScene
       look='band'
-      phone
+      header='dark'
       heading='h1'
+      framed={false}
       labels={['Home', 'Services', 'Licences and permits']}
     />
   ),
 }
 
-/**
- * On a dark page with no Header above it, the band keeps an edge: a hairline
- * in the ink at 15%, since `primary-950` alone sits ~1.06:1 on the canvas.
- */
+/** The page at phone width with a trail that fits: it stays whole. */
+export const PhoneShort: Story = {
+  ...Phone,
+  name: 'On a phone, short trail',
+  render: () => (
+    <BreadcrumbScene
+      look='band'
+      header='dark'
+      heading='h1'
+      framed={false}
+      labels={['Home']}
+      current='Contact us'
+    />
+  ),
+}
+
 export const OnDarkPage: Story = {
   name: 'On a dark page',
   globals: { theme: 'dark' },

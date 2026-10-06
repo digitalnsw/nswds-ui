@@ -188,7 +188,8 @@ export const CollapseWithEllipsis: Story = {
       'Fees and exemptions for concession holders in NSW',
     ])
     await expect(breadcrumbShownItems(nav('collapsed-ellipsis'))).toEqual([
-      'Back to Licences and permits',
+      'Home',
+      'Licences and permits',
     ])
     await expect(
       nav('collapsed-ellipsis')
@@ -247,7 +248,8 @@ export const CollapseFallback: Story = {
       )
     }
     await expect(breadcrumbShownItems(part(375, 'unmeasured'))).toEqual([
-      'Back to Licences and permits',
+      'Home',
+      'Licences and permits',
     ])
     const wideList = part(600, 'unmeasured').querySelector<HTMLElement>(
       '[data-slot="breadcrumb-list"]',
@@ -261,8 +263,7 @@ export const CollapseFallback: Story = {
  * The measurement asks only whether the trail fits on one row, so nothing
  * that changes an item's height or the nav's on-screen scale can trip it: a
  * 24px icon beside "Home", a looser line height, a zooming transform. A parent
- * link whose text lives in its `render` element has no back affordance, so a
- * trail that would wrap stays whole rather than collapsing to a bare link.
+ * link whose text lives in its `render` element collapses like any other.
  */
 export const CollapseEdgeCases: Story = {
   name: 'Collapse edge cases',
@@ -323,7 +324,7 @@ export const CollapseEdgeCases: Story = {
     }
     await expect(breadcrumbShownItems(nav('scaled'))).toEqual([...LONG, LONG_CURRENT])
     await waitFor(() => expect(nav('render-prop')).toHaveAttribute('data-measured'))
-    await expect(breadcrumbShownItems(nav('render-prop'))).toEqual([...LONG, LONG_CURRENT])
+    await expect(breadcrumbShownItems(nav('render-prop'))).toEqual(['Home', 'Licences and permits'])
   },
 }
 

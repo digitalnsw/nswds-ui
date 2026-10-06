@@ -5,7 +5,6 @@ import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
-import { IconChevronLeft } from '../icons/chevron-left.js'
 import { IconChevronRight } from '../icons/chevron-right.js'
 import { IconMoreHoriz } from '../icons/more-horiz.js'
 import { overlayInk } from '../lib/overlay.js'
@@ -123,20 +122,19 @@ function trailWraps(nav: HTMLElement): boolean {
  * The trail's landmark. `aria-label` defaults to "Breadcrumb" and can be
  * overridden (a page with two trails needs two names).
  *
- * `collapse` is on by default for `default`, `band` and `soft`: when the full
- * trail would wrap, only the parent page shows, as a back link — "‹ Licences
- * and permits", announced "Back to Licences and permits". A trail that fits on
- * one line stays whole at any width, keeping Home and the current page. The
- * page heading names the current page, so a collapsed trail's one job is the
- * way up. `rail` never collapses: it is chosen for a quiet page where the
- * whole line is the point. Pass `collapse={false}` to keep the full trail.
+ * `collapse` is on by default: when the full trail would wrap, it shortens to
+ * its first step and the current page's parent — "Home › Licences and
+ * permits" — the way GOV.UK's breadcrumb collapses on mobile. The site root
+ * and the way up both stay visible on one row; the page heading names the
+ * current page. A trail that fits on one line stays whole at any width. Pass
+ * `collapse={false}` to keep the full trail, which then wraps.
  *
  * Wrapping is measured, so it needs JavaScript. Until the first measurement —
  * server-rendered HTML, or no script — CSS holds a collapsible trail to one
  * row so the page cannot jump when the measurement lands: below 36rem it is
  * already collapsed, and wider it is a single row that scrolls sideways if it
  * is too long. Either way the measured state is one row too, a full trail
- * that fits or the collapsed back link. The nav is a named size container for
+ * that fits or the collapsed Home and parent. The nav is a named size container for
  * that rule and takes `w-full`, which also keeps its width independent of its
  * own collapse state; without it a shrink-to-fit parent (a `flex
  * items-center` header) would size it to zero. Both are plain classes, so a
@@ -156,7 +154,7 @@ function Breadcrumb({
   // VariantProps admits null, which cva reads as "no variant" and would leave
   // every --bc-* variable unset.
   const look = variant ?? 'default'
-  const collapses = collapse && look !== 'rail'
+  const collapses = collapse
   const navRef = React.useRef<HTMLElement>(null)
   // null until measured: the CSS width fallback applies until then.
   const [wraps, setWraps] = React.useState<boolean | null>(null)
@@ -179,8 +177,8 @@ function Breadcrumb({
       if (width === 0 || (!dirty && width === measuredWidth)) return
       measuredWidth = width
       dirty = false
-      // No link that can become a back link: the trail can never collapse.
-      setWraps(nav.querySelector('[data-slot=breadcrumb-back]') ? trailWraps(nav) : false)
+      // No link at all: there is nothing to keep, so the trail never collapses.
+      setWraps(nav.querySelector('[data-slot=breadcrumb-list] a[href]') ? trailWraps(nav) : false)
     }
     const schedule = () => {
       cancelAnimationFrame(frame)
@@ -238,19 +236,16 @@ function Breadcrumb({
  *
  * The collapse rules key on the trail's shape rather than on markers the
  * consumer must add: the parent is the item two before the end, with a
- * separator between it and the current page. They apply only when that parent
- * holds a link, so a trail of one item, or one whose parent slot is the
- * ellipsis, stays whole instead of collapsing to nothing or to a menu button —
- * and only when that link carries the back affordance (it does not when its
- * text lives inside a `render` element), so a collapse never leaves a bare,
- * unexplained link. (One `:has()` per condition: `:has()` cannot nest.) Each
- * rule is written twice: once for the measured state (`data-collapsed`), once
- * for the CSS stand-in before measurement, which also holds a wider eligible
- * trail to one scrollable row. A list holding the ellipsis keeps the trigger's
- * 32px row even when the trigger is collapsed away, so its height never
- * changes either. The parent's lead separator gives way to
- * the back chevron its BreadcrumbLink carries, which sits inside the link's
- * target.
+ * separator between it and the current page, and a collapsed trail keeps the
+ * first item and that parent and hides the rest. They apply only when the
+ * parent is a link, so a trail of one item, or one whose parent slot is the
+ * ellipsis, stays whole. A custom separator before the parent stays, so the
+ * two kept steps are still divided. (One `:has()` per condition: `:has()`
+ * cannot nest.) Each rule is written twice: once for the measured state
+ * (`data-collapsed`), once for the CSS stand-in before measurement, which
+ * also holds a wider eligible trail to one scrollable row. A list holding the
+ * ellipsis keeps the trigger's 32px row even when the trigger is collapsed
+ * away, so its height never changes either.
  */
 function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
   return (
@@ -259,13 +254,9 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
       className={cn(
         'mx-auto flex max-w-(--bc-max-width) flex-wrap items-center gap-x-2 px-(--bc-inset) wrap-break-word text-(--bc-separator) not-pointer-coarse:gap-y-2 group-data-[variant=rail]/breadcrumb:gap-x-3 has-[>li>[data-slot=breadcrumb-content]>button]:min-h-8 pointer-coarse:gap-y-5',
         '[&>[data-slot=breadcrumb-separator]:not([data-custom])]:hidden',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:[scrollbar-width:none] group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:flex-nowrap group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:overflow-x-auto group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li]:shrink-0',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:[scrollbar-width:none] group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:flex-nowrap group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:overflow-x-auto group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li]:shrink-0',
+        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:first-child):not(:nth-last-child(3)):not([data-custom]:nth-last-child(4))]:hidden',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:first-child):not(:nth-last-child(3)):not([data-custom]:nth-last-child(4))]:hidden',
         className,
       )}
       {...props}
@@ -336,15 +327,10 @@ function BreadcrumbItem({ className, children, ...props }: React.ComponentProps<
  * on the band). There is deliberately no visited colour: a trail is
  * wayfinding, and a visited step is not information.
  *
- * Two things ride inside the link's target. A coarse-pointer TouchTarget
- * expands the hit area to 44px without growing the box (the Same-Floor Rule).
- * And a hidden back chevron with "Back to" for screen readers, which
- * BreadcrumbList reveals on the parent step of a collapsed trail. It shows as
- * an inline-block, so the gap after the chevron is a margin the underline
- * skips, and name computation sets it apart from the label ("Back to
- * Licences", not "Back toLicences"). Both are only added when the text comes
- * through `children`; a link whose text lives inside its `render` element
- * keeps that text and goes without them.
+ * A coarse-pointer TouchTarget rides inside the link's target, expanding the
+ * hit area to 44px without growing the box (the Same-Floor Rule). It is only
+ * added when the text comes through `children`; a link whose text lives
+ * inside its `render` element keeps that text and goes without it.
  */
 function BreadcrumbLink({ className, render, children, ...props }: useRender.ComponentProps<'a'>) {
   return useRender({
@@ -360,18 +346,7 @@ function BreadcrumbLink({ className, render, children, ...props }: useRender.Com
           className,
         ),
         ...(children !== undefined && {
-          children: (
-            <TouchTarget>
-              <span data-slot='breadcrumb-back' className='hidden'>
-                <IconChevronLeft
-                  aria-hidden='true'
-                  className='-ms-1.5 me-1 inline-block size-5 align-[-0.3em] rtl:rotate-180'
-                />
-                <span className='sr-only'>Back to</span>
-              </span>
-              {children}
-            </TouchTarget>
-          ),
+          children: <TouchTarget>{children}</TouchTarget>,
         }),
       },
       props,
