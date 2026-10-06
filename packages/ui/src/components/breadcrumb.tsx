@@ -86,9 +86,11 @@ const BREADCRUMB_MENU_OFFSET = 14
  * Whether the full trail would wrap at the nav's current width. Measured on a
  * hidden clone placed beside the nav — same parent, so the same inherited
  * tokens and font — with the collapse state stripped, so a collapsed trail can
- * still ask how long it would be. A trail wraps when an item starts below
- * another's bottom edge, or when one label wraps within itself (an item
- * taller than a row: the line height, or the ellipsis trigger's).
+ * still ask how long it would be. The clone's list is laid out as one
+ * unwrapped, unshrunk row, and the trail would wrap when that row overflows:
+ * `scrollWidth` past `clientWidth`. Both are layout widths, so neither item
+ * heights (an icon, a looser line height) nor transforms (a zooming dialog)
+ * can sway the answer.
  */
 function trailWraps(nav: HTMLElement): boolean {
   const probe = nav.cloneNode(true) as HTMLElement
@@ -102,26 +104,17 @@ function trailWraps(nav: HTMLElement): boolean {
     position: 'absolute',
     insetBlockStart: '0',
     insetInlineStart: '0',
-    width: `${nav.getBoundingClientRect().width}px`,
+    width: `${nav.offsetWidth}px`,
     visibility: 'hidden',
     pointerEvents: 'none',
   })
-  nav.after(probe)
   const list = probe.querySelector<HTMLElement>('[data-slot=breadcrumb-list]')
-  let wraps = false
-  if (list) {
-    const row = Math.max(
-      parseFloat(getComputedStyle(list).lineHeight) || 0,
-      ...[...list.querySelectorAll('button')].map((el) => el.getBoundingClientRect().height),
-    )
-    const items = [...list.querySelectorAll<HTMLElement>(':scope > [data-slot=breadcrumb-item]')]
-      .map((el) => el.getBoundingClientRect())
-      .filter((rect) => rect.height > 0)
-    // A second line (an item starting below another's bottom), or one label
-    // that wraps within itself (an item taller than a row).
-    const firstBottom = Math.min(...items.map((rect) => rect.bottom))
-    wraps = items.some((rect) => rect.top >= firstBottom || rect.height > row + 1)
-  }
+  if (!list) return false
+  list.style.flexWrap = 'nowrap'
+  list.style.whiteSpace = 'nowrap'
+  for (const item of list.children) (item as HTMLElement).style.flexShrink = '0'
+  nav.after(probe)
+  const wraps = list.scrollWidth > list.clientWidth + 1
   probe.remove()
   return wraps
 }
@@ -139,11 +132,15 @@ function trailWraps(nav: HTMLElement): boolean {
  * whole line is the point. Pass `collapse={false}` to keep the full trail.
  *
  * Wrapping is measured, so it needs JavaScript. Until the first measurement —
- * server-rendered HTML, or no script — CSS stands in: the nav is a named size
- * container and the trail collapses when it is narrower than 36rem. Size
- * containment gives the nav no intrinsic width, so it also takes `w-full`;
- * without it a shrink-to-fit parent (a `flex items-center` header) would size
- * it to zero. Both are plain classes, so a consumer `w-*` still wins.
+ * server-rendered HTML, or no script — CSS holds a collapsible trail to one
+ * row so the page cannot jump when the measurement lands: below 36rem it is
+ * already collapsed, and wider it is a single row that scrolls sideways if it
+ * is too long. Either way the measured state is one row too, a full trail
+ * that fits or the collapsed back link. The nav is a named size container for
+ * that rule and takes `w-full`, which also keeps its width independent of its
+ * own collapse state; without it a shrink-to-fit parent (a `flex
+ * items-center` header) would size it to zero. Both are plain classes, so a
+ * consumer `w-*` still wins.
  */
 function Breadcrumb({
   className,
@@ -171,18 +168,34 @@ function Breadcrumb({
       return
     }
     let frame = 0
-    const measure = () => setWraps(trailWraps(nav))
+    let measuredWidth = -1
+    let dirty = true
+    const measure = () => {
+      const width = nav.offsetWidth
+      // Hidden (a display:none ancestor): nothing to learn until it shows,
+      // which the ResizeObserver reports. Same width and same content: the
+      // answer cannot have changed, so a height-only resize — including the
+      // one collapsing causes — costs nothing.
+      if (width === 0 || (!dirty && width === measuredWidth)) return
+      measuredWidth = width
+      dirty = false
+      // No link that can become a back link: the trail can never collapse.
+      setWraps(nav.querySelector('[data-slot=breadcrumb-back]') ? trailWraps(nav) : false)
+    }
     const schedule = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(measure)
     }
     measure()
-    // Width changes re-measure; so does new trail content. The probe is a
-    // sibling and the state lands as attributes, so neither observer sees its
-    // own measurement and the loop is stable.
+    // The observer's first callback reports the width just measured, so it
+    // is skipped above. The probe is a sibling and the state lands as
+    // attributes, so neither observer sees its own measurement.
     const resize = new ResizeObserver(schedule)
     resize.observe(nav)
-    const content = new MutationObserver(schedule)
+    const content = new MutationObserver(() => {
+      dirty = true
+      schedule()
+    })
     content.observe(nav, { childList: true, characterData: true, subtree: true })
     return () => {
       cancelAnimationFrame(frame)
@@ -227,10 +240,15 @@ function Breadcrumb({
  * consumer must add: the parent is the item two before the end, with a
  * separator between it and the current page. They apply only when that parent
  * holds a link, so a trail of one item, or one whose parent slot is the
- * ellipsis, stays whole instead of collapsing to nothing or to a menu button.
- * (One `:has()` per condition: `:has()` cannot nest.) Each rule is written
- * twice: once for the measured state (`data-collapsed`), once for the CSS
- * width fallback before measurement. The parent's lead separator gives way to
+ * ellipsis, stays whole instead of collapsing to nothing or to a menu button —
+ * and only when that link carries the back affordance (it does not when its
+ * text lives inside a `render` element), so a collapse never leaves a bare,
+ * unexplained link. (One `:has()` per condition: `:has()` cannot nest.) Each
+ * rule is written twice: once for the measured state (`data-collapsed`), once
+ * for the CSS stand-in before measurement, which also holds a wider eligible
+ * trail to one scrollable row. A list holding the ellipsis keeps the trigger's
+ * 32px row even when the trigger is collapsed away, so its height never
+ * changes either. The parent's lead separator gives way to
  * the back chevron its BreadcrumbLink carries, which sits inside the link's
  * target.
  */
@@ -239,14 +257,15 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
     <ol
       data-slot='breadcrumb-list'
       className={cn(
-        'mx-auto flex max-w-(--bc-max-width) flex-wrap items-center gap-x-2 px-(--bc-inset) wrap-break-word text-(--bc-separator) not-pointer-coarse:gap-y-2 group-data-[variant=rail]/breadcrumb:gap-x-3 pointer-coarse:gap-y-5',
+        'mx-auto flex max-w-(--bc-max-width) flex-wrap items-center gap-x-2 px-(--bc-inset) wrap-break-word text-(--bc-separator) not-pointer-coarse:gap-y-2 group-data-[variant=rail]/breadcrumb:gap-x-3 has-[>li>[data-slot=breadcrumb-content]>button]:min-h-8 pointer-coarse:gap-y-5',
         '[&>[data-slot=breadcrumb-separator]:not([data-custom])]:hidden',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
-        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
-        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:[scrollbar-width:none] group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:flex-nowrap group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))]:overflow-x-auto group-[[data-collapse]:not([data-measured])]/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li]:shrink-0',
+        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
+        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
+        'group-data-collapsed/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:not(:nth-last-child(3))]:hidden',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-lead]]:hidden',
+        'group-[[data-collapse]:not([data-measured])]/breadcrumb:@max-xl/breadcrumb:[&:has(>[data-slot=breadcrumb-item]:nth-last-child(3)>[data-slot=breadcrumb-content]>a[href]>[data-slot=breadcrumb-back]):has(>[data-slot=breadcrumb-separator]:nth-last-child(2))>li:nth-last-child(3)>[data-slot=breadcrumb-content]>a>[data-slot=breadcrumb-back]]:inline-block',
         className,
       )}
       {...props}
@@ -268,7 +287,8 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<'ol'>) {
  * A `<button>` whose direct child is a `BreadcrumbEllipsis` is styled as the
  * ellipsis trigger, which keeps the trail composable with `DropdownMenuTrigger`
  * (or any other trigger) without Breadcrumb importing a menu. It is a 32px
- * control on the 4px radius, tinted from the ink at 10% on hover and 20% while
+ * control on the 4px radius — pulled 4px into its gaps so it sits as close to
+ * its neighbours as a text step does — tinted from the ink at 10% on hover and 20% while
  * pressed or open, with the system's 2px offset focus ring and, in forced
  * colours (where tints are dropped), a 1px border. The selector sits inside
  * `:where()` so it carries no specificity: a `className` on the trigger itself
@@ -281,7 +301,7 @@ function BreadcrumbItem({ className, children, ...props }: React.ComponentProps<
       className={cn(
         'inline-flex min-w-0 items-start gap-2 group-data-[variant=rail]/breadcrumb:gap-3 has-[>[data-slot=breadcrumb-content]>button]:items-center',
         '[[data-slot=breadcrumb-separator]:not([data-custom])+&>[data-slot=breadcrumb-lead]]:inline-flex',
-        '[:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:relative [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:inline-flex [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:h-8 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:min-w-8 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:cursor-pointer [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:items-center [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:justify-center [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:rounded-sm [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:bg-transparent [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:px-1 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:text-(--bc-ink) [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:motion-safe:transition-colors',
+        '[:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:relative [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:-mx-1 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:inline-flex [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:h-8 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:min-w-8 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:cursor-pointer [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:items-center [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:justify-center [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:rounded-sm [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:bg-transparent [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:px-0 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:text-(--bc-ink) [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:motion-safe:transition-[color,background-color]',
         '[:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:not-forced-colors:border-0 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:forced-colors:border',
         '[:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:hover:bg-(--bc-ink)/10 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:active:bg-(--bc-ink)/20 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:aria-expanded:bg-(--bc-ink)/20',
         '[:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-2 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-offset-2 [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-(--bc-ink) [:where(&>[data-slot=breadcrumb-content]>button:has(>[data-slot=breadcrumb-ellipsis]))]:focus-visible:outline-solid',
@@ -308,7 +328,9 @@ function BreadcrumbItem({ className, children, ...props }: React.ComponentProps<
  * A link in the trail, in the system's link signature (DESIGN.md, Links):
  * medium weight, underlined in the ink at 4px offset, a 10% ink halo with a
  * 2px underline on hover and an 18% halo while pressed, and the 2px offset
- * focus ring in the ink. The halo is Link's recipe, mixed in the same oklch
+ * focus ring in the ink, which appears in the ink at once: the transition
+ * leaves `outline-color` out, so the ring never fades in from the base layer's
+ * grey. The halo is Link's recipe, mixed in the same oklch
  * space; it is reproduced rather than reusing `linkVariants` because Link's
  * `primary` colour is fixed while a trail's ink changes with its look (white
  * on the band). There is deliberately no visited colour: a trail is
@@ -330,7 +352,7 @@ function BreadcrumbLink({ className, render, children, ...props }: useRender.Com
     props: mergeProps<'a'>(
       {
         className: cn(
-          'relative box-decoration-clone font-medium text-(--bc-ink) underline decoration-1 underline-offset-4 motion-safe:transition-colors',
+          'relative box-decoration-clone font-medium text-(--bc-ink) underline decoration-1 underline-offset-4 motion-safe:transition-[color,background-color,text-decoration-color,box-shadow]',
           '[--bc-halo-active:color-mix(in_oklch,var(--bc-ink)_18%,transparent)] [--bc-halo:color-mix(in_oklch,var(--bc-ink)_10%,transparent)]',
           'hover:bg-(--bc-halo) hover:decoration-2 hover:shadow-[0_-2px_0_var(--bc-halo),0_4px_0_var(--bc-halo)]',
           'active:bg-(--bc-halo-active) active:decoration-2 active:shadow-[0_-2px_0_var(--bc-halo-active),0_4px_0_var(--bc-halo-active)]',

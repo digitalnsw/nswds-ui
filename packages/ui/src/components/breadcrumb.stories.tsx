@@ -12,6 +12,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Fragment } from 'react'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 
+import { IconHome } from '../icons/home.js'
 import {
   Breadcrumb,
   BREADCRUMB_MENU_OFFSET,
@@ -48,7 +49,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A breadcrumb navigation trail, labelled "Breadcrumb". The final crumb uses BreadcrumbPage to mark the current page with `aria-current="page"`. `variant` sets the look: `default` (underlined links, no chrome), `rail` (hairlines above and below), `band` (solid Blue 01, matching Header `dark`) or `soft` (an ink tint). Below 36rem the trail collapses to a back link to the parent page unless `collapse={false}` (rail never collapses). To open collapsed steps, put a BreadcrumbEllipsis inside a DropdownMenuTrigger and open the menu with `sideOffset={BREADCRUMB_MENU_OFFSET}`.',
+          'A breadcrumb navigation trail, labelled "Breadcrumb". The final crumb uses BreadcrumbPage to mark the current page with `aria-current="page"`. `variant` sets the look: `default` (underlined links, no chrome), `rail` (hairlines above and below), `band` (solid Blue 01, matching Header `dark`) or `soft` (an ink tint). When the full trail would wrap it collapses to a back link to the parent page, unless `collapse={false}` (rail never collapses); a trail that fits stays whole at any width. To open collapsed steps, put a BreadcrumbEllipsis inside a DropdownMenuTrigger and open the menu with `sideOffset={BREADCRUMB_MENU_OFFSET}`.',
       },
     },
   },
@@ -563,6 +564,32 @@ export const Collapse: Story = {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+        <Breadcrumb data-testid='collapsed-ellipsis'>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger aria-label='Show 1 more page'>
+                  <BreadcrumbEllipsis />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
+                  <DropdownMenuLinkItem href='#services'>Services</DropdownMenuLinkItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href='#licences'>Licences and permits</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Apply for a recreational fishing licence</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <Breadcrumb collapse={false} data-testid='off'>
           <BreadcrumbList>
             <Steps
@@ -613,6 +640,15 @@ export const Collapse: Story = {
       within(nav('full')).getByRole('link', { name: 'Back to Licences and permits' }),
     ).toBeVisible()
     await expect(shownItems(nav('two'))).toEqual(['Back to Home'])
+
+    // A collapsed trail that held the ellipsis keeps the trigger's 32px row,
+    // so collapsing never changes its height.
+    await expect(shownItems(nav('collapsed-ellipsis'))).toEqual(['Back to Licences and permits'])
+    await expect(
+      nav('collapsed-ellipsis')
+        .querySelector<HTMLElement>('[data-slot="breadcrumb-list"]')!
+        .getBoundingClientRect().height,
+    ).toBe(32)
 
     // Fits on one line: stays whole even at 375px.
     await expect(nav('short')).not.toHaveAttribute('data-collapsed')
@@ -673,31 +709,164 @@ export const CollapseFollowsWidth: Story = {
   },
 }
 
+/** The long trail used by the measurement stories. */
+const LONG = ['Home', 'Services', 'Licences and permits']
+const LONG_CURRENT = 'Apply for a recreational fishing licence'
+
 /**
  * Before the first measurement (server-rendered HTML, or no script) CSS stands
- * in: a nav marked for collapse but not yet measured collapses when narrower
- * than 36rem. Built from the exported parts to pin that unmeasured state.
+ * in, and its state is always one row, as the measured state is — so the page
+ * cannot jump when the measurement lands. Each frame pairs an unmeasured nav,
+ * built from the exported parts to pin that state, with a measured Breadcrumb
+ * holding the same trail: below 36rem the stand-in is already collapsed; at
+ * 600px, where the trail would wrap, it is one scrollable row; and the two
+ * are the same height either way.
  */
 export const CollapseFallback: Story = {
   name: 'Collapse before measurement',
   render: () => (
-    <div style={{ width: 375 }}>
-      <nav
-        aria-label='Breadcrumb before measurement'
-        data-slot='breadcrumb'
-        data-variant='default'
-        data-collapse=''
-        className={`${breadcrumbVariants({ variant: 'default' })} @container/breadcrumb w-full`}
-      >
-        <BreadcrumbList>
-          <Steps labels={['Home', 'Services']} current='Contact us' />
-        </BreadcrumbList>
-      </nav>
+    <div className='grid gap-8'>
+      {[375, 600].map((width) => (
+        <div key={width} className='grid gap-4' style={{ width }} data-testid={`frame-${width}`}>
+          <nav
+            aria-label={`Breadcrumb before measurement at ${width}px`}
+            data-slot='breadcrumb'
+            data-variant='default'
+            data-collapse=''
+            data-testid='unmeasured'
+            className={`${breadcrumbVariants({ variant: 'default' })} @container/breadcrumb w-full`}
+          >
+            <BreadcrumbList>
+              <Steps labels={LONG} current={LONG_CURRENT} />
+            </BreadcrumbList>
+          </nav>
+          <Breadcrumb aria-label={`Measured breadcrumb at ${width}px`} data-testid='measured'>
+            <BreadcrumbList>
+              <Steps labels={LONG} current={LONG_CURRENT} />
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      ))}
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const nav = canvasElement.querySelector<HTMLElement>('nav')!
-    await expect(shownItems(nav)).toEqual(['Back to Services'])
+    const frame = (width: number) =>
+      canvasElement.querySelector<HTMLElement>(`[data-testid="frame-${width}"]`)!
+    const part = (width: number, id: string) =>
+      frame(width).querySelector<HTMLElement>(`[data-testid="${id}"]`)!
+    for (const width of [375, 600]) {
+      await waitFor(() => expect(part(width, 'measured')).toHaveAttribute('data-measured'))
+      await expect(part(width, 'measured')).toHaveAttribute('data-collapsed')
+      await expect(part(width, 'unmeasured').getBoundingClientRect().height).toBe(
+        part(width, 'measured').getBoundingClientRect().height,
+      )
+    }
+    await expect(shownItems(part(375, 'unmeasured'))).toEqual(['Back to Licences and permits'])
+    const wideList = part(600, 'unmeasured').querySelector<HTMLElement>(
+      '[data-slot="breadcrumb-list"]',
+    )!
+    await expect(getComputedStyle(wideList).flexWrap).toBe('nowrap')
+    await expect(wideList.scrollWidth).toBeGreaterThan(wideList.clientWidth)
+  },
+}
+
+/**
+ * The measurement asks only whether the trail fits on one row, so nothing
+ * that changes an item's height or the nav's on-screen scale can trip it: a
+ * 24px icon beside "Home", a looser line height, a zooming transform. A parent
+ * link whose text lives in its `render` element has no back affordance, so a
+ * trail that would wrap stays whole rather than collapsing to a bare link.
+ */
+export const CollapseEdgeCases: Story = {
+  name: 'Collapse edge cases',
+  render: () => (
+    <div className='grid gap-8'>
+      <div className='grid gap-6' style={{ width: '48rem' }}>
+        <Breadcrumb data-testid='icon'>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href='#home'>
+                <IconHome aria-hidden='true' className='me-1 inline size-6 align-[-0.4em]' />
+                Home
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <Steps labels={['Services']} current='Apply online' />
+          </BreadcrumbList>
+        </Breadcrumb>
+        <Breadcrumb data-testid='leading'>
+          <BreadcrumbList>
+            <Steps labels={['Home', 'Services']} />
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className='leading-7'>Apply online</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <div style={{ transform: 'scale(0.8)', transformOrigin: 'left top' }}>
+          <Breadcrumb data-testid='scaled'>
+            <BreadcrumbList>
+              <Steps labels={LONG} current={LONG_CURRENT} />
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+      </div>
+      <div style={{ width: 375 }}>
+        <Breadcrumb data-testid='render-prop'>
+          <BreadcrumbList>
+            <Steps labels={['Home', 'Services']} />
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<a href='#licences'>Licences and permits</a>} />
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{LONG_CURRENT}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-testid="${id}"]`)!
+    for (const id of ['icon', 'leading', 'scaled']) {
+      await waitFor(() => expect(nav(id)).toHaveAttribute('data-measured'))
+      await expect(nav(id)).not.toHaveAttribute('data-collapsed')
+    }
+    await expect(shownItems(nav('scaled'))).toEqual([...LONG, LONG_CURRENT])
+    await waitFor(() => expect(nav('render-prop')).toHaveAttribute('data-measured'))
+    await expect(shownItems(nav('render-prop'))).toEqual([
+      'Home',
+      'Services',
+      'Licences and permits',
+      LONG_CURRENT,
+    ])
+  },
+}
+
+/**
+ * A breadcrumb mounted inside a hidden parent has no width to measure, so it
+ * waits — no transient collapse at width 0 — and measures once it shows.
+ */
+export const CollapseWhileHidden: Story = {
+  name: 'Collapse waits while hidden',
+  render: () => (
+    <div data-testid='holder' style={{ display: 'none', width: '48rem' }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <Steps labels={LONG} current={LONG_CURRENT} />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const holder = canvasElement.querySelector<HTMLElement>('[data-testid="holder"]')!
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await expect(nav).not.toHaveAttribute('data-measured')
+    holder.style.display = 'block'
+    await waitFor(() => expect(nav).toHaveAttribute('data-measured'))
+    await expect(nav).not.toHaveAttribute('data-collapsed')
   },
 }
 
