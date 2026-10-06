@@ -247,6 +247,16 @@ Masthead + header + main-nav compose the government page frame; navigation typog
 - **Hover / Focus:** halos and rings derive from one ink variable per surface, exactly as for buttons and links. Rings are 2px in the ink colour, offset 2px onto the page — **except inside a scroll container**, where they invert to `-outline-offset-2` because a scroll container clips anything drawn outside a child's border box.
 - **Depth is capped by shape.** Mega panels are one level of flat links. The rail nests to any depth but collapses. The drawer drills without limit but is the only surface with a breadcrumb, and that breadcrumb is `aria-hidden` decoration — the heading and the live region carry the real announcement.
 
+### Breadcrumb
+
+The wayfinding line above a page heading. It is secondary to that heading on every look, so its links take the link signature (medium weight, underlined in the ink, 10% halo on hover, 18% while pressed, the 2px offset focus ring) and the current page is regular weight: the step you are on is never the heaviest word.
+
+- **Four looks, one ink.** `default` (no chrome) is the choice unless a page has a reason. `rail` draws the masterbrand line system: hairlines above and below in the **text colour**, a deliberate exception to The Hairline Rule shared with ButtonGroup's outline frame, because the rule is the look. `band` is the brand band (AGENTS.md §3): Blue 01 with white links, deepening to `primary-950` in dark exactly as `Header color="dark"` does, so it sits flush under that header in both modes. `soft` is a 10% ink tint with a 30% ink hairline. All four read `--bc-ink` from `overlayInk`.
+- **Separators belong to the step after them.** Each item leads with the look's glyph (chevron, or slash on the rail), so a wrapped line starts with its separator beside its target. Rows sit 8px apart; the 44px floor is each link's coarse-pointer `TouchTarget`, not row height.
+- **Collapse is the phone default.** Below 36rem of breadcrumb width, `default`, `band` and `soft` show only the parent as a back link ("‹ Licences and permits", announced "Back to Licences and permits"). The rail never collapses. Collapse measures the breadcrumb, not the viewport, and stands down for trails it cannot shorten sensibly (one item, or the ellipsis in the parent slot).
+- **The ellipsis is a 32px control** on the 4px radius, 10% tint on hover and 20% open, named "More pages" unless the trigger names itself. Its menu opens at `BREADCRUMB_MENU_OFFSET` and its rows are underlined like the trail's links.
+- **No visited colour.** A trail is wayfinding; a visited step is not information.
+
 ### Page chrome
 
 `Masthead`, `SkipLinks` and `Header` compose the top of every NSW Government page: the "A NSW Government website" strip, the bypass links parked above the viewport, and the brand lockup below them.

@@ -239,9 +239,10 @@ palette steps on purpose, because no layer-3 token holds them: the interactive
 modal **scrim** (`grey-950` at 70%), **Button's danger pairing**
 (`danger-600` fill with white text, 6.6:1 in both modes, where
 `--destructive` with `--text-inverse` falls to 4.06:1 in dark), and the solid
-**brand band** (`primary-800` fill with white text — Header's `dark` colour and
-Breadcrumb's `band`, which stays Blue 01 in dark where `--primary` would
-brighten). Button, Header, Breadcrumb and the overlays use them. Don't restate them per component: the overlays read
+**brand band** (`primary-800` fill with white text, deepening to `primary-950`
+in dark — Header's `dark` colour and Breadcrumb's `band`, which deepen
+together so a band under that header never draws a seam; `--primary` would
+brighten instead). Button, Header, Breadcrumb and the overlays use them. Don't restate them per component: the overlays read
 the ink and scrim from `src/lib/overlay.ts` (`overlayInk`, `overlayScrim`), so
 a retune is one edit. A brand theme re-points these by overriding the palette
 steps, not `--primary`.
