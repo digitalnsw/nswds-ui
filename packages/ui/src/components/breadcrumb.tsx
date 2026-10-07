@@ -144,8 +144,10 @@ function hiddenSteps(nav: HTMLElement): BreadcrumbHiddenStep[] {
     const link = item.querySelector<HTMLAnchorElement>(
       ':scope > [data-slot=breadcrumb-content] > a[href]',
     )
+    // `a[href]` matches an empty href too (a link to this page), and the
+    // collapse rules treat it as a step, so the menu keeps it as well.
     const href = link?.getAttribute('href')
-    return link && href ? [{ href, label: link.textContent?.trim() ?? '' }] : []
+    return link && href != null ? [{ href, label: link.textContent?.trim() ?? '' }] : []
   })
 }
 
@@ -245,22 +247,37 @@ function Breadcrumb({
     // changes no width but is copied into the "…" menu, so a changed
     // destination must rebuild it. Data and ARIA attributes, including the
     // menu trigger's, are left out.
-    const resize = new ResizeObserver(schedule)
-    resize.observe(nav)
-    const content = new MutationObserver(() => {
+    /** Marks the content changed and re-measures, whatever the width does. */
+    const invalidate = () => {
       dirty = true
       schedule()
-    })
+    }
+    const resize = new ResizeObserver(schedule)
+    resize.observe(nav)
+    const content = new MutationObserver(invalidate)
     content.observe(nav, {
       childList: true,
       characterData: true,
       subtree: true,
       attributeFilter: ['class', 'href', 'style'],
     })
+    // A web font that finishes loading changes the trail's width and nothing
+    // the observers see (the nav's width holds), so the first measurement,
+    // taken in the fallback font, would otherwise stand until the next
+    // resize. Re-measure once the fonts in use are ready and on every later
+    // load.
+    const fonts = document.fonts as FontFaceSet | undefined
+    let disposed = false
+    fonts?.ready.then(() => {
+      if (!disposed) invalidate()
+    })
+    fonts?.addEventListener('loadingdone', invalidate)
     return () => {
+      disposed = true
       cancelAnimationFrame(frame)
       resize.disconnect()
       content.disconnect()
+      fonts?.removeEventListener('loadingdone', invalidate)
     }
   }, [collapses])
 

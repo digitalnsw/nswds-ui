@@ -360,6 +360,96 @@ export const CollapseFollowsClassAndStyle: Story = {
 }
 
 /**
+ * A hidden step whose link has an empty `href` (a link to this page) is still
+ * a step to the collapse rules, so the "…" menu offers it too rather than
+ * hiding it with no way back.
+ */
+export const CollapseMenuEmptyHref: Story = {
+  name: 'Collapse menu keeps an empty href',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href='#0'>Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href=''>Services</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href='#2'>Licences and permits</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{LONG_CURRENT}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await waitFor(() => expect(breadcrumbMoreTrigger(nav)).not.toBeNull())
+    await expect(breadcrumbMoreTrigger(nav)).toHaveAccessibleName('Show 1 more page')
+    await userEvent.click(breadcrumbMoreTrigger(nav)!)
+    const menu = await within(document.body).findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: 'Services' })).toHaveAttribute(
+      'href',
+      '',
+    )
+    await closeOverlay('dropdown-menu-content')
+  },
+}
+
+/**
+ * A web font that finishes loading widens the trail without changing the
+ * nav's width or its DOM, so neither observer sees it; the trail re-measures
+ * when the document's fonts report a load. Simulated here with a stylesheet
+ * that widens the text (no mutation inside the trail), then the
+ * `loadingdone` event a real font load fires.
+ */
+export const CollapseFollowsFontLoad: Story = {
+  name: 'Collapse follows font loading',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb data-testid='font-trail'>
+        <BreadcrumbList>
+          <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+    // Let the page's own fonts settle first: the trail re-measures when they
+    // are ready, which would otherwise race the check below.
+    await document.fonts.ready
+    await frame()
+    await frame()
+    await waitFor(() => expect(nav).toHaveAttribute('data-measured'))
+    await expect(nav).not.toHaveAttribute('data-collapsed')
+
+    const wider = document.createElement('style')
+    wider.textContent = '[data-testid="font-trail"] { letter-spacing: 0.5em; }'
+    document.head.append(wider)
+    try {
+      // The trail now wraps, but nothing has told it to re-measure yet.
+      await frame()
+      await frame()
+      await expect(nav).not.toHaveAttribute('data-collapsed')
+
+      document.fonts.dispatchEvent(new Event('loadingdone'))
+      await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
+    } finally {
+      wider.remove()
+    }
+  },
+}
+
+/**
  * A long parent title shares the row with Home and wraps within it, rather
  * than dropping below and leaving Home alone on a line.
  */
