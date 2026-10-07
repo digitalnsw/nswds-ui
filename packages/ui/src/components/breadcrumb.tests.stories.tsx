@@ -298,6 +298,68 @@ export const CollapseMenuHrefChange: Story = {
 }
 
 /**
+ * A trail of Home, one parent and the current page collapses to Home and the
+ * parent when it would wrap: there is no middle step, so no "…". The current
+ * page is dropped as it is on every collapsed trail; the page heading names
+ * it.
+ */
+export const CollapseThreeSteps: Story = {
+  name: 'Collapse a three-step trail',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbSteps labels={['Home', 'Services']} current={LONG_CURRENT} />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
+    await expect(breadcrumbShownItems(nav)).toEqual(['Home', 'Services'])
+    await expect(breadcrumbMoreTrigger(nav)).toBeNull()
+  },
+}
+
+/**
+ * A class or style change on a step can widen the trail without changing the
+ * nav's own width, which a ResizeObserver never reports, so the trail
+ * re-measures on those attributes too: widening a link collapses a trail
+ * that fitted, and narrowing it again restores the full trail.
+ */
+export const CollapseFollowsClassAndStyle: Story = {
+  name: 'Collapse follows class and style changes',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    const link = within(nav).getByRole('link', { name: 'Services' })
+    await waitFor(() => expect(nav).toHaveAttribute('data-measured'))
+    await expect(nav).not.toHaveAttribute('data-collapsed')
+
+    // Classes the shipped components already use, so this story adds no
+    // utilities to the published stylesheet (package.css scans stories too).
+    link.classList.add('inline-block', 'min-w-48')
+    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
+    link.classList.remove('inline-block', 'min-w-48')
+    await waitFor(() => expect(nav).not.toHaveAttribute('data-collapsed'))
+
+    link.style.paddingInline = '15rem'
+    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
+    link.style.paddingInline = ''
+    await waitFor(() => expect(nav).not.toHaveAttribute('data-collapsed'))
+  },
+}
+
+/**
  * A long parent title shares the row with Home and wraps within it, rather
  * than dropping below and leaving Home alone on a line.
  */

@@ -240,8 +240,11 @@ function Breadcrumb({
     // The observer's first callback reports the width just measured, so it
     // is skipped above. The probe is a sibling and the state lands as
     // attributes on the nav, so neither observer sees its own measurement.
-    // Of attributes only `href` is watched: it changes no width, but the
-    // "…" menu copies it, so a changed destination must rebuild the menu.
+    // Of attributes, `class` and `style` can change the trail's width without
+    // changing the nav's, which a ResizeObserver cannot see, and `href`
+    // changes no width but is copied into the "…" menu, so a changed
+    // destination must rebuild it. Data and ARIA attributes, including the
+    // menu trigger's, are left out.
     const resize = new ResizeObserver(schedule)
     resize.observe(nav)
     const content = new MutationObserver(() => {
@@ -252,7 +255,7 @@ function Breadcrumb({
       childList: true,
       characterData: true,
       subtree: true,
-      attributeFilter: ['href'],
+      attributeFilter: ['class', 'href', 'style'],
     })
     return () => {
       cancelAnimationFrame(frame)
