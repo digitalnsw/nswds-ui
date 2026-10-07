@@ -36,13 +36,14 @@ function DefaultLookDocs() {
         },
         dont: {
           caption:
-            'put it in a coloured strip under the Header. That is page chrome: use Band or Soft, which take the Header’s inset.',
+            'put it in a coloured strip under the Header. That is page chrome: use Band or Soft, which take the Header’s inset and pair with its colour.',
           scene: (
-            <div className='overflow-hidden rounded-md border border-border'>
-              <div className='bg-muted px-4 py-2'>
-                <BreadcrumbScene look='default' />
-              </div>
-            </div>
+            <BreadcrumbScene
+              look='default'
+              header='white'
+              placement='chrome'
+              strip='bg-muted py-2 max-sm:px-4 sm:max-lg:px-6 lg:px-12'
+            />
           ),
         },
       }}

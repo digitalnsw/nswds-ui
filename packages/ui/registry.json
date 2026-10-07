@@ -1293,7 +1293,8 @@
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/icons.json",
-        "{{REGISTRY_LOCATION}}/r/button.json"
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/dropdown-menu.json"
       ],
       "files": [
         {

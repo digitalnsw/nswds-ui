@@ -13,6 +13,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
 import {
   BREADCRUMB_LOOKS,
+  breadcrumbMoreTrigger,
   breadcrumbShownItems,
   BreadcrumbSteps,
   BreadcrumbTrail,
@@ -127,7 +128,7 @@ export const EllipsisMenu: Story = {
         story: docsTemplate({
           what: 'The ellipsis opens a menu of the hidden steps.',
           why: 'Breadcrumb styles any button whose only child is the ellipsis, so the menu is ordinary DropdownMenu composition.',
-          how: 'The trigger is a 32px control on the 4px radius; hover tints it 10% and open 20%; the menu opens just clear of the trail and its rows are underlined like the trail’s links.',
+          how: 'The trigger is a 24px control on the 4px radius, one line tall; hover tints it 10% and open 20%; the menu opens just clear of the trail and its rows are underlined like the trail’s links.',
           caveat: 'Underlining the rows is the consumer’s className, as shown in the code.',
         }),
       },
@@ -136,7 +137,7 @@ export const EllipsisMenu: Story = {
   render: () => <BreadcrumbTrail />,
   play: async ({ canvasElement }) => {
     const trigger = within(canvasElement).getByRole('button', { name: 'Show 2 more pages' })
-    await expect(trigger.getBoundingClientRect().height).toBe(32)
+    await expect(trigger.getBoundingClientRect().height).toBe(24)
     await expect(getComputedStyle(trigger).borderRadius).toBe('4px')
     await expect(
       trigger.querySelector('[data-slot="breadcrumb-ellipsis"] > span[aria-hidden="true"]'),
@@ -221,7 +222,7 @@ export const Collapse: Story = {
         story: docsTemplate({
           what: 'Trails at 375px and 48rem: long and short, every look, and the cases collapse leaves alone.',
           why: 'A trail shortens to Home and the parent only when it would wrap, and only when it can do so sensibly.',
-          how: 'At 375px the long default and rail trails show "Home › Licences and permits" and the long band trail just "Home"; the short band trail stays whole; the one-item trail and collapse={false} stay whole; at 48rem nothing collapses.',
+          how: 'At 375px the long default and rail trails show "Home › … › Licences and permits", the … opening a menu of Services; the short band trail and the band trail whose parent is Home stay whole; the one-item trail and collapse={false} stay whole; at 48rem nothing collapses.',
           caveat:
             'Measurement runs after mount; the CSS stand-in before it is covered by the Tests stories.',
         }),
@@ -289,22 +290,29 @@ export const Collapse: Story = {
     // Wait for the first measurement; the CSS stand-in applies until then.
     await waitFor(() => expect(nav('full')).toHaveAttribute('data-measured'))
 
-    // Would wrap: it shortens to the first step and the parent, still a
-    // breadcrumb of real links, the parent leading with its separator.
+    // Would wrap: it shortens to the first step, a "…" of the hidden steps,
+    // and the parent — still a breadcrumb of real links.
     await expect(nav('full')).toHaveAttribute('data-collapsed')
     await expect(breadcrumbShownItems(nav('full'))).toEqual(['Home', 'Licences and permits'])
     await expect(
       within(nav('full')).getByRole('link', { name: 'Licences and permits' }),
     ).toBeVisible()
-    // When the parent is the first step, that one step is all that is left.
-    await expect(breadcrumbShownItems(nav('two'))).toEqual(['Home'])
+    await expect(breadcrumbMoreTrigger(nav('full'))).toHaveAccessibleName('Show 1 more page')
     // The rail collapses like every other look.
     await expect(nav('rail')).toHaveAttribute('data-collapsed')
     await expect(breadcrumbShownItems(nav('rail'))).toEqual(['Home', 'Licences and permits'])
+    await expect(breadcrumbMoreTrigger(nav('rail'))).not.toBeNull()
+    // When the parent is the first step there is nothing to hide but the
+    // current page, so the trail stays whole and wraps.
+    await expect(breadcrumbShownItems(nav('two'))).toEqual([
+      'Home',
+      'Apply for a recreational fishing fee exemption as a concession holder',
+    ])
 
-    // Fits on one line: stays whole even at 375px.
+    // Fits on one line: stays whole even at 375px, with no menu.
     await expect(nav('short')).not.toHaveAttribute('data-collapsed')
     await expect(breadcrumbShownItems(nav('short'))).toEqual(['Home', 'Contact us'])
+    await expect(breadcrumbMoreTrigger(nav('short'))).toBeNull()
 
     // Never collapsed: nothing to keep, or collapse turned off.
     await expect(breadcrumbShownItems(nav('one'))).toEqual(['Home'])

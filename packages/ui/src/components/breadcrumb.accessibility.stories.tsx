@@ -59,7 +59,7 @@ export const NameRoleValue: Story = {
         story: wcagStoryMeta({
           criteria: ['4.1.2', '1.3.1'],
           why: 'A screen reader user finds the trail as a named landmark, hears it as a list of steps, knows which step is the current page, and knows what the ellipsis does.',
-          how: 'With a screen reader, jump to landmarks: "Breadcrumb navigation". Read the list: each link by name, the last step announced as current page. The ellipsis is "Show 2 more pages"; on a phone a collapsed trail is a two-link list, Home and the parent.',
+          how: 'With a screen reader, jump to landmarks: "Breadcrumb navigation". Read the list: each link by name, the last step announced as current page. The ellipsis is "Show 2 more pages"; on a phone a collapsed trail is Home, a “Show 1 more page” button and the parent.',
           caveat:
             'Separators are hidden from assistive technology; the list structure carries the order.',
         }),
@@ -102,6 +102,10 @@ export const NameRoleValue: Story = {
         .getAllByRole('link')
         .map((link) => link.textContent),
     ).toEqual(['Home', 'Licences and permits'])
+    // The hidden steps are a named button away, between Home and the parent.
+    await expect(
+      within(collapsed).getByRole('button', { name: 'Show 1 more page' }),
+    ).toHaveAttribute('aria-haspopup', 'menu')
   },
 }
 
@@ -228,7 +232,7 @@ export const TargetSize: Story = {
         story: wcagStoryMeta({
           criteria: ['2.5.8', '2.5.5'],
           why: 'Steps are easy to hit on a touch screen without growing the trail.',
-          how: 'The ellipsis is 32px. A link’s box is shorter than 24px, so it meets 2.5.8 by spacing: a 24px circle centred on each target overlaps no other. On a touch screen every link and the ellipsis also carry a 44px TouchTarget layer, and wrapped rows sit 20px apart so the layers never overlap.',
+          how: 'The ellipsis is 24px. A link’s box is shorter than 24px, so it meets 2.5.8 by spacing: a 24px circle centred on each target overlaps no other. On a touch screen every link and the ellipsis also carry a 44px TouchTarget layer, and wrapped rows sit 20px apart so the layers never overlap.',
           caveat:
             'The 44px layer appears only on a coarse pointer, which this canvas does not emulate; the play asserts the layer is present.',
         }),
@@ -238,8 +242,8 @@ export const TargetSize: Story = {
   render: () => <BreadcrumbTrail />,
   play: async ({ canvasElement }) => {
     const trigger = within(canvasElement).getByRole('button', { name: 'Show 2 more pages' })
-    await expect(trigger.getBoundingClientRect().height).toBe(32)
-    await expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(32)
+    await expect(trigger.getBoundingClientRect().height).toBe(24)
+    await expect(trigger.getBoundingClientRect().width).toBeGreaterThanOrEqual(24)
     // The spacing exception: 24px circles centred on each target do not
     // intersect any other target's circle.
     const targets = [...canvasElement.querySelectorAll<HTMLElement>('a[href]'), trigger]

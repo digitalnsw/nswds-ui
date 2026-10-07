@@ -35,12 +35,9 @@ function SoftLookDocs() {
           scene: <BreadcrumbScene look='soft' header='white' />,
         },
         dont: {
-          caption: 'place it on a tinted section; the tint vanishes and only the hairline is left.',
-          scene: (
-            <div className='rounded-md bg-muted p-4'>
-              <BreadcrumbScene look='soft' />
-            </div>
-          ),
+          caption:
+            'place it on a tinted section; the tint vanishes into it and only the hairline is left.',
+          scene: <BreadcrumbScene look='soft' header='white' surface='muted' />,
         },
       }}
       code={`<Header color="white">…</Header>

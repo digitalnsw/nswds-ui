@@ -157,7 +157,7 @@ function BreadcrumbDocs() {
           </li>
           <li>
             <code>BreadcrumbLink</code>: a step you can follow. Use its <code>render</code> prop for
-            a framework link.
+            a framework link (see Framework links).
           </li>
           <li>
             <code>BreadcrumbPage</code>: the current page, plain text with{' '}
@@ -175,7 +175,7 @@ function BreadcrumbDocs() {
 
       <ExampleSection
         title='On narrow screens'
-        description='When the full trail would wrap, it shortens to its first step and the current page’s parent — the way GOV.UK’s breadcrumb collapses on mobile — so the site root and the way up stay visible on one row. A trail that fits stays whole at any width. These are real stories at 375px, each in its own viewport.'
+        description='When the full trail would wrap, it shortens to its first step, a “…” menu of the steps it hides, and the current page’s parent: Home › … › Licences and permits. The site root and the way up stay visible and every hidden step is one tap away. A trail that fits stays whole at any width. These are real stories at 375px, each in its own viewport.'
       >
         <div className='flex flex-wrap gap-6'>
           <PhoneFrame
@@ -196,7 +196,7 @@ function BreadcrumbDocs() {
 
       <ExampleSection
         title='Hidden steps'
-        description='For a deep trail, put middle steps in a menu. Name the trigger by what it reveals, and open the menu just clear of the trail.'
+        description='For a trail that is deep on every screen, put middle steps in a menu yourself. Name the trigger by what it reveals, and open the menu just clear of the trail.'
       >
         <ExamplePreview>
           <BreadcrumbTrail />
@@ -210,9 +210,38 @@ function BreadcrumbDocs() {
       <DropdownMenuLinkItem href="/services" className="underline underline-offset-4">
         Services
       </DropdownMenuLinkItem>
+      <DropdownMenuLinkItem href="/services/licences" className="underline underline-offset-4">
+        Licences and permits
+      </DropdownMenuLinkItem>
     </DropdownMenuContent>
   </DropdownMenu>
 </BreadcrumbItem>`}</ExampleCode>
+        <h3 className='text-lg font-semibold'>A menu of your own, or collapse?</h3>
+        <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+          <li>
+            Leave narrow screens to collapse. It measures the trail, and when it would wrap it
+            builds the “…” menu from the steps it hides.
+          </li>
+          <li>
+            Add your own menu when the trail is deep at every width — more than about five steps —
+            or when its rows must use your framework’s link for client-side routing. Collapse keeps
+            your menu in the trail; its own rows are plain links.
+          </li>
+        </ul>
+      </ExampleSection>
+
+      <ExampleSection
+        title='Framework links'
+        description='Render a step with your framework’s link through the render prop; here NextLink is the default export of next/link. Keep the label as BreadcrumbLink’s child, as below, so the step keeps its 44px tap target on touch screens.'
+      >
+        <ExampleCode>{`<BreadcrumbItem>
+  <BreadcrumbLink render={<NextLink href="/services" />}>Services</BreadcrumbLink>
+</BreadcrumbItem>`}</ExampleCode>
+        <p className='max-w-2xl text-muted-foreground'>
+          Putting the label inside the rendered element instead (
+          <code>{'render={<NextLink href="/services">Services</NextLink>}'}</code>) works, but the
+          step loses its touch-screen tap target.
+        </p>
       </ExampleSection>
 
       <ExampleSection title='Writing the trail'>
@@ -240,7 +269,12 @@ function BreadcrumbDocs() {
           </li>
           <li>
             Links take the system&rsquo;s 2px offset focus ring, and every link and the ellipsis
-            take a 44px tap target on touch screens.
+            take a 44px tap target on touch screens (a link keeps it when its label is its child).
+          </li>
+          <li>
+            A collapsed trail is a shorter list — Home, a button named &ldquo;Show 2 more
+            pages&rdquo;, and the parent — in the order it is seen, so tab order and reading order
+            match. The current page drops out; the page heading names it.
           </li>
         </ul>
         <p>

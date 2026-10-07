@@ -8,7 +8,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { IconHome } from '../icons/home.js'
 import {
@@ -28,7 +28,12 @@ import {
   DropdownMenuLinkItem,
   DropdownMenuTrigger,
 } from './dropdown-menu.js'
-import { breadcrumbShownItems, BreadcrumbSteps } from './story-helpers.js'
+import {
+  breadcrumbMoreTrigger,
+  breadcrumbShownItems,
+  BreadcrumbSteps,
+  closeOverlay,
+} from './story-helpers.js'
 
 const meta = {
   title: 'Components/Breadcrumb/Tests',
@@ -143,9 +148,10 @@ export const EllipsisTrigger: Story = {
 }
 
 /**
- * Collapse leaves a trail alone when it cannot shorten it sensibly — the
- * ellipsis in the parent slot — and a collapsed trail that held the ellipsis
- * keeps the trigger's 32px row, so collapsing never changes its height.
+ * A team's own ellipsis stays in a collapsed trail, and collapse leaves a
+ * trail alone when the ellipsis is in the parent slot. With nothing else
+ * hidden the trail adds no "…" of its own, and the 24px trigger keeps the
+ * row one line tall.
  */
 export const CollapseWithEllipsis: Story = {
   name: 'Collapse with an ellipsis',
@@ -187,32 +193,119 @@ export const CollapseWithEllipsis: Story = {
       'More pages',
       'Fees and exemptions for concession holders in NSW',
     ])
+    await expect(nav('collapsed-ellipsis')).toHaveAttribute('data-collapsed')
     await expect(breadcrumbShownItems(nav('collapsed-ellipsis'))).toEqual([
       'Home',
+      'More pages',
       'Licences and permits',
     ])
+    await expect(breadcrumbMoreTrigger(nav('collapsed-ellipsis'))).toBeNull()
     await expect(
       nav('collapsed-ellipsis')
         .querySelector<HTMLElement>('[data-slot="breadcrumb-list"]')!
         .getBoundingClientRect().height,
-    ).toBe(32)
+    ).toBe(24)
   },
 }
 
 /**
- * Before the first measurement (server-rendered HTML, or no script) CSS stands
- * in, and its state is always one row, as the measured state is — so the page
- * cannot jump when the measurement lands. Each frame pairs an unmeasured nav,
- * built from the exported parts to pin that state, with a measured Breadcrumb
- * holding the same trail: below 36rem the stand-in is already collapsed; at
- * 600px, where the trail would wrap, it is one scrollable row; and the two
- * are the same height either way.
+ * The "…" a collapsed trail adds is a working menu of exactly the steps it
+ * hides, sitting inside the parent step so the tab order is the order seen:
+ * Home, …, parent.
+ */
+export const CollapseMenu: Story = {
+  name: 'Collapse menu',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbSteps
+            labels={['Home', 'Services', 'Fishing', 'Licences and permits']}
+            current={LONG_CURRENT}
+          />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await waitFor(() => expect(breadcrumbMoreTrigger(nav)).not.toBeNull())
+    const trigger = breadcrumbMoreTrigger(nav)!
+    await expect(trigger).toHaveAccessibleName('Show 2 more pages')
+
+    await userEvent.tab()
+    await waitFor(() => expect(within(nav).getByRole('link', { name: 'Home' })).toHaveFocus())
+    await userEvent.tab()
+    await waitFor(() => expect(trigger).toHaveFocus())
+    await userEvent.tab()
+    await waitFor(() =>
+      expect(within(nav).getByRole('link', { name: 'Licences and permits' })).toHaveFocus(),
+    )
+
+    await userEvent.click(trigger)
+    const menu = await within(document.body).findByRole('menu')
+    await expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => [item.textContent, item.getAttribute('href')]),
+    ).toEqual([
+      ['Services', '#1'],
+      ['Fishing', '#2'],
+    ])
+    await closeOverlay('dropdown-menu-content')
+  },
+}
+
+/**
+ * A long parent title shares the row with Home and wraps within it, rather
+ * than dropping below and leaving Home alone on a line.
+ */
+export const CollapseLongParent: Story = {
+  name: 'Collapse with a long parent',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbSteps
+            labels={[
+              'Home',
+              'Services',
+              'Recreational fishing licences, fees and exemptions for concession holders',
+            ]}
+            current={LONG_CURRENT}
+          />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await waitFor(() => expect(nav).toHaveAttribute('data-collapsed'))
+    const home = within(nav).getByRole('link', { name: 'Home' })
+    const parent = within(nav).getByRole('link', { name: /concession holders/ })
+    // Same first line, and Home itself does not wrap.
+    await expect(
+      Math.abs(home.getClientRects()[0]!.top - parent.getClientRects()[0]!.top),
+    ).toBeLessThan(2)
+    await expect(home.getClientRects()).toHaveLength(1)
+    await expect(parent.getClientRects().length).toBeGreaterThan(1)
+  },
+}
+
+/**
+ * Before the first measurement (server-rendered HTML, or no script) an
+ * eligible trail is shown collapsed at every width, so it never clips, and
+ * the measurement only ever expands it or adds the "…" — never changing its
+ * height. Each frame pairs an unmeasured nav, built from the exported parts
+ * to pin that state, with a measured Breadcrumb holding the same trail: at
+ * 375px and 600px the trail would wrap and stays collapsed; at 900px it fits
+ * and expands; the two are the same height at every width.
  */
 export const CollapseFallback: Story = {
   name: 'Collapse before measurement',
   render: () => (
     <div className='grid gap-8'>
-      {[375, 600].map((width) => (
+      {[375, 600, 900].map((width) => (
         <div key={width} className='grid gap-4' style={{ width }} data-testid={`frame-${width}`}>
           <nav
             aria-label={`Breadcrumb before measurement at ${width}px`}
@@ -220,7 +313,7 @@ export const CollapseFallback: Story = {
             data-variant='default'
             data-collapse=''
             data-testid='unmeasured'
-            className={`${breadcrumbVariants({ variant: 'default' })} @container/breadcrumb w-full`}
+            className={`${breadcrumbVariants({ variant: 'default' })} w-full`}
           >
             <BreadcrumbList>
               <BreadcrumbSteps labels={LONG} current={LONG_CURRENT} />
@@ -240,22 +333,20 @@ export const CollapseFallback: Story = {
       canvasElement.querySelector<HTMLElement>(`[data-testid="frame-${width}"]`)!
     const part = (width: number, id: string) =>
       frame(width).querySelector<HTMLElement>(`[data-testid="${id}"]`)!
-    for (const width of [375, 600]) {
+    for (const width of [375, 600, 900]) {
       await waitFor(() => expect(part(width, 'measured')).toHaveAttribute('data-measured'))
-      await expect(part(width, 'measured')).toHaveAttribute('data-collapsed')
+      // Collapsed and one row, never clipped.
+      await expect(breadcrumbShownItems(part(width, 'unmeasured'))).toEqual([
+        'Home',
+        'Licences and permits',
+      ])
       await expect(part(width, 'unmeasured').getBoundingClientRect().height).toBe(
         part(width, 'measured').getBoundingClientRect().height,
       )
     }
-    await expect(breadcrumbShownItems(part(375, 'unmeasured'))).toEqual([
-      'Home',
-      'Licences and permits',
-    ])
-    const wideList = part(600, 'unmeasured').querySelector<HTMLElement>(
-      '[data-slot="breadcrumb-list"]',
-    )!
-    await expect(getComputedStyle(wideList).flexWrap).toBe('nowrap')
-    await expect(wideList.scrollWidth).toBeGreaterThan(wideList.clientWidth)
+    await expect(part(600, 'measured')).toHaveAttribute('data-collapsed')
+    await expect(part(900, 'measured')).not.toHaveAttribute('data-collapsed')
+    await expect(breadcrumbShownItems(part(900, 'measured'))).toEqual([...LONG, LONG_CURRENT])
   },
 }
 

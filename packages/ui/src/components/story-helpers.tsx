@@ -437,14 +437,14 @@ export function ExampleCell({ label, children }: { label: string; children: Reac
   return (
     <div className='flex flex-col items-start gap-3'>
       <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-sm text-muted-foreground'>{label}</span>
+      <span className='text-base text-muted-foreground'>{label}</span>
     </div>
   )
 }
 
 export function ExampleCode({ children }: { children: string }) {
   return (
-    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-sm text-foreground'>
+    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-base text-foreground'>
       <code>{children}</code>
     </pre>
   )
@@ -542,11 +542,19 @@ export const breadcrumbShownItems = (nav: HTMLElement) =>
   [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')]
     .filter((li) => getComputedStyle(li).display !== 'none')
     .map((li) =>
-      [...li.children]
-        .filter((child) => (child as HTMLElement).dataset.slot !== 'breadcrumb-lead')
-        .map((child) => renderedText(child as HTMLElement))
+      [...li.querySelectorAll<HTMLElement>(':scope > [data-slot="breadcrumb-content"] > *')]
+        .filter((el) => el.dataset.slot !== 'breadcrumb-more')
+        .map(renderedText)
         .join(' '),
     )
+
+/** The collapsed trail's own "…" trigger, if it is showing. */
+export const breadcrumbMoreTrigger = (nav: HTMLElement) => {
+  const more = [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-more"]')].find(
+    (el) => getComputedStyle(el).display !== 'none',
+  )
+  return more?.querySelector<HTMLButtonElement>('button') ?? null
+}
 
 /**
  * A breadcrumb in its place on a service page: an optional Header, the trail
@@ -566,6 +574,9 @@ export function BreadcrumbScene({
   labels = ['Home', 'Fishing'],
   current = 'Apply for a recreational fishing licence',
   framed = true,
+  surface = 'background',
+  placement,
+  strip,
 }: {
   look: BreadcrumbLook
   header?: 'dark' | 'white' | 'light'
@@ -574,9 +585,15 @@ export function BreadcrumbScene({
   current?: string
   /** A bordered card in docs; a bare page in a phone-width story. */
   framed?: boolean
+  /** The page behind the trail: plain, or an already-tinted section. */
+  surface?: 'background' | 'muted'
+  /** Override where the trail sits — for Don't examples that misplace it. */
+  placement?: 'chrome' | 'content'
+  /** Classes for a strip wrapped round a chrome-placed trail. */
+  strip?: string
 }) {
   const Heading = heading
-  const chrome = look === 'band' || look === 'soft'
+  const chrome = placement ? placement === 'chrome' : look === 'band' || look === 'soft'
   const trail = (
     <Breadcrumb variant={look}>
       <BreadcrumbList>
@@ -586,14 +603,17 @@ export function BreadcrumbScene({
   )
   return (
     <div
-      className={cn('bg-background', framed && 'overflow-hidden rounded-md border border-border')}
+      className={cn(
+        surface === 'muted' ? 'bg-muted' : 'bg-background',
+        framed && 'overflow-hidden rounded-md border border-border',
+      )}
     >
       {header && (
         <Header color={header} sticky={false} shadow={false} border={header !== 'dark'}>
           <HeaderBrand sitename='Department of Primary Industries' />
         </Header>
       )}
-      {chrome && trail}
+      {chrome && (strip ? <div className={strip}>{trail}</div> : trail)}
       <div className='space-y-4 py-8 max-sm:px-4 sm:max-lg:px-6 lg:px-12'>
         {!chrome && trail}
         <Heading className='text-3xl/tight font-bold text-foreground'>{current}</Heading>
@@ -625,7 +645,7 @@ export function PhoneFrame({
       title={title}
       src={`iframe.html?id=${storyId}&viewMode=story`}
       loading='lazy'
-      className='shrink-0 rounded-md border border-border bg-background'
+      className='shrink-0 rounded-md bg-background ring-1 ring-border'
       style={{ width: 375, height }}
     />
   )
@@ -748,7 +768,7 @@ export function BreadcrumbLookPage({
       </ExampleSection>
       <ExampleSection
         title='On a phone'
-        description='Real stories at 375px, each in its own viewport. When the full trail would wrap, it shortens to Home and the parent page; a trail that fits stays whole.'
+        description='Real stories at 375px, each in its own viewport. When the full trail would wrap, it shortens to Home, a “…” menu of the hidden steps, and the parent page; a trail that fits stays whole.'
       >
         <div className='flex flex-wrap gap-6'>
           <PhoneFrame

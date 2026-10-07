@@ -1506,7 +1506,8 @@
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
         "https://ui.digital.nsw.gov.au/registry/r/icons.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json"
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/dropdown-menu.json"
       ],
       "files": [
         {

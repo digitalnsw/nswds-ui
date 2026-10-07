@@ -33,12 +33,8 @@ function RailLookDocs() {
         },
         dont: {
           caption:
-            'stack it under another rule, such as a bordered panel edge; the doubled lines read as a mistake.',
-          scene: (
-            <div className='rounded-md border-t-2 border-foreground'>
-              <BreadcrumbScene look='rail' />
-            </div>
-          ),
+            'put it directly under a Header with its own bottom rule; the two lines stack and read as a mistake.',
+          scene: <BreadcrumbScene look='rail' header='white' placement='chrome' />,
         },
       }}
       code={`<Breadcrumb variant="rail">
