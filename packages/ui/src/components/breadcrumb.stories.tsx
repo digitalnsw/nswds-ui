@@ -63,9 +63,15 @@ const lookCards: ReadonlyArray<{
   },
 ]
 
+/** The Storybook path of a look's own docs page, for links from the overview. */
 const lookDocsPath = (look: BreadcrumbLook) =>
   `/?path=/docs/components-breadcrumb-looks-${look}--docs`
 
+/**
+ * The Breadcrumb overview docs page: what it is, the four looks with links to
+ * their pages, narrow-screen collapse, composition, framework links, anatomy
+ * and accessibility.
+ */
 function BreadcrumbDocs() {
   return (
     <div className={exampleDocsClassName}>

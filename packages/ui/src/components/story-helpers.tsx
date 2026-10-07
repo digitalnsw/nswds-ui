@@ -429,10 +429,12 @@ export function ExampleSection({
   )
 }
 
+/** A bordered, lightly tinted panel that frames a docs example. */
 export function ExamplePreview({ children }: { children: ReactNode }) {
   return <div className='rounded-md border border-border bg-muted/20 p-6'>{children}</div>
 }
 
+/** One example in a preview row: the rendered example above its label. */
 export function ExampleCell({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className='flex flex-col items-start gap-3'>
@@ -442,6 +444,7 @@ export function ExampleCell({ label, children }: { label: string; children: Reac
   )
 }
 
+/** A docs code sample: preformatted, scrolling sideways rather than wrapping. */
 export function ExampleCode({ children }: { children: string }) {
   return (
     <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-base text-foreground'>

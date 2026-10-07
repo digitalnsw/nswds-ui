@@ -211,6 +211,7 @@ function Breadcrumb({
     let frame = 0
     let measuredWidth = -1
     let dirty = true
+    /** Re-measures whether the full trail wraps, and records the steps a collapse would hide. */
     const measure = () => {
       const width = nav.offsetWidth
       // Hidden (a display:none ancestor): nothing to learn until it shows,
@@ -230,6 +231,7 @@ function Breadcrumb({
       // re-render (and re-trigger the content observer) for no reason.
       setHidden((prev) => (JSON.stringify(prev) === JSON.stringify(steps) ? prev : steps))
     }
+    /** Coalesces observer callbacks into one measurement on the next frame. */
     const schedule = () => {
       cancelAnimationFrame(frame)
       frame = requestAnimationFrame(measure)

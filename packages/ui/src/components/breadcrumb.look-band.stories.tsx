@@ -13,6 +13,7 @@ import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
 import { Header, HeaderBrand } from './header.js'
 import { BreadcrumbLookPage, BreadcrumbScene, BreadcrumbSteps } from './story-helpers.js'
 
+/** The Band look's docs page, laid out by the shared BreadcrumbLookPage. */
 function BandLookDocs() {
   return (
     <BreadcrumbLookPage

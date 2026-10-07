@@ -11,6 +11,7 @@ import { expect } from 'storybook/test'
 import { Breadcrumb } from './breadcrumb.js'
 import { BreadcrumbLookPage, BreadcrumbScene } from './story-helpers.js'
 
+/** The Soft look's docs page, laid out by the shared BreadcrumbLookPage. */
 function SoftLookDocs() {
   return (
     <BreadcrumbLookPage
