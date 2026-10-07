@@ -3,7 +3,7 @@
 Every component the design system ships, on both distribution channels, with the props for the
 ones you cannot look up anywhere else.
 
-`@nswds/ui` exports **410 named symbols** across **68 components** and **1 hook**, and the
+`@nswds/ui` exports **412 named symbols** across **68 components** and **1 hook**, and the
 registry serves **84 items**: the 68 components and the hook, 2 icon items, 12 blocks, and the `theme` foundation. This page is the complete list. It is
 maintained by hand against `packages/ui/registry.json` and the built type declarations, so update
 it alongside any change to either.
