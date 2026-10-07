@@ -239,14 +239,21 @@ function Breadcrumb({
     measure()
     // The observer's first callback reports the width just measured, so it
     // is skipped above. The probe is a sibling and the state lands as
-    // attributes, so neither observer sees its own measurement.
+    // attributes on the nav, so neither observer sees its own measurement.
+    // Of attributes only `href` is watched: it changes no width, but the
+    // "…" menu copies it, so a changed destination must rebuild the menu.
     const resize = new ResizeObserver(schedule)
     resize.observe(nav)
     const content = new MutationObserver(() => {
       dirty = true
       schedule()
     })
-    content.observe(nav, { childList: true, characterData: true, subtree: true })
+    content.observe(nav, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributeFilter: ['href'],
+    })
     return () => {
       cancelAnimationFrame(frame)
       resize.disconnect()

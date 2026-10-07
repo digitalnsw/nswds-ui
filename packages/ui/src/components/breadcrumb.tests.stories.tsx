@@ -257,6 +257,47 @@ export const CollapseMenu: Story = {
 }
 
 /**
+ * The "…" menu copies the hidden steps' destinations, so a hidden link whose
+ * `href` changes after collapse (a router rewriting a path, say) must update
+ * its menu row too, although nothing about the trail's width has changed.
+ */
+export const CollapseMenuHrefChange: Story = {
+  name: 'Collapse menu follows href changes',
+  render: () => (
+    <div style={{ width: 375 }}>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbSteps
+            labels={['Home', 'Services', 'Fishing', 'Licences and permits']}
+            current={LONG_CURRENT}
+          />
+        </BreadcrumbList>
+      </Breadcrumb>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const nav = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb"]')!
+    await waitFor(() => expect(breadcrumbMoreTrigger(nav)).not.toBeNull())
+    // Open the menu first and let it settle: opening adds nodes inside the
+    // trail, which re-measure by themselves and would hide a missing href
+    // watch.
+    await userEvent.click(breadcrumbMoreTrigger(nav)!)
+    const menu = await within(document.body).findByRole('menu')
+    const row = () => within(menu).getByRole('menuitem', { name: 'Services' })
+    await expect(row()).toHaveAttribute('href', '#1')
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    nav.querySelector<HTMLAnchorElement>('a[href="#1"]')!.setAttribute('href', '#services-moved')
+    // The observer callback schedules the re-measure for the next frame.
+    const frame = () => new Promise((resolve) => requestAnimationFrame(resolve))
+    await frame()
+    await frame()
+    await expect(row()).toHaveAttribute('href', '#services-moved')
+    await closeOverlay('dropdown-menu-content')
+  },
+}
+
+/**
  * A long parent title shares the row with Home and wraps within it, rather
  * than dropping below and leaving Home alone on a line.
  */
