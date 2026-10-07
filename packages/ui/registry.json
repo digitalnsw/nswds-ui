@@ -1289,10 +1289,12 @@
       "type": "registry:ui",
       "title": "Breadcrumb",
       "description": "Breadcrumb trail showing the current page location.",
-      "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
+      "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
-        "{{REGISTRY_LOCATION}}/r/icons.json"
+        "{{REGISTRY_LOCATION}}/r/icons.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/dropdown-menu.json"
       ],
       "files": [
         {
@@ -1304,6 +1306,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },

@@ -13,8 +13,29 @@
  *   - packages/ui/src/components/button.accessibility.stories.tsx
  */
 
-import type { ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 import { expect, userEvent, waitFor } from 'storybook/test'
+
+import { IconCheck } from '../icons/check.js'
+import { IconClose } from '../icons/close.js'
+import { cn } from '../lib/utils.js'
+import {
+  Breadcrumb,
+  BREADCRUMB_MENU_OFFSET,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from './breadcrumb.js'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLinkItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu.js'
+import { Header, HeaderBrand } from './header.js'
 
 // ─── Overlay teardown ─────────────────────────────────────────────────────────
 
@@ -408,25 +429,375 @@ export function ExampleSection({
   )
 }
 
+/** A bordered, lightly tinted panel that frames a docs example. */
 export function ExamplePreview({ children }: { children: ReactNode }) {
   return <div className='rounded-md border border-border bg-muted/20 p-6'>{children}</div>
 }
 
+/** One example in a preview row: the rendered example above its label. */
 export function ExampleCell({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className='flex flex-col items-start gap-3'>
       <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-sm text-muted-foreground'>{label}</span>
+      <span className='text-base text-muted-foreground'>{label}</span>
     </div>
   )
 }
 
+/** A docs code sample: preformatted, scrolling sideways rather than wrapping. */
 export function ExampleCode({ children }: { children: string }) {
   return (
-    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-sm text-foreground'>
+    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-base text-foreground'>
       <code>{children}</code>
     </pre>
   )
 }
 
 export const exampleDocsClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
+
+// ─── Breadcrumb fixtures ──────────────────────────────────────────────────────
+
+/**
+ * Shared by the Breadcrumb story files (main, Looks/*, Features,
+ * Accessibility, Tests). They live here because this is the one non-story
+ * module under `src/components/` that the build and the drift check skip.
+ */
+
+export const BREADCRUMB_LOOKS = ['default', 'rail', 'band', 'soft'] as const
+export type BreadcrumbLook = (typeof BREADCRUMB_LOOKS)[number]
+
+/** A link step for each label, then the current page; default separators between. */
+export function BreadcrumbSteps({ labels, current }: { labels: string[]; current?: string }) {
+  return (
+    <>
+      {labels.map((label, i) => (
+        <Fragment key={label}>
+          {i > 0 && <BreadcrumbSeparator />}
+          <BreadcrumbItem>
+            <BreadcrumbLink href={`#${i}`}>{label}</BreadcrumbLink>
+          </BreadcrumbItem>
+        </Fragment>
+      ))}
+      {current && (
+        <>
+          {labels.length > 0 && <BreadcrumbSeparator />}
+          <BreadcrumbItem>
+            <BreadcrumbPage>{current}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </>
+      )}
+    </>
+  )
+}
+
+/**
+ * The long trail, with two steps collapsed into the ellipsis menu. The menu's
+ * rows are underlined like the trail's links, so the same destinations read
+ * the same in both places.
+ */
+export function BreadcrumbTrail({
+  variant = 'default',
+  collapse,
+}: {
+  variant?: BreadcrumbLook
+  collapse?: boolean
+}) {
+  return (
+    <Breadcrumb variant={variant} collapse={collapse}>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <DropdownMenu>
+            <DropdownMenuTrigger aria-label='Show 2 more pages'>
+              <BreadcrumbEllipsis />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent sideOffset={BREADCRUMB_MENU_OFFSET}>
+              <DropdownMenuLinkItem href='#services' className='underline underline-offset-4'>
+                Services
+              </DropdownMenuLinkItem>
+              <DropdownMenuLinkItem href='#licences' className='underline underline-offset-4'>
+                Licences and permits
+              </DropdownMenuLinkItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbLink href='#fishing'>Recreational fishing</BreadcrumbLink>
+        </BreadcrumbItem>
+        <BreadcrumbSeparator />
+        <BreadcrumbItem>
+          <BreadcrumbPage>Apply for a fee exemption</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+}
+
+/** The rendered text of an element, whitespace collapsed (hidden parts excluded). */
+export const renderedText = (el: HTMLElement) => el.innerText.replace(/\s+/g, ' ').trim()
+
+/** The text of each breadcrumb item still displayed, its lead glyph excluded. */
+export const breadcrumbShownItems = (nav: HTMLElement) =>
+  [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-item"]')]
+    .filter((li) => getComputedStyle(li).display !== 'none')
+    .map((li) =>
+      [...li.querySelectorAll<HTMLElement>(':scope > [data-slot="breadcrumb-content"] > *')]
+        .filter((el) => el.dataset.slot !== 'breadcrumb-more')
+        .map(renderedText)
+        .join(' '),
+    )
+
+/** The collapsed trail's own "…" trigger, if it is showing. */
+export const breadcrumbMoreTrigger = (nav: HTMLElement) => {
+  const more = [...nav.querySelectorAll<HTMLElement>('[data-slot="breadcrumb-more"]')].find(
+    (el) => getComputedStyle(el).display !== 'none',
+  )
+  return more?.querySelector<HTMLButtonElement>('button') ?? null
+}
+
+/**
+ * A breadcrumb in its place on a service page: an optional Header, the trail
+ * (full-bleed under the Header for `band` and `soft`, in the content column
+ * for `default` and `rail`), then the page heading and a line of body copy.
+ * Its gutters step on the viewport exactly as Header's do, so the trail lines
+ * up with the brand at every width.
+ *
+ * `heading` is `h1` in canvas stories, where the outline is the page's own;
+ * docs pages pass `p`, so their examples do not add headings to the docs
+ * page's outline.
+ */
+export function BreadcrumbScene({
+  look,
+  header,
+  heading = 'p',
+  labels = ['Home', 'Fishing'],
+  current = 'Apply for a recreational fishing licence',
+  framed = true,
+  surface = 'background',
+  placement,
+  strip,
+}: {
+  look: BreadcrumbLook
+  header?: 'dark' | 'white' | 'light'
+  heading?: 'h1' | 'p'
+  labels?: string[]
+  current?: string
+  /** A bordered card in docs; a bare page in a phone-width story. */
+  framed?: boolean
+  /** The page behind the trail: plain, or an already-tinted section. */
+  surface?: 'background' | 'muted'
+  /** Override where the trail sits — for Don't examples that misplace it. */
+  placement?: 'chrome' | 'content'
+  /** Classes for a strip wrapped round a chrome-placed trail. */
+  strip?: string
+}) {
+  const Heading = heading
+  const chrome = placement ? placement === 'chrome' : look === 'band' || look === 'soft'
+  const trail = (
+    <Breadcrumb variant={look}>
+      <BreadcrumbList>
+        <BreadcrumbSteps labels={labels} current={current} />
+      </BreadcrumbList>
+    </Breadcrumb>
+  )
+  return (
+    <div
+      className={cn(
+        surface === 'muted' ? 'bg-muted' : 'bg-background',
+        framed && 'overflow-hidden rounded-md border border-border',
+      )}
+    >
+      {header && (
+        <Header color={header} sticky={false} shadow={false} border={header !== 'dark'}>
+          <HeaderBrand sitename='Department of Primary Industries' />
+        </Header>
+      )}
+      {chrome && (strip ? <div className={strip}>{trail}</div> : trail)}
+      <div className='space-y-4 py-8 max-sm:px-4 sm:max-lg:px-6 lg:px-12'>
+        {!chrome && trail}
+        <Heading className='text-3xl/tight font-bold text-foreground'>{current}</Heading>
+        <p className='max-w-prose text-foreground'>
+          You need a licence to fish in NSW waters, including from the shore.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * A story rendered in its own phone-width iframe. An iframe has its own
+ * viewport, so the story behaves exactly as it would on a 375px phone — the
+ * Header's and the band's insets, the collapse, everything — with nothing
+ * overridden to fake it. `storyId` is the story's Storybook id.
+ */
+export function PhoneFrame({
+  storyId,
+  title,
+  height = 360,
+}: {
+  storyId: string
+  title: string
+  height?: number
+}) {
+  return (
+    <iframe
+      title={title}
+      src={`iframe.html?id=${storyId}&viewMode=story`}
+      loading='lazy'
+      className='shrink-0 rounded-md bg-background ring-1 ring-border'
+      style={{ width: 375, height }}
+    />
+  )
+}
+
+/**
+ * A dark-mode frame inside a light docs page. A nested `.dark` flips the role
+ * tokens and `dark:` utilities, but the shadcn bridge tokens (`--foreground`,
+ * `--background`, …) are resolved once on `:root` and inherit their light
+ * values — so this frame re-declares the ones the examples read, resolving
+ * them against the dark role tokens it now holds. Canvas stories use the
+ * story-level `globals: { theme: 'dark' }` instead, which needs none of this.
+ */
+export function DarkFrame({ children }: { children: ReactNode }) {
+  return (
+    <div
+      data-theme='dark'
+      className='dark rounded-md bg-(--background) p-4 [--background:var(--surface-default)] [--border:var(--border-default)] [--foreground:var(--text-default)] [--muted-foreground:var(--text-muted)] [--muted:var(--background-subtle)]'
+    >
+      {children}
+    </div>
+  )
+}
+
+/** A Do or Don't example: the scene, then a captioned verdict. */
+export function DoDont({
+  verdict,
+  caption,
+  children,
+}: {
+  verdict: 'do' | 'dont'
+  caption: string
+  children: ReactNode
+}) {
+  const Icon = verdict === 'do' ? IconCheck : IconClose
+  return (
+    <figure className='space-y-3'>
+      {children}
+      <figcaption
+        className={cn(
+          'flex gap-2 border-t-4 pt-3 text-base',
+          verdict === 'do' ? 'border-(--success-solid)' : 'border-(--danger-solid)',
+        )}
+      >
+        <Icon aria-hidden='true' className='mt-0.5 size-5 shrink-0' />
+        <span>
+          <strong className='font-semibold'>{verdict === 'do' ? 'Do' : "Don't"}</strong> {caption}
+        </span>
+      </figcaption>
+    </figure>
+  )
+}
+
+/**
+ * The layout every Breadcrumb look page shares: what the look is, when to use
+ * it and when not, the Header it pairs with, the look in context in light and
+ * dark, on a phone, Do and Don't pairs, and the code.
+ */
+export function BreadcrumbLookPage({
+  name,
+  summary,
+  pairing,
+  useWhen,
+  avoidWhen,
+  look,
+  header,
+  doDont,
+  code,
+  notes,
+}: {
+  name: string
+  summary: ReactNode
+  pairing: ReactNode
+  useWhen: string[]
+  avoidWhen: string[]
+  look: BreadcrumbLook
+  header?: 'dark' | 'white' | 'light'
+  doDont: { do: { caption: string; scene: ReactNode }; dont: { caption: string; scene: ReactNode } }
+  code: string
+  notes?: ReactNode
+}) {
+  return (
+    <div className={exampleDocsClassName}>
+      <section className='space-y-4'>
+        <p className='text-base font-semibold text-muted-foreground'>Breadcrumb look</p>
+        <h1 className='text-5xl font-bold tracking-tight'>{name}</h1>
+        <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>{summary}</p>
+      </section>
+      <ExampleSection title='When to use it'>
+        <div className='grid gap-8 sm:grid-cols-2'>
+          <div className='space-y-3'>
+            <h3 className='text-lg font-semibold'>Use it when</h3>
+            <ul className='list-disc space-y-2 ps-5'>
+              {useWhen.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+          <div className='space-y-3'>
+            <h3 className='text-lg font-semibold'>Choose another look when</h3>
+            <ul className='list-disc space-y-2 ps-5'>
+              {avoidWhen.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <p className='max-w-2xl text-base text-muted-foreground'>{pairing}</p>
+      </ExampleSection>
+      <ExampleSection title='In context' description='On a service page, above the page heading.'>
+        <BreadcrumbScene look={look} header={header} />
+      </ExampleSection>
+      <ExampleSection
+        title='In dark mode'
+        description='Every look flips with the theme; nothing is restated per mode.'
+      >
+        <DarkFrame>
+          <BreadcrumbScene look={look} header={header} />
+        </DarkFrame>
+      </ExampleSection>
+      <ExampleSection
+        title='On a phone'
+        description='Real stories at 375px, each in its own viewport. When the full trail would wrap, it shortens to Home, a “…” menu of the hidden steps, and the parent page; a trail that fits stays whole.'
+      >
+        <div className='flex flex-wrap gap-6'>
+          <PhoneFrame
+            storyId={`components-breadcrumb-looks-${look}--phone`}
+            title={`${name} look on a phone, long trail`}
+          />
+          <PhoneFrame
+            storyId={`components-breadcrumb-looks-${look}--phone-short`}
+            title={`${name} look on a phone, short trail`}
+          />
+        </div>
+      </ExampleSection>
+      <ExampleSection title="Do and don't">
+        <div className='grid gap-8 sm:grid-cols-2'>
+          <DoDont verdict='do' caption={doDont.do.caption}>
+            {doDont.do.scene}
+          </DoDont>
+          <DoDont verdict='dont' caption={doDont.dont.caption}>
+            {doDont.dont.scene}
+          </DoDont>
+        </div>
+      </ExampleSection>
+      {notes}
+      <ExampleSection title='Code'>
+        <ExampleCode>{code}</ExampleCode>
+      </ExampleSection>
+    </div>
+  )
+}

@@ -1499,12 +1499,15 @@
       "description": "Breadcrumb trail showing the current page location.",
       "dependencies": [
         "@base-ui/react",
+        "class-variance-authority",
         "clsx",
         "tailwind-merge"
       ],
       "registryDependencies": [
         "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://ui.digital.nsw.gov.au/registry/r/icons.json",
+        "https://ui.digital.nsw.gov.au/registry/r/button.json",
+        "https://ui.digital.nsw.gov.au/registry/r/dropdown-menu.json"
       ],
       "files": [
         {
@@ -1516,6 +1519,11 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },
