@@ -1,3 +1,9 @@
+## [9.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.0.1...@nswds/ui-v9.1.0) (2026-10-07)
+
+### Features
+
+* **ui:** add Breadcrumb variants, ellipsis menu and narrow collapse ([#234](https://github.com/digitalnsw/nswds-ui/issues/234)) ([302822e](https://github.com/digitalnsw/nswds-ui/commit/302822e71a4e641e1a62710a8ec23c90658e03bb))
+
 ## [9.0.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.0.0...@nswds/ui-v9.0.1) (2026-09-28)
 
 ### Bug Fixes

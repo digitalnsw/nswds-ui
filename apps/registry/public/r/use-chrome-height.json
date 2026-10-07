@@ -14,6 +14,6 @@
   ],
   "type": "registry:hook",
   "meta": {
-    "nswdsVersion": "9.0.1"
+    "nswdsVersion": "9.1.0"
   }
 }
