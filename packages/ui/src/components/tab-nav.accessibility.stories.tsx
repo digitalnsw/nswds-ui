@@ -167,6 +167,17 @@ export const Keyboard: Story = {
 // ─── 2.4.7 — Focus Visible ────────────────────────────────────────────────────
 
 const focusStory: Story = {
+  // CI's real pointer can rest wherever the previous story left it — over the
+  // first entry here — and paint a genuine :hover tint under the ring, which
+  // this rest-state contrast check would misread. Focus is driven from the
+  // keyboard and .focus(), so the pointer is switched off for the canvas.
+  decorators: [
+    (Story) => (
+      <div className='pointer-events-none'>
+        <Story />
+      </div>
+    ),
+  ],
   parameters: {
     docs: {
       description: {
