@@ -136,6 +136,23 @@ test('findCycles reports direct and indirect cycles, and only cycles', () => {
   ])
 })
 
+test('a root cycle is reported even when the property is also declared elsewhere', () => {
+  // Most semantic tokens in dist are declared on :root AND under `.dark`, so a
+  // root cycle must not hide behind the "unmodelled context" bail-out.
+  const css =
+    `:root{--background:var(--background);--b:var(--c)}@layer theme{:root{--c:var(--b)}}` +
+    `.dark,[data-theme=dark]{--background:#000;--c:red}` +
+    `@media (min-width:1px){.x{--y:var(--y)}}`
+  assert.deepEqual(findCycles(parseCss(css)).sort(), [
+    '--b → --c → --b',
+    '--background → --background',
+    '--c → --b → --c',
+    '--y → --y (in @media (min-width:1px) .x)',
+  ])
+  // …while font-stack checking still refuses to guess about the same property.
+  assert.equal(resolveRoot(parseCss(css), '--background').reason, 'unmodelled')
+})
+
 test('an unused fallback reference is not a cycle; a primary-reference cycle is', () => {
   // Pinned against Chromium 151 (the engine the Storybook suite and the
   // consumer fixture's users run): with --base declared, `var(--base,

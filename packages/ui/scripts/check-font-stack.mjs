@@ -200,13 +200,18 @@ function splitVarArgs(inner) {
  * Returns `{ ok: true, value, chain }` or `{ ok: false, reason, chain }` where
  * reason is 'undeclared' | 'cycle' | 'unmodelled' | 'invalid'.
  */
-export function resolveRoot(parsed, prop, seen = []) {
+export function resolveRoot(parsed, prop, seen = [], { rootOnly = false } = {}) {
   const chain = [...seen, prop]
   if (seen.includes(prop)) return { ok: false, reason: 'cycle', chain }
-  if (unmodelledDecls(parsed, prop).length > 0) return { ok: false, reason: 'unmodelled', chain }
+  // rootOnly (cycle detection): judge the root declarations alone. A property
+  // also declared under `.dark` or `@media` still has a root value, and a
+  // cycle there is invalid at the root whatever the other contexts say.
+  if (!rootOnly && unmodelledDecls(parsed, prop).length > 0) {
+    return { ok: false, reason: 'unmodelled', chain }
+  }
   const decl = winningDecl(parsed, prop)
   if (!decl) return { ok: false, reason: 'undeclared', chain }
-  return substitute(parsed, decl.value, chain)
+  return substitute(parsed, decl.value, chain, { rootOnly })
 }
 
 /**
@@ -225,7 +230,7 @@ function nextVarCall(value, from) {
   return -1
 }
 
-function substitute(parsed, value, chain) {
+function substitute(parsed, value, chain, opts) {
   let out = ''
   let i = 0
   while (i < value.length) {
@@ -240,11 +245,11 @@ function substitute(parsed, value, chain) {
       else if (value[j] === ')') depth--
     }
     const [name, fallback] = splitVarArgs(value.slice(at + 4, j - 1))
-    const resolved = resolveRoot(parsed, name, chain)
+    const resolved = resolveRoot(parsed, name, chain, opts)
     if (resolved.ok) {
       out += resolved.value
     } else if (resolved.reason === 'undeclared' && fallback !== undefined) {
-      const fb = substitute(parsed, fallback, chain)
+      const fb = substitute(parsed, fallback, chain, opts)
       if (!fb.ok) return fb
       out += fb.value
     } else {
@@ -257,15 +262,42 @@ function substitute(parsed, value, chain) {
   return trimmed ? { ok: true, value: trimmed, chain } : { ok: false, reason: 'invalid', chain }
 }
 
-/** Root custom properties whose value depends on themselves (directly or through a chain). */
+/** Names referenced by the top-level var() calls in `value` (not those inside fallbacks). */
+function primaryRefs(value) {
+  const names = []
+  for (let at = nextVarCall(value, 0); at !== -1;) {
+    let depth = 1
+    let j = at + 4
+    for (; j < value.length && depth > 0; j++) {
+      if (value[j] === '"' || value[j] === "'") j = skipString(value, j) - 1
+      else if (value[j] === '(') depth++
+      else if (value[j] === ')') depth--
+    }
+    names.push(splitVarArgs(value.slice(at + 4, j - 1))[0])
+    at = nextVarCall(value, j)
+  }
+  return names
+}
+
+/**
+ * Custom properties whose value depends on themselves, so they are
+ * guaranteed-invalid: root properties through any chain of root declarations
+ * (whatever other contexts also declare them), plus any declaration in any
+ * other context that references itself directly (`.dark{--x:var(--x)}`).
+ */
 export function findCycles(parsed) {
   const cycles = []
   const props = new Set(parsed.decls.filter(isRootDecl).map((d) => d.prop))
   for (const prop of props) {
-    const result = resolveRoot(parsed, prop)
+    const result = resolveRoot(parsed, prop, [], { rootOnly: true })
     if (!result.ok && result.reason === 'cycle' && result.chain[result.chain.length - 1] === prop) {
       cycles.push(result.chain.join(' → '))
     }
+  }
+  for (const decl of parsed.decls) {
+    if (isRootDecl(decl) || !primaryRefs(decl.value).includes(decl.prop)) continue
+    const where = [...(decl.layer ? [`@layer ${decl.layer}`] : []), ...decl.rules].join(' ')
+    cycles.push(`${decl.prop} → ${decl.prop} (in ${where})`)
   }
   return cycles
 }
