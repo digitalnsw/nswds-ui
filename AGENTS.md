@@ -603,7 +603,10 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   (which once reached CI as an intermittent publint failure); the other is a
   stripped `'use client'` directive, which still builds, imports and renders,
   and only fails when a CONSUMER's server component passes one of those
-  exports as a prop.
+  exports as a prop. It also parses `dist/styles.css`: no root custom property
+  may depend on itself (the `--font-sans: var(--font-sans)` cycle that shipped
+  from #14), and the Public Sans / JetBrains Mono stacks must win
+  (`scripts/check-font-stack.mjs`, self-tested under `test:scripts`).
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.

@@ -117,6 +117,14 @@ Tailwind entry CSS (the file containing `@import "tailwindcss";`), **after** the
 
 The CLI prints this same list after installing the theme item.
 
+**Fonts.** `preset.css` sets `--font-sans` to the Public Sans stack and `--font-mono` to
+JetBrains Mono, but nothing here loads the font files — load Public Sans yourself (with Next.js,
+`next/font` using `variable: '--font-sans'`, class on `<html>`). Watch the shadcn CLI when it adds
+a font: depending on the project it can write `--font-sans: var(--font-sans)` into your
+`@theme inline` block. That replaces the NSW stack with the font you picked, and it is a
+self-reference that only resolves where the font's variable class is applied — put that class on
+`<html>`, or `--font-sans` is empty at the root.
+
 What each line does:
 
 - **`preset.css`** wires every token category — colour, radius, spacing, typography, motion,

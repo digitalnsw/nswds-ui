@@ -87,6 +87,12 @@ links, focus rings, charts, the lot.
 @import '@nswds/ui/styles.css';
 @import 'tailwindcss';
 
+/* Two builds: map the font stacks back, or Tailwind's defaults win (README "Fonts"). */
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
+
 :root {
   /* Agency brand green replaces NSW blue across all 19 steps. */
   --primary-50: oklch(0.98 0.02 150);

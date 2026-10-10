@@ -44,7 +44,10 @@
 @import '@nswds/tokens/css/motion/global.css';
 /* Raw typography VALUES on :root (--font-size-*, --font-weight-*, --line-height-*),
    so the type-scale bridge below resolves even though Tailwind tree-shakes the
-   unreferenced @theme keys. */
+   unreferenced @theme keys. It also ships --font-family-sans / --font-family-mono,
+   which are CONSUMER-FACING: the README's "Fonts" section has two-build apps map
+   their own --font-sans/--font-mono onto them. Dropping this import breaks those
+   apps' fonts silently — the consumer fixture (check-font-stack.mjs) guards it. */
 @import '@nswds/tokens/css/typography/global.css';
 
 /* `dark:` utility variant. Two things it must line up with:
@@ -100,8 +103,9 @@
      `var(--font-sans)`: a later @theme key overrides preset's, and a custom
      property referencing itself is guaranteed-invalid, so both stacks computed
      empty: text fell through to preflight's system-font fallback and
-     `font-mono` utilities rendered sans. Guarded by the font assertions in
-     badge.tests.stories.tsx's CssCheck. */
+     `font-mono` utilities rendered sans. Guarded by verify-dist.mjs (no
+     self-referencing custom property in dist/styles.css, and the NSW stacks
+     must win) and by the font assertions in badge.tests.stories.tsx's CssCheck. */
 }
 
 /* Motion: route Tailwind's default transition timing through the v4 motion tokens.

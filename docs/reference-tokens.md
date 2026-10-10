@@ -228,6 +228,12 @@ for the attribute form.
 @import '@nswds/tokens/tailwind/colors/semantic/oklch.css';
 @import '@nswds/ui/styles.css'; /* after — it is the only one carrying dark */
 @import 'tailwindcss'; /* your own build last */
+
+/* …and map the font stacks back, or your build's defaults win — see the README's Fonts section. */
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
 ```
 
 Both emit an unlayered `:root` of light values; only ours also ships the
