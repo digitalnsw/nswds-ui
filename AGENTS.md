@@ -1013,8 +1013,11 @@ Output Directory: dist
 
 ### Trigger behaviour
 
-All four projects are Git-integrated. `nswds-ui-web`, `nswds-ui-infographics` and
-`nswds-ui-storybook` auto-deploy on every push to `main`.
+All four projects are Git-integrated. `nswds-ui-web` and `nswds-ui-storybook`
+auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only when a push
+touches `apps/infographics` or a workspace it depends on: Vercel's **skip unaffected
+projects** is on for it (the default for new projects), and it counts any file outside
+a workspace (`docs/`, AGENTS.md, `.github/`) as affecting every app.
 
 The **registry** project is gated: `apps/registry/vercel.json` sets an `ignoreCommand`
 that skips the build unless the latest commit is a semantic-release commit

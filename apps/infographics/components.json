@@ -15,7 +15,7 @@
     "hooks": "@/hooks",
     "lib": "@/lib",
     "utils": "@nswds/ui",
-    "ui": "@nswds/ui/components"
+    "ui": "@/components/ui"
   },
   "rtl": true,
   "menuColor": "default",
