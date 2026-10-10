@@ -1,10 +1,121 @@
 /**
- * Container — Default, Variants, CssCheck
+ * Container — the story set for docs/reference-storybook-standard.md.
+ *
+ *   Components/Container        → this file: Docs, Default, Playground and one
+ *                                 story per docs section
+ *   Components/Container/Tests  → container.tests.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Container } from './container.js'
+import { Section } from './section.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+
+const sizeDocs = [
+  ['fluid', 'Full width — the default, matching the page chrome.'],
+  ['contained', 'Centred, up to 75rem (1200px).'],
+  ['wide', 'Centred, up to 90rem (1440px), for landing pages.'],
+  ['narrow', 'Centred, up to 45rem (720px) — a comfortable reading measure.'],
+] as const
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          <code>size</code> caps the column’s width; the 16px → 24px → 48px side padding is the same
+          at every size, so content lines up with Header, MainNav and Footer above and below it.
+          Override the cap once with the <code>--container-max-width</code> custom property.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        className='items-stretch'
+        code={`<Container size="narrow">…</Container>`}
+      >
+        {sizeDocs.map(([size]) => (
+          <Container key={size} size={size} className='bg-foreground/5'>
+            <div className='bg-background py-3 ring-1 ring-foreground/10'>
+              <code className='px-3'>size=&quot;{size}&quot;</code>
+            </div>
+          </Container>
+        ))}
+      </Example>
+      <dl className='grid gap-x-10 gap-y-3 sm:grid-cols-2'>
+        {sizeDocs.map(([size, description]) => (
+          <div key={size} className='flex gap-4'>
+            <dt className='w-24 shrink-0 font-semibold'>{size}</dt>
+            <dd className='text-muted-foreground'>{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Container sets the width and side padding; Section sets the space above and below. Together they make one band of a page.'
+    >
+      <Example layout='fill'>
+        <Section spacing='tight' aria-label='About the rebate'>
+          <Container size='narrow'>
+            <p className='text-2xl font-bold'>Seniors Energy Rebate</p>
+            <p className='mt-3 text-muted-foreground'>
+              Eligible seniors can get help with the cost of their electricity bill. Check your
+              eligibility and apply through Service NSW using your MyServiceNSW Account.
+            </p>
+          </Container>
+        </Section>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function ContainerDocs() {
+  return (
+    <DocsPage
+      title='Container'
+      npm='Container'
+      registry='container'
+      summary={
+        <>
+          The page-width column. It carries the same side padding as the page chrome, so content
+          lines up with the header at every breakpoint, and an optional maximum{' '}
+          <strong>size</strong> for centred layouts.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Wrapping each band of page content so it aligns with Header and Footer.',
+          'Holding long-form text at a readable width — as a narrow Container.',
+          'Centring a form or a results list on a wide screen.',
+        ]}
+        avoid={[
+          'Adding space above and below a band — use Section.',
+          'Grouping related content in a bordered box — use Card.',
+          'Laying out the page header or footer — Header and Footer carry their own container.',
+        ]}
+      />
+      <SizesSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Container',
@@ -13,54 +124,44 @@ const meta = {
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: {
-      description: {
-        component:
-          'Container is the page-width column. It carries the same 16px → 24px → 48px lateral rhythm that Masthead, Header, MainNav and Footer apply to their own inner wrappers, so page content lines up with the chrome above it at every breakpoint.',
-      },
-    },
+    docs: { page: ContainerDocs },
   },
   args: {
     size: 'fluid',
+    children: (
+      <div className='bg-foreground/5 p-4 text-foreground'>
+        Page content. The gap either side is the container’s padding.
+      </div>
+    ),
   },
   argTypes: {
     size: {
       control: 'inline-radio',
       options: ['fluid', 'contained', 'wide', 'narrow'],
-      description:
-        'Maximum width of the column. `fluid` matches the chrome components’ own default.',
+      description: 'Maximum width of the column. `fluid` matches the page chrome’s default.',
       table: { category: 'Appearance' },
     },
-    className: { table: { disable: true, category: 'Advanced' } },
+    children: {
+      control: false,
+      description: 'The content of the column.',
+      table: { category: 'Content' },
+    },
+    className: { table: { disable: true } },
   },
-  render: (args) => (
-    <Container {...args}>
-      <div className='bg-muted p-4 text-foreground'>
-        Page content. The gap either side is the container’s padding.
-      </div>
-    </Container>
-  ),
 } satisfies Meta<typeof Container>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getContainer(canvasElement: HTMLElement) {
-  const el = canvasElement.querySelector<HTMLElement>('[data-slot="container"]')
-  if (!el) {
-    throw new Error('Could not find an element with [data-slot="container"].')
-  }
-  return el
-}
-
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const container = getContainer(canvasElement)
+    const container = canvasElement.querySelector<HTMLElement>('[data-slot="container"]')
+    if (!container) {
+      throw new Error('Could not find an element with [data-slot="container"].')
+    }
 
     // The padding is what page content depends on to align with the chrome, so
     // assert the resolved value rather than the class.
@@ -77,34 +178,8 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col gap-4 py-4'>
-      {(['fluid', 'contained', 'wide', 'narrow'] as const).map((size) => (
-        <Container key={size} size={size}>
-          <div className='bg-muted p-4 text-foreground'>
-            <code>size=&quot;{size}&quot;</code>
-          </div>
-        </Container>
-      ))}
-    </div>
-  ),
-}
+export const Playground: Story = {}
 
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  render: () => (
-    <Container size='narrow'>
-      <div className='bg-muted p-4 text-foreground'>Constrained to the reading measure.</div>
-    </Container>
-  ),
-  play: async ({ canvasElement }) => {
-    const container = getContainer(canvasElement)
-    const maxWidth = getComputedStyle(container).maxWidth
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
 
-    // 45rem at the 16px root — proves globals.css loaded and the variant applied.
-    if (maxWidth !== '720px') {
-      throw new Error(`Expected max-width 720px for size="narrow", received "${maxWidth}".`)
-    }
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

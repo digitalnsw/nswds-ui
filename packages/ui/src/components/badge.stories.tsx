@@ -1,16 +1,23 @@
+/**
+ * Badge — follows docs/reference-storybook-standard.md.
+ *
+ *   Components/Badge        → this file: Docs, Default, Playground and one
+ *                             story per docs section
+ *   Components/Badge/Tests  → badge.tests.stories.tsx
+ */
+
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 
 import { IconCheck } from '../icons/check.js'
 import { Badge } from './badge.js'
 import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
   ExampleCell,
-  ExampleCode,
-  exampleDocsClassName,
-  ExamplePreview,
   ExampleSection,
-  ThemeSurface,
-  titleClasses,
 } from './story-helpers.js'
 
 const variants = ['solid', 'soft', 'surface', 'outline'] as const
@@ -27,202 +34,224 @@ const colors = [
   'secondary',
 ] as const
 
-function VariantExamples() {
+function ColourRow({ color }: { color: (typeof colors)[number] }) {
   return (
-    <div className='flex flex-wrap gap-8'>
+    <div className='flex flex-wrap items-center gap-3'>
+      <span className='w-24 shrink-0 font-semibold'>{color}</span>
       {variants.map((variant) => (
-        <ExampleCell key={variant} label={variant}>
-          <Badge variant={variant}>New</Badge>
-        </ExampleCell>
+        <Badge key={variant} color={color} variant={variant}>
+          {variant}
+        </Badge>
       ))}
     </div>
   )
 }
-function SizeExamples() {
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function VariantsSection() {
   return (
-    <div className='flex flex-wrap items-center gap-8'>
-      {sizes.map((size) => (
-        <ExampleCell key={size} label={size}>
-          <Badge size={size} dot color='success'>
+    <ExampleSection
+      title='Variants'
+      description='Soft is the quiet default. Solid adds emphasis; surface and outline add a visible border for busy or tinted backgrounds.'
+    >
+      <Example code={`<Badge variant="outline">New</Badge>`}>
+        {variants.map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <Badge variant={variant}>New</Badge>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description='Every size keeps 16px text; only the padding changes. Use default for most content and sm where space is tight.'
+    >
+      <Example code={`<Badge size="sm" color="success" dot>Approved</Badge>`}>
+        {sizes.map((size) => (
+          <ExampleCell key={size} label={size}>
+            <Badge size={size} color='success' dot>
+              Approved
+            </Badge>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          Badge shares Button&apos;s colour roles. Primary, tertiary and accent follow the brand
+          theme and grey is neutral; success, warning and danger keep their meaning in every theme;{' '}
+          <code>white</code> and <code>secondary</code> are for dark surfaces.
+        </>
+      }
+    >
+      <Example layout='stack' code={`<Badge color="tertiary" variant="surface">Surface</Badge>`}>
+        {(['primary', 'tertiary', 'accent', 'grey'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+      <Example layout='stack' code={`<Badge color="warning">Pending</Badge>`}>
+        {(['success', 'warning', 'danger'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+      <Example layout='stack' surface='brand' code={`<Badge color="white">New</Badge>`}>
+        {(['white', 'secondary'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function WithIconsSection() {
+  return (
+    <ExampleSection
+      title='With icons'
+      description='One decorative icon can sit before the label. The label still carries the meaning, so hide the icon from screen readers.'
+    >
+      <Example code={`<Badge color="success"><IconCheck aria-hidden /> Approved</Badge>`}>
+        <Badge color='success'>
+          <IconCheck aria-hidden /> Approved
+        </Badge>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function StatusSection() {
+  return (
+    <ExampleSection
+      title='Status'
+      description={
+        <>
+          Pair a status colour with a written label. The optional <code>dot</code> reinforces the
+          status and is hidden from screen readers, so never rely on it alone.
+        </>
+      }
+    >
+      <Example code={`<Badge color="success" dot>Approved</Badge>`}>
+        <ExampleCell label='success'>
+          <Badge color='success' dot>
             Approved
           </Badge>
         </ExampleCell>
-      ))}
-    </div>
+        <ExampleCell label='warning'>
+          <Badge color='warning' dot>
+            Pending
+          </Badge>
+        </ExampleCell>
+        <ExampleCell label='danger'>
+          <Badge color='danger' dot>
+            Declined
+          </Badge>
+        </ExampleCell>
+        <ExampleCell label='grey'>
+          <Badge color='grey' dot>
+            Draft
+          </Badge>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
   )
 }
-function StatusExamples() {
+
+function CountsSection() {
   return (
-    <div className='flex flex-wrap gap-3'>
-      <Badge color='success' dot>
-        Approved
-      </Badge>
-      <Badge color='warning' dot>
-        Pending
-      </Badge>
-      <Badge color='danger' dot>
-        Declined
-      </Badge>
-      <Badge color='grey' dot>
-        Draft
-      </Badge>
-    </div>
+    <ExampleSection
+      title='Counts'
+      description='Place a count beside the content it describes. A number on its own does not say what is being counted.'
+    >
+      <Example code={`<span>Applications <Badge color="grey">3</Badge></span>`}>
+        <span className='inline-flex items-center gap-2'>
+          Applications <Badge color='grey'>3</Badge>
+        </span>
+        <span className='inline-flex items-center gap-2'>
+          Unread messages <Badge>99+</Badge>
+        </span>
+      </Example>
+    </ExampleSection>
   )
 }
-function CountExamples() {
+
+function InContextSection() {
   return (
-    <div className='flex flex-wrap gap-8'>
-      <span className='inline-flex items-center gap-2'>
-        Applications <Badge color='grey'>3</Badge>
-      </span>
-      <span className='inline-flex items-center gap-2'>
-        Unread messages <Badge>99+</Badge>
-      </span>
-    </div>
+    <ExampleSection
+      title='In context'
+      description='Keep the badge beside the item whose status it describes.'
+    >
+      <Example layout='fill' surface='subtle'>
+        <article className='max-w-xl space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
+          <div className='flex flex-wrap items-center justify-between gap-3'>
+            <p className='text-lg font-semibold'>Community garden grant</p>
+            <Badge color='success' dot>
+              Approved
+            </Badge>
+          </div>
+          <p className='text-muted-foreground'>
+            Your application has been approved. We will email you the funding agreement.
+          </p>
+          <p className='text-muted-foreground'>Application reference: CG-1042</p>
+        </article>
+      </Example>
+    </ExampleSection>
   )
 }
-function ColourExamples() {
-  return (
-    <div className='space-y-8'>
-      {[
-        {
-          title: 'Brand colours',
-          description:
-            'Primary, tertiary and accent follow the selected brand theme. Grey provides a neutral label.',
-          colors: ['primary', 'tertiary', 'accent', 'grey'] as const,
-        },
-        {
-          title: 'Status colours',
-          description:
-            'Use success, warning and danger with a clear status label so the meaning is visible in the text.',
-          colors: ['success', 'warning', 'danger'] as const,
-        },
-        {
-          title: 'On dark surfaces',
-          description: 'White and secondary are intended for dark backgrounds.',
-          colors: ['white', 'secondary'] as const,
-        },
-      ].map((group) => (
-        <div key={group.title} className='space-y-3'>
-          <h3 className='text-lg font-semibold'>{group.title}</h3>
-          <p className='text-muted-foreground'>{group.description}</p>
-          {group.colors.map((color) => (
-            <ThemeSurface key={color} color={color}>
-              <div className='flex flex-wrap items-center gap-3'>
-                <span className={`w-24 text-base font-semibold ${titleClasses(color)}`}>
-                  {color}
-                </span>
-                {variants.map((variant) => (
-                  <Badge key={variant} color={color} variant={variant}>
-                    {variant}
-                  </Badge>
-                ))}
-              </div>
-            </ThemeSurface>
-          ))}
-        </div>
-      ))}
-    </div>
-  )
-}
-function ApplicationExample() {
-  return (
-    <article className='max-w-xl space-y-4 rounded-md border border-border bg-background p-6'>
-      <div className='flex flex-wrap items-center justify-between gap-3'>
-        <h3 className='text-lg font-semibold'>Community garden grant</h3>
-        <Badge color='success' dot>
-          Approved
-        </Badge>
-      </div>
-      <p className='text-muted-foreground'>
-        Your application has been approved. We will email you the funding agreement.
-      </p>
-      <p className='text-base text-muted-foreground'>Application reference: CG-1042</p>
-    </article>
-  )
-}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
 function BadgeDocs() {
   return (
-    <div className={exampleDocsClassName}>
-      <section className='space-y-4'>
-        <h1 className='text-5xl font-bold tracking-tight'>Badge</h1>
-        <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>
-          Badges show a status or count beside related content. They are informational and cannot be
-          selected. Use Tag for categories, navigation and filters.
-        </p>
-      </section>
-      <ExampleSection
-        title='Default'
-        description='A soft primary badge is the default. Keep labels short and meaningful.'
-      >
-        <ExamplePreview>
-          <Badge>New</Badge>
-        </ExamplePreview>
-        <ExampleCode>{'<Badge>New</Badge>'}</ExampleCode>
-      </ExampleSection>
-      <ExampleSection
-        title='Variants'
-        description='Choose a visual treatment to suit the surrounding content. Soft is a quiet default; solid adds emphasis; surface and outline provide a visible border.'
-      >
-        <ExamplePreview>
-          <VariantExamples />
-        </ExamplePreview>
-        <ExampleCode>{'<Badge variant="outline">New</Badge>'}</ExampleCode>
-      </ExampleSection>
-      <ExampleSection
-        title='Status'
-        description='Pair a status colour with a written label. The optional dot reinforces the status and is hidden from screen readers.'
-      >
-        <ExamplePreview>
-          <StatusExamples />
-        </ExamplePreview>
-        <ExampleCode>{'<Badge color="success" dot>Approved</Badge>'}</ExampleCode>
-      </ExampleSection>
-      <ExampleSection
-        title='Counts'
-        description='Place the count next to the content it describes. A number alone does not explain what is being counted.'
-      >
-        <ExamplePreview>
-          <CountExamples />
-        </ExamplePreview>
-        <ExampleCode>{'<span>Applications <Badge color="grey">3</Badge></span>'}</ExampleCode>
-      </ExampleSection>
-      <ExampleSection
-        title='Sizes'
-        description='Every size uses 16px text. Small has the tightest padding; default and large add more.'
-      >
-        <ExamplePreview>
-          <SizeExamples />
-        </ExamplePreview>
-      </ExampleSection>
-      <ExampleSection
-        title='Colours'
-        description='Badge uses the same colour roles as Button. Select the role that matches the meaning, then choose a variant.'
-      >
-        <ColourExamples />
-      </ExampleSection>
-      <ExampleSection
-        title='With an icon'
-        description='Use a single decorative icon alongside a visible label.'
-      >
-        <ExamplePreview>
-          <Badge color='success'>
-            <IconCheck aria-hidden /> Approved
-          </Badge>
-        </ExamplePreview>
-        <ExampleCode>
-          {'<Badge color="success"><IconCheck aria-hidden /> Approved</Badge>'}
-        </ExampleCode>
-      </ExampleSection>
-      <ExampleSection
-        title='In context'
-        description='Keep the badge beside the item whose status it describes.'
-      >
-        <ApplicationExample />
-      </ExampleSection>
-    </div>
+    <DocsPage
+      title='Badge'
+      npm={['Badge', 'badgeVariants']}
+      registry='badge'
+      summary={
+        <>
+          Badges show a status or a count beside related content. They are informational: a badge
+          has no hover, press or focus treatment and cannot be selected.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The status of an application, payment or request — Approved, Pending, Declined.',
+          'A count beside the content it counts, such as unread messages.',
+          'A short “New” or “Updated” marker on a listing.',
+        ]}
+        avoid={[
+          'Labelling a category or topic, or filtering by one — use Tag.',
+          'Explaining a problem or a next step in a sentence or more — use Callout.',
+          'Anything a person should be able to press — use Button or Tag.',
+        ]}
+      />
+      <VariantsSection />
+      <SizesSection />
+      <ColoursSection />
+      <WithIconsSection />
+      <StatusSection />
+      <CountsSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
   )
 }
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Components/Badge',
   component: Badge,
@@ -230,16 +259,18 @@ const meta = {
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: {
-      page: BadgeDocs,
-      description: { component: 'An informational label for status and counts.' },
-    },
+    docs: { page: BadgeDocs },
   },
   args: { children: 'New', variant: 'soft', color: 'primary', size: 'default', dot: false },
   argTypes: {
     children: {
       control: 'text',
       description: 'Short status or count label.',
+      table: { category: 'Content' },
+    },
+    dot: {
+      control: 'boolean',
+      description: 'Decorative dot beside the visible label. Hidden from screen readers.',
       table: { category: 'Content' },
     },
     variant: {
@@ -254,99 +285,42 @@ const meta = {
       description: 'Colour role shared with Button. White and secondary need a dark surface.',
       table: { category: 'Appearance' },
     },
-    size: { control: 'inline-radio', options: sizes, table: { category: 'Appearance' } },
-    dot: {
-      control: 'boolean',
-      description: 'Decorative dot beside the visible label.',
-      table: { category: 'Content' },
+    size: {
+      control: 'inline-radio',
+      options: sizes,
+      description: 'Padding step. Text is 16px at every size.',
+      table: { category: 'Appearance' },
     },
     className: { table: { disable: true } },
   },
 } satisfies Meta<typeof Badge>
+
 export default meta
+
 type Story = StoryObj<typeof meta>
+
+// ─── Stories ──────────────────────────────────────────────────────────────────
+
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('[data-slot=badge]')).toHaveTextContent('New')
+    const badge = canvasElement.querySelector('[data-slot=badge]')
+    await expect(badge).toHaveTextContent('New')
+    await expect(badge).toHaveAttribute('data-variant', 'soft')
   },
 }
-export const Playground: Story = {
-  render: (args) => (
-    <ThemeSurface color={args.color ?? 'primary'}>
-      <Badge {...args} />
-    </ThemeSurface>
-  ),
-}
-export const Variants: Story = {
-  render: () => (
-    <ExampleSection title='Variants' description='Four treatments, shown with the primary colour.'>
-      <ExamplePreview>
-        <VariantExamples />
-      </ExamplePreview>
-    </ExampleSection>
-  ),
-}
-export const Colours: Story = {
-  render: () => (
-    <ExampleSection title='Colours' description='Choose a colour role and a surface treatment.'>
-      <ColourExamples />
-    </ExampleSection>
-  ),
-}
-export const Sizes: Story = {
-  render: () => (
-    <ExampleSection
-      title='Sizes'
-      description='Use default for most content and small when space is limited.'
-    >
-      <ExamplePreview>
-        <SizeExamples />
-      </ExamplePreview>
-    </ExampleSection>
-  ),
-}
-export const Status: Story = {
-  render: () => (
-    <ExampleSection
-      title='Status'
-      description='A visible label carries the meaning; colour and a dot reinforce it.'
-    >
-      <ExamplePreview>
-        <StatusExamples />
-      </ExamplePreview>
-    </ExampleSection>
-  ),
-}
-export const Counts: Story = {
-  render: () => (
-    <ExampleSection title='Counts' description='Show each count beside the content it describes.'>
-      <ExamplePreview>
-        <CountExamples />
-      </ExamplePreview>
-    </ExampleSection>
-  ),
-}
-export const WithIcon: Story = {
-  render: () => (
-    <ExampleSection
-      title='With an icon'
-      description='Keep the visible label and hide decorative icons from screen readers.'
-    >
-      <ExamplePreview>
-        <Badge color='success'>
-          <IconCheck aria-hidden /> Approved
-        </Badge>
-      </ExamplePreview>
-    </ExampleSection>
-  ),
-}
-export const InContext: Story = {
-  render: () => (
-    <ExampleSection
-      title='Application status'
-      description='Place the status beside the application title.'
-    >
-      <ApplicationExample />
-    </ExampleSection>
-  ),
-}
+
+export const Playground: Story = {}
+
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
+
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
+
+export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
+
+export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
+
+export const Status: Story = { name: 'Status', render: () => <StatusSection /> }
+
+export const Counts: Story = { name: 'Counts', render: () => <CountsSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

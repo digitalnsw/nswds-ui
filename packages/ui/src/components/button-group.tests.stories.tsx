@@ -1,35 +1,30 @@
 /**
- * ButtonGroup — Features
+ * ButtonGroup — Tests
  *
- * Theme/variant matrices, emphasis, sizes, orientation, compositions, states,
- * and the rules a group promises.
+ * Regression, paint-contract and edge-case stories: everything here exists to
+ * PROVE a rule the group promises rather than to show how to use it. Hidden
+ * from the sidebar (`!dev`) and the docs page (`!autodocs`); they run in the
+ * Vitest suite and in Chromatic.
  *
  * Every story that pins a RULE carries a play that fails when the rule is
- * removed. The two `By Variant` matrices are the exception and carry none on
- * purpose: they exist for visual review across the colour set, and every rule
- * they render is already pinned by a story that reads it directly, so a play
- * there would assert the same values twice.
+ * removed. The two `By variant` matrices are the exception and carry none on
+ * purpose: they exist for visual review across the colour set in Chromatic,
+ * and every rule they render is already pinned by a story that reads it
+ * directly, so a play there would assert the same values twice.
  *
- * These stories are intended for internal use during design token reviews and
- * CSS refactors to catch regressions across the full component surface. They
- * are not intended as examples of typical usage, so they deliberately show
- * every variant / colour / state combination in one story for efficient
- * visual review.
- *
- * Each story includes a description of what to look for and how to test it,
- * so that non-engineers can use these stories for visual QA without reading
- * the implementation.
+ * Each story's description says what to look for and how to test it, so
+ * non-engineers can use these stories for visual QA without reading the
+ * implementation.
  *
  * Low-contrast colours (white and secondary) are rendered on grey-800
- * surfaces, as in the Button stories, so their frames stay visible in visual
+ * surfaces, as in the Button tests, so their frames stay visible in visual
  * diffs.
  *
- * Keyboard, focus and target-size checks live in
- * button-group.accessibility.stories.tsx.
+ * Usage examples live on the docs page (button-group.stories.tsx); keyboard,
+ * focus and target-size checks live in button-group.accessibility.stories.tsx.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ReactNode } from 'react'
 import { expect, screen, userEvent, within } from 'storybook/test'
 
 import {
@@ -56,7 +51,7 @@ import {
 } from './navigation-menu.js'
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js'
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './sheet.js'
-import { closeOverlay } from './story-helpers.js'
+import { closeOverlay, docsTemplate, ThemeSurface, titleClasses } from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -74,9 +69,6 @@ const colors = [...themeColors, ...semanticColors] as const
 
 type ColorKey = (typeof colors)[number]
 
-const lowContrastColors = ['white', 'secondary'] as const
-const lowContrastSet = new Set<ColorKey>(lowContrastColors)
-
 // The ring a segment paints under :focus — inside its edge, because the group
 // clips its corners — and the label-coloured ring a solid segment paints
 // instead, since in light mode its ink and its fill are one token.
@@ -86,8 +78,9 @@ const forcedSolidFocusClasses = 'outline outline-2 -outline-offset-2 outline-(--
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
-  title: 'Components/ButtonGroup/Features',
+  title: 'Components/ButtonGroup/Tests',
   component: ButtonGroup,
+  tags: ['!dev', '!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -98,46 +91,6 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const docsTemplate = ({
-  what,
-  why,
-  how,
-  caveat,
-}: {
-  what: string
-  why: string
-  how: string
-  caveat: string
-}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
-
-function needsGreySurface(color: ColorKey): boolean {
-  return lowContrastSet.has(color)
-}
-
-function titleClasses(color: ColorKey): string {
-  return needsGreySurface(color) ? 'text-grey-50' : 'text-foreground'
-}
-
-function surfaceClasses(color: ColorKey): string {
-  return needsGreySurface(color)
-    ? 'rounded-sm border border-grey-700 bg-grey-800 p-4'
-    : 'rounded-sm border border-border bg-background p-4'
-}
-
-function ThemeSurface({
-  color,
-  children,
-  className,
-}: {
-  color: ColorKey
-  children: ReactNode
-  className?: string
-}) {
-  return (
-    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>{children}</div>
-  )
-}
 
 /** Reads a computed colour and reports whether it paints anything. */
 function isPainted(color: string) {
@@ -158,7 +111,7 @@ const matrixGrid = 'grid grid-cols-[9rem_repeat(5,minmax(0,1fr))] items-center g
 
 function MatrixHeader({ prefix }: { prefix: string }) {
   return (
-    <div className={`${matrixGrid} px-3 text-xs font-semibold text-muted-foreground`}>
+    <div className={`${matrixGrid} px-3 text-base font-semibold text-muted-foreground`}>
       <span>Theme</span>
       {variants.map((variant) => (
         <span key={`${prefix}-header-${variant}`} className='text-center capitalize'>
@@ -178,7 +131,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
       {rowColors.map((color) => (
         <ThemeSurface key={`theme-row-${color}`} color={color} className='p-3'>
           <div className={matrixGrid}>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <ButtonGroup
                 key={`${color}-${variant}`}
@@ -199,7 +152,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
 }
 
 export const ByVariantTheme: Story = {
-  name: 'By Variant - Theme',
+  name: 'By variant — theme',
   parameters: {
     docs: {
       description: {
@@ -217,7 +170,7 @@ export const ByVariantTheme: Story = {
 }
 
 export const ByVariantSemantic: Story = {
-  name: 'By Variant - Semantic',
+  name: 'By variant — semantic',
   parameters: {
     docs: {
       description: {
@@ -256,7 +209,7 @@ export const Emphasis: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`emphasis-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} split`}>
               <Button variant='solid'>Save</Button>
               <Button
@@ -307,7 +260,7 @@ export const Emphasis: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-center gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>own colour</span>
+          <span className='w-20 text-base font-semibold text-foreground'>own colour</span>
           <ButtonGroup variant='solid' aria-label='solid own colour'>
             <Button>Day</Button>
             <Button color='secondary'>Own colour</Button>
@@ -416,7 +369,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className='w-full max-w-5xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {sizes.map((size) => (
           <span key={`size-header-${size}`} className='text-center capitalize'>
@@ -427,7 +380,7 @@ export const Sizes: Story = {
       {(['primary', 'grey', 'danger'] as const).map((color) => (
         <ThemeSurface key={`sizes-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {sizes.map((size) => (
               <ButtonGroup
                 key={`sizes-${color}-${size}`}
@@ -445,7 +398,7 @@ export const Sizes: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-start gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>beside</span>
+          <span className='w-20 text-base font-semibold text-foreground'>beside</span>
           <ButtonGroup size='sm' aria-label='Small group'>
             <Button>Small segment</Button>
           </ButtonGroup>
@@ -523,7 +476,7 @@ export const Sizes: Story = {
 // ─── Inherited colour ─────────────────────────────────────────────────────────
 
 export const InheritedColour: Story = {
-  name: 'Inherited Colour',
+  name: 'Inherited colour',
   parameters: {
     docs: {
       description: {
@@ -542,7 +495,7 @@ export const InheritedColour: Story = {
       {(['danger', 'accent', 'grey'] as const).map((color) => (
         <ThemeSurface key={`inherit-${color}`} color={color} className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className={`w-20 text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`w-20 text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             <ButtonGroup color={color} aria-label={`${color} group`}>
               <Button>Inherits</Button>
               <Button color='primary'>Own colour</Button>
@@ -602,7 +555,7 @@ export const Orientation: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`orientation-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-start gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} row`}>
               <Button>Top</Button>
               <Button>Middle</Button>
@@ -713,7 +666,7 @@ export const Orientation: Story = {
 // ─── Compositions ─────────────────────────────────────────────────────────────
 
 export const Compositions: Story = {
-  name: 'Text, Separators and Links',
+  name: 'Text, separators and links',
   parameters: {
     docs: {
       description: {
@@ -732,7 +685,7 @@ export const Compositions: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`compose-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} icons`}>
               <Button iconOnly aria-label='Copy' leadingVisual={IconContentCopy} />
               <Button iconOnly aria-label='Paste' leadingVisual={IconContentPaste} />
@@ -840,8 +793,8 @@ export const InteractionStates: Story = {
                   <span
                     className={
                       state === 'default'
-                        ? 'w-20 text-sm font-semibold text-foreground'
-                        : 'w-20 text-xs text-muted-foreground'
+                        ? 'w-20 text-base font-semibold text-foreground'
+                        : 'w-20 text-base text-muted-foreground'
                     }
                   >
                     {state === 'default' ? variant : state}
@@ -928,7 +881,7 @@ export const Disabled: Story = {
       {colors.map((color) => (
         <ThemeSurface key={`disabled-${color}`} color={color} className='p-3'>
           <div className={matrixGrid}>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <ButtonGroup
                 key={`disabled-${color}-${variant}`}
@@ -947,7 +900,7 @@ export const Disabled: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-center gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>separated</span>
+          <span className='w-20 text-base font-semibold text-foreground'>separated</span>
           {variants.map((variant) => (
             <ButtonGroup
               key={`separated-${variant}`}
@@ -1130,7 +1083,7 @@ export const Dark: Story = {
 // ─── Portals ──────────────────────────────────────────────────────────────────
 
 export const InPortal: Story = {
-  name: 'In a Popup',
+  name: 'In a popup',
   parameters: {
     docs: {
       description: {
@@ -1184,7 +1137,7 @@ export const InPortal: Story = {
 // ─── Overlays ─────────────────────────────────────────────────────────────────
 
 export const InOverlays: Story = {
-  name: 'In Overlays',
+  name: 'In overlays',
   parameters: {
     docs: {
       description: {
@@ -1319,7 +1272,7 @@ function alphaOf(color: string) {
 }
 
 export const PaintContract: Story = {
-  name: 'Paint Contract',
+  name: 'Paint contract',
   parameters: {
     docs: {
       description: {
@@ -1429,7 +1382,7 @@ export const PaintContract: Story = {
 // ─── Segment props ────────────────────────────────────────────────────────────
 
 export const SegmentProps: Story = {
-  name: 'Segment Props',
+  name: 'Segment props',
   parameters: {
     docs: {
       description: {
@@ -1546,5 +1499,106 @@ export const SegmentProps: Story = {
     await expect(spread).toHaveAttribute('data-variant', 'outline')
     await expect(isPainted(getComputedStyle(spread).backgroundColor)).toBe(false)
     await expect(isPainted(getComputedStyle(spread).boxShadow)).toBe(true)
+  },
+}
+
+// ─── Moved from the main file ─────────────────────────────────────────────────
+
+// Proves globals.css loaded and the text cell / frame geometry holds.
+export const CssCheck: Story = {
+  name: 'CSS check',
+  render: () => (
+    <ButtonGroup aria-label='Clipboard'>
+      <Button>One</Button>
+      <ButtonGroupText>Aa</ButtonGroupText>
+      <Button>Two</Button>
+    </ButtonGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const group = canvas.getByRole('group', { name: 'Clipboard' })
+
+    // Proves globals.css loaded: the outline frame is an inset ring in the
+    // ink, which only resolves when the token layers are present.
+    const shadow = getComputedStyle(group).boxShadow
+    if (shadow === '' || shadow === 'none') {
+      throw new Error(`Expected the outline frame ring to paint, received "${shadow}".`)
+    }
+
+    // The text cell sits at the body size, never fine print, and its
+    // background stops at the padding box so the frame shows through.
+    const cell = canvasElement.querySelector<HTMLElement>('[data-slot="button-group-text"]')
+    if (!cell) {
+      throw new Error('Could not find [data-slot="button-group-text"].')
+    }
+    await expect(parseFloat(getComputedStyle(cell).fontSize)).toBeGreaterThanOrEqual(16)
+    await expect(getComputedStyle(cell).backgroundClip).toBe('padding-box')
+
+    // The group is exactly one button tall: the frame adds no height.
+    const button = canvas.getByRole('button', { name: 'One' })
+    await expect(group.getBoundingClientRect().height).toBe(button.getBoundingClientRect().height)
+  },
+}
+
+// Every variant with the common compositions: emphasis is kept whatever the
+// group variant, and a solid band re-inks its non-solid segments.
+export const Variants: Story = {
+  name: 'Variants — emphasis and band ink',
+  render: () => (
+    <div className='flex flex-col gap-6'>
+      {variants.map((variant) => (
+        <div key={variant} className='flex flex-wrap items-start gap-4'>
+          <ButtonGroup variant={variant} aria-label={`${variant} clipboard`}>
+            <Button>Copy</Button>
+            <Button>Paste</Button>
+            <Button>Cut</Button>
+          </ButtonGroup>
+          <ButtonGroup variant={variant}>
+            <Button variant='solid'>Save</Button>
+            <Button
+              variant='solid'
+              iconOnly
+              aria-label='More save options'
+              leadingVisual={IconExpandMore}
+            />
+          </ButtonGroup>
+          <ButtonGroup variant={variant}>
+            <Button>Cancel</Button>
+            <Button variant='solid'>Save and continue</Button>
+          </ButtonGroup>
+          <ButtonGroup variant={variant} aria-label={`${variant} formatting`}>
+            <Button>Bold</Button>
+            <ButtonGroupText>Aa</ButtonGroupText>
+            <Button>Italic</Button>
+          </ButtonGroup>
+          <ButtonGroup variant={variant}>
+            <Button>Rest</Button>
+            <Button variant='soft'>Soft</Button>
+            <Button disabled>Off</Button>
+          </ButtonGroup>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    // A child that asks for emphasis keeps it, whatever the group variant.
+    for (const save of canvas.getAllByRole('button', { name: 'Save' })) {
+      await expect(save).toHaveAttribute('data-variant', 'solid')
+      await expect(save).toHaveAttribute('data-segment', 'override')
+    }
+    for (const soft of canvas.getAllByRole('button', { name: 'Soft' })) {
+      await expect(soft).toHaveAttribute('data-variant', 'soft')
+      await expect(soft).toHaveAttribute('data-segment', 'override')
+    }
+
+    // In a solid band every segment that is not itself solid takes the band's
+    // label colour as its ink, so nothing is blue on blue.
+    const band = canvas.getByRole('group', { name: 'solid clipboard' })
+    const solidLabel = getComputedStyle(canvas.getAllByRole('button', { name: 'Save' })[0]!).color
+    for (const segment of within(band).getAllByRole('button')) {
+      await expect(getComputedStyle(segment).color).toBe(solidLabel)
+    }
   },
 }

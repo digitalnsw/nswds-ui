@@ -1,34 +1,317 @@
 /**
- * NativeSelect — Default, Variants, CssCheck
+ * NativeSelect — the docs page, Default, Playground and one story per docs section.
+ *
+ *   Components/NativeSelect        → this file
+ *   Components/NativeSelect/Tests  → native-select.tests.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 
+import { Label } from './label.js'
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from './native-select.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+function StateOptions() {
+  return (
+    <>
+      <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      <NativeSelectOption value='act'>Australian Capital Territory</NativeSelectOption>
+      <NativeSelectOption value='vic'>Victoria</NativeSelectOption>
+      <NativeSelectOption value='qld'>Queensland</NativeSelectOption>
+    </>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          <code>default</code> is the bordered field that matches Input and Select.{' '}
+          <code>filled</code> is a borderless tinted band that shows its border on hover, for
+          filters and toolbars where a row of boxed fields would be heavy.
+        </>
+      }
+    >
+      <Example code={`<NativeSelect variant="filled">…</NativeSelect>`}>
+        {(['default', 'filled'] as const).map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <NativeSelect
+              variant={variant}
+              aria-label={`State or territory (${variant})`}
+              defaultValue='nsw'
+              className='w-72'
+            >
+              <StateOptions />
+            </NativeSelect>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          <code>default</code> is 48px, level with Input. <code>sm</code> is 40px, for dense
+          filters; keep it out of forms people fill in.
+        </>
+      }
+    >
+      <Example code={`<NativeSelect size="sm">…</NativeSelect>`}>
+        {(['default', 'sm'] as const).map((size) => (
+          <ExampleCell key={size} label={size}>
+            <NativeSelect
+              size={size}
+              aria-label={`State or territory (${size})`}
+              defaultValue='nsw'
+              className='w-72'
+            >
+              <StateOptions />
+            </NativeSelect>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          Invalid takes Input&apos;s 2px danger border; set <code>aria-invalid</code>. Disabled
+          fades the whole control, chevron included.
+        </>
+      }
+    >
+      <Example code={`<NativeSelect aria-invalid>…</NativeSelect>`}>
+        <ExampleCell label='invalid'>
+          <NativeSelect aria-label='State or territory (invalid)' aria-invalid className='w-72'>
+            <NativeSelectOption value=''>Select a state or territory</NativeSelectOption>
+            <StateOptions />
+          </NativeSelect>
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <NativeSelect
+            aria-label='State or territory (disabled)'
+            disabled
+            defaultValue='nsw'
+            className='w-72'
+          >
+            <StateOptions />
+          </NativeSelect>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function OptionGroupsSection() {
+  return (
+    <ExampleSection
+      title='Option groups'
+      description={
+        <>
+          <code>NativeSelectOptGroup</code> sorts a long list under headings the browser renders in
+          its own picker.
+        </>
+      }
+    >
+      <Example
+        code={`<NativeSelectOptGroup label="Greater Sydney">
+  <NativeSelectOption value="parramatta">Parramatta</NativeSelectOption>
+</NativeSelectOptGroup>`}
+      >
+        <NativeSelect
+          aria-label='Nearest service centre'
+          defaultValue='parramatta'
+          className='w-72'
+        >
+          <NativeSelectOptGroup label='Greater Sydney'>
+            <NativeSelectOption value='parramatta'>Parramatta</NativeSelectOption>
+            <NativeSelectOption value='penrith'>Penrith</NativeSelectOption>
+            <NativeSelectOption value='liverpool'>Liverpool</NativeSelectOption>
+          </NativeSelectOptGroup>
+          <NativeSelectOptGroup label='Regional NSW'>
+            <NativeSelectOption value='dubbo'>Dubbo</NativeSelectOption>
+            <NativeSelectOption value='tamworth'>Tamworth</NativeSelectOption>
+            <NativeSelectOption value='wagga'>Wagga Wagga</NativeSelectOption>
+          </NativeSelectOptGroup>
+        </NativeSelect>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function WithALabelSection() {
+  return (
+    <ExampleSection
+      title='With a label'
+      description={
+        <>
+          NativeSelect is a plain <code>&lt;select&gt;</code>, so name it with a <code>Label</code>{' '}
+          pointed at its <code>id</code>. Start with an empty option that asks the question, rather
+          than preselecting an answer people may not notice.
+        </>
+      }
+    >
+      <Example
+        code={`<Label htmlFor="state">State or territory</Label>
+<NativeSelect id="state" name="state" defaultValue="">
+  <NativeSelectOption value="">Select a state or territory</NativeSelectOption>
+  …
+</NativeSelect>`}
+      >
+        <div className='grid w-72 gap-2'>
+          <Label htmlFor='native-select-docs-state'>State or territory</Label>
+          <NativeSelect
+            id='native-select-docs-state'
+            name='state'
+            defaultValue=''
+            className='w-full'
+          >
+            <NativeSelectOption value=''>Select a state or territory</NativeSelectOption>
+            <StateOptions />
+          </NativeSelect>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function NativeSelectDocs() {
+  return (
+    <DocsPage
+      title='NativeSelect'
+      npm={['NativeSelect', 'NativeSelectOption', 'NativeSelectOptGroup']}
+      registry='native-select'
+      summary={
+        <>
+          A styled native <code>&lt;select&gt;</code>. The browser owns the option list and every
+          keyboard and pointer behaviour — on phones, that means the platform&apos;s own picker. We
+          style the closed control to match Input and draw the chevron.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Choosing one option from a list that is too long for radio buttons.',
+          'Forms used mostly on phones, where the platform picker is easiest.',
+          'Dense filters where a lightweight control is enough.',
+        ]}
+        avoid={[
+          'Options need icons, descriptions or custom styling — use Select.',
+          'The list is long enough that people need to type to find their answer — use Combobox.',
+          'There are only a few options, and seeing them all helps — use RadioGroup.',
+        ]}
+      />
+      <VariantsSection />
+      <SizesSection />
+      <StatesSection />
+      <OptionGroupsSection />
+      <WithALabelSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/NativeSelect',
   component: NativeSelect,
   tags: ['autodocs'],
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'A styled wrapper around the native `<select>` element. The browser owns the option list and all keyboard/pointer behaviour; we only style the control and overlay the chevron. Use it where the platform picker is preferable (mobile, dense forms) — reach for `Select` when a fully custom popup is required.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: NativeSelectDocs },
   },
   args: {
-    'aria-label': 'State',
+    'aria-label': 'State or territory',
     defaultValue: 'nsw',
+    variant: 'default',
+    size: 'default',
+    disabled: false,
+    onChange: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'filled'],
+      description: 'Bordered field, or a borderless tinted band.',
+      table: { category: 'Appearance' },
+    },
+    size: {
+      control: 'inline-radio',
+      options: ['default', 'sm'],
+      description: '48px, or a 40px compact control for dense filters.',
+      table: { category: 'Appearance' },
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'Initially selected value when uncontrolled.',
+      table: { category: 'Behavior' },
+    },
+    value: {
+      control: 'text',
+      description: 'Controlled selected value. Pair with onChange.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Prevents interaction and fades the control.',
+      table: { category: 'Behavior' },
+    },
+    required: {
+      control: 'boolean',
+      description: 'A value must be chosen before the form is submitted.',
+      table: { category: 'Behavior' },
+    },
+    name: {
+      control: 'text',
+      description: 'Name submitted with the form.',
+      table: { category: 'Behavior' },
+    },
+    onChange: {
+      description: 'Called when the selection changes (logged in the Actions panel).',
+      table: { category: 'Events' },
+    },
+    'aria-invalid': {
+      control: 'boolean',
+      description: 'Applies the 2px danger border to indicate a validation failure.',
+      table: { category: 'Accessibility' },
+    },
+    'aria-label': {
+      control: 'text',
+      description: 'Accessible name, when there is no associated visible label.',
+      table: { category: 'Accessibility' },
+    },
+    className: { table: { disable: true } },
   },
   render: (args) => (
     <NativeSelect {...args}>
-      <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
-      <NativeSelectOption value='vic'>Victoria</NativeSelectOption>
-      <NativeSelectOption value='qld'>Queensland</NativeSelectOption>
+      <StateOptions />
     </NativeSelect>
   ),
 } satisfies Meta<typeof NativeSelect>
@@ -56,60 +339,17 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col items-start gap-4'>
-      <NativeSelect aria-label='Default size' defaultValue='a'>
-        <NativeSelectOption value='a'>Default size</NativeSelectOption>
-        <NativeSelectOption value='b'>Second option</NativeSelectOption>
-      </NativeSelect>
+export const Playground: Story = {}
 
-      <NativeSelect aria-label='Small size' size='sm' defaultValue='a'>
-        <NativeSelectOption value='a'>Small size</NativeSelectOption>
-        <NativeSelectOption value='b'>Second option</NativeSelectOption>
-      </NativeSelect>
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
 
-      <NativeSelect aria-label='Filled band' variant='filled' defaultValue='a'>
-        <NativeSelectOption value='a'>Filled band</NativeSelectOption>
-        <NativeSelectOption value='b'>Second option</NativeSelectOption>
-      </NativeSelect>
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
 
-      <NativeSelect aria-label='Invalid' aria-invalid defaultValue='a'>
-        <NativeSelectOption value='a'>Invalid</NativeSelectOption>
-        <NativeSelectOption value='b'>Second option</NativeSelectOption>
-      </NativeSelect>
+export const States: Story = { name: 'States', render: () => <StatesSection /> }
 
-      <NativeSelect aria-label='Grouped options' defaultValue='syd'>
-        <NativeSelectOptGroup label='New South Wales'>
-          <NativeSelectOption value='syd'>Sydney</NativeSelectOption>
-          <NativeSelectOption value='new'>Newcastle</NativeSelectOption>
-        </NativeSelectOptGroup>
-        <NativeSelectOptGroup label='Victoria'>
-          <NativeSelectOption value='mel'>Melbourne</NativeSelectOption>
-          <NativeSelectOption value='gee'>Geelong</NativeSelectOption>
-        </NativeSelectOptGroup>
-      </NativeSelect>
-
-      <NativeSelect aria-label='Disabled' defaultValue='a' disabled>
-        <NativeSelectOption value='a'>Disabled</NativeSelectOption>
-      </NativeSelect>
-    </div>
-  ),
+export const OptionGroups: Story = {
+  name: 'Option groups',
+  render: () => <OptionGroupsSection />,
 }
 
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  play: async ({ canvasElement }) => {
-    const select = canvasElement.querySelector<HTMLElement>('[data-slot="native-select"]')
-    if (!select) {
-      throw new Error('Could not find [data-slot="native-select"].')
-    }
-
-    // Proves globals.css loaded: the --input-border token resolves to a real
-    // colour rather than staying transparent.
-    const borderColor = getComputedStyle(select).borderColor
-    if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected the --input-border token to resolve, received "${borderColor}".`)
-    }
-  },
-}
+export const WithALabel: Story = { name: 'With a label', render: () => <WithALabelSection /> }

@@ -40,6 +40,7 @@ import { Textarea } from './textarea.js'
 const meta = {
   title: 'Components/Input/Accessibility',
   component: Input,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -75,7 +76,7 @@ function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement 
 // ─── 1.3.1 / 3.3.2 / 4.1.2 — Label Association ────────────────────────────────
 
 export const LabelAssociation: Story = {
-  name: '1.3.1 Label Association',
+  name: 'Info and Relationships — 1.3.1 / 3.3.2 / 4.1.2',
   parameters: {
     docs: {
       description: {
@@ -91,7 +92,7 @@ export const LabelAssociation: Story = {
   },
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
-      <label htmlFor='a11y-label-email' className='text-sm font-medium text-foreground'>
+      <label htmlFor='a11y-label-email' className='text-base font-medium text-foreground'>
         Email address
       </label>
       <Input id='a11y-label-email' type='email' placeholder='you@example.com' />
@@ -114,7 +115,7 @@ export const LabelAssociation: Story = {
 // ─── 1.3.5 — Identify Input Purpose ───────────────────────────────────────────
 
 export const InputPurpose: Story = {
-  name: '1.3.5 Input Purpose',
+  name: 'Identify Input Purpose — 1.3.5',
   parameters: {
     docs: {
       description: {
@@ -131,13 +132,13 @@ export const InputPurpose: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-3'>
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-purpose-name' className='text-sm font-medium'>
+        <label htmlFor='a11y-purpose-name' className='text-base font-medium'>
           Full name
         </label>
         <Input id='a11y-purpose-name' type='text' autoComplete='name' placeholder='Jane Citizen' />
       </div>
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-purpose-email' className='text-sm font-medium'>
+        <label htmlFor='a11y-purpose-email' className='text-base font-medium'>
           Email address
         </label>
         <Input
@@ -148,13 +149,13 @@ export const InputPurpose: Story = {
         />
       </div>
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-purpose-tel' className='text-sm font-medium'>
+        <label htmlFor='a11y-purpose-tel' className='text-base font-medium'>
           Phone number
         </label>
         <Input id='a11y-purpose-tel' type='tel' autoComplete='tel' placeholder='0400 000 000' />
       </div>
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-purpose-postal' className='text-sm font-medium'>
+        <label htmlFor='a11y-purpose-postal' className='text-base font-medium'>
           Postcode
         </label>
         <Input id='a11y-purpose-postal' type='text' autoComplete='postal-code' placeholder='2000' />
@@ -184,7 +185,7 @@ export const InputPurpose: Story = {
 // ─── 2.4.7 / 2.4.13 / 1.4.11 — Focus Appearance ───────────────────────────────
 
 export const FocusAppearance: Story = {
-  name: '2.4.7 Focus Appearance',
+  name: 'Focus Visible — 2.4.7 / 2.4.13',
   parameters: {
     docs: {
       description: {
@@ -201,14 +202,14 @@ export const FocusAppearance: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-4'>
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-focus-live' className='text-sm font-medium text-foreground'>
+        <label htmlFor='a11y-focus-live' className='text-base font-medium text-foreground'>
           Tab into me (live focus)
         </label>
         <Input id='a11y-focus-live' placeholder='Click or tab to focus' />
       </div>
 
       <div className='grid gap-1.5'>
-        <label htmlFor='a11y-focus-forced' className='text-sm font-medium text-foreground'>
+        <label htmlFor='a11y-focus-forced' className='text-base font-medium text-foreground'>
           Forced focus (utilities applied directly)
         </label>
         <Input
@@ -218,9 +219,9 @@ export const FocusAppearance: Story = {
         />
       </div>
 
-      <p className='text-xs text-foreground'>
+      <p className='text-base text-foreground'>
         Indicator:{' '}
-        <code className='rounded bg-muted px-1 py-0.5 text-xs text-foreground'>
+        <code className='rounded bg-muted px-1 py-0.5 text-base text-foreground'>
           outline: 2px solid var(--color-primary-800); outline-offset: 2px
         </code>
         . NSW blue against white surface ≈ 9:1 contrast — comfortably above the 3:1 floor required
@@ -253,7 +254,7 @@ export const FocusAppearance: Story = {
 // ─── 3.3.1 — Error Identification ─────────────────────────────────────────────
 
 export const ErrorIdentification: Story = {
-  name: '3.3.1 Error Identification',
+  name: 'Error Identification — 3.3.1',
   parameters: {
     docs: {
       description: {
@@ -269,7 +270,7 @@ export const ErrorIdentification: Story = {
   },
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
-      <label htmlFor='a11y-error-input' className='text-sm font-medium text-foreground'>
+      <label htmlFor='a11y-error-input' className='text-base font-medium text-foreground'>
         Email address
       </label>
       <Input
@@ -284,7 +285,7 @@ export const ErrorIdentification: Story = {
         // danger-600 (#b81237) passes AA against white but only ~3:1 against
         // the dark-mode --background. danger-300 is the lightest red that
         // still reads as "error" against the dark surface.
-        className='text-sm text-danger-600 dark:text-danger-300'
+        className='text-base text-danger-600 dark:text-danger-300'
         role='alert'
       >
         Please enter a valid email address.
@@ -346,7 +347,7 @@ function pageBackdrop(element: HTMLElement): string {
 }
 
 export const InvalidBorderContrast: Story = {
-  name: '1.4.11 Invalid Border Contrast',
+  name: 'Non-text Contrast — 1.4.11',
   parameters: {
     docs: {
       description: {
@@ -472,30 +473,30 @@ export const InvalidBorderContrast: Story = {
 
 export const LabelAssociationDark: Story = {
   ...LabelAssociation,
-  name: '1.3.1 Label Association (Dark)',
+  name: 'Info and Relationships — 1.3.1 / 3.3.2 / 4.1.2 (dark)',
   globals: { theme: 'dark' },
 }
 
 export const InputPurposeDark: Story = {
   ...InputPurpose,
-  name: '1.3.5 Input Purpose (Dark)',
+  name: 'Identify Input Purpose — 1.3.5 (dark)',
   globals: { theme: 'dark' },
 }
 
 export const FocusAppearanceDark: Story = {
   ...FocusAppearance,
-  name: '2.4.7 Focus Appearance (Dark)',
+  name: 'Focus Visible — 2.4.7 / 2.4.13 (dark)',
   globals: { theme: 'dark' },
 }
 
 export const ErrorIdentificationDark: Story = {
   ...ErrorIdentification,
-  name: '3.3.1 Error Identification (Dark)',
+  name: 'Error Identification — 3.3.1 (dark)',
   globals: { theme: 'dark' },
 }
 
 export const InvalidBorderContrastDark: Story = {
   ...InvalidBorderContrast,
-  name: '1.4.11 Invalid Border Contrast (Dark)',
+  name: 'Non-text Contrast — 1.4.11 (dark)',
   globals: { theme: 'dark' },
 }

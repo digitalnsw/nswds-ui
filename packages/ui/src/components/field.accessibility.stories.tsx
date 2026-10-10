@@ -29,6 +29,7 @@ import { wcagStoryMeta } from './story-helpers.js'
 const meta = {
   title: 'Components/Field/Accessibility',
   component: Field,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -52,7 +53,7 @@ function getInputById(canvasElement: HTMLElement, id: string): HTMLInputElement 
 // ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
 
 export const InfoAndRelationships: Story = {
-  name: '1.3.1 Info and Relationships',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -109,7 +110,7 @@ export const InfoAndRelationships: Story = {
 // ─── 3.3.1 — Error Identification ─────────────────────────────────────────────
 
 export const ErrorIdentification: Story = {
-  name: '3.3.1 Error Identification',
+  name: 'Error Identification — 3.3.1',
   parameters: {
     wcag: ['3.3.1'],
     docs: {
@@ -119,7 +120,7 @@ export const ErrorIdentification: Story = {
           why: 'When a form control rejects input, the affected field and the nature of the problem must be identified in text so users can understand what went wrong and correct it.',
           how: 'Inspect the rendered error: FieldError renders inside the Field with role="alert" and visible destructive-token text. The play() function asserts the FieldError element exists, carries role="alert", and contains the error message text.',
           caveat:
-            'Inside a Field, setting `invalid` on the Field sets the control’s aria-invalid and Base UI links the error via aria-describedby automatically (see the Automatic association story). This story shows the equivalent manual wiring, which still works and takes precedence.',
+            'Inside a Field, setting `invalid` on the Field sets the control’s aria-invalid and Base UI links the error via aria-describedby automatically (see the automatic-association story, AutomaticAssociation). This story shows the equivalent manual wiring, which still works and takes precedence.',
         }),
       },
     },
@@ -162,7 +163,7 @@ export const ErrorIdentification: Story = {
 // ─── 3.3.2 — Labels or Instructions ───────────────────────────────────────────
 
 export const LabelsOrInstructions: Story = {
-  name: '3.3.2 Labels or Instructions',
+  name: 'Labels or Instructions — 3.3.2',
   parameters: {
     wcag: ['3.3.2'],
     docs: {
@@ -172,7 +173,7 @@ export const LabelsOrInstructions: Story = {
           why: 'Form controls that require user input must be paired with a label or instruction so users know what data to enter and in what format.',
           how: 'Each Field shows a FieldLabel as the visible name and a FieldDescription as supplementary instructional text. The play() function asserts each input has an associated label and that descriptive helper text is present in the Field.',
           caveat:
-            'Inside a Field, FieldDescription is automatically linked to the control via aria-describedby (see the Automatic association story). Manual describedby still works and is shown here for an implementation-agnostic example.',
+            'Inside a Field, FieldDescription is automatically linked to the control via aria-describedby (see the automatic-association story, AutomaticAssociation). Manual describedby still works and is shown here for an implementation-agnostic example.',
         }),
       },
     },
@@ -214,7 +215,7 @@ export const LabelsOrInstructions: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {
@@ -262,7 +263,7 @@ export const NameRoleValue: Story = {
 // ─── 4.1.3 — Status Messages ──────────────────────────────────────────────────
 
 export const StatusMessages: Story = {
-  name: '4.1.3 Status Messages',
+  name: 'Status Messages — 4.1.3',
   parameters: {
     wcag: ['4.1.3'],
     docs: {
@@ -311,7 +312,7 @@ export const StatusMessages: Story = {
 // ─── Automatic association (Base UI Field) ────────────────────────────────────
 
 export const AutomaticAssociation: Story = {
-  name: 'Automatic association',
+  name: 'Info and Relationships — 1.3.1 / 3.3.1',
   parameters: {
     wcag: ['1.3.1', '3.3.1'],
     docs: {

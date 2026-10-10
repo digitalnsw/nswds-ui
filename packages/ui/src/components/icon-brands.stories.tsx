@@ -1,10 +1,20 @@
 /**
- * Icons / Brands — Default, Variants, CssCheck
+ * IconBrands — the story set for docs/reference-storybook-standard.md.
+ *
+ *   Components/IconBrands        → this file: Docs, Default, Playground and
+ *                                  one story per docs section
+ *   Components/IconBrands/Tests  → icon-brands.tests.stories.tsx
  *
  * The six third-party brand marks, which the generated Material Symbols set
- * does not contain. They sit in their own sidebar folder under Icons because
- * `icons.stories.tsx` builds its gallery from the generated barrel, and these
- * are deliberately not in it — see `../icons/brands/index.tsx`.
+ * does not contain (a GROUP in check-stories.mjs: they live in
+ * src/icons/brands/, not in a same-named component file). They are documented
+ * apart from Icons because `icons.stories.tsx` builds its gallery from the
+ * generated barrel, and these are deliberately not in it — see
+ * `../icons/brands/index.tsx`.
+ *
+ * The npm import line is written out in the docs page rather than via
+ * DocsPage's `npm` prop, which always prints `from '@nswds/ui'`; the marks
+ * ship from the `@nswds/ui/icons/brands` subpath.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -12,6 +22,14 @@ import type * as React from 'react'
 
 import * as BrandIcons from '../icons/brands/index.js'
 import { FooterSocialLink } from './footer.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const brandEntries = Object.entries(BrandIcons) as Array<
   [string, (props: React.SVGProps<SVGSVGElement>) => React.JSX.Element]
@@ -39,18 +57,170 @@ const CHANNELS = [
   { name: 'GitHub', href: 'https://github.com/digitalnsw', icon: BrandIcons.IconGitHub },
 ]
 
+function SocialRow() {
+  return (
+    <ul className='flex flex-wrap items-center gap-1'>
+      {CHANNELS.map(({ name, href, icon }) => (
+        <li key={name}>
+          <FooterSocialLink href={href} label={`Follow us on ${name}`} icon={icon} />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          The marks paint with <code>currentColor</code>, so they take the ink of whatever holds
+          them — foreground on the page, white on the brand band. Do not restyle them beyond colour:
+          they are the trademarks of their owners.
+        </>
+      }
+    >
+      <Example code={`<IconLinkedIn className="size-8" aria-hidden="true" />`}>
+        <ExampleCell label='on the page'>
+          <BrandIcons.IconLinkedIn aria-hidden='true' className='size-8 text-foreground' />
+        </ExampleCell>
+      </Example>
+      <Example surface='brand'>
+        <ExampleCell label={<span className='text-white'>on the brand band</span>}>
+          <BrandIcons.IconLinkedIn aria-hidden='true' className='size-8' />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function MarksSection() {
+  return (
+    <ExampleSection
+      title='Marks'
+      description='Six marks, for the channels NSW Government services link to. X replaced Twitter; there is no Twitter bird.'
+    >
+      <Example
+        code={`import {
+  IconFacebook,
+  IconGitHub,
+  IconInstagram,
+  IconLinkedIn,
+  IconX,
+  IconYouTube,
+} from '@nswds/ui/icons/brands'`}
+      >
+        {brandEntries.map(([name, Icon]) => (
+          <ExampleCell key={name} label={<code>{name}</code>}>
+            <Icon aria-hidden='true' className='size-8 text-foreground' />
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          The footer’s social row. Each mark sits in a <code>FooterSocialLink</code>, which names
+          the link — the mark itself stays decorative.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterSocialLink
+  href="https://www.linkedin.com/company/nswgovernment"
+  label="Follow us on LinkedIn"
+  icon={IconLinkedIn}
+/>`}
+      >
+        <SocialRow />
+      </Example>
+      <Example surface='brand'>
+        <SocialRow />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function IconBrandsDocs() {
+  return (
+    <DocsPage
+      title='IconBrands'
+      npm={['IconFacebook', 'IconX', 'IconYouTube']}
+      from='@nswds/ui/icons/brands'
+      registry='icon-brands'
+      summary={
+        <>
+          The six third-party brand marks a footer’s social row needs — Facebook, X, YouTube,
+          LinkedIn, Instagram and GitHub — imported from <code>@nswds/ui/icons/brands</code>. The
+          main icon set contains no brand marks.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The social links in a Footer.',
+          'Linking to an agency’s channel on one of these platforms.',
+          'A “Follow us” row at the end of a news article.',
+        ]}
+        avoid={[
+          'Any icon that is not a brand mark — use Icons.',
+          'Sharing a page to a platform — link to the platform’s own share URL with a text label.',
+          'The NSW Government mark — use Logo.',
+        ]}
+      />
+      <ColoursSection />
+      <MarksSection />
+      <InContextSection />
+      <DocsApi description='The marks take every SVG attribute. These are the ones you will set.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
-  title: 'Components/Icons/Brands',
+  title: 'Components/IconBrands',
+  component: BrandIcons.IconLinkedIn,
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
-    docs: {
-      description: {
-        component:
-          'Third-party brand marks for the footer social row. The NSWDS icon set is Material Symbols and contains none, but FooterSocialLinkItem requires an icon — so without these the footer cannot be completed from the package alone, and every site re-copies the same SVG paths. Unlike the generated set these are client references, so they can be passed as a component (not just an element) from a server component. Marks are the trademarks of their respective owners; do not restyle them beyond colour.',
-      },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: IconBrandsDocs },
+  },
+  args: {
+    className: 'size-8 text-foreground',
+    'aria-hidden': true,
+  },
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Size and colour, e.g. `size-6 text-primary`.',
+      table: { category: 'Appearance' },
+    },
+    'aria-hidden': {
+      control: 'boolean',
+      description: 'Hide the mark from assistive technology when its link is named.',
+      table: { category: 'Accessibility' },
+    },
+    'aria-label': {
+      control: 'text',
+      description: 'Name for a mark that stands alone. Pair with `role="img"`.',
+      table: { category: 'Accessibility' },
     },
   },
-} satisfies Meta
+} satisfies Meta<typeof BrandIcons.IconLinkedIn>
 
 export default meta
 
@@ -59,101 +229,19 @@ type Story = StoryObj<typeof meta>
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
-  render: () => (
-    <ul className='flex flex-wrap gap-6'>
-      {brandEntries.map(([name, Icon]) => (
-        <li key={name} className='flex w-28 flex-col items-center gap-2 text-center'>
-          <Icon aria-hidden='true' className='size-8 text-foreground' />
-          <code className='text-sm text-muted-foreground'>{name}</code>
-        </li>
-      ))}
-    </ul>
-  ),
-  play: async ({ canvasElement }) => {
-    // All six must be present — a mark silently dropped from the barrel would
-    // leave a consumer's footer row one channel short with no error.
-    const expected = [
-      'IconFacebook',
-      'IconGitHub',
-      'IconInstagram',
-      'IconLinkedIn',
-      'IconX',
-      'IconYouTube',
-    ]
-    const exported = brandEntries.map(([name]) => name).sort()
-    if (exported.join(',') !== expected.join(',')) {
-      throw new Error(`Expected ${expected.join(', ')}, received ${exported.join(', ')}.`)
-    }
-
-    const svgs = canvasElement.querySelectorAll('svg')
-    if (svgs.length !== expected.length) {
-      throw new Error(`Expected ${expected.length} rendered marks, received ${svgs.length}.`)
-    }
-
-    // They must paint with currentColor, or they cannot follow the ink of the
-    // button slot that renders them (and would vanish on a dark footer).
-    for (const svg of svgs) {
-      if (svg.getAttribute('fill') !== 'currentColor') {
-        throw new Error(`Expected fill="currentColor", received "${svg.getAttribute('fill')}".`)
-      }
-    }
-  },
-}
-
-export const Variants: Story = {
-  name: 'In a footer social row',
-  render: () => (
-    <div className='flex flex-col gap-8'>
-      <div>
-        <h3 className='mb-3 font-bold text-foreground'>On the page surface</h3>
-        <ul className='flex flex-wrap items-center gap-1'>
-          {CHANNELS.map(({ name, href, icon }) => (
-            <li key={name}>
-              <FooterSocialLink href={href} label={`Follow us on ${name}`} icon={icon} />
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className='rounded-md bg-primary p-6'>
-        <h3 className='mb-3 font-bold text-primary-foreground'>On a dark footer surface</h3>
-        <ul className='flex flex-wrap items-center gap-1 text-primary-foreground'>
-          {CHANNELS.map(({ name, href, icon }) => (
-            <li key={name}>
-              <FooterSocialLink href={href} label={`Follow us on ${name}`} icon={icon} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  render: () => (
-    <div className='text-primary'>
-      <BrandIcons.IconLinkedIn aria-hidden='true' className='size-8' />
-    </div>
-  ),
   play: async ({ canvasElement }) => {
     const svg = canvasElement.querySelector('svg')
-    if (!svg) {
-      throw new Error('Could not find a rendered mark.')
-    }
-
-    const styles = getComputedStyle(svg)
-
-    // Proves globals.css loaded: size-8 resolves to 32px rather than the
-    // browser's default SVG sizing.
-    if (styles.width !== '32px') {
-      throw new Error(`Expected size-8 to resolve to 32px, received "${styles.width}".`)
-    }
-
-    // currentColor must inherit the surrounding ink, which is what lets the
-    // button slot colour these without the mark hardcoding anything.
-    if (styles.color === '' || styles.color === 'rgba(0, 0, 0, 0)') {
-      throw new Error(`Expected the mark to inherit a resolved colour, received "${styles.color}".`)
+    if (!svg) throw new Error('Could not find the rendered mark.')
+    if (svg.getAttribute('fill') !== 'currentColor') {
+      throw new Error(`Expected fill="currentColor", received "${svg.getAttribute('fill')}".`)
     }
   },
 }
+
+export const Playground: Story = {}
+
+export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
+
+export const Marks: Story = { name: 'Marks', render: () => <MarksSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

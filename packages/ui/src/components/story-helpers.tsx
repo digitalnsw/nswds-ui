@@ -7,12 +7,14 @@
  * relative path `./story-helpers.js`. Storybook compiles from source
  * via Vite, so the `.js` specifier resolves to this `.tsx` file.
  *
- * Canonical reference for the patterns implemented here:
+ * The standard these helpers implement is docs/reference-storybook-standard.md;
+ * the canonical example of it is the Button story set:
  *   - packages/ui/src/components/button.stories.tsx
- *   - packages/ui/src/components/button.features.stories.tsx
+ *   - packages/ui/src/components/button.tests.stories.tsx
  *   - packages/ui/src/components/button.accessibility.stories.tsx
  */
 
+import { ArgTypes } from '@storybook/addon-docs/blocks'
 import { Fragment, type ReactNode } from 'react'
 import { expect, userEvent, waitFor } from 'storybook/test'
 
@@ -406,7 +408,101 @@ export function expectContrast(
   return ratio
 }
 
-/** Consumer documentation layout, shared by the Badge and Tag examples. */
+// ─── Docs kit ─────────────────────────────────────────────────────────────────
+//
+// The ONLY building blocks a component's docs page and its example stories
+// use, so every page in the catalogue reads the same way. The standard they
+// implement — page order, story names, file split — is
+// docs/reference-storybook-standard.md, and `check:stories` enforces it.
+//
+// A docs page is:
+//
+//   <DocsPage title summary npm registry>      the header and both install lines
+//     <DocsUsage use avoid />                  when to reach for it, and when not
+//     <VariantsSection /> …                    one ExampleSection per example story
+//     <DocsApi />                              the generated props table
+//   </DocsPage>
+//
+// and each example story renders the same section component, so the canvas
+// and the docs page can never drift apart.
+
+const docsPageClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
+
+/** Kept for the Breadcrumb look pages, which compose their own header. */
+export const exampleDocsClassName = docsPageClassName
+
+/** One install line in the docs header: a channel name and what to type. */
+function InstallLine({ channel, code }: { channel: string; code: string }) {
+  return (
+    <div className='flex flex-wrap items-baseline gap-x-4 gap-y-1'>
+      <dt className='w-20 shrink-0 font-semibold'>{channel}</dt>
+      <dd className='min-w-0'>
+        <code className='break-all'>{code}</code>
+      </dd>
+    </div>
+  )
+}
+
+/**
+ * The page frame and header every docs page starts with: what the thing is,
+ * one paragraph on what it is for, and how to get it on each distribution
+ * channel. `npm` is the export (or exports) to import, from the package root
+ * unless `from` names a subpath (`@nswds/ui/icons`); `registry` is the registry
+ * item name. Patterns are registry-only, so they pass no `npm`.
+ */
+export function DocsPage({
+  title,
+  summary,
+  eyebrow = 'Component',
+  npm,
+  from = '@nswds/ui',
+  registry,
+  children,
+}: {
+  title: string
+  summary: ReactNode
+  eyebrow?: string
+  npm?: string | readonly string[]
+  from?: string
+  registry?: string
+  children: ReactNode
+}) {
+  const imports = typeof npm === 'string' ? [npm] : npm
+  return (
+    <div className={docsPageClassName}>
+      <header className='space-y-8 border-b border-foreground/10 pb-12'>
+        <div className='space-y-4'>
+          <p className='text-base font-semibold text-muted-foreground'>{eyebrow}</p>
+          <h1 className='text-4xl font-bold tracking-tight'>{title}</h1>
+          <div className='max-w-[65ch] text-lg leading-relaxed text-muted-foreground'>
+            {summary}
+          </div>
+        </div>
+        {imports || registry ? (
+          <dl className='space-y-2 text-base'>
+            {imports ? (
+              // The quoted specifier is interpolated, not written inline:
+              // check:optimize-deps reads any quoted specifier after "from" as an import.
+              <InstallLine
+                channel='npm'
+                code={`import { ${imports.join(', ')} } from ${`'${from}'`}`}
+              />
+            ) : null}
+            {registry ? (
+              <InstallLine channel='Registry' code={`npx shadcn@latest add @nswds/${registry}`} />
+            ) : null}
+          </dl>
+        ) : null}
+      </header>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * One section of a docs page — and, rendered on its own, one example story.
+ * The heading is the story's name, so the sidebar and the page agree.
+ */
 export function ExampleSection({
   title,
   description,
@@ -417,25 +513,101 @@ export function ExampleSection({
   children: ReactNode
 }) {
   return (
-    <section className='space-y-5'>
+    <section className='space-y-6'>
       <div className='space-y-2'>
-        <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-        {description && (
-          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>{description}</p>
-        )}
+        <h2 className='text-2xl font-semibold tracking-tight'>{title}</h2>
+        {description ? (
+          <div className='max-w-[65ch] text-base leading-relaxed text-muted-foreground'>
+            {description}
+          </div>
+        ) : null}
       </div>
       {children}
     </section>
   )
 }
 
-/** A bordered, lightly tinted panel that frames a docs example. */
-export function ExamplePreview({ children }: { children: ReactNode }) {
-  return <div className='rounded-md border border-border bg-muted/20 p-6'>{children}</div>
+const exampleSurfaces = {
+  /** The page itself. Most examples. */
+  default: 'bg-background',
+  /** A sunken well, for white surfaces (cards, menus) that need a page to sit on. */
+  subtle: 'bg-foreground/5',
+  /**
+   * The solid brand band (AGENTS.md §3), for colours designed for dark
+   * surfaces. Labels on it take the band's white, not the page's muted grey,
+   * which is 1.75:1 on the band.
+   */
+  brand: 'bg-primary-800 text-white [--muted-foreground:var(--color-white)] dark:bg-primary-950',
+  /** A dark page inside a light docs page — see darkFrameClassName. */
+  dark: '',
+} as const
+
+/**
+ * A nested `.dark` flips the role tokens and `dark:` utilities, but the shadcn
+ * bridge tokens (`--foreground`, `--background`, …) are resolved once on
+ * `:root` and inherit their light values — so a dark frame re-declares the
+ * ones examples read, resolving them against the dark role tokens it now
+ * holds. Canvas stories use the story-level `globals: { theme: 'dark' }`
+ * instead, which needs none of this.
+ */
+const darkFrameClassName =
+  'dark bg-(--background) text-(--foreground) [--background:var(--surface-default)] [--border:var(--border-default)] [--foreground:var(--text-default)] [--muted-foreground:var(--text-muted)] [--muted:var(--background-subtle)]'
+
+const exampleLayouts = {
+  /** Specimens side by side, wrapping, bottom-aligned so their labels line up. */
+  row: 'flex flex-wrap items-end gap-x-10 gap-y-8',
+  /** Specimens one under another, at their natural width. */
+  stack: 'flex flex-col items-start gap-6',
+  /** Two equal columns from `sm` up. */
+  grid: 'grid gap-8 sm:grid-cols-2',
+  /** No arrangement: the child fills the frame (page chrome, tables, scenes). */
+  fill: '',
+} as const
+
+/**
+ * A live example in a hairline frame, with its code attached underneath.
+ * `layout` arranges the specimens; `surface` is what they sit on. Keep one
+ * idea per Example — two ideas are two Examples, or two sections.
+ */
+export function Example({
+  children,
+  code,
+  surface = 'default',
+  layout = 'row',
+  className,
+}: {
+  children: ReactNode
+  code?: string
+  surface?: keyof typeof exampleSurfaces
+  layout?: keyof typeof exampleLayouts
+  className?: string
+}) {
+  return (
+    <figure className='overflow-hidden rounded-md ring-1 ring-foreground/10'>
+      <div
+        data-theme={surface === 'dark' ? 'dark' : undefined}
+        className={cn(
+          'max-sm:p-6 sm:p-8',
+          surface === 'dark' ? darkFrameClassName : exampleSurfaces[surface],
+          exampleLayouts[layout],
+          className,
+        )}
+      >
+        {children}
+      </div>
+      {code ? (
+        // Wraps rather than scrolls: a scrolling <pre> is a scroll region that
+        // keyboard users cannot reach, which axe fails (scrollable-region-focusable).
+        <pre className='border-t border-foreground/10 bg-foreground/5 px-6 py-4 text-base leading-relaxed break-words whitespace-pre-wrap text-foreground'>
+          <code>{code}</code>
+        </pre>
+      ) : null}
+    </figure>
+  )
 }
 
-/** One example in a preview row: the rendered example above its label. */
-export function ExampleCell({ label, children }: { label: string; children: ReactNode }) {
+/** One labelled specimen inside an Example: the component above its label. */
+export function ExampleCell({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
     <div className='flex flex-col items-start gap-3'>
       <div className='flex min-h-12 items-center'>{children}</div>
@@ -444,22 +616,53 @@ export function ExampleCell({ label, children }: { label: string; children: Reac
   )
 }
 
-/** A docs code sample: preformatted, scrolling sideways rather than wrapping. */
-export function ExampleCode({ children }: { children: string }) {
+/** "When to use" — every docs page's first section, so a reader can stop early. */
+export function DocsUsage({ use, avoid }: { use: ReactNode[]; avoid: ReactNode[] }) {
   return (
-    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-base text-foreground'>
-      <code>{children}</code>
-    </pre>
+    <ExampleSection title='When to use'>
+      <div className='grid gap-x-10 gap-y-8 sm:grid-cols-2'>
+        <div className='space-y-3 border-t-4 border-(--success-solid) pt-4'>
+          <h3 className='text-lg font-semibold'>Use it for</h3>
+          <ul className='list-disc space-y-2 ps-5 text-base leading-relaxed'>
+            {use.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div className='space-y-3 border-t-4 border-foreground/20 pt-4'>
+          <h3 className='text-lg font-semibold'>Use something else when</h3>
+          <ul className='list-disc space-y-2 ps-5 text-base leading-relaxed'>
+            {avoid.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </ExampleSection>
   )
 }
 
-export const exampleDocsClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
+/** The generated props table for the page's component — every page's last section. */
+export function DocsApi({ description }: { description?: ReactNode }) {
+  return (
+    <ExampleSection
+      title='API'
+      description={
+        description ?? 'Props of the main component. Try them live in the Playground story.'
+      }
+    >
+      <div className='docs-api'>
+        <ArgTypes />
+      </div>
+    </ExampleSection>
+  )
+}
 
 // ─── Breadcrumb fixtures ──────────────────────────────────────────────────────
 
 /**
- * Shared by the Breadcrumb story files (main, Looks/*, Features,
- * Accessibility, Tests). They live here because this is the one non-story
+ * Shared by the Breadcrumb story files (main, Looks/*, Tests,
+ * Accessibility). They live here because this is the one non-story
  * module under `src/components/` that the build and the drift check skip.
  */
 
@@ -654,20 +857,10 @@ export function PhoneFrame({
   )
 }
 
-/**
- * A dark-mode frame inside a light docs page. A nested `.dark` flips the role
- * tokens and `dark:` utilities, but the shadcn bridge tokens (`--foreground`,
- * `--background`, …) are resolved once on `:root` and inherit their light
- * values — so this frame re-declares the ones the examples read, resolving
- * them against the dark role tokens it now holds. Canvas stories use the
- * story-level `globals: { theme: 'dark' }` instead, which needs none of this.
- */
+/** A dark-mode frame inside a light docs page; see darkFrameClassName. */
 export function DarkFrame({ children }: { children: ReactNode }) {
   return (
-    <div
-      data-theme='dark'
-      className='dark rounded-md bg-(--background) p-4 [--background:var(--surface-default)] [--border:var(--border-default)] [--foreground:var(--text-default)] [--muted-foreground:var(--text-muted)] [--muted:var(--background-subtle)]'
-    >
+    <div data-theme='dark' className={cn(darkFrameClassName, 'rounded-md p-4')}>
       {children}
     </div>
   )
@@ -731,43 +924,20 @@ export function BreadcrumbLookPage({
   notes?: ReactNode
 }) {
   return (
-    <div className={exampleDocsClassName}>
-      <section className='space-y-4'>
-        <p className='text-base font-semibold text-muted-foreground'>Breadcrumb look</p>
-        <h1 className='text-5xl font-bold tracking-tight'>{name}</h1>
-        <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>{summary}</p>
-      </section>
-      <ExampleSection title='When to use it'>
-        <div className='grid gap-8 sm:grid-cols-2'>
-          <div className='space-y-3'>
-            <h3 className='text-lg font-semibold'>Use it when</h3>
-            <ul className='list-disc space-y-2 ps-5'>
-              {useWhen.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-          <div className='space-y-3'>
-            <h3 className='text-lg font-semibold'>Choose another look when</h3>
-            <ul className='list-disc space-y-2 ps-5'>
-              {avoidWhen.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p className='max-w-2xl text-base text-muted-foreground'>{pairing}</p>
-      </ExampleSection>
-      <ExampleSection title='In context' description='On a service page, above the page heading.'>
-        <BreadcrumbScene look={look} header={header} />
+    <DocsPage eyebrow='Breadcrumb look' title={name} summary={summary}>
+      <DocsUsage use={useWhen} avoid={avoidWhen} />
+      <ExampleSection title='In context' description={pairing}>
+        <Example layout='fill' code={code}>
+          <BreadcrumbScene look={look} header={header} />
+        </Example>
       </ExampleSection>
       <ExampleSection
         title='In dark mode'
         description='Every look flips with the theme; nothing is restated per mode.'
       >
-        <DarkFrame>
+        <Example layout='fill' surface='dark'>
           <BreadcrumbScene look={look} header={header} />
-        </DarkFrame>
+        </Example>
       </ExampleSection>
       <ExampleSection
         title='On a phone'
@@ -795,9 +965,6 @@ export function BreadcrumbLookPage({
         </div>
       </ExampleSection>
       {notes}
-      <ExampleSection title='Code'>
-        <ExampleCode>{code}</ExampleCode>
-      </ExampleSection>
-    </div>
+    </DocsPage>
   )
 }

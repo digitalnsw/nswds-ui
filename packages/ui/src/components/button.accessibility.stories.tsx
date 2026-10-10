@@ -128,6 +128,7 @@ const WCAG_CRITERIA: Record<string, WcagCriterion> = {
 const meta = {
   title: 'Components/Button/Accessibility',
   component: Button,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -289,7 +290,7 @@ function TargetSizePanel({
                 aria-hidden='true'
               />
             </div>
-            <p className={`text-xs ${bodyClasses(color)}`}>{item.id.replaceAll('-', ' ')}</p>
+            <p className={`text-base ${bodyClasses(color)}`}>{item.id.replaceAll('-', ' ')}</p>
           </div>
         ))}
       </div>
@@ -319,7 +320,7 @@ export const ContrastMinimum: Story = {
     <div className='w-full max-w-7xl space-y-3'>
       {themeColors.map((color) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <div className='flex flex-wrap items-center gap-3'>
             <Button variant='solid' color={color}>
               Solid
@@ -389,7 +390,7 @@ export const FocusVisible: Story = {
     <div className='w-full max-w-7xl space-y-3'>
       {themeColors.map((color) => (
         <ThemeSurface key={`focus-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <div className='flex flex-wrap items-center gap-4'>
             {(['solid', 'soft', 'outline', 'ghost'] as const).map((variant) => (
               <Button
@@ -427,7 +428,7 @@ export const Keyboard: Story = {
   render: () => (
     <div className='space-y-4'>
       <Button>Press me</Button>
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Tab to focus, then press Enter or Space to activate.
       </p>
     </div>
@@ -484,7 +485,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Text labels (accessible name = visible label)
         </h4>
         <div className='flex flex-wrap gap-3'>
@@ -495,7 +496,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Icon-only (accessible name supplied via aria-label)
         </h4>
         <div className='flex flex-wrap gap-3'>
@@ -530,7 +531,7 @@ export const LabelInName: Story = {
 }
 
 export const TargetSizeMinimum: Story = {
-  name: 'Target Size — 2.5.8',
+  name: 'Target Size (Minimum) — 2.5.8',
   parameters: {
     wcag: ['2.5.8'],
     docs: {
@@ -549,9 +550,9 @@ export const TargetSizeMinimum: Story = {
     <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`target-size-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <TargetSizePanel color={color} overlaySize='1.5rem' />
-          <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
+          <p className={`mt-3 text-base ${bodyClasses(color)}`}>
             Blue solid outline = rendered bounds. Red dashed outline = WCAG 2.5.8 minimum (24×24px).
           </p>
         </ThemeSurface>
@@ -561,7 +562,7 @@ export const TargetSizeMinimum: Story = {
 }
 
 export const TapTarget: Story = {
-  name: 'Target Size Enhanced — 2.5.5',
+  name: 'Target Size (Enhanced) — 2.5.5',
   parameters: {
     wcag: ['2.5.5'],
     docs: {
@@ -580,9 +581,9 @@ export const TapTarget: Story = {
     <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`tap-target-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <TargetSizePanel color={color} overlaySize='2.75rem' />
-          <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
+          <p className={`mt-3 text-base ${bodyClasses(color)}`}>
             Blue solid outline = visible bounds. Red dashed outline = expanded 44×44px touch target
             geometry applied on coarse-pointer devices.
           </p>

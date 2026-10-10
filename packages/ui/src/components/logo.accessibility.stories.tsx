@@ -9,7 +9,7 @@
  *
  *   - 1.1.1 Non-text Content (A) — accessible name is provided
  *   - 1.4.11 Non-text Contrast (AA) — the mark meets 3:1 against its surface
- *   - 1.4.1  Use of Colour (A) — meaning conveyed by more than colour alone
+ *   - 1.4.1  Use of Color (A) — meaning conveyed by more than colour alone
  *
  * Stories for focus visibility, keyboard operation, and target size do not
  * apply (the Logo carries no role or hit area of its own).
@@ -18,11 +18,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Logo } from './logo.js'
-import { ThemeSurface, wcagStoryMeta } from './story-helpers.js'
+import { wcagStoryMeta } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Logo/Accessibility',
   component: Logo,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -36,6 +37,12 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Sanctioned pairings only (DESIGN.md, The Fixed-Mark Rule): full colour on
+// light surfaces, full colour reversed on the -800 brand band.
+const pageTile = 'space-y-3 rounded-md bg-background p-6 ring-1 ring-foreground/10'
+const mutedTile = 'space-y-3 rounded-md bg-muted p-6 ring-1 ring-foreground/10'
+const bandTile = 'space-y-3 rounded-md bg-primary-800 p-6 text-white dark:bg-primary-950'
 
 function getLogoSvg(canvasElement: HTMLElement): SVGSVGElement {
   const svg = canvasElement.querySelector('svg')
@@ -70,7 +77,7 @@ export const NonTextContent: Story = {
   render: () => (
     <div className='space-y-4'>
       <Logo className='h-16 w-auto' />
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Run a screen reader (VoiceOver, NVDA, JAWS) over the logo above and confirm it is announced
         as &quot;NSW Government&quot;.
       </p>
@@ -104,56 +111,37 @@ export const NonTextContrast: Story = {
         story: wcagStoryMeta({
           criteria: '1.4.11',
           why: 'The Logo is essential non-text content. Its visual form must meet a 3:1 contrast ratio against the surface behind it so users with low vision can perceive it.',
-          how: 'Use a contrast checker against each pairing below. The dark variants (default, mono-black) must hit 3:1 against the light surface; the light variants (reversed, mono-white) must hit 3:1 against the dark surface. Report any cell that falls below 3:1.',
+          how: 'Use a contrast checker against each sanctioned pairing below. The full-colour mark must hit 3:1 against the light surfaces; the reversed mark must hit 3:1 against the brand band. Report any cell that falls below 3:1.',
           caveat:
-            'Contrast for multi-colour marks is measured against the darkest stroke or shape that carries identity-bearing detail. For the NSW waratah this is the blue wordmark on light surfaces and the white waratah on dark surfaces.',
+            'Contrast for multi-colour marks is measured against the darkest stroke or shape that carries identity-bearing detail. For the NSW waratah this is the blue wordmark on light surfaces and the white wordmark on the brand band.',
         }),
       },
     },
   },
   render: () => (
-    <div className='grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-2'>
-      <ThemeSurface color='primary'>
-        <div className='space-y-3'>
-          <Logo logoType='default' className='h-16 w-auto' />
-          <p className='text-sm text-muted-foreground'>
-            default on background — wordmark blue against white
-          </p>
-        </div>
-      </ThemeSurface>
-
-      <ThemeSurface color='primary'>
-        <div className='space-y-3'>
-          <Logo logoType='mono-black' className='h-16 w-auto' />
-          <p className='text-sm text-muted-foreground'>
-            mono-black on background — solid black against white
-          </p>
-        </div>
-      </ThemeSurface>
-
-      <div className='rounded-sm border border-grey-700 bg-grey-900 p-4'>
-        <div className='space-y-3'>
-          <Logo logoType='reversed' className='h-16 w-auto' />
-          <p className='text-sm text-grey-200'>
-            reversed on grey-900 — white wordmark, red waratah
-          </p>
-        </div>
+    <div className='grid w-full max-w-5xl grid-cols-1 gap-4 md:grid-cols-3'>
+      <div className={pageTile}>
+        <Logo logoType='default' className='h-16 w-auto' />
+        <p className='text-base text-muted-foreground'>
+          default on the page — blue wordmark and red waratah against white
+        </p>
       </div>
 
-      <div className='rounded-sm border border-grey-700 bg-primary-800 p-4'>
-        <div className='space-y-3'>
-          <Logo logoType='mono-white' className='h-16 w-auto' />
-          <p className='text-sm text-grey-100'>
-            mono-white on primary-800 — solid white against NSW blue
-          </p>
-        </div>
+      <div className={mutedTile}>
+        <Logo logoType='default' className='h-16 w-auto' />
+        <p className='text-base text-muted-foreground'>default on a muted section</p>
+      </div>
+
+      <div className={bandTile}>
+        <Logo logoType='reversed' className='h-16 w-auto' />
+        <p className='text-base'>reversed on the brand band — white wordmark, red waratah</p>
       </div>
     </div>
   ),
 }
 
 export const UseOfColour: Story = {
-  name: 'Use of Colour — 1.4.1',
+  name: 'Use of Color — 1.4.1',
   parameters: {
     wcag: ['1.4.1'],
     docs: {
@@ -161,7 +149,7 @@ export const UseOfColour: Story = {
         story: wcagStoryMeta({
           criteria: '1.4.1',
           why: 'The Logo must not rely on colour alone to convey the NSW Government identity. The mark must remain recognisable to users with monochromatic vision and to users viewing the page in forced-colours mode.',
-          how: 'Compare the default colour version to the mono-black and mono-white renderings — the silhouette of the waratah and the wordmark shape must remain identifiable in every treatment. The accessible name "NSW Government" reinforces identity for users who cannot perceive the mark visually at all.',
+          how: 'Compare the full-colour and reversed renderings — the silhouette of the waratah and the wordmark shape must remain identifiable in every treatment. The accessible name "NSW Government" reinforces identity for users who cannot perceive the mark visually at all.',
           caveat:
             'Forced-colours mode (e.g. Windows High Contrast) may replace the SVG fills entirely. The sr-only accessible name guarantees the mark continues to communicate its identity even when no fill colour is rendered.',
         }),
@@ -170,25 +158,23 @@ export const UseOfColour: Story = {
   },
   render: () => (
     <div className='w-full max-w-5xl space-y-4'>
-      <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-        <div className='space-y-2 rounded-sm border border-border bg-background p-6'>
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        <div className={pageTile}>
           <Logo logoType='default' className='h-16 w-auto' />
-          <p className='text-xs text-muted-foreground'>Colour — shape + wordmark + brand fills</p>
-        </div>
-        <div className='space-y-2 rounded-sm border border-border bg-background p-6'>
-          <Logo logoType='mono-black' className='h-16 w-auto' />
-          <p className='text-xs text-muted-foreground'>
-            Monochrome — same shape, identity preserved without colour
+          <p className='text-base text-muted-foreground'>
+            Full colour — silhouette, wordmark and brand fills
           </p>
         </div>
-        <div className='space-y-2 rounded-sm border border-grey-700 bg-grey-900 p-6'>
-          <Logo logoType='mono-white' className='h-16 w-auto' />
-          <p className='text-xs text-grey-200'>Inverted monochrome — identity still legible</p>
+        <div className={bandTile}>
+          <Logo logoType='reversed' className='h-16 w-auto' />
+          <p className='text-base'>Reversed — the same silhouette and wordmark on the brand band</p>
         </div>
       </div>
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         The mark&apos;s meaning is carried by three independent channels — its distinctive
-        silhouette, the &quot;NSW Government&quot; accessible name, and only then by colour.
+        silhouette, the &quot;NSW Government&quot; accessible name, and only then by colour. The
+        mono marks reproduce the silhouette in one colour, but they are restricted use and need NSW
+        Government Brand Team approval, so they are not shown here.
       </p>
     </div>
   ),

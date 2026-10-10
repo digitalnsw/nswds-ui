@@ -1,0 +1,380 @@
+/**
+ * Switch — Tests
+ *
+ * Stories that exist to prove something rather than to show it: the Field
+ * wiring and label target, form submission, geometry and colour checks in
+ * light, dark and a brand theme, and a dark-mode snapshot of every state.
+ * Hidden from the sidebar; they run in the Vitest suite and Chromatic.
+ *
+ * The fixed theme globals are why these live here: inline autodocs stories
+ * share documentElement, and a story with fixed globals would repaint the
+ * whole docs page as it mounted.
+ */
+
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
+
+import { Field, FieldContent, FieldDescription, FieldError, FieldLabel } from './field.js'
+import { Input } from './input.js'
+import { resolveColor } from './story-helpers.js'
+import { Switch } from './switch.js'
+
+const meta = {
+  title: 'Components/Switch/Tests',
+  component: Switch,
+  tags: ['!dev', '!autodocs'],
+  parameters: {
+    layout: 'padded',
+  },
+} satisfies Meta<typeof Switch>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+// ─── Fixtures ─────────────────────────────────────────────────────────────────
+
+const states = [
+  { label: 'Off' },
+  { label: 'On', defaultChecked: true },
+  { label: 'Disabled off', disabled: true },
+  { label: 'Disabled on', disabled: true, defaultChecked: true },
+  { label: 'Invalid off', 'aria-invalid': true },
+  { label: 'Invalid on', 'aria-invalid': true, defaultChecked: true },
+] as const
+
+function SwitchStates({ size }: { size?: 'sm' | 'default' }) {
+  return (
+    <div className='grid max-w-xl grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2'>
+      {states.map(({ label, ...props }) => (
+        <Field
+          key={label}
+          orientation='horizontal'
+          className='min-h-11 gap-4'
+          disabled={'disabled' in props && props.disabled}
+        >
+          <Switch size={size} {...props} />
+          <FieldLabel className='font-normal'>{label}</FieldLabel>
+        </Field>
+      ))}
+    </div>
+  )
+}
+
+function SettingsList() {
+  const rows = [
+    {
+      name: 'Email updates',
+      description: 'Get an email when your application status changes.',
+      defaultChecked: true,
+    },
+    { name: 'SMS reminders', description: 'We will text you 2 days before your appointment.' },
+    {
+      name: 'Share usage data',
+      description: 'Available after you verify your mobile number.',
+      disabled: true,
+    },
+  ]
+  return (
+    <div className='w-full max-w-xl divide-y divide-border border-y border-border'>
+      {rows.map(({ name, description, ...props }) => (
+        <Field
+          key={name}
+          orientation='horizontal'
+          className='justify-between gap-6 py-5'
+          disabled={props.disabled}
+        >
+          <FieldContent>
+            <FieldLabel>{name}</FieldLabel>
+            <FieldDescription>{description}</FieldDescription>
+          </FieldContent>
+          <Switch {...props} />
+        </Field>
+      ))}
+    </div>
+  )
+}
+
+// ─── Stories ──────────────────────────────────────────────────────────────────
+
+/** Every state at both sizes on a dark page, so Chromatic holds the dark treatment. */
+export const DarkVariants: Story = {
+  render: () => (
+    <div className='grid gap-10'>
+      <SwitchStates />
+      <SwitchStates size='sm' />
+    </div>
+  ),
+  globals: { theme: 'dark' },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(document.documentElement).toHaveClass('dark'))
+    const canvas = within(canvasElement)
+    for (const { label } of states) {
+      await expect(canvas.getAllByRole('switch', { name: label })).toHaveLength(2)
+    }
+  },
+}
+
+export const WithField: Story = {
+  render: () => (
+    <div className='grid w-xl max-w-full gap-10'>
+      <SettingsList />
+      <Field orientation='horizontal' className='gap-4' invalid>
+        <Switch />
+        <FieldContent className='pt-1'>
+          <FieldLabel className='font-normal'>Two-step verification</FieldLabel>
+          <FieldError>Turn on two-step verification. Staff accounts need it.</FieldError>
+        </FieldContent>
+      </Field>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const updates = canvas.getByRole('switch', { name: 'Email updates' })
+    await expect(updates).toHaveAccessibleDescription(
+      'Get an email when your application status changes.',
+    )
+    // The label is part of the target; the description is not. Pin the start
+    // state so an unchanged value after the description click reads as "did
+    // not toggle", and toggle from the label afterwards so a late toggle from
+    // that click would leave the final state wrong.
+    await expect(updates).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(canvas.getByText('Get an email when your application status changes.'))
+    await expect(updates).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(canvas.getByText('Email updates'))
+    await expect(updates).toHaveAttribute('aria-checked', 'false')
+    const invalid = canvas.getByRole('switch', { name: 'Two-step verification' })
+    await expect(invalid).toHaveAttribute('aria-invalid', 'true')
+    await expect(invalid).toHaveAccessibleDescription(
+      'Turn on two-step verification. Staff accounts need it.',
+    )
+    // Disabled reads through colour, not opacity, and cannot be toggled.
+    const disabled = canvas.getByRole('switch', { name: 'Share usage data' })
+    await expect(disabled).toHaveAttribute('data-disabled')
+    await userEvent.click(disabled)
+    await expect(disabled).toHaveAttribute('aria-checked', 'false')
+    await expect(getComputedStyle(disabled).opacity).toBe('1')
+  },
+}
+
+export const FormSubmission: Story = {
+  render: () => (
+    <form className='grid gap-4'>
+      <Field orientation='horizontal' className='min-h-11 gap-4'>
+        <Switch name='updates' value='email' />
+        <FieldLabel className='font-normal'>Email updates</FieldLabel>
+      </Field>
+      <Field orientation='horizontal' className='min-h-11 gap-4'>
+        <Switch defaultChecked readOnly />
+        <FieldLabel className='font-normal'>Read only</FieldLabel>
+      </Field>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const form = canvasElement.querySelector('form')!
+    const control = canvas.getByRole('switch', { name: 'Email updates' })
+    await expect(new FormData(form).has('updates')).toBe(false)
+    await userEvent.click(control)
+    await expect(new FormData(form).get('updates')).toBe('email')
+    const readOnly = canvas.getByRole('switch', { name: 'Read only' })
+    await userEvent.click(readOnly)
+    await expect(readOnly).toHaveAttribute('aria-checked', 'true')
+  },
+}
+
+// Compare resolved colours, so these assertions follow consumer token overrides.
+function tokenColour(element: HTMLElement, token: string) {
+  const probe = document.createElement('span')
+  probe.style.color = `var(${token})`
+  element.append(probe)
+  const colour = getComputedStyle(probe).color
+  probe.remove()
+  return colour
+}
+
+// A story's theme globals apply after mount, so the track and thumb can still
+// be transitioning when play() reads them, and Chromium reports a colour caught
+// mid-transition in oklab rather than the token's oklch. Retry until it
+// settles, and compare painted pixels rather than colour strings.
+//
+// Resolve `expected` before calling: waitFor re-runs its callback on every DOM
+// mutation, and tokenColour() appends a probe, so calling it inside the retry
+// re-triggers the callback forever and the timeout never fires. `read` must
+// only read styles for the same reason.
+async function expectColour(read: () => string, expected: string, label: string) {
+  const target = resolveColor(expected)
+  await waitFor(() => {
+    const actual = resolveColor(read())
+    if (
+      actual.r !== target.r ||
+      actual.g !== target.g ||
+      actual.b !== target.b ||
+      actual.a !== target.a
+    ) {
+      throw new Error(`${label}: painted ${read()}, expected ${expected}.`)
+    }
+  })
+}
+
+// The off thumb's ring is an inset box-shadow that Tailwind composes with empty
+// shadow layers, so pick out the inset layer with a spread. Read-only, so it is
+// safe inside expectColour's retry.
+function insetRing(element: HTMLElement) {
+  for (const layer of getComputedStyle(element).boxShadow.split(/,(?![^(]*\))/)) {
+    const match = layer.trim().match(/^(.+?)\s+0px 0px 0px (\d+(?:\.\d+)?)px inset$/)
+    if (match && Number(match[2]) > 0) return { colour: match[1]!, width: Number(match[2]) }
+  }
+  return { colour: 'transparent', width: 0 }
+}
+
+const geometry = {
+  default: { width: 56, height: 32, thumb: 22, inset: 5, icon: 18 },
+  sm: { width: 40, height: 24, thumb: 16, inset: 4, icon: 12 },
+} as const
+
+export const CssCheck: Story = {
+  name: 'CssCheck',
+  // pointer-events-none: the test browser's real pointer can rest wherever the
+  // previous story left it, and a pointer over the first switch paints the
+  // hover tint on its thumb, which is correct behaviour and a wrong reading
+  // here. Focus is driven with .focus(), so it is unaffected.
+  render: () => (
+    <div className='pointer-events-none grid gap-6'>
+      {(['default', 'sm'] as const).flatMap((size) =>
+        states.map(({ label, ...props }) => (
+          <Switch key={`${size} ${label}`} aria-label={`${size} ${label}`} size={size} {...props} />
+        )),
+      )}
+      <Input aria-label='Invalid input reference' aria-invalid />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const input = canvas.getByRole('textbox')
+    const dark = document.documentElement.classList.contains('dark')
+
+    for (const size of ['default', 'sm'] as const) {
+      const expected = geometry[size]
+      for (const { label } of states) {
+        const control = canvas.getByRole('switch', { name: `${size} ${label}` })
+        const on = label.endsWith(' on') || label === 'On'
+        const box = control.getBoundingClientRect()
+        await expect(box.width).toBe(expected.width)
+        await expect(box.height).toBe(expected.height)
+        await expect(getComputedStyle(control, '::after').height).toBe('44px')
+        await expect(Number.parseFloat(getComputedStyle(control, '::after').width)).toBe(
+          Math.max(expected.width, 44),
+        )
+
+        // The thumb sits at the Checkbox inset and travels to the far inset.
+        const thumb = control.querySelector<HTMLElement>('[data-slot="switch-thumb"]')!
+        await waitFor(() => {
+          const t = thumb.getBoundingClientRect()
+          expect(t.width).toBe(expected.thumb)
+          expect(t.y + t.height / 2).toBe(box.y + box.height / 2)
+          expect(on ? box.right - t.right : t.x - box.x).toBe(expected.inset)
+        })
+
+        // State by shape: only the on thumb carries the tick.
+        const icon = thumb.querySelector('svg')
+        if (on) {
+          await expect(icon).not.toBeNull()
+          await expect(icon!.getBoundingClientRect().width).toBe(expected.icon)
+        } else {
+          await expect(icon).toBeNull()
+        }
+
+        const ink = label.startsWith('Invalid')
+          ? '--danger-solid'
+          : label.startsWith('Disabled')
+            ? '--text-subtle'
+            : dark
+              ? '--color-primary-200'
+              : '--color-primary-800'
+        if (on) {
+          const name = `${size} ${label}`
+          await expectColour(
+            () => getComputedStyle(control).backgroundColor,
+            tokenColour(control, ink),
+            `${name} track fill`,
+          )
+          await expectColour(
+            () => getComputedStyle(thumb).backgroundColor,
+            tokenColour(control, label.startsWith('Invalid') ? '--white' : '--surface-default'),
+            `${name} thumb`,
+          )
+          await expectColour(
+            () => getComputedStyle(thumb).color,
+            tokenColour(control, ink),
+            `${name} tick`,
+          )
+        } else {
+          // The off track keeps its full-contrast hairline; the old one was a
+          // border-default fill at 1.34:1 against the page.
+          const name = `${size} ${label}`
+          await expectColour(
+            () => getComputedStyle(control).borderTopColor,
+            label.startsWith('Invalid')
+              ? getComputedStyle(input).borderTopColor
+              : tokenColour(
+                  control,
+                  label.startsWith('Disabled') ? '--text-subtle' : '--text-default',
+                ),
+            `${name} track border`,
+          )
+          await expectColour(
+            () => getComputedStyle(thumb).backgroundColor,
+            tokenColour(control, '--input-surface'),
+            `${name} thumb`,
+          )
+          // Off by shape: a 2px ring in the text colour, not just any shadow.
+          await expectColour(
+            () => insetRing(thumb).colour,
+            tokenColour(control, label.startsWith('Disabled') ? '--text-subtle' : '--text-default'),
+            `${name} thumb ring`,
+          )
+          await expect(insetRing(thumb).width).toBe(2)
+          if (label.startsWith('Invalid')) {
+            // Border plus a 1px inset ring: Input's 2px invalid edge.
+            await expect(getComputedStyle(control).boxShadow).not.toBe('none')
+          }
+        }
+        await expect(getComputedStyle(control).opacity).toBe('1')
+      }
+    }
+
+    // Establish keyboard modality, then focus the control to inspect the real ring.
+    await userEvent.tab()
+    const plain = canvas.getByRole('switch', { name: 'default On' })
+    plain.focus()
+    await expect(plain).toHaveFocus()
+    await expect(getComputedStyle(plain).outlineStyle).toBe('solid')
+    await expect(getComputedStyle(plain).outlineWidth).toBe('2px')
+    await expect(getComputedStyle(plain).outlineOffset).toBe('3px')
+
+    const invalid = canvas.getByRole('switch', { name: 'default Invalid on' })
+    invalid.focus()
+    await expect(getComputedStyle(invalid).outlineOffset).toBe('2px')
+    await expectColour(
+      () => getComputedStyle(invalid).outlineColor,
+      tokenColour(invalid, '--input-invalid-ring'),
+      'invalid focus ring',
+    )
+  },
+}
+
+export const DarkCssCheck: Story = {
+  ...CssCheck,
+  globals: { theme: 'dark' },
+}
+
+export const BrandThemeCssCheck: Story = {
+  ...CssCheck,
+  globals: { theme: 'light', themeCategory: 'brand', themePrimary: 'purple' },
+}
+
+export const DarkBrandThemeCssCheck: Story = {
+  ...CssCheck,
+  globals: { theme: 'dark', themeCategory: 'brand', themePrimary: 'purple' },
+}

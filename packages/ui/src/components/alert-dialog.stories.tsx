@@ -2,13 +2,17 @@
  * AlertDialog — a modal that requires an explicit choice, on the Base UI
  * alert-dialog primitive (`role="alertdialog"`, no outside-click dismissal;
  * Escape still closes it, as Cancel).
+ *
+ *   Components/AlertDialog        → this file: Docs, Default, Playground and
+ *                                   one story per docs section
+ *   Components/AlertDialog/Tests  → alert-dialog.tests.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { useState } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { type ComponentProps, type ReactNode, useState } from 'react'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 
-import { IconWarning } from '../icons/warning.js'
+import { IconDelete, IconLogout, IconWarning } from '../icons/index.js'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,29 +24,450 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
+  type AlertDialogVariant,
 } from './alert-dialog.js'
 import { Button } from './button.js'
-import { waitForUnmount as waitForSlotUnmount } from './story-helpers.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+  waitForUnmount,
+} from './story-helpers.js'
+
+const looks: ReadonlyArray<readonly [AlertDialogVariant, string]> = [
+  [
+    'default',
+    'Hairline — the header and footer are divided off by hairlines that bleed to the edges.',
+  ],
+  ['band', 'The header is a solid band in the colour of the decision.'],
+  [
+    'rule',
+    'A 4px rule in the colour of the decision caps the top edge; actions align to the start.',
+  ],
+]
+
+/**
+ * An alert dialog whose action closes it, the way a consumer's would:
+ * AlertDialogAction does not close the dialog on its own, so the example
+ * controls `open` and closes it once the action has run.
+ */
+function ConfirmDialog({
+  trigger,
+  title,
+  description,
+  cancel = 'Cancel',
+  action,
+  danger = false,
+  media,
+  plainAction = false,
+  ...content
+}: {
+  trigger: string
+  title: string
+  description: string
+  cancel?: string
+  action: ReactNode
+  danger?: boolean
+  media?: ReactNode
+  /** Confirm with a plain Button rather than AlertDialogAction. */
+  plainAction?: boolean
+} & Pick<ComponentProps<typeof AlertDialogContent>, 'variant' | 'size' | 'tone'>) {
+  const [open, setOpen] = useState(false)
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger render={<Button variant='outline' />}>{trigger}</AlertDialogTrigger>
+      <AlertDialogContent {...content}>
+        <AlertDialogHeader>
+          {media ? <AlertDialogMedia>{media}</AlertDialogMedia> : null}
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{cancel}</AlertDialogCancel>
+          {plainAction ? (
+            <Button color={danger ? 'danger' : undefined} onClick={() => setOpen(false)}>
+              {action}
+            </Button>
+          ) : (
+            <AlertDialogAction color={danger ? 'danger' : undefined} onClick={() => setOpen(false)}>
+              {action}
+            </AlertDialogAction>
+          )}
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          <code>variant</code> on <code>AlertDialogContent</code> picks the same three looks as
+          Dialog. Under <code>band</code> and <code>rule</code> the colour is the decision&apos;s:
+          the action colour here, danger for a destructive confirm (see Destructive actions).
+        </>
+      }
+    >
+      <Example code={`<AlertDialogContent variant="band">…</AlertDialogContent>`}>
+        {looks.map(([look]) => (
+          <ExampleCell key={look} label={look}>
+            <ConfirmDialog
+              variant={look}
+              trigger={`Submit (${look})`}
+              title='Submit your application?'
+              description='You cannot change your answers after you submit.'
+              cancel='Go back'
+              action='Submit application'
+            />
+          </ExampleCell>
+        ))}
+      </Example>
+      <dl className='grid gap-x-10 gap-y-3'>
+        {looks.map(([name, description]) => (
+          <div key={name} className='flex gap-4'>
+            <dt className='w-20 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          <code>default</code> is 512px wide. <code>sm</code> narrows it to 384px and splits the
+          footer into two equal buttons — for a short question with short answers.
+        </>
+      }
+    >
+      <Example code={`<AlertDialogContent size="sm">…</AlertDialogContent>`}>
+        <ExampleCell label='default'>
+          <ConfirmDialog
+            trigger='Discard changes'
+            title='Discard your changes?'
+            description='The changes you made to your contact details have not been saved.'
+            cancel='Keep editing'
+            action='Discard changes'
+          />
+        </ExampleCell>
+        <ExampleCell label='sm'>
+          <ConfirmDialog
+            size='sm'
+            trigger='Sign out'
+            title='Sign out?'
+            description='Unsaved changes will be lost.'
+            cancel='Stay'
+            action='Sign out'
+          />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function WithIconsSection() {
+  return (
+    <ExampleSection
+      title='With icons'
+      description={
+        <>
+          <code>AlertDialogMedia</code> puts an icon with the title: on a tile in the default look,
+          bare above the title in <code>band</code>, and beside it in <code>rule</code>. The icon is
+          decorative — the title carries the meaning — so hide it from assistive tech.
+        </>
+      }
+    >
+      <Example
+        code={`<AlertDialogHeader>
+  <AlertDialogMedia><IconWarning aria-hidden="true" /></AlertDialogMedia>
+  <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
+</AlertDialogHeader>`}
+      >
+        {looks.map(([look]) => (
+          <ExampleCell key={look} label={look}>
+            <ConfirmDialog
+              variant={look}
+              danger
+              media={<IconWarning aria-hidden='true' />}
+              trigger={`Delete draft (${look})`}
+              title='Delete this draft?'
+              description='The draft and its attachments are deleted permanently.'
+              action='Delete draft'
+            />
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function DestructiveActionsSection() {
+  return (
+    <ExampleSection
+      title='Destructive actions'
+      description={
+        <>
+          The colour follows the decision, so a &ldquo;Sign out?&rdquo; never borrows the alarm of a
+          &ldquo;Delete?&rdquo;. An <code>AlertDialogAction</code> with{' '}
+          <code>color=&quot;danger&quot;</code> is detected and turns the band or rule red. If the
+          danger button is anything else — a plain <code>Button</code>, a link — say so with{' '}
+          <code>tone=&quot;danger&quot;</code>.
+        </>
+      }
+    >
+      <Example code={`<AlertDialogAction color="danger">Delete account</AlertDialogAction>`}>
+        <ExampleCell label='action colour'>
+          <ConfirmDialog
+            variant='band'
+            media={<IconLogout aria-hidden='true' />}
+            trigger='Sign out'
+            title='Sign out of your account?'
+            description='You will need to sign in again to continue your application.'
+            action='Sign out'
+          />
+        </ExampleCell>
+        <ExampleCell label='color="danger"'>
+          <ConfirmDialog
+            variant='band'
+            danger
+            media={<IconDelete aria-hidden='true' />}
+            trigger='Delete account'
+            title='Delete your account?'
+            description='Your saved applications and documents are deleted permanently.'
+            action='Delete account'
+          />
+        </ExampleCell>
+      </Example>
+      <Example code={`<AlertDialogContent variant="rule" tone="danger">…</AlertDialogContent>`}>
+        <ExampleCell label='rule + color="danger"'>
+          <ConfirmDialog
+            variant='rule'
+            danger
+            trigger='Remove vehicle'
+            title='Remove this vehicle from your account?'
+            description='Its registration reminders will stop.'
+            action='Remove vehicle'
+          />
+        </ExampleCell>
+        <ExampleCell label='rule + tone="danger"'>
+          <ConfirmDialog
+            variant='rule'
+            tone='danger'
+            danger
+            plainAction
+            trigger='Cancel booking'
+            title='Cancel your driving test booking?'
+            description='Your booking fee is refunded only if you cancel at least 2 full business days before the test.'
+            cancel='Keep booking'
+            action='Cancel booking'
+          />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [open, setOpen] = useState(false)
+  const [withdrawn, setWithdrawn] = useState(false)
+  return (
+    <div className='flex flex-col items-start gap-4'>
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogTrigger render={<Button variant='outline' />} disabled={withdrawn}>
+          Withdraw application
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Withdraw your application?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to start a new application if you change your mind.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep application</AlertDialogCancel>
+            <AlertDialogAction
+              color='danger'
+              onClick={() => {
+                setWithdrawn(true)
+                setOpen(false)
+              }}
+            >
+              Withdraw
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <p className='text-muted-foreground' aria-live='polite'>
+        {withdrawn ? 'Your application has been withdrawn.' : 'Application in progress.'}
+      </p>
+    </div>
+  )
+}
+
+function ControlledSection() {
+  return (
+    <ExampleSection
+      title='Controlled'
+      description={
+        <>
+          <code>AlertDialogAction</code> does not close the dialog by itself, so the action can run
+          — and fail — first. Control <code>open</code> and close it from the handler once the
+          action succeeds. Escape and Cancel both close it without acting.
+        </>
+      }
+    >
+      <Example
+        code={`const [open, setOpen] = useState(false)
+
+<AlertDialog open={open} onOpenChange={setOpen}>
+  …
+  <AlertDialogAction color="danger" onClick={async () => {
+    await withdraw()
+    setOpen(false)
+  }}>
+    Withdraw
+  </AlertDialogAction>
+</AlertDialog>`}
+      >
+        <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function AlertDialogDocs() {
+  return (
+    <DocsPage
+      title='AlertDialog'
+      npm={[
+        'AlertDialog',
+        'AlertDialogTrigger',
+        'AlertDialogContent',
+        'AlertDialogHeader',
+        'AlertDialogMedia',
+        'AlertDialogTitle',
+        'AlertDialogDescription',
+        'AlertDialogFooter',
+        'AlertDialogAction',
+        'AlertDialogCancel',
+      ]}
+      registry='alert-dialog'
+      summary={
+        <>
+          A modal that interrupts the reader to confirm or cancel a consequential action. It has no
+          close button and an outside click does not dismiss it: the reader answers the question.
+          Escape still closes it, and counts as Cancel — so never make closing the dialog perform
+          the action.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Confirming an action that cannot be undone, like deleting or withdrawing.',
+          'Warning that leaving will lose unsaved work.',
+          'A yes-or-no decision the reader must make before they can continue.',
+        ]}
+        avoid={[
+          'Collecting input or showing detail the reader can dismiss — use Dialog.',
+          'Telling the reader something happened — use a toast (Toaster), or a Callout on the page.',
+          'The action is easy to undo — act straight away and offer Undo in a toast instead.',
+        ]}
+      />
+      <VariantsSection />
+      <SizesSection />
+      <WithIconsSection />
+      <DestructiveActionsSection />
+      <ControlledSection />
+      <DocsApi description='Props of the AlertDialog root, plus the look and size set on AlertDialogContent. Try them live in the Playground story.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+/**
+ * The look and size are props of `AlertDialogContent`, not of the root the
+ * meta documents, so the args type is widened to let the Playground switch them.
+ */
+type StoryArgs = ComponentProps<typeof AlertDialog> & {
+  variant?: AlertDialogVariant
+  size?: 'default' | 'sm'
+}
 
 const meta = {
-  title: 'Components/Alert Dialog',
+  title: 'Components/AlertDialog',
   component: AlertDialog,
   tags: ['autodocs'],
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'A modal that interrupts the user to confirm or cancel a consequential action. It has no close button and does not dismiss on an outside click; Escape closes it and counts as Cancel. AlertDialogAction does not close the dialog by itself — close it from your handler once the action succeeds.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: AlertDialogDocs },
   },
-  render: (args) => (
+  args: {
+    variant: 'default',
+    size: 'default',
+    onOpenChange: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'band', 'rule'],
+      description: 'The look, set on AlertDialogContent: default (Hairline), band or rule.',
+      table: { category: 'Appearance' },
+    },
+    size: {
+      control: 'inline-radio',
+      options: ['default', 'sm'],
+      description: 'Set on AlertDialogContent. sm narrows the popup and splits the footer evenly.',
+      table: { category: 'Appearance' },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the dialog is open on first render (uncontrolled).',
+      table: { category: 'Behavior' },
+    },
+    open: {
+      control: false,
+      description:
+        'Whether the dialog is open. Control it to close the dialog once the action succeeds.',
+      table: { category: 'Behavior' },
+    },
+    onOpenChange: {
+      description: 'Called when the dialog opens or closes (logged in the Actions panel).',
+      table: { category: 'Events' },
+    },
+    onOpenChangeComplete: {
+      description: 'Called once the open or close transition has finished.',
+      table: { category: 'Events' },
+    },
+    actionsRef: { table: { disable: true } },
+    handle: { table: { disable: true } },
+    triggerId: { table: { disable: true } },
+    defaultTriggerId: { table: { disable: true } },
+    children: { table: { disable: true } },
+  },
+  render: ({ variant, size, ...args }) => (
     <AlertDialog {...args}>
       <AlertDialogTrigger render={<Button variant='outline' />}>
         Withdraw application
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent variant={variant} size={size}>
         <AlertDialogHeader>
           <AlertDialogTitle>Withdraw your application?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -56,13 +481,11 @@ const meta = {
       </AlertDialogContent>
     </AlertDialog>
   ),
-} satisfies Meta<typeof AlertDialog>
+} satisfies Meta<StoryArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-const waitForUnmount = () => waitForSlotUnmount('alert-dialog-content')
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -85,328 +508,22 @@ export const Default: Story = {
     ).toEqual(['Keep application', 'Withdraw'])
 
     await userEvent.click(within(dialog).getByRole('button', { name: 'Keep application' }))
-    await waitForUnmount()
+    await waitForUnmount('alert-dialog-content')
     await waitFor(() => expect(trigger).toHaveFocus())
   },
 }
 
-/**
- * The action runs its handler and closes the dialog itself by controlling
- * `open` — the pattern for an action that can fail.
- */
-export const ControlledAction: Story = {
-  name: 'Controlled action',
-  render: function Render() {
-    const [open, setOpen] = useState(false)
-    const [status, setStatus] = useState('Not withdrawn')
-    return (
-      <div className='flex flex-col items-center gap-4'>
-        <AlertDialog open={open} onOpenChange={setOpen}>
-          <AlertDialogTrigger render={<Button variant='outline' />}>
-            Withdraw application
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Withdraw your application?</AlertDialogTitle>
-              <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Keep application</AlertDialogCancel>
-              <AlertDialogAction
-                color='danger'
-                onClick={() => {
-                  setStatus('Withdrawn')
-                  setOpen(false)
-                }}
-              >
-                Withdraw
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <p data-testid='status'>{status}</p>
-      </div>
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Withdraw application' }))
-    const dialog = await within(document.body).findByRole('alertdialog')
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Withdraw' }))
-    await waitForUnmount()
-    await expect(canvas.getByTestId('status')).toHaveTextContent('Withdrawn')
-  },
+export const Playground: Story = {}
+
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
+
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
+
+export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
+
+export const DestructiveActions: Story = {
+  name: 'Destructive actions',
+  render: () => <DestructiveActionsSection />,
 }
 
-/**
- * The alert dialog's defining difference from Dialog: an outside click does
- * NOT dismiss it. Escape still does, and acts as Cancel.
- */
-export const OutsideClickDoesNotDismiss: Story = {
-  name: 'Outside click does not dismiss',
-  play: async ({ canvasElement }) => {
-    const trigger = within(canvasElement).getByRole('button', { name: 'Withdraw application' })
-    await userEvent.click(trigger)
-    const dialog = await within(document.body).findByRole('alertdialog')
-
-    const overlay = document.querySelector<HTMLElement>('[data-slot="alert-dialog-overlay"]')
-    if (!overlay) throw new Error('Alert dialog overlay not mounted.')
-    await userEvent.click(overlay)
-    // Give a dismissal the chance to start before asserting it did not.
-    await new Promise((resolve) => setTimeout(resolve, 300))
-    await expect(within(document.body).getByRole('alertdialog')).toBe(dialog)
-
-    await userEvent.keyboard('{Escape}')
-    await waitForUnmount()
-    await waitFor(() => expect(trigger).toHaveFocus())
-  },
-}
-
-/** `size='sm'` narrows the popup and splits the footer into two equal buttons. */
-export const Small: Story = {
-  name: 'Small',
-  render: () => (
-    <AlertDialog>
-      <AlertDialogTrigger render={<Button variant='outline' />}>Sign out</AlertDialogTrigger>
-      <AlertDialogContent size='sm'>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Sign out?</AlertDialogTitle>
-          <AlertDialogDescription>Unsaved changes will be lost.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Stay</AlertDialogCancel>
-          <AlertDialogAction>Sign out</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  ),
-  play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Sign out' }))
-    const dialog = await within(document.body).findByRole('alertdialog')
-    await expect(getComputedStyle(dialog).maxWidth).toBe('384px')
-
-    const footer = dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-footer"]')
-    await expect(getComputedStyle(footer!).display).toBe('grid')
-    const [stay, signOut] = within(footer!).getAllByRole('button')
-    await expect(Math.round(stay!.getBoundingClientRect().width)).toBe(
-      Math.round(signOut!.getBoundingClientRect().width),
-    )
-
-    await userEvent.click(stay!)
-    await waitForUnmount()
-  },
-}
-
-const LOOKS = ['default', 'band', 'rule'] as const
-
-function LookDialog({ look, danger }: { look: (typeof LOOKS)[number]; danger: boolean }) {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger render={<Button variant='outline' />}>
-        {look} {danger ? 'danger' : 'plain'}
-      </AlertDialogTrigger>
-      <AlertDialogContent variant={look}>
-        <AlertDialogHeader>
-          <AlertDialogMedia>
-            <IconWarning aria-hidden='true' />
-          </AlertDialogMedia>
-          <AlertDialogTitle>{danger ? 'Delete this draft?' : 'Sign out?'}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {danger ? 'The draft is deleted permanently.' : 'Unsaved changes will be lost.'}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction color={danger ? 'danger' : undefined}>
-            {danger ? 'Delete draft' : 'Sign out'}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  )
-}
-
-/**
- * The three approved looks. Under `band` and `rule` the colour follows the
- * decision: a danger action turns the band and the rule to the danger ramp,
- * any other action keeps the action colour.
- */
-export const Looks: Story = {
-  name: 'Looks',
-  render: () => (
-    <div className='grid grid-cols-2 gap-4'>
-      {LOOKS.flatMap((look) => [
-        <LookDialog key={`${look}-plain`} look={look} danger={false} />,
-        <LookDialog key={`${look}-danger`} look={look} danger />,
-      ])}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const read = async (name: string) => {
-      await userEvent.click(canvas.getByRole('button', { name }))
-      const dialog = await within(document.body).findByRole('alertdialog')
-      const header = dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-header"]')!
-      const result = {
-        variant: dialog.getAttribute('data-variant'),
-        band: getComputedStyle(header).backgroundColor,
-        rule: getComputedStyle(dialog).borderTopColor,
-        titleColor: getComputedStyle(
-          dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-title"]')!,
-        ).color,
-        ruleWidth: getComputedStyle(dialog).borderTopWidth,
-      }
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-      await waitForUnmount()
-      return result
-    }
-
-    const bandPlain = await read('band plain')
-    const bandDanger = await read('band danger')
-    await expect(bandDanger.variant).toBe('band')
-    await expect(bandPlain.band).not.toBe('rgba(0, 0, 0, 0)')
-    await expect(bandDanger.band).not.toBe(bandPlain.band)
-    // Button's danger pairing: white on danger-600, 6.6:1 in both modes.
-    await expect(bandDanger.titleColor).toBe('oklch(1 0 0)')
-
-    const rulePlain = await read('rule plain')
-    const ruleDanger = await read('rule danger')
-    await expect(rulePlain.ruleWidth).toBe('4px')
-    await expect(ruleDanger.rule).not.toBe(rulePlain.rule)
-
-    const plain = await read('default plain')
-    await expect(plain.ruleWidth).toBe('0px')
-  },
-}
-
-/**
- * In dark mode `--text-inverse` is near-black, which on `--danger-solid` is
- * 4.06:1 — under the 4.5:1 floor. The danger band therefore uses Button's own
- * pairing, white on danger-600, in both modes. Only a dark page can tell the
- * two apart, since in light mode `--text-inverse` is white as well.
- */
-export const DangerBandInDark: Story = {
-  name: 'Danger band in dark',
-  globals: { theme: 'dark' },
-  render: () => <LookDialog look='band' danger />,
-  play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'band danger' }))
-    const dialog = await within(document.body).findByRole('alertdialog')
-    const title = dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-title"]')!
-    const description = dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-description"]')!
-    await expect(getComputedStyle(title).color).toBe('oklch(1 0 0)')
-    await expect(getComputedStyle(description).color).toBe('oklch(1 0 0)')
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    await waitForUnmount()
-  },
-}
-
-/**
- * `tone='danger'` marks a destructive confirm whose danger button is not an
- * `AlertDialogAction` — here a plain Button — so the band still turns red. A
- * description placed below the band keeps its own ink rather than the band's.
- */
-export const Tone: Story = {
-  name: 'Tone',
-  render: () => (
-    <div className='flex gap-4'>
-      <AlertDialog>
-        <AlertDialogTrigger render={<Button variant='outline' />}>Plain button</AlertDialogTrigger>
-        <AlertDialogContent variant='band'>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogDescription>The draft is deleted permanently.</AlertDialogDescription>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button color='danger'>Delete draft</Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog>
-        <AlertDialogTrigger render={<Button variant='outline' />}>With tone</AlertDialogTrigger>
-        <AlertDialogContent variant='band' tone='danger'>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <Button color='danger'>Delete draft</Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const read = async (name: string) => {
-      await userEvent.click(canvas.getByRole('button', { name }))
-      const dialog = await within(document.body).findByRole('alertdialog')
-      const header = dialog.querySelector<HTMLElement>('[data-slot="alert-dialog-header"]')!
-      const description = dialog.querySelector<HTMLElement>(
-        '[data-slot="alert-dialog-description"]',
-      )
-      const result = {
-        band: getComputedStyle(header).backgroundColor,
-        descriptionInk: description ? getComputedStyle(description).color : null,
-      }
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-      await waitForUnmount()
-      return result
-    }
-    const plain = await read('Plain button')
-    const toned = await read('With tone')
-    // Undetected danger stays on the action colour; tone='danger' turns it red.
-    await expect(toned.band).not.toBe(plain.band)
-    // Below the band, the description keeps its muted ink.
-    await expect(plain.descriptionInk).not.toBe('oklch(1 0 0)')
-  },
-}
-
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <div className='flex flex-wrap gap-4'>
-      <AlertDialog>
-        <AlertDialogTrigger render={<Button variant='outline' />}>With media</AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogMedia className='bg-(--danger-surface) text-(--danger-text)'>
-              <IconWarning aria-hidden='true' />
-            </AlertDialogMedia>
-            <AlertDialogTitle>Delete this draft?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The draft and its attachments are deleted permanently.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction color='danger'>Delete draft</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    await userEvent.click(
-      within(canvasElement).getByRole('button', { name: 'Withdraw application' }),
-    )
-    const popup = await waitFor(() => {
-      const el = document.querySelector<HTMLElement>('[data-slot="alert-dialog-content"]')
-      if (!el) throw new Error('Alert dialog popup not mounted.')
-      return el
-    })
-
-    // Proves globals.css loaded: --popover resolves to a real colour.
-    await expect(getComputedStyle(popup).backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
-    const description = popup.querySelector<HTMLElement>('[data-slot="alert-dialog-description"]')
-    await expect(getComputedStyle(description!).fontSize).toBe('16px')
-
-    await userEvent.click(within(popup).getByRole('button', { name: 'Keep application' }))
-    await waitForUnmount()
-  },
-}
+export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }

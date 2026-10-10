@@ -17,13 +17,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Spinner } from './spinner.js'
-import { ThemeSurface, wcagStoryMeta } from './story-helpers.js'
+import { ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Spinner/Accessibility',
   component: Spinner,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -51,7 +52,7 @@ function getStatus(canvasElement: HTMLElement): HTMLElement {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const StatusMessage: Story = {
-  name: 'Status Message — 4.1.3',
+  name: 'Status Messages — 4.1.3',
   parameters: {
     wcag: ['4.1.3'],
     docs: {
@@ -69,7 +70,7 @@ export const StatusMessage: Story = {
   render: () => (
     <div className='space-y-4'>
       <Spinner aria-label='Loading results' />
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Outer element has role=&quot;status&quot; and aria-label=&quot;Loading results&quot;.
       </p>
     </div>
@@ -107,7 +108,7 @@ export const NonTextContrast: Story = {
   render: () => (
     <div className='space-y-4'>
       <div className='rounded-sm border border-border bg-background p-6'>
-        <h4 className='mb-3 text-sm font-semibold text-foreground'>On default background</h4>
+        <h4 className='mb-3 text-base font-semibold text-foreground'>On default background</h4>
         <div className='flex flex-wrap items-end gap-6'>
           <Spinner size='md' aria-label='Loading' />
           <Spinner size='lg' aria-label='Loading' />
@@ -116,7 +117,9 @@ export const NonTextContrast: Story = {
       </div>
 
       <ThemeSurface color='secondary'>
-        <h4 className='mb-3 text-sm font-semibold text-grey-50'>On grey-800 surface</h4>
+        <h4 className={`mb-3 text-base font-semibold ${titleClasses('secondary')}`}>
+          On grey-800 surface
+        </h4>
         <div className='flex flex-wrap items-end gap-6'>
           <Spinner size='md' aria-label='Loading' />
           <Spinner size='lg' aria-label='Loading' />
@@ -128,7 +131,7 @@ export const NonTextContrast: Story = {
 }
 
 export const UseOfColour: Story = {
-  name: 'Use of Colour — 1.4.1',
+  name: 'Use of Color — 1.4.1',
   parameters: {
     wcag: ['1.4.1'],
     docs: {
@@ -146,26 +149,26 @@ export const UseOfColour: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Animation + accessible name (recommended)
         </h4>
         <div className='flex items-center gap-3'>
           <Spinner aria-label='Loading results' />
-          <span className='text-sm text-muted-foreground'>
+          <span className='text-base text-muted-foreground'>
             Visible animation + role=&quot;status&quot; + aria-label=&quot;Loading results&quot;.
           </span>
         </div>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Pair with visible text for maximum clarity
         </h4>
         <div className='flex items-center gap-3'>
           <Spinner size='sm' aria-label='Loading results' />
-          <span className='text-sm text-foreground'>Loading results…</span>
+          <span className='text-base text-foreground'>Loading results…</span>
         </div>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           A visible &quot;Loading…&quot; label removes any reliance on the spinner&apos;s colour or
           motion to convey the state.
         </p>
@@ -193,19 +196,19 @@ export const NonTextContent: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>Correct — aria-label supplied</h4>
+        <h4 className='text-base font-semibold text-foreground'>Correct — aria-label supplied</h4>
         <Spinner aria-label='Loading search results' />
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           The outer span exposes the accessible name; the SVG remains decorative.
         </p>
       </section>
 
       <section className='border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>Caveat — no aria-label</h4>
+        <h4 className='text-base font-semibold text-foreground'>Caveat — no aria-label</h4>
         <span data-no-label-spinner>
           <Spinner />
         </span>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           Without aria-label, the role=&quot;status&quot; element has no accessible name. Screen
           readers will announce only the live region with no context — always supply a label.
         </p>

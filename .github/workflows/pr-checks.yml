@@ -8,6 +8,7 @@ name: PR Checks
 #     (Actions substitutes those as text before bash parses them)
 #   - The scripts/ gates pass their own tests — test:scripts
 #   - Every component ships on both channels (barrel + registry) — check:drift
+#   - Every story file follows docs/reference-storybook-standard.md — check:stories
 #   - The packed npm artefact is well-formed (publint + arethetypeswrong)
 #   - The committed registry JSON (apps/registry/public/r/) matches a fresh
 #     `registry:build` — generated output must be committed with source changes
@@ -105,6 +106,13 @@ jobs:
       # (registry). Reads source only, so it runs here before the build.
       - name: Theme parity check
         run: npm run check:theme-parity -w @nswds/ui
+
+      # The catalogue's shape — file split, titles, the docs page, story
+      # names, the 16px floor — is invisible to every other step: a story
+      # file that breaks the standard still lints, typechecks and passes its
+      # play(). Reads source only, so it runs before the build.
+      - name: Story standard check
+        run: npm run check:stories -w @nswds/ui
 
       # release.yml commits with [skip ci], so the release pipeline is never
       # exercised by PR CI — a mistake in the release config is only visible

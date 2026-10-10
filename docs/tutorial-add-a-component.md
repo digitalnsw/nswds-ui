@@ -175,23 +175,75 @@ if the committed output differs.
 
 ## Step 6: Write a story
 
+Every component's stories follow [the Storybook standard](reference-storybook-standard.md), and
+Button is its reference. Two files:
+
 ```bash
 touch packages/ui/src/components/notice.stories.tsx
+touch packages/ui/src/components/notice.tests.stories.tsx
 ```
 
-Three stories are the minimum. Follow `button.stories.tsx` as the canonical example:
+**The main file** is what a reader sees: a docs page, `Default`, `Playground`, and one example
+story per docs section. Each section is a component that both the docs page and its story render,
+so the two can't drift:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Notice } from './notice.js'
 
-const meta = { title: 'Components/Notice', component: Notice } satisfies Meta<typeof Notice>
+import { Notice } from './notice.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+const tones = ['neutral', 'info'] as const
+
+function TonesSection() {
+  return (
+    <ExampleSection title='Tones' description='Info draws the eye; neutral sits back.'>
+      <Example
+        layout='stack'
+        code={`<Notice tone="info">Your return is due 30 September.</Notice>`}
+      >
+        {tones.map((tone) => (
+          <ExampleCell key={tone} label={tone}>
+            <Notice tone={tone}>Your return is due 30 September.</Notice>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function NoticeDocs() {
+  return (
+    <DocsPage title='Notice' npm='Notice' registry='notice' summary='A short, dismissible message.'>
+      <DocsUsage
+        use={['A deadline or change the reader should know about on this page.']}
+        avoid={['An error in a form field — use Field’s error message.']}
+      />
+      <TonesSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+const meta = {
+  title: 'Components/Notice',
+  component: Notice,
+  tags: ['autodocs'],
+  parameters: { layout: 'padded', docs: { page: NoticeDocs } },
+  args: { children: 'Your return is due 30 September.', onDismiss: fn() },
+} satisfies Meta<typeof Notice>
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  args: { children: 'Your return is due 30 September.', onDismiss: fn() },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }))
@@ -199,14 +251,27 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col gap-4'>
-      <Notice tone='neutral'>Neutral</Notice>
-      <Notice tone='info'>Info</Notice>
-    </div>
-  ),
-}
+export const Playground: Story = {}
+
+export const Tones: Story = { name: 'Tones', render: () => <TonesSection /> }
+```
+
+**The tests file** holds what proves rather than shows. It is hidden from the sidebar but runs in
+the suite like any other story:
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
+
+import { Notice } from './notice.js'
+
+const meta = {
+  title: 'Components/Notice/Tests',
+  component: Notice,
+  tags: ['!dev', '!autodocs'],
+} satisfies Meta<typeof Notice>
+export default meta
+type Story = StoryObj<typeof meta>
 
 export const CssCheck: Story = {
   args: { children: 'Token check' },
@@ -217,9 +282,13 @@ export const CssCheck: Story = {
 }
 ```
 
-`Default` proves it mounts and is interactive. `Variants` renders every meaningful combination.
-`CssCheck` asserts a computed style, which proves the stylesheet loaded — without it a
-token-resolution failure looks like a passing test.
+`Default` proves it mounts and is interactive. `CssCheck` asserts a computed style, which proves
+the stylesheet loaded — without it a token-resolution failure looks like a passing test. Check the
+shape with:
+
+```bash
+npm run check:stories -w @nswds/ui
+```
 
 Stories live in `src/` but are excluded from the tsup build. Don't add an explicit entry for them.
 
@@ -259,6 +328,9 @@ npm run test:scripts
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui
+npm run check:portal-boundary -w @nswds/ui
+npm run check:theme-parity -w @nswds/ui
+npm run check:stories -w @nswds/ui
 npm run build -w @nswds/ui
 npm test -w @nswds/ui
 npm run check:package -w @nswds/ui
@@ -286,6 +358,7 @@ Conventional Commits — the release pipeline depends on the type:
 ```bash
 git add packages/ui/src/components/notice.tsx \
         packages/ui/src/components/notice.stories.tsx \
+        packages/ui/src/components/notice.tests.stories.tsx \
         packages/ui/src/index.ts \
         packages/ui/registry.json \
         apps/registry/public/r/notice.json \

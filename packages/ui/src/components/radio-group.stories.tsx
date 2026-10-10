@@ -1,38 +1,36 @@
+/**
+ * RadioGroup — the docs page, Default, Playground and one story per docs section.
+ *
+ *   Components/RadioGroup        → this file
+ *   Components/RadioGroup/Tests  → radio-group.tests.stories.tsx
+ */
+
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState, type ComponentProps } from 'react'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 
-import { Field, FieldDescription, FieldError, FieldItem, FieldLabel } from './field.js'
-import { Input } from './input.js'
+import { Button } from './button.js'
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldItem,
+  FieldLabel,
+} from './field.js'
 import { RadioGroup, RadioGroupItem } from './radio-group.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
-const meta = {
-  title: 'Components/RadioGroup',
-  component: RadioGroup,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'padded',
-    docs: {
-      // Fixed-theme test stories must not repaint an inline autodocs document.
-      page: () => <RadioGroupDocs />,
-      description: {
-        component:
-          'An NSW radio group with a 32px circular control, a centred 22px selection dot and a 44px hit area. Theme and validation colours match Checkbox. Base UI owns single selection, roving focus, keyboard navigation and form submission.',
-      },
-    },
-  },
-  render: (args) => (
-    <Field className='max-w-xl'>
-      <FieldLabel>Topic</FieldLabel>
-      <FieldDescription>Select the closest match.</FieldDescription>
-      <TopicOptions defaultValue='government' {...args} />
-    </Field>
-  ),
-} satisfies Meta<typeof RadioGroup>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
+const optionClassName =
+  'flex min-h-11 items-center gap-4 text-base text-foreground has-data-disabled:text-muted-foreground'
 
 function TopicOptions(props: ComponentProps<typeof RadioGroup>) {
   return (
@@ -42,10 +40,7 @@ function TopicOptions(props: ComponentProps<typeof RadioGroup>) {
         ['business', 'Business and Economy'],
         ['community', 'Community services'],
       ].map(([value, label]) => (
-        <FieldItem
-          key={value}
-          className='flex min-h-11 items-center gap-4 text-base text-foreground has-data-disabled:text-muted-foreground'
-        >
+        <FieldItem key={value} className={optionClassName}>
           <RadioGroupItem value={value} />
           <FieldLabel className='font-normal'>{label}</FieldLabel>
         </FieldItem>
@@ -53,6 +48,324 @@ function TopicOptions(props: ComponentProps<typeof RadioGroup>) {
     </RadioGroup>
   )
 }
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+const stateRows = [
+  { code: `<RadioGroupItem value="email" />`, label: '', group: {} },
+  { code: `<RadioGroup disabled>…</RadioGroup>`, label: 'disabled', group: { disabled: true } },
+  { code: `<RadioGroupItem value="email" aria-invalid />`, label: 'invalid', group: {} },
+] as const
+
+function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          The selected option shows a solid dot in the theme&apos;s ink. Disable one item, the whole
+          group, or the surrounding <code>Field</code>; an invalid group takes Input&apos;s 2px
+          danger border and a danger dot.
+        </>
+      }
+    >
+      {stateRows.map(({ code, label, group }) => (
+        <Example key={code} code={code}>
+          {(['unselected', 'selected'] as const).map((selection) => {
+            const name = label ? `${label} ${selection}` : selection
+            return (
+              <ExampleCell key={selection} label={name}>
+                <RadioGroup
+                  aria-label={`Contact method, ${name}`}
+                  defaultValue={selection === 'selected' ? 'email' : undefined}
+                  {...group}
+                >
+                  <RadioGroupItem
+                    value='email'
+                    aria-label='Email'
+                    aria-invalid={label === 'invalid' || undefined}
+                  />
+                </RadioGroup>
+              </ExampleCell>
+            )
+          })}
+        </Example>
+      ))}
+    </ExampleSection>
+  )
+}
+
+function WithFieldSection() {
+  return (
+    <ExampleSection
+      title='With Field'
+      description={
+        <>
+          The group is one question, so it takes one <code>Field</code>: the <code>FieldLabel</code>{' '}
+          names the group, and <code>Field invalid</code> or <code>disabled</code> reaches every
+          option. Wrap each option in <code>FieldItem</code> so its own label is associated with it.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<Field invalid>
+  <FieldLabel>Preferred topic</FieldLabel>
+  <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
+  <RadioGroup>
+    <FieldItem className="flex min-h-11 items-center gap-4">
+      <RadioGroupItem value="government" />
+      <FieldLabel className="font-normal">NSW Government</FieldLabel>
+    </FieldItem>
+    …
+  </RadioGroup>
+  <FieldError>Select a topic to continue.</FieldError>
+</Field>`}
+      >
+        <div className='grid w-full max-w-md gap-10'>
+          <Field invalid>
+            <FieldLabel>Preferred topic</FieldLabel>
+            <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
+            <TopicOptions />
+            <FieldError>Select a topic to continue.</FieldError>
+          </Field>
+          <Field disabled>
+            <FieldLabel>Topic</FieldLabel>
+            <FieldDescription>Fixed for this type of enquiry.</FieldDescription>
+            <TopicOptions defaultValue='government' />
+          </Field>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function OptionsWithHintsSection() {
+  return (
+    <ExampleSection
+      title='Options with hints'
+      description={
+        <>
+          When an option needs explaining, put its label and a <code>FieldDescription</code> in a{' '}
+          <code>FieldContent</code> beside the radio. The hint is announced with that option.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<FieldItem className="flex items-start gap-4">
+  <RadioGroupItem value="online" />
+  <FieldContent className="pt-1">
+    <FieldLabel className="font-normal">Online</FieldLabel>
+    <FieldDescription>Get a decision in about 10 minutes.</FieldDescription>
+  </FieldContent>
+</FieldItem>`}
+      >
+        <Field className='max-w-md'>
+          <FieldLabel>How do you want to apply?</FieldLabel>
+          <RadioGroup defaultValue='online'>
+            {[
+              ['online', 'Online', 'Get a decision in about 10 minutes.'],
+              ['centre', 'At a service centre', 'Bring your documents to any Service NSW centre.'],
+              ['post', 'By post', 'Allow up to 4 weeks for a decision.'],
+            ].map(([value, label, hint]) => (
+              <FieldItem key={value} className='flex items-start gap-4'>
+                <RadioGroupItem value={value} />
+                <FieldContent className='pt-1'>
+                  <FieldLabel className='font-normal'>{label}</FieldLabel>
+                  <FieldDescription>{hint}</FieldDescription>
+                </FieldContent>
+              </FieldItem>
+            ))}
+          </RadioGroup>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [value, setValue] = useState('business')
+  const labels: Record<string, string> = {
+    government: 'NSW Government',
+    business: 'Business and Economy',
+    community: 'Community services',
+  }
+  return (
+    <Field className='max-w-md'>
+      <FieldLabel>Topic</FieldLabel>
+      <TopicOptions name='topic' value={value} onValueChange={(next) => setValue(String(next))} />
+      <FieldDescription>We will send your enquiry to the {labels[value]} team.</FieldDescription>
+    </Field>
+  )
+}
+
+function ControlledSection() {
+  return (
+    <ExampleSection
+      title='Controlled'
+      description={
+        <>
+          Pass <code>value</code> and <code>onValueChange</code> to drive the selection from your
+          own state — here, to update the hint. Set <code>name</code> so the selected value is
+          submitted with the form.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`const [topic, setTopic] = useState('business')
+
+<RadioGroup name="topic" value={topic} onValueChange={setTopic}>…</RadioGroup>`}
+      >
+        <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='One question on a page: the label asks it, the options answer it, and the form moves on.'
+    >
+      <Example layout='fill'>
+        <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Have you held a NSW driver licence before?</FieldLabel>
+              <RadioGroup name='previous-licence'>
+                {[
+                  ['yes', 'Yes'],
+                  ['no', 'No'],
+                ].map(([value, label]) => (
+                  <FieldItem key={value} className={optionClassName}>
+                    <RadioGroupItem value={value} />
+                    <FieldLabel className='font-normal'>{label}</FieldLabel>
+                  </FieldItem>
+                ))}
+              </RadioGroup>
+            </Field>
+            <div>
+              <Button type='submit'>Continue</Button>
+            </div>
+          </FieldGroup>
+        </form>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function RadioGroupDocs() {
+  return (
+    <DocsPage
+      title='RadioGroup'
+      npm={['RadioGroup', 'RadioGroupItem']}
+      registry='radio-group'
+      summary={
+        <>
+          Radio buttons let people choose exactly one option from a short list. Each is a 32px
+          circle with a 44px hit area and a solid dot when selected. Base UI owns single selection,
+          arrow-key movement and form submission; give the group a label in a <code>Field</code> and
+          every option a visible label of its own.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Choosing exactly one answer from two to about seven options.',
+          'Yes/no questions where both answers need to be stated.',
+          'Options that each need a short explanation beside them.',
+        ]}
+        avoid={[
+          'People can choose more than one — use Checkbox.',
+          'There are many options, or space is tight — use Select or NativeSelect.',
+          'The choice switches a view straight away — use Tabs or ToggleGroup.',
+        ]}
+      />
+      <StatesSection />
+      <WithFieldSection />
+      <OptionsWithHintsSection />
+      <ControlledSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const meta = {
+  title: 'Components/RadioGroup',
+  component: RadioGroup,
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    // Inline autodocs stories share documentElement, so stories with fixed
+    // theme globals live in the Tests file, never on this page.
+    docs: { page: RadioGroupDocs },
+  },
+  args: {
+    defaultValue: 'government',
+    disabled: false,
+    onValueChange: fn(),
+  },
+  argTypes: {
+    value: {
+      control: 'text',
+      description: 'Controlled selected value. Pair with onValueChange.',
+      table: { category: 'Behavior' },
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'Initially selected value when uncontrolled.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disables every option in the group.',
+      table: { category: 'Behavior' },
+    },
+    readOnly: {
+      control: 'boolean',
+      description: 'Keeps the selection but prevents changing it.',
+      table: { category: 'Behavior' },
+    },
+    required: {
+      control: 'boolean',
+      description: 'An option must be selected before the form is submitted.',
+      table: { category: 'Behavior' },
+    },
+    name: {
+      control: 'text',
+      description: 'Name submitted with the form.',
+      table: { category: 'Behavior' },
+    },
+    onValueChange: {
+      description: 'Called with the newly selected value (logged in the Actions panel).',
+      table: { category: 'Events' },
+    },
+    className: { table: { disable: true } },
+  },
+  render: (args) => (
+    <Field className='max-w-md'>
+      <FieldLabel>Topic</FieldLabel>
+      <FieldDescription>Select the closest match.</FieldDescription>
+      <TopicOptions {...args} />
+    </Field>
+  ),
+} satisfies Meta<typeof RadioGroup>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+// ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -75,233 +388,17 @@ export const Default: Story = {
   },
 }
 
-function RadioStates() {
-  return (
-    <div className='grid max-w-xl gap-6'>
-      {[
-        { name: 'Default', disabled: false, invalid: false },
-        { name: 'Disabled', disabled: true, invalid: false },
-        { name: 'Invalid', disabled: false, invalid: true },
-      ].map(({ name, disabled, invalid }) => (
-        <Field key={name} disabled={disabled} invalid={invalid}>
-          <RadioGroup aria-label={name} defaultValue='selected' className='grid-cols-2 gap-6'>
-            {['unselected', 'selected'].map((value) => (
-              <FieldItem
-                key={value}
-                className='flex min-h-11 items-center gap-4 text-base text-foreground has-data-disabled:text-muted-foreground'
-              >
-                <RadioGroupItem value={value} />
-                <FieldLabel className='font-normal'>
-                  {name} {value}
-                </FieldLabel>
-              </FieldItem>
-            ))}
-          </RadioGroup>
-        </Field>
-      ))}
-    </div>
-  )
+export const Playground: Story = {}
+
+export const States: Story = { name: 'States', render: () => <StatesSection /> }
+
+export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
+
+export const OptionsWithHints: Story = {
+  name: 'Options with hints',
+  render: () => <OptionsWithHintsSection />,
 }
 
-export const Variants: Story = { render: () => <RadioStates /> }
-export const DarkVariants: Story = { ...Variants, globals: { theme: 'dark' } }
+export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }
 
-function InvalidExample() {
-  return (
-    <Field className='max-w-xl' invalid>
-      <FieldLabel>Preferred topic</FieldLabel>
-      <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
-      <TopicOptions defaultValue='business' />
-      <FieldError>Select an available option to continue.</FieldError>
-    </Field>
-  )
-}
-
-export const WithField: Story = {
-  render: () => (
-    <div className='grid gap-8'>
-      <InvalidExample />
-      <Field className='max-w-xl' disabled>
-        <FieldLabel>Unavailable topic</FieldLabel>
-        <TopicOptions defaultValue='government' />
-      </Field>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const invalid = canvas.getByRole('radiogroup', { name: 'Preferred topic' })
-    await expect(invalid).toHaveAttribute('aria-invalid', 'true')
-    await expect(invalid).toHaveAccessibleDescription(
-      'Choose the topic that best matches your enquiry. Select an available option to continue.',
-    )
-    for (const radio of within(invalid).getAllByRole('radio')) {
-      await expect(radio).toHaveAttribute('aria-invalid', 'true')
-    }
-    const disabled = canvas.getByRole('radiogroup', { name: 'Unavailable topic' })
-    const option = within(disabled).getByRole('radio', { name: 'Business and Economy' })
-    await expect(option).toHaveAttribute('data-disabled')
-    await userEvent.click(option)
-    await expect(option).toHaveAttribute('aria-checked', 'false')
-    await expect(getComputedStyle(option).opacity).toBe('1')
-  },
-}
-
-function ControlledExample() {
-  const [value, setValue] = useState('government')
-  return (
-    <form>
-      <Field className='max-w-xl'>
-        <FieldLabel>Selected topic</FieldLabel>
-        <TopicOptions name='topic' value={value} onValueChange={setValue} />
-      </Field>
-    </form>
-  )
-}
-
-export const Controlled: Story = {
-  render: () => <ControlledExample />,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByText('Business and Economy'))
-    await expect(canvas.getByRole('radio', { name: 'Business and Economy' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
-    await expect(new FormData(canvasElement.querySelector('form')!).getAll('topic')).toEqual([
-      'business',
-    ])
-  },
-}
-
-function tokenColour(element: HTMLElement, token: string) {
-  const probe = document.createElement('span')
-  probe.style.color = `var(${token})`
-  element.append(probe)
-  const value = getComputedStyle(probe).color
-  probe.remove()
-  return value
-}
-
-export const CssCheck: Story = {
-  render: () => (
-    <div className='grid gap-6'>
-      <RadioStates />
-      <Input aria-label='Invalid input reference' aria-invalid />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    for (const radio of canvas.getAllByRole('radio')) {
-      const box = radio.getBoundingClientRect()
-      await expect(box.width).toBe(32)
-      await expect(box.height).toBe(32)
-      await expect(Number.parseFloat(getComputedStyle(radio).borderRadius)).toBeGreaterThanOrEqual(
-        16,
-      )
-      await expect(getComputedStyle(radio, '::after').width).toBe('44px')
-      await expect(getComputedStyle(radio, '::after').height).toBe('44px')
-      const invalid = radio.getAttribute('aria-invalid') === 'true'
-      const disabled = radio.hasAttribute('data-disabled')
-      const indicator = radio.querySelector<HTMLElement>('[data-slot="radio-group-indicator"]')
-      if (indicator) {
-        const dot = indicator.getBoundingClientRect()
-        await expect(dot.width).toBe(22)
-        await expect(dot.height).toBe(22)
-        await expect(dot.x + dot.width / 2).toBe(box.x + box.width / 2)
-        await expect(dot.y + dot.height / 2).toBe(box.y + box.height / 2)
-        const token = disabled
-          ? '--text-subtle'
-          : invalid
-            ? '--danger-solid'
-            : document.documentElement.classList.contains('dark')
-              ? '--color-primary-200'
-              : '--color-primary-800'
-        await expect(getComputedStyle(indicator).backgroundColor).toBe(tokenColour(radio, token))
-      }
-      if (invalid) {
-        await expect(getComputedStyle(radio).borderTopWidth).toBe('2px')
-        await expect(getComputedStyle(radio).borderTopColor).toBe(
-          getComputedStyle(canvas.getByRole('textbox')).borderTopColor,
-        )
-      }
-    }
-    const invalid = canvas.getByRole('radio', { name: 'Invalid selected' })
-    await userEvent.tab()
-    invalid.focus()
-    await expect(invalid).toHaveFocus()
-    await expect(getComputedStyle(invalid).outlineStyle).toBe('solid')
-    await expect(getComputedStyle(invalid).outlineWidth).toBe('2px')
-    await expect(getComputedStyle(invalid).outlineOffset).toBe('2px')
-    const focusColour = tokenColour(invalid, '--input-invalid-ring')
-    await waitFor(() => expect(getComputedStyle(invalid).outlineColor).toBe(focusColour))
-  },
-}
-
-export const DarkCssCheck: Story = { ...CssCheck, globals: { theme: 'dark' } }
-export const BrandThemeCssCheck: Story = {
-  ...CssCheck,
-  globals: { theme: 'light', themeCategory: 'brand', themePrimary: 'purple' },
-}
-export const DarkBrandThemeCssCheck: Story = {
-  ...CssCheck,
-  globals: { theme: 'dark', themeCategory: 'brand', themePrimary: 'purple' },
-}
-
-function RadioGroupDocs() {
-  return (
-    <div className='max-w-3xl space-y-8 text-foreground'>
-      <section className='space-y-3'>
-        <h1 className='text-4xl font-bold tracking-normal'>RadioGroup</h1>
-        <p className='text-base text-muted-foreground'>
-          Radio buttons let people select one option from a list. Give the group a label and provide
-          a visible label for every option. Use arrow keys to move between options.
-        </p>
-      </section>
-      <section className='space-y-4'>
-        <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
-        <Field>
-          <FieldLabel>Topic</FieldLabel>
-          <FieldDescription>Select the closest match.</FieldDescription>
-          <TopicOptions />
-        </Field>
-        <pre className='overflow-x-auto rounded-sm bg-muted p-4 text-sm'>
-          <code>{`import { Field, FieldItem, FieldLabel, RadioGroup, RadioGroupItem } from '@nswds/ui'
-
-<Field>
-  <FieldLabel>Topic</FieldLabel>
-  <RadioGroup name="topic">
-    <FieldItem className="flex min-h-11 items-center gap-4">
-      <RadioGroupItem value="government" />
-      <FieldLabel className="font-normal">NSW Government</FieldLabel>
-    </FieldItem>
-    <FieldItem className="flex min-h-11 items-center gap-4">
-      <RadioGroupItem value="business" />
-      <FieldLabel className="font-normal">Business and Economy</FieldLabel>
-    </FieldItem>
-  </RadioGroup>
-</Field>`}</code>
-        </pre>
-      </section>
-      <section className='space-y-4'>
-        <h2 className='text-2xl font-bold tracking-normal'>States</h2>
-        <p className='text-base text-muted-foreground'>
-          The selected dot follows the primary palette in light and dark mode. Invalid controls use
-          the same danger colours as Checkbox and Input. Use the theme toolbar to preview them.
-        </p>
-        <RadioStates />
-      </section>
-      <section className='space-y-4'>
-        <h2 className='text-2xl font-bold tracking-normal'>Validation</h2>
-        <InvalidExample />
-      </section>
-      <section className='space-y-4'>
-        <h2 className='text-2xl font-bold tracking-normal'>Controlled selection</h2>
-        <p className='text-base text-muted-foreground'>
-          Pass value and onValueChange to control selection. Set name to include the selected value
-          when the form is submitted.
-        </p>
-        <ControlledExample />
-      </section>
-    </div>
-  )
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

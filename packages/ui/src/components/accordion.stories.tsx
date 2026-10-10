@@ -1,15 +1,214 @@
 /**
- * Accordion — Default, Variants, CssCheck
+ * Accordion — the story set for docs/reference-storybook-standard.md.
  *
- * A vertically stacked set of disclosure sections on the Base UI accordion
- * primitive. Base UI owns the open/close state, ARIA (aria-expanded /
- * aria-controls) and keyboard handling; we only style the trigger and panel.
+ *   Components/Accordion        → this file: Docs, Default, Playground and one
+ *                                 story per docs section
+ *   Components/Accordion/Tests  → accordion.tests.stories.tsx
+ *
+ * Base UI owns the open/close state, ARIA (aria-expanded / aria-controls) and
+ * keyboard handling; the component only styles the trigger and panel.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent } from 'storybook/test'
 
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion.js'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+  type AccordionVariant,
+} from './accordion.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+
+/** Three questions from a licence page, the first open. */
+function LicenceQuestions({ variant }: { variant?: AccordionVariant }) {
+  return (
+    <Accordion variant={variant} defaultValue={['who']} className='max-w-md'>
+      <AccordionItem value='who'>
+        <AccordionTrigger>Who needs a licence</AccordionTrigger>
+        <AccordionContent>
+          Anyone fishing in NSW waters, including from the shore, unless they are exempt.
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value='cost'>
+        <AccordionTrigger>How much it costs</AccordionTrigger>
+        <AccordionContent>Fees depend on how long the licence lasts.</AccordionContent>
+      </AccordionItem>
+      <AccordionItem value='where'>
+        <AccordionTrigger>Where to buy one</AccordionTrigger>
+        <AccordionContent>Online, by phone, or at a Service NSW centre.</AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          <code>default</code> separates items with hairlines. <code>accent</code> slides a
+          waratah-red rule in beside the open item, so it is clear which one is expanded.{' '}
+          <code>band</code> sets every heading on a grey band, for FAQ and support pages that need
+          strong grouping.
+        </>
+      }
+    >
+      <Example code={`<Accordion>…</Accordion>`}>
+        <LicenceQuestions />
+      </Example>
+      <Example code={`<Accordion variant="accent">…</Accordion>`}>
+        <LicenceQuestions variant='accent' />
+      </Example>
+      <Example code={`<Accordion variant="band">…</Accordion>`}>
+        <LicenceQuestions variant='band' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          List an item’s <code>value</code> in <code>defaultValue</code> to start it open. A{' '}
+          <code>disabled</code> item cannot be opened — say why nearby, or leave it out.
+        </>
+      }
+    >
+      <Example
+        code={`<Accordion defaultValue={['status']}>
+  <AccordionItem value="status">…</AccordionItem>
+  <AccordionItem value="renew" disabled>…</AccordionItem>
+</Accordion>`}
+      >
+        <Accordion defaultValue={['status']} className='max-w-md'>
+          <AccordionItem value='status'>
+            <AccordionTrigger>Application status</AccordionTrigger>
+            <AccordionContent>Your application was received on 2 October.</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value='renew' disabled>
+            <AccordionTrigger>Renew your licence</AccordionTrigger>
+            <AccordionContent>Renewal opens 30 days before your licence expires.</AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function MultipleOpenSection() {
+  return (
+    <ExampleSection
+      title='Multiple open'
+      description={
+        <>
+          By default, opening one item closes the others. Add <code>multiple</code> when people are
+          likely to compare answers side by side.
+        </>
+      }
+    >
+      <Example code={`<Accordion multiple defaultValue={['before', 'after']}>…</Accordion>`}>
+        <Accordion multiple defaultValue={['before', 'after']} className='max-w-md'>
+          <AccordionItem value='before'>
+            <AccordionTrigger>Before you apply</AccordionTrigger>
+            <AccordionContent>Check you have photo ID and proof of address.</AccordionContent>
+          </AccordionItem>
+          <AccordionItem value='after'>
+            <AccordionTrigger>After you apply</AccordionTrigger>
+            <AccordionContent>We will email you within 5 business days.</AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Frequently asked questions at the end of a service page. Panels hold rich content, and links inside them take the accordion’s link styling.'
+    >
+      <Example layout='fill'>
+        <div className='max-w-xl space-y-4'>
+          <p className='text-2xl font-bold'>Frequently asked questions</p>
+          <Accordion>
+            <AccordionItem value='lost'>
+              <AccordionTrigger>What if I lose my licence card?</AccordionTrigger>
+              <AccordionContent>
+                <p>Your licence is still valid. You can carry a digital copy instead.</p>
+                <p>
+                  <a href='#replace'>Order a replacement card</a> online at any time.
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value='refund'>
+              <AccordionTrigger>Can I get a refund?</AccordionTrigger>
+              <AccordionContent>
+                Licence fees are not refundable once the licence has started.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value='visitor'>
+              <AccordionTrigger>
+                I am visiting from interstate. Do I need a licence?
+              </AccordionTrigger>
+              <AccordionContent>
+                Yes. Visitors need a NSW licence to fish in NSW waters.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function AccordionDocs() {
+  return (
+    <DocsPage
+      title='Accordion'
+      npm={['Accordion', 'AccordionItem', 'AccordionTrigger', 'AccordionContent']}
+      registry='accordion'
+      summary={
+        <>
+          A stack of headings that each show and hide a section of content. Use it to shorten a long
+          page of related information people read selectively. Give every{' '}
+          <strong>AccordionItem</strong> a unique <code>value</code>.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Frequently asked questions on a service page.',
+          'Related sections people only need some of, such as eligibility rules by situation.',
+          'Long reference content on a narrow screen.',
+        ]}
+        avoid={[
+          'One piece of optional detail — use Collapsible.',
+          'Parallel views of the same content — use Tabs.',
+          'Steps people must complete in order — use StepIndicator with separate pages.',
+        ]}
+      />
+      <VariantsSection />
+      <StatesSection />
+      <MultipleOpenSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Accordion',
@@ -17,29 +216,65 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
-    docs: {
-      description: {
-        component:
-          'A stacked set of expandable sections built on the Base UI Accordion primitive. Each AccordionItem needs a unique `value`; Base UI manages open state, ARIA and keyboard navigation.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: AccordionDocs },
   },
-  render: (args) => (
-    <Accordion {...args} className='max-w-md'>
-      <AccordionItem value='item-1'>
-        <AccordionTrigger>What is the NSW Design System?</AccordionTrigger>
+  args: {
+    variant: 'default',
+    multiple: false,
+    disabled: false,
+    className: 'max-w-md',
+    children: [
+      <AccordionItem key='who' value='who'>
+        <AccordionTrigger>Who needs a licence</AccordionTrigger>
         <AccordionContent>
-          A reusable set of components and tokens for NSW Government digital products.
+          Anyone fishing in NSW waters, including from the shore, unless they are exempt.
         </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='item-2'>
-        <AccordionTrigger>Who can use it?</AccordionTrigger>
-        <AccordionContent>
-          Any team building services under the NSW Government masterbrand.
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  ),
+      </AccordionItem>,
+      <AccordionItem key='where' value='where'>
+        <AccordionTrigger>Where to buy one</AccordionTrigger>
+        <AccordionContent>Online, by phone, or at a Service NSW centre.</AccordionContent>
+      </AccordionItem>,
+    ],
+  },
+  argTypes: {
+    children: {
+      control: false,
+      description: 'AccordionItem elements, each with a unique `value`.',
+      table: { category: 'Content' },
+    },
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'accent', 'band'],
+      description: 'Visual treatment: hairlines, a red rule on the open item, or grey bands.',
+      table: { category: 'Appearance' },
+    },
+    multiple: {
+      control: 'boolean',
+      description: 'Allow more than one item to be open at once.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disable every item.',
+      table: { category: 'Behavior' },
+    },
+    defaultValue: {
+      control: 'object',
+      description: 'Values of the items open on first render (uncontrolled).',
+      table: { category: 'Behavior' },
+    },
+    value: {
+      control: 'object',
+      description: 'Values of the open items (controlled). Pair with `onValueChange`.',
+      table: { category: 'Behavior' },
+    },
+    onValueChange: {
+      description: 'Called with the open values when an item opens or closes.',
+      table: { category: 'Events' },
+    },
+    className: { table: { disable: true } },
+  },
 } satisfies Meta<typeof Accordion>
 
 export default meta
@@ -71,146 +306,12 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <Accordion className='max-w-md' defaultValue={['a']}>
-      <AccordionItem value='a'>
-        <AccordionTrigger>Open by default</AccordionTrigger>
-        <AccordionContent>This item is expanded on first render.</AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='b'>
-        <AccordionTrigger>Second section</AccordionTrigger>
-        <AccordionContent>
-          <p>Panels can hold rich content.</p>
-          <p>
-            Including <a href='#example'>links</a> that inherit accordion styling.
-          </p>
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='c'>
-        <AccordionTrigger>Third section</AccordionTrigger>
-        <AccordionContent>Any number of items can be stacked.</AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  ),
-}
+export const Playground: Story = {}
 
-export const Accent: Story = {
-  name: 'Accent variant',
-  render: () => (
-    <Accordion className='max-w-md' variant='accent' defaultValue={['a']}>
-      <AccordionItem value='a'>
-        <AccordionTrigger>Open by default</AccordionTrigger>
-        <AccordionContent>
-          When an item opens, a Red 02 (waratah) rule slides in on the leading edge.
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='b'>
-        <AccordionTrigger>Second section</AccordionTrigger>
-        <AccordionContent>
-          <p>The accent reinforces which section is expanded.</p>
-          <p>
-            Panels still hold rich content and <a href='#example'>links</a>.
-          </p>
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='c'>
-        <AccordionTrigger>Third section</AccordionTrigger>
-        <AccordionContent>The expand icon turns red while the section is open.</AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  ),
-  play: async ({ canvasElement }) => {
-    // The open item carries the accent rule; the leading border must resolve to a
-    // real (non-transparent) colour — proving accent-600 (--nsw-red-*) is wired.
-    const openItem = canvasElement.querySelector<HTMLElement>(
-      '[data-slot="accordion-item"][data-open]',
-    )
-    if (!openItem) {
-      throw new Error('Could not find an open [data-slot="accordion-item"].')
-    }
-    const leadingBorder = getComputedStyle(openItem).borderInlineStartColor
-    if (
-      leadingBorder === '' ||
-      leadingBorder === 'rgba(0, 0, 0, 0)' ||
-      leadingBorder === 'transparent'
-    ) {
-      throw new Error(`Expected the accent rule to resolve, received "${leadingBorder}".`)
-    }
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
 
-    // The visible expand icon on the open item must share the accent colour — both
-    // resolve to accent-600. Guards against the icon silently staying blue.
-    const icons = openItem.querySelectorAll<HTMLElement>('[data-slot="accordion-trigger-icon"]')
-    const visibleIcon = Array.from(icons).find((el) => getComputedStyle(el).display !== 'none')
-    if (!visibleIcon) {
-      throw new Error('Could not find a visible expand icon on the open item.')
-    }
-    await expect(getComputedStyle(visibleIcon).color).toBe(leadingBorder)
-  },
-}
+export const States: Story = { name: 'States', render: () => <StatesSection /> }
 
-export const Band: Story = {
-  name: 'Band variant',
-  render: () => (
-    <Accordion className='max-w-md' variant='band' defaultValue={['a']}>
-      <AccordionItem value='a'>
-        <AccordionTrigger>Open by default</AccordionTrigger>
-        <AccordionContent>
-          Every header sits on a grey band that deepens when hovered, focused or open.
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='b'>
-        <AccordionTrigger>Second section</AccordionTrigger>
-        <AccordionContent>
-          <p>The grey band suits FAQ and support pages that need strong grouping.</p>
-          <p>
-            Panels hold rich content and <a href='#example'>links</a>.
-          </p>
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value='c'>
-        <AccordionTrigger>Third section</AccordionTrigger>
-        <AccordionContent>The heading stays NSW blue for contrast on the grey.</AccordionContent>
-      </AccordionItem>
-    </Accordion>
-  ),
-  play: async ({ canvasElement }) => {
-    // The band fill must resolve to a real (non-transparent) colour — proving the
-    // grey-tint band wired up rather than leaving the header on the page background.
-    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="accordion-trigger"]')
-    if (!trigger) {
-      throw new Error('Could not find [data-slot="accordion-trigger"].')
-    }
-    const bg = getComputedStyle(trigger).backgroundColor
-    if (bg === '' || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
-      throw new Error(`Expected the band fill to resolve, received "${bg}".`)
-    }
-  },
-}
+export const MultipleOpen: Story = { name: 'Multiple open', render: () => <MultipleOpenSection /> }
 
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  play: async ({ canvasElement }) => {
-    // Proves globals.css loaded: the item's hairline `border-t` utility resolves
-    // to a real --border colour, and the trigger heading resolves to --primary
-    // (NSW brand blue) rather than an unset/transparent value.
-    const item = canvasElement.querySelector<HTMLElement>('[data-slot="accordion-item"]')
-    if (!item) {
-      throw new Error('Could not find [data-slot="accordion-item"].')
-    }
-    const borderColor = getComputedStyle(item).borderTopColor
-    if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected the --border token to resolve, received "${borderColor}".`)
-    }
-
-    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="accordion-trigger"]')
-    if (!trigger) {
-      throw new Error('Could not find [data-slot="accordion-trigger"].')
-    }
-    const color = getComputedStyle(trigger).color
-    if (color === '' || color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
-      throw new Error(`Expected the --primary token to resolve, received "${color}".`)
-    }
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

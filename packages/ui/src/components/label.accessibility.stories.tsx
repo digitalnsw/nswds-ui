@@ -21,12 +21,14 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { Input } from './input.js'
 import { Label } from './label.js'
 import { wcagStoryMeta } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Label/Accessibility',
   component: Label,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -58,7 +60,7 @@ function getLabelFor(canvasElement: HTMLElement, htmlFor: string): HTMLLabelElem
 // ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
 
 export const InfoAndRelationships: Story = {
-  name: '1.3.1 Info and Relationships',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -76,12 +78,7 @@ export const InfoAndRelationships: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
       <Label htmlFor='a11y-relationships-email'>Email address</Label>
-      <input
-        id='a11y-relationships-email'
-        type='email'
-        placeholder='you@example.com'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
-      />
+      <Input id='a11y-relationships-email' type='email' placeholder='you@example.com' />
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -114,7 +111,7 @@ export const InfoAndRelationships: Story = {
 // ─── 2.5.3 — Label in Name ────────────────────────────────────────────────────
 
 export const LabelInName: Story = {
-  name: '2.5.3 Label in Name',
+  name: 'Label in Name — 2.5.3',
   parameters: {
     wcag: ['2.5.3'],
     docs: {
@@ -132,12 +129,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
       <Label htmlFor='a11y-label-in-name-input'>Search NSW services</Label>
-      <input
-        id='a11y-label-in-name-input'
-        type='search'
-        placeholder='e.g. driver licence'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
-      />
+      <Input id='a11y-label-in-name-input' type='search' placeholder='e.g. driver licence' />
     </div>
   ),
   play: async ({ canvasElement }) => {
@@ -156,7 +148,7 @@ export const LabelInName: Story = {
 // ─── 3.3.2 — Labels or Instructions ───────────────────────────────────────────
 
 export const LabelsOrInstructions: Story = {
-  name: '3.3.2 Labels or Instructions',
+  name: 'Labels or Instructions — 3.3.2',
   parameters: {
     wcag: ['3.3.2'],
     docs: {
@@ -174,15 +166,14 @@ export const LabelsOrInstructions: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
       <Label htmlFor='a11y-instructions-phone'>Mobile phone number</Label>
-      <input
+      <Input
         id='a11y-instructions-phone'
         type='tel'
         autoComplete='tel'
         placeholder='0400 000 000'
         aria-describedby='a11y-instructions-phone-hint'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
-      <p id='a11y-instructions-phone-hint' className='text-xs text-muted-foreground'>
+      <p id='a11y-instructions-phone-hint' className='text-base text-muted-foreground'>
         Enter an Australian mobile number starting with 04.
       </p>
     </div>
@@ -213,7 +204,7 @@ export const LabelsOrInstructions: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {
@@ -231,13 +222,12 @@ export const NameRoleValue: Story = {
   render: () => (
     <div className='grid w-full max-w-md gap-1.5'>
       <Label htmlFor='a11y-name-role-value-input'>Postcode</Label>
-      <input
+      <Input
         id='a11y-name-role-value-input'
         type='text'
         inputMode='numeric'
         autoComplete='postal-code'
         placeholder='2000'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
       />
     </div>
   ),

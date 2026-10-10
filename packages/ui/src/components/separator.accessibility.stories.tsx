@@ -23,6 +23,7 @@ import { wcagStoryMeta } from './story-helpers.js'
 const meta = {
   title: 'Components/Separator/Accessibility',
   component: Separator,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -65,23 +66,23 @@ export const InfoAndRelationships: Story = {
   render: () => (
     <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Semantic (role=&quot;separator&quot;)
         </h4>
-        <p className='text-sm text-foreground'>Personal details</p>
+        <p className='text-base text-foreground'>Personal details</p>
         <Separator data-testid='semantic-separator' />
-        <p className='text-sm text-foreground'>Account settings</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Account settings</p>
+        <p className='text-base text-muted-foreground'>
           Exposed to assistive tech as a region boundary.
         </p>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>Decorative (hidden from AT)</h4>
-        <p className='text-sm text-foreground'>Marketing section</p>
+        <h4 className='text-base font-semibold text-foreground'>Decorative (hidden from AT)</h4>
+        <p className='text-base text-foreground'>Marketing section</p>
         <Separator decorative data-testid='decorative-separator' />
-        <p className='text-sm text-foreground'>Featured products</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Featured products</p>
+        <p className='text-base text-muted-foreground'>
           Pass <code>decorative</code> when the divider is purely visual.
         </p>
       </section>
@@ -125,28 +126,28 @@ export const NonTextContrast: Story = {
   render: () => (
     <div className='space-y-4'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Horizontal on the default background
         </h4>
-        <p className='text-sm text-foreground'>Content above the line</p>
+        <p className='text-base text-foreground'>Content above the line</p>
         <Separator />
-        <p className='text-sm text-foreground'>Content below the line</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Content below the line</p>
+        <p className='text-base text-muted-foreground'>
           The horizontal line uses the <code>bg-border</code> token and must measure at least 3:1
           against the surrounding background.
         </p>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Vertical on the default background
         </h4>
         <div className='flex h-12 items-stretch gap-3'>
-          <span className='flex items-center text-sm text-foreground'>Left</span>
+          <span className='flex items-center text-base text-foreground'>Left</span>
           <Separator orientation='vertical' />
-          <span className='flex items-center text-sm text-foreground'>Right</span>
+          <span className='flex items-center text-base text-foreground'>Right</span>
         </div>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           Same token, same minimum 3:1 contrast requirement against the surface behind it.
         </p>
       </section>

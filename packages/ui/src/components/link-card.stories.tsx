@@ -1,48 +1,220 @@
 /**
- * LinkCard — Default, Variants, CssCheck
+ * LinkCard — follows docs/reference-storybook-standard.md.
+ *
+ *   Components/LinkCard        → this file: Docs, Default, Playground and one
+ *                                story per docs section
+ *   Components/LinkCard/Tests  → link-card.tests.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { LinkCard } from './link-card.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function ContentSection() {
+  return (
+    <ExampleSection
+      title='Content'
+      description={
+        <>
+          <code>title</code> is required: it is the card&apos;s heading and the link&apos;s
+          accessible name. Add a short <code>label</code> above it for a category, date or type, and
+          a <code>description</code> under it when the title alone does not say where the link goes.
+        </>
+      }
+    >
+      <Example
+        layout='grid'
+        surface='subtle'
+        code={`<LinkCard href="/fishing-licence" label="Licences" title="Get a fishing licence"
+  description="Buy a recreational fishing licence online." />`}
+      >
+        <ExampleCell label='label, title and description'>
+          <LinkCard
+            href='#fishing-licence'
+            label='Licences'
+            title='Get a fishing licence'
+            description='Buy a recreational fishing licence online.'
+          />
+        </ExampleCell>
+        <ExampleCell label='title and description'>
+          <LinkCard
+            href='#fishing-rules'
+            title='Fishing rules'
+            description='Bag and size limits for every species.'
+          />
+        </ExampleCell>
+        <ExampleCell label='title only'>
+          <LinkCard href='#fishing-closures' title='Fishing closures' />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ExternalLinksSection() {
+  return (
+    <ExampleSection
+      title='External links'
+      description={
+        <>
+          Set <code>external</code> when the link leaves the site. The link opens in a new tab,
+          screen readers hear &ldquo;opens in a new tab&rdquo;, and the corner arrow points outward.
+        </>
+      }
+    >
+      <Example
+        layout='grid'
+        surface='subtle'
+        code={`<LinkCard external href="https://www.service.nsw.gov.au" title="Service NSW" />`}
+      >
+        <ExampleCell label='internal'>
+          <LinkCard
+            href='#help'
+            title='Help with your application'
+            description='Answers to common questions.'
+          />
+        </ExampleCell>
+        <ExampleCell label='external'>
+          <LinkCard
+            href='https://www.service.nsw.gov.au'
+            external
+            title='Service NSW'
+            description='Transactions and services across NSW Government.'
+          />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='A grid of related destinations. Each card stretches to the tallest in its row.'
+    >
+      <Example layout='fill' surface='subtle'>
+        <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
+          <LinkCard
+            href='#births'
+            label='Life events'
+            title='Register a birth'
+            description='Register your baby within 60 days and apply for a birth certificate.'
+          />
+          <LinkCard
+            href='#driving'
+            label='Driving'
+            title='Renew a driver licence'
+            description='Renew online, at a service centre or by phone.'
+          />
+          <LinkCard
+            href='#housing'
+            label='Housing'
+            title='Find rental assistance'
+            description='Help with bond, advance rent and private rental costs.'
+          />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function LinkCardDocs() {
+  return (
+    <DocsPage
+      title='LinkCard'
+      npm='LinkCard'
+      registry='link-card'
+      summary={
+        <>
+          A card whose whole surface is one link. A single anchor is stretched over the card, so the
+          accessibility tree sees exactly one link, named by the title — not three tab stops for one
+          destination. It follows that the card cannot hold a second interactive element, and that
+          its text is not drag-selectable.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'A grid of destinations on a landing page — services, topics or life events.',
+          'Promoting a related page at the end of an article.',
+          'Linking out to another government site, with external.',
+        ]}
+        avoid={[
+          'The card needs a second action, such as a button — compose Card by hand.',
+          'A link within running text — use Link.',
+          'The destination starts a task and should look like an action — use ButtonLink.',
+        ]}
+      />
+      <ContentSection />
+      <ExternalLinksSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
-  title: 'Components/Link Card',
+  title: 'Components/LinkCard',
   component: LinkCard,
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: {
-      description: {
-        component:
-          'LinkCard is a card whose entire surface is one link. The obvious hand-built version puts an anchor on the title, another on the description and a third on the arrow — three tab stops and three competing accessible names for one destination. This stretches a single anchor over the card instead, so the accessibility tree sees exactly one link, named by the title. It follows that the card cannot contain a second interactive element, and that its text is not drag-selectable.',
-      },
-    },
+    docs: { page: LinkCardDocs },
   },
   args: {
-    href: '#specimen',
-    title: 'Public Sans on GitHub',
-    label: 'Source',
-    description: 'The upstream repository, issue tracker and release archive for the typeface.',
+    href: '#fishing-licence',
+    title: 'Get a fishing licence',
+    label: 'Licences',
+    description: 'Buy a recreational fishing licence online.',
     external: false,
+    className: 'max-w-sm',
   },
   argTypes: {
+    title: {
+      control: 'text',
+      description: 'The card’s heading, and the link’s accessible name.',
+      table: { category: 'Content' },
+    },
+    label: {
+      control: 'text',
+      description: 'Optional short kicker above the title — a category, date or type.',
+      table: { category: 'Content' },
+    },
+    description: {
+      control: 'text',
+      description: 'Supporting copy under the title.',
+      table: { category: 'Content' },
+    },
+    href: {
+      control: 'text',
+      description: 'Destination. Routed through Link, so LinkProvider applies.',
+      table: { category: 'Behavior' },
+    },
     external: {
       control: 'boolean',
       description:
         'Render the link as an ExternalLink — adds the new-tab treatment and swaps the corner glyph.',
-      table: { category: 'Behaviour' },
+      table: { category: 'Behavior' },
     },
-    label: { control: 'text', table: { category: 'Content' } },
-    description: { control: 'text', table: { category: 'Content' } },
-    className: { table: { disable: true, category: 'Advanced' } },
+    className: { table: { disable: true } },
   },
-  render: (args) => (
-    <div className='max-w-sm'>
-      <LinkCard {...args} />
-    </div>
-  ),
 } satisfies Meta<typeof LinkCard>
 
 export default meta
@@ -88,53 +260,10 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='grid gap-6 sm:grid-cols-2'>
-      <LinkCard
-        href='#internal'
-        label='Guidance'
-        title='How to install the typeface'
-        description='Step-by-step instructions for Windows and macOS.'
-      />
-      <LinkCard
-        href='https://public-sans.digital.gov/'
-        external
-        label='Upstream'
-        title='Public Sans project site'
-        description='The full character set, including extended Latin and currency symbols.'
-      />
-      <LinkCard href='#minimal' title='Title only' />
-      <LinkCard
-        href='#no-label'
-        title='No kicker'
-        description='A card with a description but no label above the title.'
-      />
-    </div>
-  ),
-}
+export const Playground: Story = {}
 
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  play: async ({ canvasElement }) => {
-    const card = getCard(canvasElement)
+export const Content: Story = { name: 'Content', render: () => <ContentSection /> }
 
-    // The stretched-link technique needs a positioned ancestor, or the
-    // anchor's ::after would size against the viewport instead of the card.
-    const position = getComputedStyle(card).position
-    if (position !== 'relative') {
-      throw new Error(`Expected the card to be position: relative, received "${position}".`)
-    }
+export const External: Story = { name: 'External links', render: () => <ExternalLinksSection /> }
 
-    const anchor = card.querySelector('a')
-    if (!anchor) {
-      throw new Error('Could not find the card anchor.')
-    }
-    const overlay = getComputedStyle(anchor, '::after')
-    if (overlay.position !== 'absolute') {
-      throw new Error(
-        `Expected the anchor ::after overlay to be absolutely positioned, received "${overlay.position}".`,
-      )
-    }
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

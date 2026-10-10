@@ -24,6 +24,7 @@ import { wcagStoryMeta } from './story-helpers.js'
 const meta = {
   title: 'Components/Link/Accessibility',
   component: Link,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -55,7 +56,7 @@ function getAnchor(canvasElement: HTMLElement, accessibleName: string) {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Contrast: Story = {
-  name: 'Contrast — 1.4.3 / 1.4.11',
+  name: 'Contrast (Minimum) — 1.4.3 / 1.4.11',
   parameters: {
     wcag: ['1.4.3', '1.4.11'],
     docs: {
@@ -73,7 +74,7 @@ export const Contrast: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>On default background</h4>
+        <h4 className='text-base font-semibold text-foreground'>On default background</h4>
         <p className='text-base text-foreground'>
           Read more on the{' '}
           <Link href='/about' variant='primary'>
@@ -84,7 +85,7 @@ export const Contrast: Story = {
       </section>
 
       <section className='space-y-2 rounded-sm border border-border bg-muted p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>On muted surface</h4>
+        <h4 className='text-base font-semibold text-foreground'>On muted surface</h4>
         <p className='text-base text-foreground'>
           Read more on the{' '}
           <Link href='/about' variant='primary'>
@@ -150,7 +151,7 @@ export const Keyboard: Story = {
       <Link href='#keyboard-target' variant='primary'>
         Press me with Enter
       </Link>
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Tab to focus, then press Enter to activate. Space does not activate links — it scrolls the
         page.
       </p>
@@ -210,7 +211,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Text link (accessible name = visible label)
         </h4>
         <Link href='/about' variant='primary'>
@@ -219,7 +220,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Icon-only link (accessible name supplied via aria-label)
         </h4>
         <Link

@@ -15,3 +15,15 @@
 .sbdocs.sbdocs-wrapper {
   background: var(--background);
 }
+
+/*
+ * The props table (`DocsApi` in packages/ui/src/components/story-helpers.tsx)
+ * is Storybook's own ArgTypes block, which sets its type at 12–14px. Every
+ * other piece of text in the catalogue holds the 16px floor, so the table is
+ * brought up to it too. Scoped to `.docs-api` so the rest of Storybook's
+ * chrome is untouched.
+ */
+.docs-api .docblock-argstable,
+.docs-api .docblock-argstable :is(th, td, p, span, code, button) {
+  font-size: 1rem;
+}

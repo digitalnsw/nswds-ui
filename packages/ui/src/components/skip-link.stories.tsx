@@ -1,120 +1,22 @@
 /**
- * SkipLink — Default + Variants + WithMasthead
+ * SkipLink — focus-revealed bypass links (2.4.1 Bypass Blocks).
  *
- * Focus-revealed bypass links (2.4.1 Bypass Blocks). The links are parked
- * above the viewport and slide in when they receive keyboard focus — press
- * Tab in the story canvas to reveal them.
+ *   Components/SkipLink        → this file: Docs, Default, Playground and one
+ *                                story per docs section
+ *   Components/SkipLink/Tests  → skip-link.tests.stories.tsx
+ *
+ * The links are parked above the viewport and slide in when they receive
+ * keyboard focus, so Default and Playground render a page stub with real skip
+ * targets — press Tab in the canvas to reveal them.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type * as React from 'react'
 
+import { Header, HeaderBrand } from './header.js'
 import { Masthead } from './masthead.js'
 import { SkipLink, SkipLinks } from './skip-link.js'
-
-const meta = {
-  title: 'Components/SkipLink',
-  component: SkipLinks,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'fullscreen',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>Skip Link</h1>
-            <p className='text-base text-muted-foreground'>
-              Skip links let keyboard and screen-reader users bypass repeated blocks (WCAG 2.4.1)
-              and jump straight to the navigation or main content. They are visually hidden above
-              the viewport and slide in on keyboard focus — render SkipLinks as the first element in
-              the body, before the Masthead. Focus moves to the target on activation, and the
-              revealed bar is at least 44px tall (2.5.5 Target Size AAA) with a current-colour focus
-              ring (2.4.13 Focus Appearance).
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Usage</h2>
-            <p className='text-base text-muted-foreground'>
-              With no children, SkipLinks renders the legacy default pair — &ldquo;Skip to
-              navigation&rdquo; (#nav) and &ldquo;Skip to content&rdquo; (#content). Compose
-              SkipLink children for custom targets or extra links. Open the Default story and press{' '}
-              <kbd>Tab</kbd> to see the reveal behaviour.
-            </p>
-            <p className='text-base text-muted-foreground'>
-              The four colour variants, shown un-hidden for comparison:
-            </p>
-            {/* sb-unstyled stops the Storybook docs stylesheet re-colouring
-                the anchors inside this example. */}
-            <div className='sb-unstyled space-y-2'>
-              {(['dark', 'light', 'white', 'grey'] as const).map((color) => (
-                <div key={color} className='relative min-h-11'>
-                  <SkipLink
-                    color={color}
-                    href='#content'
-                    className='translate-y-0 border border-border'
-                  >
-                    Skip to content — {color}
-                  </SkipLink>
-                </div>
-              ))}
-            </div>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'Focus-revealed bypass links that let keyboard and screen-reader users jump past repeated blocks, with the same WCAG 2.2 AAA colour variants as the Masthead.',
-      },
-    },
-  },
-  args: {
-    color: 'dark',
-  },
-  argTypes: {
-    color: {
-      control: 'inline-radio',
-      options: ['dark', 'light', 'white', 'grey'],
-      description:
-        'WCAG 2.2 AAA text/background pair applied to the default link pair — matches the Masthead colours.',
-      table: { category: 'Appearance' },
-    },
-    children: {
-      table: { disable: true, category: 'Content' },
-    },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
-  },
-  // The links are invisible until focused, so every story renders a page
-  // stub with focus instructions and real skip targets.
-  render: (args) => (
-    <div className='min-h-48'>
-      <SkipLinks {...args} />
-      <Masthead />
-      <div className='space-y-4 p-6'>
-        <p className='text-sm text-muted-foreground'>
-          Click here, then press <kbd>Tab</kbd> to reveal the skip links.
-        </p>
-        <nav id='nav' aria-label='Main navigation' className='text-sm'>
-          Navigation landmark (#nav)
-        </nav>
-        <main id='content' className='text-sm'>
-          Main content landmark (#content)
-        </main>
-      </div>
-    </div>
-  ),
-} satisfies Meta<typeof SkipLinks>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
 /** The four curated colours, matching Masthead's set. */
 const SKIP_LINK_COLORS = ['dark', 'light', 'white', 'grey'] as const
@@ -141,6 +43,243 @@ async function waitFor(assertion: () => void, timeoutMs = 1500) {
     }
   }
 }
+
+/**
+ * One bar shown as it looks when revealed, with its label above. The bar is
+ * absolutely positioned (it needs a positioned ancestor outside SkipLinks), and
+ * `translate-y-0` holds it in its revealed position without focus.
+ */
+function RevealedBar({
+  label,
+  color,
+  children,
+}: {
+  label: React.ReactNode
+  color: (typeof SKIP_LINK_COLORS)[number]
+  children: React.ReactNode
+}) {
+  return (
+    <div className='space-y-2'>
+      <p className='text-base text-muted-foreground'>{label}</p>
+      <div className='relative min-h-11 ring-1 ring-foreground/10'>
+        <SkipLink color={color} href='#content' className='translate-y-0'>
+          {children}
+        </SkipLink>
+      </div>
+    </div>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+
+function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          The same four AAA pairs as <code>Masthead</code> and <code>Header</code>; theme them with
+          the same word. Each bar is shown as it appears when focused. Every colour deepens in dark
+          mode on the Masthead&apos;s ramp steps — a bar that arrives on focus must never be a
+          pure-white flash on a dark page.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<SkipLinks color="light" />`}>
+        <div className='space-y-6'>
+          {SKIP_LINK_COLORS.map((color) => (
+            <RevealedBar
+              key={color}
+              color={color}
+              label={color === 'dark' ? 'dark (default)' : color}
+            >
+              Skip to content
+            </RevealedBar>
+          ))}
+        </div>
+      </Example>
+      <Example layout='fill' surface='dark'>
+        <div className='space-y-6'>
+          {SKIP_LINK_COLORS.map((color) => (
+            <RevealedBar key={color} color={color} label={`${color} — dark mode`}>
+              Skip to content
+            </RevealedBar>
+          ))}
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function CustomLinksSection() {
+  return (
+    <ExampleSection
+      title='Custom links'
+      description={
+        <>
+          With no children, <code>SkipLinks</code> renders “Skip to navigation” (<code>#nav</code>)
+          and “Skip to content” (<code>#content</code>). Pass <code>SkipLink</code> children when
+          your targets have other ids or you need a third link; they then replace the defaults
+          entirely. Give each link the same <code>color</code> as the bar around it.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<SkipLinks>
+  <SkipLink href="#main-navigation">Skip to navigation</SkipLink>
+  <SkipLink href="#main-content">Skip to content</SkipLink>
+  <SkipLink href="#search">Skip to search</SkipLink>
+</SkipLinks>`}
+      >
+        <div className='space-y-6'>
+          <RevealedBar color='dark' label='first Tab'>
+            Skip to navigation
+          </RevealedBar>
+          <RevealedBar color='dark' label='second Tab'>
+            Skip to content
+          </RevealedBar>
+          <RevealedBar color='dark' label='third Tab'>
+            Skip to search
+          </RevealedBar>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Rendered first in the body, before the Masthead. Click inside the frame, then press Tab: the bar slides in over the masthead, and activating it moves focus to the target.'
+    >
+      <Example layout='fill'>
+        {/* SkipLinks is `fixed` to the viewport; `absolute` keeps it inside
+            this frame instead of the top of the docs page. */}
+        <div className='relative overflow-hidden ring-1 ring-foreground/10'>
+          <SkipLinks color='dark' className='absolute'>
+            <SkipLink color='dark' href='#skip-link-context-nav'>
+              Skip to navigation
+            </SkipLink>
+            <SkipLink color='dark' href='#skip-link-context-content'>
+              Skip to content
+            </SkipLink>
+          </SkipLinks>
+          <Masthead id='skip-link-context-masthead' color='dark' />
+          <Header id='skip-link-context-header' color='dark' sticky={false}>
+            <HeaderBrand sitename='Department of Primary Industries' />
+          </Header>
+          <nav
+            id='skip-link-context-nav'
+            aria-label='Main navigation'
+            className='border-b border-border px-6 py-3 text-base'
+          >
+            Fishing · Farming · Biosecurity
+          </nav>
+          <div id='skip-link-context-content' className='space-y-2 px-6 py-6'>
+            <p className='text-2xl font-bold'>Apply for a recreational fishing licence</p>
+            <p className='text-base'>
+              You need a licence to fish in NSW waters, including from the shore.
+            </p>
+          </div>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function SkipLinkDocs() {
+  return (
+    <DocsPage
+      title='SkipLink'
+      npm={['SkipLinks', 'SkipLink']}
+      registry='skip-link'
+      summary={
+        <>
+          Skip links let keyboard and screen-reader users jump past the blocks repeated on every
+          page (WCAG 2.4.1) straight to the navigation or the main content. They are parked above
+          the viewport until they take focus, then slide in as a full-width bar at least 44px tall
+          at the 16px body size.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The first element in the body of every page, before the Masthead.',
+          'Jumping to the main navigation and the main content — the default pair.',
+          'A third target a keyboard user reaches often, such as site search.',
+        ]}
+        avoid={[
+          'Jumping between headings within a long page — use OnThisPage.',
+          'Moving to another page — use Link.',
+          'Telling people which site they are on — use Masthead.',
+        ]}
+      />
+      <ColoursSection />
+      <CustomLinksSection />
+      <InContextSection />
+      <DocsApi description='Props of SkipLinks. SkipLink takes the same color plus href and children.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const meta = {
+  title: 'Components/SkipLink',
+  component: SkipLinks,
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: SkipLinkDocs },
+  },
+  args: {
+    color: 'dark',
+  },
+  argTypes: {
+    color: {
+      control: 'inline-radio',
+      options: SKIP_LINK_COLORS,
+      description:
+        'WCAG 2.2 AAA text/background pair applied to the default link pair — matches the Masthead colours.',
+      table: { category: 'Appearance' },
+    },
+    children: {
+      control: false,
+      description:
+        'SkipLink elements. Omit for the default “Skip to navigation” / “Skip to content” pair.',
+      table: { category: 'Content' },
+    },
+    className: { table: { disable: true } },
+  },
+  // The links are invisible until focused and need real targets to move focus
+  // to, so the canvas renders a page stub with focus instructions.
+  render: (args) => (
+    <div className='min-h-48'>
+      <SkipLinks {...args} />
+      <Masthead />
+      <div className='space-y-4 p-6'>
+        <p className='text-base text-muted-foreground'>
+          Click here, then press <kbd>Tab</kbd> to reveal the skip links.
+        </p>
+        <nav id='nav' aria-label='Main navigation' className='text-base'>
+          Navigation landmark (#nav)
+        </nav>
+        <main id='content' className='text-base'>
+          Main content landmark (#content)
+        </main>
+      </div>
+    </div>
+  ),
+} satisfies Meta<typeof SkipLinks>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -198,178 +337,10 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='space-y-4 p-6'>
-      <p className='text-sm text-muted-foreground'>
-        The bars below are the four colour variants, shown un-hidden for comparison (in real use
-        they are revealed on focus).
-      </p>
-      {(['dark', 'light', 'white', 'grey'] as const).map((color) => (
-        <div key={color} className='relative min-h-11 overflow-hidden'>
-          <SkipLink color={color} href='#content' className='translate-y-0 border border-border'>
-            Skip to content — {color}
-          </SkipLink>
-        </div>
-      ))}
-    </div>
-  ),
-}
+export const Playground: Story = {}
 
-export const CustomLinks: Story = {
-  name: 'Custom Links',
-  play: async ({ canvasElement }) => {
-    // Explicit children render exactly as given — the default #nav/#content
-    // pair must not be injected alongside composed links.
-    const links = [
-      ...getSkipLinks(canvasElement).querySelectorAll<HTMLAnchorElement>('[data-slot="skip-link"]'),
-    ]
-    const hrefs = links.map((link) => link.getAttribute('href'))
-    if (hrefs.join() !== '#main-navigation,#main-content,#search') {
-      throw new Error(
-        `Expected exactly the three composed skip links, found [${hrefs.join(', ')}].`,
-      )
-    }
-  },
-  render: (args) => (
-    <div className='min-h-48'>
-      <SkipLinks {...args}>
-        <SkipLink color={args.color} href='#main-navigation'>
-          Skip to navigation
-        </SkipLink>
-        <SkipLink color={args.color} href='#main-content'>
-          Skip to content
-        </SkipLink>
-        <SkipLink color={args.color} href='#search'>
-          Skip to search
-        </SkipLink>
-      </SkipLinks>
-      <Masthead />
-      <div className='space-y-4 p-6'>
-        <p className='text-sm text-muted-foreground'>
-          Click here, then press <kbd>Tab</kbd> to cycle through three links.
-        </p>
-        <nav id='main-navigation' aria-label='Main navigation' className='text-sm'>
-          Navigation landmark
-        </nav>
-        <main id='main-content' className='text-sm'>
-          Main content landmark
-        </main>
-        <div id='search' className='text-sm'>
-          Search landmark
-        </div>
-      </div>
-    </div>
-  ),
-}
+export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
 
-/**
- * Every colour deepens in dark mode, matching `Masthead` step for step.
- *
- * Worse here than on the Masthead if it is wrong: the bar is revealed at the
- * moment a keyboard user takes focus, so a pure-white surface on a dark page
- * arrives without warning rather than sitting statically at the top. Three of
- * the four colours used to render identically in both themes, and there was no
- * dark-mode story to show it.
- *
- * The background applies whether or not the bar is revealed, so this asserts
- * the surface directly without needing to move focus.
- */
-export const DarkMode: Story = {
-  name: 'Dark Mode',
-  render: () => (
-    <div className='space-y-4'>
-      {SKIP_LINK_COLORS.map((color) => (
-        <div
-          key={color}
-          data-surface-pair=''
-          className='overflow-hidden rounded-sm border border-border'
-        >
-          <div className='border-b border-border bg-muted px-4 py-2 text-sm font-medium'>
-            {color}
-          </div>
-          {/* relative: SkipLink is absolutely positioned and needs a
-              positioned ancestor when it is not inside SkipLinks. */}
-          <div className='relative h-16 overflow-hidden'>
-            <SkipLink color={color} href='#content'>
-              Skip to content
-            </SkipLink>
-          </div>
-          <div className='dark relative h-16 overflow-hidden'>
-            <SkipLink color={color} href='#content'>
-              Skip to content
-            </SkipLink>
-          </div>
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const cards = canvasElement.querySelectorAll<HTMLElement>('[data-surface-pair]')
-    if (cards.length !== SKIP_LINK_COLORS.length) {
-      throw new Error(`Expected ${SKIP_LINK_COLORS.length} colour cards, got ${cards.length}.`)
-    }
+export const CustomLinks: Story = { name: 'Custom links', render: () => <CustomLinksSection /> }
 
-    for (const card of cards) {
-      const links = card.querySelectorAll<HTMLElement>('[data-slot="skip-link"]')
-      const [ambient, nested] = links
-      if (!ambient || !nested) {
-        throw new Error(`Expected 2 skip links per card, got ${links.length}.`)
-      }
-      const light = getComputedStyle(ambient).backgroundColor
-      const dark = getComputedStyle(nested).backgroundColor
-
-      if (ambient.closest('.dark, [data-theme="dark"]')) {
-        if (light !== dark) {
-          throw new Error(
-            `With the page already dark, the nested .dark changed the surface (${dark} vs ${light}) — a .dark inside a .dark must not compound.`,
-          )
-        }
-        continue
-      }
-
-      if (light === dark) {
-        throw new Error(
-          `A skip link renders the same surface (${light}) in both themes — it is not participating in dark mode.`,
-        )
-      }
-    }
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: the link resolves bg-primary-800 to a
-    // real colour and the reveal translate is applied.
-    const nav = getSkipLinks(canvasElement)
-    const link = nav.querySelector<HTMLElement>('[data-slot="skip-link"]')
-    if (!link) throw new Error('Skip link not found.')
-
-    const bg = getComputedStyle(link).backgroundColor
-    if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected bg-primary-800 to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
-      )
-    }
-
-    if (link.getBoundingClientRect().bottom > 0) {
-      throw new Error(
-        'Expected the unfocused skip link to be translated above the viewport. Is globals.css loaded?',
-      )
-    }
-
-    // The bypass link is the first thing a keyboard or screen-magnifier user
-    // meets, so it sits at the body size rather than the legacy 12px.
-    const fontSize = parseFloat(getComputedStyle(link).fontSize)
-    if (fontSize < 16) {
-      throw new Error(`Expected the skip link to render at the 16px body size, got ${fontSize}px.`)
-    }
-
-    // Raising the type must not have disturbed the 44px revealed-bar floor.
-    const minHeight = parseFloat(getComputedStyle(link).minHeight)
-    if (minHeight < 44) {
-      throw new Error(`Expected the skip link to hold a 44px minimum height, got ${minHeight}px.`)
-    }
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

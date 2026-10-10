@@ -1,5 +1,8 @@
 /**
- * Combobox — Default, Variants, CssCheck
+ * Combobox — the docs page, Default, Playground and one story per docs section.
+ *
+ *   Components/Combobox        → this file
+ *   Components/Combobox/Tests  → combobox.tests.stories.tsx
  *
  * Built on the Base UI Combobox primitive: the input renders in the canvas, but
  * the filtered list is PORTALED to document.body, so it must be queried there.
@@ -13,6 +16,7 @@ import {
   ComboboxChip,
   ComboboxChips,
   ComboboxChipsInput,
+  ComboboxCollection,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxGroup,
@@ -23,21 +27,288 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from './combobox.js'
+import { Field, FieldDescription, FieldLabel } from './field.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
-const fruits = ['Apple', 'Banana', 'Cherry', 'Mango', 'Orange']
+const towns = [
+  'Albury',
+  'Armidale',
+  'Bathurst',
+  'Broken Hill',
+  'Dubbo',
+  'Goulburn',
+  'Lismore',
+  'Newcastle',
+  'Orange',
+  'Tamworth',
+  'Wagga Wagga',
+  'Wollongong',
+]
 
-const meta = {
+const languages = [
+  'Arabic',
+  'Cantonese',
+  'English',
+  'Greek',
+  'Hindi',
+  'Italian',
+  'Korean',
+  'Mandarin',
+  'Nepali',
+  'Punjabi',
+  'Spanish',
+  'Vietnamese',
+]
+
+const regions = [
+  { value: 'Greater Sydney', items: ['Blacktown', 'Liverpool', 'Parramatta', 'Penrith'] },
+  { value: 'Hunter', items: ['Cessnock', 'Maitland', 'Newcastle'] },
+  { value: 'Riverina', items: ['Griffith', 'Leeton', 'Wagga Wagga'] },
+]
+
+/** The list every single-select example shares: an empty message, then one item per string. */
+function StringList({ empty }: { empty: string }) {
+  return (
+    <ComboboxContent>
+      <ComboboxEmpty>{empty}</ComboboxEmpty>
+      <ComboboxList>
+        {(item: string) => (
+          <ComboboxItem key={item} value={item}>
+            {item}
+          </ComboboxItem>
+        )}
+      </ComboboxList>
+    </ComboboxContent>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function WithFieldSection() {
+  return (
+    <ExampleSection
+      title='With Field'
+      description={
+        <>
+          Inside a <code>Field</code>, the <code>FieldLabel</code> names the input and the hint is
+          announced with it — no <code>aria-label</code> needed. Say in the hint what people can
+          type.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<Field>
+  <FieldLabel>Nearest town or city</FieldLabel>
+  <Combobox items={towns}>
+    <ComboboxInput />
+    <ComboboxContent>
+      <ComboboxEmpty>No towns found.</ComboboxEmpty>
+      <ComboboxList>
+        {(town) => <ComboboxItem key={town} value={town}>{town}</ComboboxItem>}
+      </ComboboxList>
+    </ComboboxContent>
+  </Combobox>
+  <FieldDescription>Start typing to filter the list.</FieldDescription>
+</Field>`}
+      >
+        <Field className='w-72'>
+          <FieldLabel>Nearest town or city</FieldLabel>
+          <Combobox items={towns}>
+            <ComboboxInput />
+            <StringList empty='No towns found.' />
+          </Combobox>
+          <FieldDescription>Start typing to filter the list.</FieldDescription>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function GroupedOptionsSection() {
+  return (
+    <ExampleSection
+      title='Grouped options'
+      description={
+        <>
+          Pass groups as <code>items</code>, then render each as a <code>ComboboxGroup</code> with a{' '}
+          <code>ComboboxLabel</code> and a <code>ComboboxCollection</code> of its items. Empty
+          groups drop out as the list filters.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<ComboboxList>
+  {(group) => (
+    <ComboboxGroup key={group.value} items={group.items}>
+      <ComboboxLabel>{group.value}</ComboboxLabel>
+      <ComboboxCollection>
+        {(suburb) => <ComboboxItem key={suburb} value={suburb}>{suburb}</ComboboxItem>}
+      </ComboboxCollection>
+    </ComboboxGroup>
+  )}
+</ComboboxList>`}
+      >
+        <div className='w-72'>
+          <Combobox items={regions}>
+            <ComboboxInput aria-label='Local council area' />
+            <ComboboxContent>
+              <ComboboxEmpty>No council areas found.</ComboboxEmpty>
+              <ComboboxList>
+                {(group: (typeof regions)[number]) => (
+                  <ComboboxGroup key={group.value} items={group.items}>
+                    <ComboboxLabel>{group.value}</ComboboxLabel>
+                    <ComboboxCollection>
+                      {(item: string) => (
+                        <ComboboxItem key={item} value={item}>
+                          {item}
+                        </ComboboxItem>
+                      )}
+                    </ComboboxCollection>
+                  </ComboboxGroup>
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function MultipleSelectionExample() {
+  const anchor = useComboboxAnchor()
+  return (
+    <div className='w-72'>
+      <Combobox multiple items={languages} defaultValue={['English', 'Vietnamese']}>
+        <ComboboxChips ref={anchor}>
+          <ComboboxValue>
+            {(value: string[]) =>
+              value.map((item) => (
+                <ComboboxChip key={item} removeLabel={`Remove ${item}`}>
+                  {item}
+                </ComboboxChip>
+              ))
+            }
+          </ComboboxValue>
+          <ComboboxChipsInput aria-label='Languages spoken at home' />
+        </ComboboxChips>
+        <ComboboxContent anchor={anchor}>
+          <ComboboxEmpty>No languages found.</ComboboxEmpty>
+          <ComboboxList>
+            {(item: string) => (
+              <ComboboxItem key={item} value={item}>
+                {item}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  )
+}
+
+function MultipleSelectionSection() {
+  return (
+    <ExampleSection
+      title='Multiple selection'
+      description={
+        <>
+          Add <code>multiple</code> and swap the input for <code>ComboboxChips</code>: each choice
+          becomes a chip with its own remove button, and the list anchors to the whole chip row.
+          Name each remove button after its chip with <code>removeLabel</code> — a list of buttons
+          all called &ldquo;Remove&rdquo; is no use to a screen reader.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`const anchor = useComboboxAnchor()
+
+<Combobox multiple items={languages}>
+  <ComboboxChips ref={anchor}>
+    <ComboboxValue>
+      {(values) => values.map((language) => (
+        <ComboboxChip key={language} removeLabel={\`Remove \${language}\`}>{language}</ComboboxChip>
+      ))}
+    </ComboboxValue>
+    <ComboboxChipsInput aria-label="Languages spoken at home" />
+  </ComboboxChips>
+  <ComboboxContent anchor={anchor}>…</ComboboxContent>
+</Combobox>`}
+      >
+        <MultipleSelectionExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function ComboboxDocs() {
+  return (
+    <DocsPage
+      title='Combobox'
+      npm={[
+        'Combobox',
+        'ComboboxInput',
+        'ComboboxContent',
+        'ComboboxList',
+        'ComboboxItem',
+        'ComboboxEmpty',
+        'ComboboxGroup',
+        'ComboboxLabel',
+        'ComboboxCollection',
+        'ComboboxChips',
+        'ComboboxChip',
+        'ComboboxChipsInput',
+        'ComboboxValue',
+        'useComboboxAnchor',
+      ]}
+      registry='combobox'
+      summary={
+        <>
+          An input that filters a list as people type, for choosing from more options than they
+          could comfortably scroll. The list opens in a popup portalled to the end of the page. Base
+          UI owns the filtering, keyboard movement, ARIA and positioning; add <code>multiple</code>{' '}
+          to collect several answers as chips.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Choosing from a long list people can name, such as a town, a school or a language.',
+          'Several answers from a long list — with multiple and chips.',
+          'A list long enough that scrolling a Select would be slow.',
+        ]}
+        avoid={[
+          'The list is short enough to scan — use Select or RadioGroup.',
+          'Any text is a valid answer, not just items in a list — use Input.',
+          'Searching a whole site or service — use a search field, not a picker.',
+        ]}
+      />
+      <WithFieldSection />
+      <GroupedOptionsSection />
+      <MultipleSelectionSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+// Annotated rather than `satisfies`: with `items` in args the inferred type
+// reaches into Base UI internals TypeScript cannot name (TS2742).
+const meta: Meta<typeof Combobox> = {
   title: 'Components/Combobox',
   component: Combobox,
   tags: ['autodocs'],
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'An autocomplete input on the Base UI Combobox primitive. Base UI owns the filtering, keyboard navigation, ARIA, and the portaled popup positioning. The input renders inline (wrapped in an InputGroup); the filtered list is portaled to the document body. Multi-select is available via `multiple` with `ComboboxChips`.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: ComboboxDocs },
     a11y: {
       // Base UI's Combobox renders an intentionally hidden form-value <input>
       // (id="…-hidden-input", tabindex="-1", aria-hidden, visually clipped) to
@@ -52,24 +323,55 @@ const meta = {
       },
     },
   },
-  render: () => (
-    <div className='w-64'>
-      <Combobox items={fruits}>
-        <ComboboxInput placeholder='Search fruit' aria-label='Fruit' />
-        <ComboboxContent>
-          <ComboboxEmpty>No fruit found.</ComboboxEmpty>
-          <ComboboxList>
-            {(item: string) => (
-              <ComboboxItem key={item} value={item}>
-                {item}
-              </ComboboxItem>
-            )}
-          </ComboboxList>
-        </ComboboxContent>
+  args: {
+    items: towns,
+    disabled: false,
+  },
+  argTypes: {
+    items: {
+      control: false,
+      description: 'The options to filter. Strings, objects or groups.',
+      table: { category: 'Content' },
+    },
+    multiple: {
+      control: false,
+      description: 'Allow several values; pair with ComboboxChips.',
+      table: { category: 'Behavior' },
+    },
+    defaultValue: {
+      control: false,
+      description: 'Initially selected value (or values, with multiple) when uncontrolled.',
+      table: { category: 'Behavior' },
+    },
+    value: {
+      control: false,
+      description: 'Controlled value. Pair with onValueChange.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Prevents interaction.',
+      table: { category: 'Behavior' },
+    },
+    name: {
+      control: 'text',
+      description: 'Name submitted with the form.',
+      table: { category: 'Behavior' },
+    },
+    onValueChange: {
+      description: 'Called with the newly selected value.',
+      table: { category: 'Events' },
+    },
+  },
+  render: (args) => (
+    <div className='w-72'>
+      <Combobox {...args}>
+        <ComboboxInput aria-label='Town or city' />
+        <StringList empty='No towns found.' />
       </Combobox>
     </div>
   ),
-} satisfies Meta<typeof Combobox>
+}
 
 export default meta
 
@@ -83,166 +385,27 @@ export const Default: Story = {
 
     // The input renders in the canvas (role combobox); assert it first — this is
     // the robust half of the check.
-    const input = canvas.getByRole('combobox', { name: 'Fruit' })
+    const input = canvas.getByRole('combobox', { name: 'Town or city' })
     await expect(input).toBeEnabled()
 
     // Opening reveals the PORTALED list on document.body, not in canvasElement.
     await userEvent.click(input)
     const body = within(document.body)
-    const option = await body.findByRole('option', { name: 'Mango' })
+    const option = await body.findByRole('option', { name: 'Dubbo' })
     await expect(option).toBeInTheDocument()
   },
 }
 
-export const Variants: Story = {
-  render: function VariantsRender() {
-    const anchor = useComboboxAnchor()
+export const Playground: Story = {}
 
-    return (
-      <div className='flex flex-col items-start gap-6'>
-        {/* Single select with grouped items */}
-        <div className='w-64'>
-          <Combobox
-            items={[
-              { value: 'nsw', label: 'New South Wales' },
-              { value: 'vic', label: 'Victoria' },
-              { value: 'qld', label: 'Queensland' },
-            ]}
-          >
-            <ComboboxInput placeholder='Search state' aria-label='State' />
-            <ComboboxContent>
-              <ComboboxEmpty>No state found.</ComboboxEmpty>
-              <ComboboxList>
-                {(item: { value: string; label: string }) => (
-                  <ComboboxItem key={item.value} value={item}>
-                    {item.label}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-        </div>
+export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
 
-        {/* Static grouped items */}
-        <div className='w-64'>
-          <Combobox items={fruits}>
-            <ComboboxInput placeholder='Search fruit' aria-label='Fruit (grouped)' />
-            <ComboboxContent>
-              <ComboboxEmpty>No fruit found.</ComboboxEmpty>
-              <ComboboxList>
-                <ComboboxGroup>
-                  <ComboboxLabel>Fruit</ComboboxLabel>
-                  {fruits.map((item) => (
-                    <ComboboxItem key={item} value={item}>
-                      {item}
-                    </ComboboxItem>
-                  ))}
-                </ComboboxGroup>
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-        </div>
-
-        {/* Multi-select with chips */}
-        <div className='w-64'>
-          <Combobox multiple items={fruits} defaultValue={['Apple']}>
-            <ComboboxChips ref={anchor}>
-              <ComboboxValue>
-                {(value: string[]) =>
-                  value.map((item) => <ComboboxChip key={item}>{item}</ComboboxChip>)
-                }
-              </ComboboxValue>
-              <ComboboxChipsInput placeholder='Add fruit' aria-label='Fruit (multiple)' />
-            </ComboboxChips>
-            <ComboboxContent anchor={anchor}>
-              <ComboboxEmpty>No fruit found.</ComboboxEmpty>
-              <ComboboxList>
-                {(item: string) => (
-                  <ComboboxItem key={item} value={item}>
-                    {item}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
-            </ComboboxContent>
-          </Combobox>
-        </div>
-      </div>
-    )
-  },
+export const GroupedOptions: Story = {
+  name: 'Grouped options',
+  render: () => <GroupedOptionsSection />,
 }
 
-/**
- * The chip's remove button is icon-only, so `removeLabel` is the only name AT
- * hears for it. In a list of chips a bare "Remove" is also ambiguous — the
- * prop exists so a consumer can name the chip being removed, which this story
- * demonstrates as well as covering the translation path.
- */
-export const TranslatedRemoveLabel: Story = {
-  name: 'Translated remove label',
-  render: function TranslatedRemove() {
-    const anchor = useComboboxAnchor()
-    return (
-      <div className='w-64'>
-        <Combobox multiple items={fruits} defaultValue={['Apple', 'Banana']}>
-          <ComboboxChips ref={anchor}>
-            <ComboboxValue>
-              {(value: string[]) =>
-                value.map((item) => (
-                  <ComboboxChip key={item} removeLabel={`Quitar ${item}`}>
-                    {item}
-                  </ComboboxChip>
-                ))
-              }
-            </ComboboxValue>
-            <ComboboxChipsInput placeholder='Añadir fruta' aria-label='Fruta (varias)' />
-          </ComboboxChips>
-          <ComboboxContent anchor={anchor}>
-            <ComboboxEmpty>Sin resultados.</ComboboxEmpty>
-            <ComboboxList>
-              {(item: string) => (
-                <ComboboxItem key={item} value={item}>
-                  {item}
-                </ComboboxItem>
-              )}
-            </ComboboxList>
-          </ComboboxContent>
-        </Combobox>
-      </div>
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // Each chip's remove button is findable by its own translated name — the
-    // per-chip naming the prop exists for. getByRole throws when the name is
-    // absent, so these ARE the assertions.
-    await expect(canvas.getByRole('button', { name: 'Quitar Apple' })).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Quitar Banana' })).toBeInTheDocument()
-
-    // Every chip here passes removeLabel, so finding NO button named "Remove"
-    // proves the prop was honoured rather than ignored — an implementation
-    // that dropped it would fall back to the default and be caught here.
-    // (`canvas` is scoped to this story; Storybook renders each story in its
-    // own DOM, so this says nothing about any other story's chips.)
-    await expect(canvas.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument()
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  play: async ({ canvasElement }) => {
-    // The InputGroup wrapping the combobox input is always visible; never target
-    // the portaled popup.
-    const group = canvasElement.querySelector<HTMLElement>('[data-slot="input-group"]')
-    if (!group) {
-      throw new Error('Could not find [data-slot="input-group"].')
-    }
-
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
-    const borderColor = getComputedStyle(group).borderColor
-    if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
-    }
-  },
+export const MultipleSelection: Story = {
+  name: 'Multiple selection',
+  render: () => <MultipleSelectionSection />,
 }

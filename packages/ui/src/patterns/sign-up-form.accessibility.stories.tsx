@@ -20,8 +20,9 @@ import { wcagStoryMeta } from '../components/story-helpers.js'
 import { SignUpForm } from './sign-up-form.js'
 
 const meta = {
-  title: 'Components/SignUpForm/Accessibility',
+  title: 'Patterns/SignUpForm/Accessibility',
   component: SignUpForm,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -39,7 +40,7 @@ function allInputs(canvasElement: HTMLElement): HTMLInputElement[] {
 // ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
 
 export const LabelAssociation: Story = {
-  name: '1.3.1 Info and Relationships',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -90,7 +91,7 @@ export const LabelAssociation: Story = {
 // ─── 3.3.2 — Labels or Instructions ───────────────────────────────────────────
 
 export const LabelsAndInstructions: Story = {
-  name: '3.3.2 Labels or Instructions',
+  name: 'Labels or Instructions — 3.3.2',
   parameters: {
     wcag: ['3.3.2'],
     docs: {
@@ -139,7 +140,7 @@ export const LabelsAndInstructions: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {

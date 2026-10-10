@@ -23,6 +23,7 @@ import {
 const meta = {
   title: 'Components/Breadcrumb/Accessibility',
   component: Breadcrumb,
+  tags: ['!autodocs'],
   parameters: { layout: 'padded' },
 } satisfies Meta<typeof Breadcrumb>
 
@@ -52,7 +53,7 @@ function effectiveBackground(element: Element): string {
 }
 
 export const NameRoleValue: Story = {
-  name: 'Name, role, value',
+  name: 'Name, Role, Value — 4.1.2 / 1.3.1',
   parameters: {
     docs: {
       description: {
@@ -110,7 +111,7 @@ export const NameRoleValue: Story = {
 }
 
 export const Keyboard: Story = {
-  name: 'Keyboard',
+  name: 'Keyboard — 2.1.1',
   parameters: {
     docs: {
       description: {
@@ -144,7 +145,7 @@ export const Keyboard: Story = {
 }
 
 export const FocusVisible: Story = {
-  name: 'Focus visible',
+  name: 'Focus Visible — 2.4.7 / 1.4.11',
   parameters: {
     docs: {
       description: {
@@ -183,7 +184,7 @@ export const FocusVisible: Story = {
 }
 
 export const ContrastMinimum: Story = {
-  name: 'Contrast (minimum)',
+  name: 'Contrast (Minimum) — 1.4.3',
   parameters: {
     docs: {
       description: {
@@ -220,12 +221,12 @@ export const ContrastMinimum: Story = {
 
 export const ContrastMinimumDark: Story = {
   ...ContrastMinimum,
-  name: 'Contrast (minimum, dark)',
+  name: 'Contrast (Minimum) — 1.4.3 (dark)',
   globals: { theme: 'dark' },
 }
 
 export const TargetSize: Story = {
-  name: 'Target size',
+  name: 'Target Size (Minimum) — 2.5.8 / 2.5.5',
   parameters: {
     docs: {
       description: {

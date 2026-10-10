@@ -1,75 +1,146 @@
 /**
- * ForgotPasswordForm — Default + Playground
+ * ForgotPasswordForm — the story set, per docs/reference-storybook-standard.md.
  *
- * ForgotPasswordForm is a composed pattern (Card + Field + Input + Button)
- * rather than a primitive. It is the password-reset request step that pairs
- * with the "Forgot your password?" link in LoginForm. Like LoginForm, it is
- * published as a worked example — consumers copy and adapt the source rather
- * than treat it as a black-box component.
+ *   Patterns/ForgotPasswordForm                → this file: Docs, Default,
+ *                                                Playground and one story per
+ *                                                docs section
+ *   Patterns/ForgotPasswordForm/Accessibility  → forgot-password-form.accessibility.stories.tsx
+ *
+ * ForgotPasswordForm is a registry block (Card + Field + Input + Button), the
+ * reset-request step behind LoginForm's "Forgot your password?" link.
+ * Consumers copy the source and adapt it rather than configure it through
+ * props.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import { Callout } from '../components/callout.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleSection,
+} from '../components/story-helpers.js'
 import { ForgotPasswordForm } from './forgot-password-form.js'
 
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function ResetRequestSection() {
+  return (
+    <ExampleSection
+      title='Reset request'
+      description={
+        <>
+          One field, one action. Collect the email address, send the reset link, and offer the way
+          back to sign-in. Keep it to the single field — a reset request needs nothing else, and
+          every extra field is one more thing to get wrong when someone is already locked out.
+        </>
+      }
+    >
+      <Example code={`<ForgotPasswordForm className="w-full max-w-md" />`}>
+        <ForgotPasswordForm className='w-full max-w-md' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ConfirmationSection() {
+  return (
+    <ExampleSection
+      title='Confirmation'
+      description={
+        <>
+          After a submit, show the same message whether or not the address has an account. Saying an
+          email was &ldquo;not found&rdquo; tells anyone who asks which addresses are registered.
+          Replace the form with a <code>Callout</code> like this one in your copied source.
+        </>
+      }
+    >
+      <Example
+        code={`<Callout status="success" title="Check your email">
+  If an account uses that address, we've sent it a link to reset your password.
+</Callout>`}
+      >
+        <div className='w-full max-w-md'>
+          <Callout status='success' title='Check your email'>
+            If an account uses that address, we&apos;ve sent it a link to reset your password. The
+            link expires in 30 minutes.
+          </Callout>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='The reset step on a subtle page surface, where the white card reads as the one thing to complete.'
+    >
+      <Example surface='subtle'>
+        <div className='w-full max-w-md'>
+          <ForgotPasswordForm />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function ForgotPasswordFormDocs() {
+  return (
+    <DocsPage
+      eyebrow='Pattern'
+      title='ForgotPasswordForm'
+      registry='forgot-password-form'
+      summary={
+        <>
+          The password-reset request card behind LoginForm&apos;s &ldquo;Forgot your
+          password?&rdquo; link, assembled from Card, Field, Input and Button. Copy the source, wire
+          the email field to your own reset handler, and adapt the copy to your service.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The page LoginForm’s “Forgot your password?” link leads to.',
+          'Any service that signs people in with an email and password it stores.',
+          'A reference for a single-field form that does not reveal which accounts exist.',
+        ]}
+        avoid={[
+          'Signing in — use LoginForm.',
+          'Creating an account — use SignUpForm.',
+          'Services that only use single sign-on — the identity provider owns password resets.',
+        ]}
+      />
+      <ResetRequestSection />
+      <ConfirmationSection />
+      <InContextSection />
+      <DocsApi description='ForgotPasswordForm takes the props of a div. Use className to set its width; anything more is a change to the copied source.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
-  title: 'Components/ForgotPasswordForm',
+  title: 'Patterns/ForgotPasswordForm',
   component: ForgotPasswordForm,
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>ForgotPasswordForm</h1>
-            <p className='text-base text-muted-foreground'>
-              ForgotPasswordForm is a composed pattern that demonstrates how to assemble Card,
-              Field, Input, and Button primitives into a password-reset request form. It is the
-              destination of the &ldquo;Forgot your password?&rdquo; link in LoginForm. Copy the
-              source, wire the email field to your own reset handler, and adapt the copy to your
-              service.
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
-            <div className='w-full max-w-md'>
-              <ForgotPasswordForm />
-            </div>
-          </section>
-
-          <section className='space-y-3'>
-            <h2 className='text-2xl font-bold tracking-normal'>Account-enumeration safety</h2>
-            <p className='text-base text-muted-foreground'>
-              When wiring the form, show the same confirmation message whether or not the submitted
-              address has an account. Revealing that an email is &ldquo;not found&rdquo; lets an
-              attacker enumerate registered users. The single-field layout keeps this easy to get
-              right.
-            </p>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'ForgotPasswordForm is a composed password-reset request pattern assembling Card, Field, Input, and Button. It is published as a worked example; consumers copy and adapt the source rather than configure it through props.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: ForgotPasswordFormDocs },
   },
   args: {
-    className: '',
+    className: 'w-full max-w-md',
   },
   argTypes: {
-    className: {
-      control: 'text',
-      description:
-        'Additional Tailwind utility classes merged onto the outer wrapper. Use to constrain width or override layout in context.',
-      table: { disable: true, category: 'Appearance' },
-    },
+    className: { table: { disable: true } },
   },
 } satisfies Meta<typeof ForgotPasswordForm>
 
@@ -80,9 +151,6 @@ type Story = StoryObj<typeof meta>
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
-  args: {
-    className: 'w-full max-w-md',
-  },
   play: async ({ canvasElement }) => {
     const emailInput = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
     if (!emailInput) {
@@ -109,17 +177,16 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-  render: (args) => (
-    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
-      <ForgotPasswordForm {...args} />
-    </div>
-  ),
+export const Playground: Story = {}
+
+export const ResetRequest: Story = {
+  name: 'Reset request',
+  render: () => <ResetRequestSection />,
 }
+
+export const Confirmation: Story = {
+  name: 'Confirmation',
+  render: () => <ConfirmationSection />,
+}
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

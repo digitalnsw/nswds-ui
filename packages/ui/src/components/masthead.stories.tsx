@@ -1,113 +1,17 @@
 /**
- * Masthead — Default + Colours + Containers + Playground
+ * Masthead — the "A NSW Government website" strip.
  *
- * The "A NSW Government website" strip. Colour variants are curated WCAG 2.2
- * AAA pairs; container variants reproduce the nswds-app (fluid) and legacy
- * nsw-container (contained) layouts.
+ *   Components/Masthead        → this file: Docs, Default, Playground and one
+ *                                story per docs section
+ *   Components/Masthead/Tests  → masthead.tests.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type * as React from 'react'
 
+import { Header, HeaderBrand } from './header.js'
 import { Masthead } from './masthead.js'
-
-const meta = {
-  title: 'Components/Masthead',
-  component: Masthead,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'fullscreen',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>Masthead</h1>
-            <p className='text-base text-muted-foreground'>
-              The masthead tells people they are on an official NSW Government website. It sits
-              above the site header on every page, paired with SkipLinks rendered immediately before
-              it. Every colour variant is a verified WCAG 2.2 AAA (7:1) text/background pair.
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Colours</h2>
-            {/* Unique ids: the component defaults to id="nsw-masthead", which
-                is only valid once per page. */}
-            <div className='space-y-2'>
-              <Masthead id='docs-masthead-dark' color='dark' />
-              <Masthead id='docs-masthead-light' color='light' />
-              <Masthead id='docs-masthead-white' color='white' className='border border-border' />
-              <Masthead id='docs-masthead-grey' color='grey' />
-            </div>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Containers</h2>
-            <p className='text-base text-muted-foreground'>
-              <code>fluid</code> spans the full width (nswds-app parity);
-              <code> contained</code> centres the content in a 1200px column (legacy nsw-container
-              parity). Fine-tune either with the
-              <code> --masthead-max-width</code> and
-              <code> --masthead-padding-x</code> custom properties.
-            </p>
-            <div className='space-y-2'>
-              <Masthead id='docs-masthead-fluid' container='fluid'>
-                fluid (default)
-              </Masthead>
-              <Masthead id='docs-masthead-contained' container='contained'>
-                contained
-              </Masthead>
-            </div>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'The "A NSW Government website" strip shown above the site header, with WCAG 2.2 AAA colour variants and fluid/contained width presets.',
-      },
-    },
-  },
-  args: {
-    color: 'dark',
-    container: 'fluid',
-  },
-  argTypes: {
-    color: {
-      control: 'inline-radio',
-      options: ['dark', 'light', 'white', 'grey'],
-      description:
-        'WCAG 2.2 AAA text/background pair — dark and light match the legacy .nsw-masthead and --light themes.',
-      table: { category: 'Appearance' },
-    },
-    container: {
-      control: 'inline-radio',
-      options: ['fluid', 'contained'],
-      description:
-        'Inner wrapper layout — fluid is full-bleed (nswds-app), contained centres a 1200px column (legacy nsw-container).',
-      table: { category: 'Layout' },
-    },
-    children: {
-      control: 'text',
-      description: 'Replaces the default "A NSW Government website" message.',
-      table: { category: 'Content' },
-    },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
-    containerClassName: {
-      table: { disable: true, category: 'Advanced' },
-    },
-  },
-} satisfies Meta<typeof Masthead>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
 /** The four curated colours, in the order they are declared. */
 const MASTHEAD_COLORS = ['dark', 'light', 'white', 'grey'] as const
@@ -119,6 +23,205 @@ function getMasthead(canvasElement: HTMLElement) {
   }
   return el
 }
+
+/**
+ * A labelled full-width specimen. ExampleCell sizes its child to its content,
+ * which would shrink a full-bleed strip to the width of its message.
+ */
+function Strip({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className='space-y-2'>
+      <p className='text-base text-muted-foreground'>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Every Masthead on the docs page takes its own id: the component defaults to
+// id="nsw-masthead", which is only valid once per page.
+
+function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          Four colours, shared with <code>SkipLinks</code> and <code>Header</code> so one word
+          themes the whole top of the page. Every pair is WCAG 2.2 AAA (7:1) in both themes, and
+          none is a mid-tone <code>-600</code> step, where the brand mark stops reading. Every
+          colour deepens in dark mode, onto the same ramp steps as <code>Header</code>, so the two
+          stay flush.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Masthead color="light" />`}>
+        <div className='space-y-6'>
+          {MASTHEAD_COLORS.map((color) => (
+            <Strip key={color} label={color === 'dark' ? 'dark (default)' : color}>
+              <Masthead
+                id={`masthead-colour-${color}`}
+                color={color}
+                className='ring-1 ring-foreground/10'
+              />
+            </Strip>
+          ))}
+        </div>
+      </Example>
+      <Example layout='fill' surface='dark'>
+        <div className='space-y-6'>
+          {MASTHEAD_COLORS.map((color) => (
+            <Strip key={color} label={`${color} — dark mode`}>
+              <Masthead
+                id={`masthead-colour-dark-${color}`}
+                color={color}
+                className='ring-1 ring-foreground/10'
+              />
+            </Strip>
+          ))}
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ContainersSection() {
+  return (
+    <ExampleSection
+      title='Containers'
+      description={
+        <>
+          <code>fluid</code> (the default) runs the message from the page edge;{' '}
+          <code>contained</code> centres it in a 1200px column, to line up with a contained{' '}
+          <code>Header</code>. Retune either with <code>--masthead-max-width</code> and{' '}
+          <code>--masthead-padding-x</code>.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Masthead container="contained" />`}>
+        <div className='space-y-6'>
+          <Strip label='fluid'>
+            <Masthead id='masthead-container-fluid' container='fluid' />
+          </Strip>
+          <Strip label='contained'>
+            <Masthead id='masthead-container-contained' container='contained' />
+          </Strip>
+          <Strip label='contained, --masthead-max-width: 40rem'>
+            <Masthead
+              id='masthead-container-custom'
+              container='contained'
+              style={{ '--masthead-max-width': '40rem' } as React.CSSProperties}
+            />
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='The masthead sits flush above the Header, themed with the same word. SkipLinks come before both in the DOM.'
+    >
+      <Example layout='fill'>
+        <div className='overflow-hidden ring-1 ring-foreground/10'>
+          <Masthead id='masthead-in-context' color='dark' />
+          <Header id='masthead-in-context-header' color='dark' sticky={false}>
+            <HeaderBrand sitename='Department of Primary Industries' />
+          </Header>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function MastheadDocs() {
+  return (
+    <DocsPage
+      title='Masthead'
+      npm='Masthead'
+      registry='masthead'
+      summary={
+        <>
+          The strip that tells people they are on an official NSW Government website. It sits at the
+          very top of every page, directly above the <code>Header</code>, with{' '}
+          <code>SkipLinks</code> rendered before it. It carries mandated identification rather than
+          content, so it is deliberately quiet.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The top of every page on a NSW Government website, rendered once in a shared layout.',
+          'Above a Header themed with the same colour word, so the two sit flush.',
+          'Leaving the default “A NSW Government website” message as written.',
+        ]}
+        avoid={[
+          'Telling people about a change or an outage — use Callout.',
+          'Holding the brand, service name and controls — use Header.',
+          'Letting keyboard users jump past repeated blocks — use SkipLinks, rendered before it.',
+        ]}
+      />
+      <ColoursSection />
+      <ContainersSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const meta = {
+  title: 'Components/Masthead',
+  component: Masthead,
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'fullscreen',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: MastheadDocs },
+  },
+  args: {
+    color: 'dark',
+    container: 'fluid',
+  },
+  argTypes: {
+    color: {
+      control: 'inline-radio',
+      options: MASTHEAD_COLORS,
+      description:
+        'WCAG 2.2 AAA text/background pair, shared with SkipLinks and Header. Every colour deepens in dark mode.',
+      table: { category: 'Appearance' },
+    },
+    container: {
+      control: 'inline-radio',
+      options: ['fluid', 'contained'],
+      description:
+        'Inner wrapper layout — fluid is full-bleed, contained centres a 1200px column. Retune with --masthead-max-width and --masthead-padding-x.',
+      table: { category: 'Appearance' },
+    },
+    children: {
+      control: 'text',
+      description: 'Replaces the default "A NSW Government website" message.',
+      table: { category: 'Content' },
+    },
+    id: {
+      control: 'text',
+      description: 'Defaults to "nsw-masthead" for shells that target it. Unique per page.',
+      table: { category: 'Accessibility' },
+    },
+    className: { table: { disable: true } },
+    containerClassName: { table: { disable: true } },
+  },
+} satisfies Meta<typeof Masthead>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -139,131 +242,10 @@ export const Default: Story = {
   },
 }
 
-// Multi-instance stories pass unique ids: the component defaults to
-// id="nsw-masthead", which is only valid once per page.
-export const Colours: Story = {
-  render: () => (
-    <div className='space-y-2'>
-      <Masthead id='masthead-dark' color='dark' />
-      <Masthead id='masthead-light' color='light' />
-      <Masthead id='masthead-white' color='white' className='border border-border' />
-      <Masthead id='masthead-grey' color='grey' />
-    </div>
-  ),
-}
+export const Playground: Story = {}
 
-export const Containers: Story = {
-  render: () => (
-    <div className='space-y-2'>
-      <Masthead id='masthead-fluid' container='fluid'>
-        fluid — full-bleed (nswds-app parity)
-      </Masthead>
-      <Masthead id='masthead-contained' container='contained'>
-        contained — centred 1200px column (legacy nsw-container parity)
-      </Masthead>
-      <Masthead
-        id='masthead-contained-custom'
-        container='contained'
-        style={{ '--masthead-max-width': '40rem' } as React.CSSProperties}
-      >
-        contained — custom --masthead-max-width: 40rem
-      </Masthead>
-    </div>
-  ),
-}
+export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
 
-/**
- * Every colour deepens in dark mode, on the same ramp steps `Header` uses.
- *
- * This story is the guard on that: before it existed there was no dark-mode
- * coverage here at all, and three of the four colours silently rendered
- * identically in both themes — a `white` masthead stayed pure white above a
- * `grey-900` header, an 18.9:1 band across the top of a dark page.
- *
- * Each card pairs the ambient surface with a locally-scoped `.dark` so the two
- * sit side by side. When the toolbar already has the page dark that pairing
- * collapses, and the assertion below switches to proving the nested `.dark` is
- * idempotent instead — a `.dark` inside a `.dark` must not compound.
- */
-export const DarkMode: Story = {
-  name: 'Dark Mode',
-  render: (args) => (
-    <div className='space-y-4'>
-      {MASTHEAD_COLORS.map((color) => (
-        <div
-          key={color}
-          data-surface-pair=''
-          className='overflow-hidden rounded-sm border border-border'
-        >
-          <div className='border-b border-border bg-muted px-4 py-2 text-sm font-medium'>
-            {color}
-          </div>
-          <Masthead {...args} color={color} />
-          <div className='dark'>
-            <Masthead {...args} color={color} />
-          </div>
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const cards = canvasElement.querySelectorAll<HTMLElement>('[data-surface-pair]')
-    if (cards.length !== MASTHEAD_COLORS.length) {
-      throw new Error(`Expected ${MASTHEAD_COLORS.length} colour cards, got ${cards.length}.`)
-    }
+export const Containers: Story = { name: 'Containers', render: () => <ContainersSection /> }
 
-    for (const card of cards) {
-      const strips = card.querySelectorAll<HTMLElement>('[data-slot="masthead"]')
-      const [ambient, nested] = strips
-      if (!ambient || !nested) {
-        throw new Error(`Expected 2 mastheads per card, got ${strips.length}.`)
-      }
-      const name = ambient.dataset.color ?? '(unknown)'
-      const light = getComputedStyle(ambient).backgroundColor
-      const dark = getComputedStyle(nested).backgroundColor
-
-      // Ask the DOM, not the toolbar global: it is the ancestor marker that
-      // decides how these render, and a consumer may set [data-theme='dark'].
-      if (ambient.closest('.dark, [data-theme="dark"]')) {
-        if (light !== dark) {
-          throw new Error(
-            `With the page already dark, the nested .dark changed the "${name}" surface (${dark} vs ${light}) — a .dark inside a .dark must not compound.`,
-          )
-        }
-        continue
-      }
-
-      // The regression guard. Three of these four used to be identical.
-      if (light === dark) {
-        throw new Error(
-          `The "${name}" masthead renders the same surface (${light}) in both themes — it is not participating in dark mode.`,
-        )
-      }
-    }
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: the dark colour variant resolves
-    // bg-primary-800 to a real, non-transparent colour.
-    const masthead = getMasthead(canvasElement)
-    const bg = getComputedStyle(masthead).backgroundColor
-    if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected bg-primary-800 to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
-      )
-    }
-  },
-}
-
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,27 +1,30 @@
 /**
- * Direction — Default, Variants, CssCheck
+ * DirectionProvider — the story set for docs/reference-storybook-standard.md.
+ *
+ *   Components/DirectionProvider        → this file: Docs, Default, Playground
+ *                                         and one story per docs section
+ *   Components/DirectionProvider/Tests  → direction.tests.stories.tsx
  *
  * DirectionProvider supplies the LTR/RTL direction as REACT CONTEXT, read by
  * direction-aware components via useDirection. It renders no DOM element of its
  * own, so it does NOT set `dir` and it does NOT drive CSS: logical properties
  * (`ps-*`, `-ms-*`, `start-*`) and the `rtl:` variant follow the DOM `dir`
- * attribute, which is a separate thing entirely.
- *
- * RTL therefore needs BOTH halves — see the RtlNeedsDirAttribute story:
- *
- *     <html dir='rtl'>                        ← the CSS half
- *       <DirectionProvider direction='rtl'>   ← the JS half
- *
- * Setting only the provider gives you direction-aware JS behaviour on top of an
- * LTR layout; setting only `dir` gives you a mirrored layout whose keyboard
- * handling still moves the other way. This is a re-export of the Base UI
- * primitive; we add no styling of our own.
+ * attribute, which is a separate thing entirely. RTL therefore needs BOTH
+ * halves. This is a re-export of the Base UI primitive; we add no styling.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 
 import { DirectionProvider, useDirection } from './direction.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 /** Reads the ambient direction and writes it into the DOM so a play() can assert it. */
 function DirReadout() {
@@ -29,39 +32,149 @@ function DirReadout() {
   return <span data-slot='dir-readout'>{direction}</span>
 }
 
-/** Renders the ambient direction as a labelled swatch, for the Variants gallery. */
-function DirectionSample({ hint }: { hint: string }) {
+/** A box padded on its inline-start side, to show which way the CSS runs. */
+function StartPadded() {
   const direction = useDirection()
   return (
-    <div className='flex items-center gap-2 border p-2'>
-      <span data-slot='dir-readout' className='text-xs font-medium text-foreground uppercase'>
-        {direction}
-      </span>
-      <span className='text-xs text-muted-foreground'>{hint}</span>
+    <div className='w-64 rounded-sm bg-foreground/5 py-2 ps-12 ring-1 ring-foreground/10'>
+      useDirection() → <code>{direction}</code>
     </div>
   )
 }
 
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function ReadingTheDirectionSection() {
+  return (
+    <ExampleSection
+      title='Reading the direction'
+      description={
+        <>
+          Components call <code>useDirection()</code> to read the nearest provider’s value —
+          Carousel uses it to swap its arrow keys and scroll engine. With no provider it returns{' '}
+          <code>ltr</code>.
+        </>
+      }
+    >
+      <Example code={`const direction = useDirection() // 'ltr' | 'rtl'`}>
+        <ExampleCell label='direction="ltr"'>
+          <DirectionProvider direction='ltr'>
+            <code>
+              <DirReadout />
+            </code>
+          </DirectionProvider>
+        </ExampleCell>
+        <ExampleCell label='direction="rtl"'>
+          <DirectionProvider direction='rtl'>
+            <code>
+              <DirReadout />
+            </code>
+          </DirectionProvider>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function RightToLeftSection() {
+  return (
+    <ExampleSection
+      title='Right to left'
+      description={
+        <>
+          The provider renders nothing, so it cannot mirror the layout. Set{' '}
+          <code>dir=&quot;rtl&quot;</code> on an ancestor — usually <code>&lt;html&gt;</code> — for
+          the CSS, and wrap the app in <code>DirectionProvider</code> for the JavaScript. Each box
+          below pads its inline-start side.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<html dir="rtl">
+  <DirectionProvider direction="rtl">…</DirectionProvider>
+</html>`}
+      >
+        <ExampleCell label='provider only — JS reads rtl, layout stays left to right'>
+          <DirectionProvider direction='rtl'>
+            <StartPadded />
+          </DirectionProvider>
+        </ExampleCell>
+        <ExampleCell label='dir="rtl" and provider — both halves agree'>
+          <div dir='rtl'>
+            <DirectionProvider direction='rtl'>
+              <StartPadded />
+            </DirectionProvider>
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function DirectionDocs() {
+  return (
+    <DocsPage
+      title='DirectionProvider'
+      npm={['DirectionProvider', 'useDirection']}
+      registry='direction'
+      summary={
+        <>
+          Tells direction-aware components whether the page reads left to right or right to left. It
+          is React context only: pair it with a <code>dir</code> attribute, which is what mirrors
+          the layout.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'A service published in a right-to-left language, such as Arabic.',
+          'A right-to-left region inside an otherwise left-to-right page.',
+          'Building a component whose keyboard behaviour depends on reading direction.',
+        ]}
+        avoid={[
+          'Mirroring the layout alone — set the dir attribute; the provider does not do it.',
+          'A single carousel that must run right to left on its own — pass opts.direction to Carousel.',
+          'Translating labels — pass translated strings to each component’s label props.',
+        ]}
+      />
+      <ReadingTheDirectionSection />
+      <RightToLeftSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
-  title: 'Components/Direction',
+  title: 'Components/DirectionProvider',
   component: DirectionProvider,
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
-    docs: {
-      description: {
-        component:
-          'DirectionProvider supplies the LTR/RTL direction as React context, read via the useDirection hook. It renders no DOM element, so it does not set `dir` and does not affect CSS — logical properties and the `rtl:` variant follow the DOM `dir` attribute. Full RTL needs both: `dir="rtl"` on an ancestor element for the CSS, and this provider for direction-aware JS.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: DirectionDocs },
   },
-  render: (args) => (
-    <DirectionProvider {...args}>
-      <DirReadout />
-    </DirectionProvider>
-  ),
   args: {
     direction: 'rtl',
+    children: <DirReadout />,
+  },
+  argTypes: {
+    direction: {
+      control: 'inline-radio',
+      options: ['ltr', 'rtl'],
+      description: 'Reading direction supplied to useDirection. Does not set `dir` on the DOM.',
+      table: { category: 'Behavior' },
+    },
+    children: {
+      control: false,
+      description: 'The subtree that reads the direction.',
+      table: { category: 'Content' },
+    },
   },
 } satisfies Meta<typeof DirectionProvider>
 
@@ -80,87 +193,11 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <div className='flex flex-col gap-6'>
-      <DirectionProvider direction='ltr'>
-        <DirectionSample hint='start ▸ end (LTR)' />
-      </DirectionProvider>
-      <DirectionProvider direction='rtl'>
-        <DirectionSample hint='start ◂ end (RTL)' />
-      </DirectionProvider>
-    </div>
-  ),
+export const Playground: Story = {}
+
+export const ReadingTheDirection: Story = {
+  name: 'Reading the direction',
+  render: () => <ReadingTheDirectionSection />,
 }
 
-/**
- * The provider alone does NOT mirror CSS — `dir` on a DOM ancestor does. This
- * story asserts both halves independently so the documented split cannot drift
- * back into the old (wrong) claim that the provider drives logical properties.
- */
-export const RtlNeedsDirAttribute: Story = {
-  name: 'RTL needs dir as well',
-  render: () => (
-    <div className='flex flex-col gap-6'>
-      {/* Provider only — JS sees rtl, the box still has LTR padding. */}
-      <DirectionProvider direction='rtl'>
-        <div data-slot='dir-provider-only' className='bg-muted ps-8'>
-          <DirReadout />
-        </div>
-      </DirectionProvider>
-
-      {/* Both halves — this is what a consumer actually wants. */}
-      <div dir='rtl'>
-        <DirectionProvider direction='rtl'>
-          <div data-slot='dir-both' className='bg-muted ps-8'>
-            <DirReadout />
-          </div>
-        </DirectionProvider>
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const providerOnly = canvasElement.querySelector<HTMLElement>('[data-slot="dir-provider-only"]')
-    const both = canvasElement.querySelector<HTMLElement>('[data-slot="dir-both"]')
-    if (!providerOnly || !both) {
-      throw new Error('Could not find the direction sample elements.')
-    }
-
-    // Both report rtl to JS — the context reaches useDirection either way.
-    await expect(providerOnly.querySelector('[data-slot="dir-readout"]')).toHaveTextContent('rtl')
-    await expect(both.querySelector('[data-slot="dir-readout"]')).toHaveTextContent('rtl')
-
-    // But only the one with `dir` mirrors the CSS. `ps-8` is padding-inline-
-    // start: it resolves to padding-LEFT without `dir`, padding-RIGHT with it.
-    const withoutDir = getComputedStyle(providerOnly)
-    const withDir = getComputedStyle(both)
-    await expect(withoutDir.direction).toBe('ltr')
-    await expect(withDir.direction).toBe('rtl')
-    await expect(parseFloat(withoutDir.paddingLeft)).toBeGreaterThan(0)
-    await expect(parseFloat(withoutDir.paddingRight)).toBe(0)
-    await expect(parseFloat(withDir.paddingRight)).toBeGreaterThan(0)
-    await expect(parseFloat(withDir.paddingLeft)).toBe(0)
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  render: () => (
-    <DirectionProvider direction='ltr'>
-      <div className='size-8 bg-primary' data-slot='dir-swatch' />
-    </DirectionProvider>
-  ),
-  play: async ({ canvasElement }) => {
-    // Proves globals.css loaded: the swatch's bg-primary resolves to a real
-    // colour rather than staying transparent.
-    const swatch = canvasElement.querySelector<HTMLElement>('[data-slot="dir-swatch"]')
-    if (!swatch) {
-      throw new Error('Could not find [data-slot="dir-swatch"].')
-    }
-    const background = getComputedStyle(swatch).backgroundColor
-    if (background === '' || background === 'rgba(0, 0, 0, 0)' || background === 'transparent') {
-      throw new Error(`Expected bg-primary to resolve, received "${background}".`)
-    }
-  },
-}
+export const RightToLeft: Story = { name: 'Right to left', render: () => <RightToLeftSection /> }

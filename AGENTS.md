@@ -404,18 +404,30 @@ indefinitely. `check:registry-resolves` fails on the orphan if you forget.
 
 ### Step 4 — Write a Storybook story
 
+Every component's stories take one shape, defined in
+[docs/reference-storybook-standard.md](docs/reference-storybook-standard.md) and implemented by
+the Button set (`button.stories.tsx`, `button.tests.stories.tsx`,
+`button.accessibility.stories.tsx`). Copy Button, not a neighbour:
+
 ```
-packages/ui/src/components/<name>.stories.tsx
+packages/ui/src/components/<name>.stories.tsx                Components/<Name>
+packages/ui/src/components/<name>.tests.stories.tsx          Components/<Name>/Tests
+packages/ui/src/components/<name>.accessibility.stories.tsx  Components/<Name>/Accessibility
 ```
 
-**Minimum required stories** (follow `button.stories.tsx` as the canonical example):
+- **The main file** is what a reader sees: a custom docs page built from the docs kit in
+  `story-helpers.tsx` (`DocsPage`, `DocsUsage`, one `ExampleSection` per example, `DocsApi`),
+  then `Default` (with a `play()` proving it mounted), `Playground`, and one example story per
+  docs section, each named in sentence case and rendering the same section component the page
+  does.
+- **The tests file** holds everything that proves rather than shows — the `CssCheck` story
+  (a computed-style assertion proving globals.css loaded), matrices, dark parity, regressions —
+  tagged `['!dev', '!autodocs']` so it runs in Vitest and Chromatic but stays out of the sidebar.
+- **The accessibility file** has one story per WCAG 2.2 criterion, named
+  `<W3C title> — <number>`.
 
-- `Default` — with a `play()` test proving the component mounts and is interactive.
-- `Variants` — one story rendering all meaningful variant combinations.
-- A `CssCheck` story asserting a computed style property — this proves globals.css loaded.
-
-Stories live in `packages/ui/src/` but are **excluded from the tsup build** (see tsup.config.ts:
-`name.endsWith('.stories.tsx')` check).
+`check:stories` (§5) enforces the shape. Stories live in `packages/ui/src/` but are **excluded
+from the tsup build** (see tsup.config.ts: `name.endsWith('.stories.tsx')` check).
 
 ---
 
@@ -444,6 +456,7 @@ Run from the **repo root** unless noted.
 | Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                   |
+| Check the story standard        | `npm run check:stories -w @nswds/ui`                           |
 | Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                      |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
 | Check published package         | `npm run check:package -w @nswds/ui`                           |
@@ -462,7 +475,7 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:workflows`, `test:scripts`, `check:drift`,
 `check:radius`, `check:icons`, `check:portal-boundary`,
-`check:theme-parity`, the
+`check:theme-parity`, `check:stories`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
 `scripts/test-consumer-fixture.sh`, a
@@ -487,7 +500,7 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs`.
   Today that is the `check:workflows` scanner and the `check:portal-boundary`
-  gate, and it is not belt-and-braces: the scanner's first version silently
+  and `check:stories` gates, and it is not belt-and-braces: the scanner's first version silently
   missed every `- run:` written as a YAML sequence item — the common form —
   while still passing `release.yml`, which happens to use the bare `run:` form,
   and the portal gate's first version passed three shapes that leak because it
@@ -550,6 +563,18 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   merely begins with it. A self-closing `<X.Portal />` fails by construction —
   it wraps nothing, and that is the shape every one of these files had before
   the boundary landed.
+- **`check:stories`** (`packages/ui/scripts/check-stories.mjs`) holds every
+  story file to [the Storybook standard](docs/reference-storybook-standard.md):
+  the three-file split, `Components/<ExportName>` titles, a docs page built
+  from the kit, `Default` then `Playground` first, sentence-case story names,
+  WCAG-named accessibility stories, tests hidden from the sidebar, and the
+  16px floor. Nothing else reads a story file for its shape — a file that
+  breaks the standard still lints, typechecks and passes its `play()` — which
+  is how the catalogue drifted into three title styles, four spellings of
+  "CSS check" and forty unlabelled "Variants" dumps before it existed. It
+  parses the TypeScript syntax tree for the same reason the portal gate does,
+  its recorded exceptions (`GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each
+  carry a reason, and it is self-tested under `test:scripts`.
 - **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
   asserts the shadcn→NSW token map is identical across the two channels that
   ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,

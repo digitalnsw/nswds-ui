@@ -1,20 +1,34 @@
 /**
- * Footer blocks — a range of eight ready-made footers to choose from.
+ * FooterBlocks — the story set, per docs/reference-storybook-standard.md.
  *
- * Each block is a composed pattern built on the published `Footer` component,
- * so all eight inherit its thirteen surface colours, dark-mode mapping,
- * ink-derived link/border/hover treatment and acknowledgement of Country. They
- * are worked examples: copy the source and adapt it, rather than treating them
- * as black-box components.
+ *   Patterns/FooterBlocks        → this file: Docs, Default, Playground and one
+ *                                  story per docs section
+ *   Patterns/FooterBlocks/Tests  → footer-blocks.tests.stories.tsx
  *
- * Start at the `Chooser` story for a side-by-side comparison.
+ * A recorded GROUP (see scripts/check-stories.mjs): the eight footer-*.tsx
+ * blocks are one family chosen between side by side, so they share one page
+ * with a chooser rather than eight near-identical pages. Each block is a
+ * registry item of its own, built on the published `Footer`, so all eight
+ * inherit its thirteen surface colours, dark-mode mapping, ink-derived link
+ * treatment and acknowledgement of Country. They are worked examples: copy the
+ * source and adapt it.
+ *
+ * Default and Playground render FooterSitemap, the default choice for a
+ * department site; every block takes the same Footer props.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import * as React from 'react'
 
 import type { FooterColor } from '../components/footer.js'
 
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleSection,
+} from '../components/story-helpers.js'
+import { IconLinkedIn, IconX, IconYouTube } from '../icons/brands/index.js'
 import { FooterAccordion } from './footer-accordion.js'
 import { FooterCompact } from './footer-compact.js'
 import { FooterContact } from './footer-contact.js'
@@ -24,40 +38,12 @@ import { FooterSimpleCentred } from './footer-simple-centred.js'
 import { FooterSitemapBrand } from './footer-sitemap-brand.js'
 import { FooterSitemap } from './footer-sitemap.js'
 
-// Brand marks are not part of the NSWDS icon set (Material Symbols), so social
-// icons are supplied by the consuming app — the blocks take them as data.
-function LinkedInIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path d='M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z' />
-    </svg>
-  )
-}
-
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path d='M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z' />
-    </svg>
-  )
-}
-
-function YouTubeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path
-        fillRule='evenodd'
-        d='M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z'
-        clipRule='evenodd'
-      />
-    </svg>
-  )
-}
-
+// Brand marks are not part of the Material Symbols set, so the blocks take
+// social icons as data; these come from the package's brand entry point.
 const socialLinks = [
-  { name: 'LinkedIn', href: '#linkedin', icon: LinkedInIcon },
-  { name: 'X', href: '#x', icon: XIcon },
-  { name: 'YouTube', href: '#youtube', icon: YouTubeIcon },
+  { name: 'LinkedIn', href: '#linkedin', icon: IconLinkedIn },
+  { name: 'X', href: '#x', icon: IconX },
+  { name: 'YouTube', href: '#youtube', icon: IconYouTube },
 ]
 
 // Pinned so Chromatic snapshots don't churn every new year.
@@ -65,614 +51,500 @@ const year = 2026
 
 const shared = { socialLinks, year }
 
-type Block = {
-  id: string
-  name: string
-  blurb: string
-  /** The surface this block is shown on in the Chooser. */
-  colour: FooterColor
-  render: (props: { color?: FooterColor }) => React.ReactElement
-}
-
-const BLOCKS: Block[] = [
-  {
-    id: 'simple-centred',
-    name: 'Simple centred',
-    blurb: 'Logo, acknowledgement, links and ownership — all centred. Smallest complete footer.',
-    colour: 'white',
-    render: (p) => <FooterSimpleCentred {...shared} {...p} />,
-  },
-  {
-    id: 'compact',
-    name: 'Compact bar',
-    blurb: 'One horizontal row. For embedded tools and admin screens. No acknowledgement.',
-    colour: 'grey-200',
-    render: (p) => <FooterCompact {...shared} {...p} />,
-  },
-  {
-    id: 'sitemap',
-    name: 'Site map',
-    blurb: 'Four link columns above the standard footer. The default for a department site.',
-    colour: 'white',
-    render: (p) => <FooterSitemap {...shared} {...p} />,
-  },
-  {
-    id: 'sitemap-brand',
-    name: 'Site map with brand',
-    blurb: 'Logo and a one-paragraph mission beside three link columns.',
-    colour: 'grey-200',
-    render: (p) => <FooterSitemapBrand {...shared} {...p} />,
-  },
-  {
-    id: 'newsletter',
-    name: 'Newsletter',
-    blurb: 'Link columns beside an email subscription form.',
-    colour: 'white',
-    render: (p) => <FooterNewsletter {...shared} {...p} />,
-  },
-  {
-    id: 'contact',
-    name: 'Contact details',
-    blurb: 'Phone, email, address and hours in an <address>, beside the site map.',
-    colour: 'grey-200',
-    render: (p) => <FooterContact {...shared} {...p} />,
-  },
-  {
-    id: 'cta',
-    name: 'Call to action',
-    blurb: 'A prominent action band above the site map.',
-    colour: 'primary-800',
-    render: (p) => <FooterCta {...shared} {...p} />,
-  },
-  {
-    id: 'accordion',
-    name: 'Collapsible site map',
-    blurb: 'A long site map that collapses to accordions below lg and lays out as columns above.',
-    colour: 'white',
-    render: (p) => <FooterAccordion {...shared} {...p} />,
-  },
+const footerColors: FooterColor[] = [
+  'white',
+  'grey-200',
+  'grey-400',
+  'grey-600',
+  'grey-800',
+  'primary-200',
+  'primary-400',
+  'primary-600',
+  'primary-800',
+  'accent-200',
+  'accent-400',
+  'accent-600',
+  'accent-800',
 ]
 
+/** The chooser's rows: what each block adds, and how to install it. */
+const blocks = [
+  {
+    name: 'Simple centred',
+    component: 'FooterSimpleCentred',
+    item: 'footer-simple-centred',
+    adds: 'Logo, acknowledgement, links and ownership, all centred. The smallest complete footer.',
+  },
+  {
+    name: 'Compact bar',
+    component: 'FooterCompact',
+    item: 'footer-compact',
+    adds: 'One horizontal row for embedded tools and admin screens. No acknowledgement of Country.',
+  },
+  {
+    name: 'Site map',
+    component: 'FooterSitemap',
+    item: 'footer-sitemap',
+    adds: 'Four link columns above the standard rows. The default for a department site.',
+  },
+  {
+    name: 'Site map with brand',
+    component: 'FooterSitemapBrand',
+    item: 'footer-sitemap-brand',
+    adds: 'Logo and a one-paragraph mission beside three link columns.',
+  },
+  {
+    name: 'Newsletter',
+    component: 'FooterNewsletter',
+    item: 'footer-newsletter',
+    adds: 'Link columns beside an email subscription form.',
+  },
+  {
+    name: 'Contact details',
+    component: 'FooterContact',
+    item: 'footer-contact',
+    adds: 'Phone, email, address and hours in an address element, beside the site map.',
+  },
+  {
+    name: 'Call to action',
+    component: 'FooterCta',
+    item: 'footer-cta',
+    adds: 'A prominent action band above the site map.',
+  },
+  {
+    name: 'Collapsible site map',
+    component: 'FooterAccordion',
+    item: 'footer-accordion',
+    adds: 'A long site map that collapses to accordions below lg and lays out as columns above.',
+  },
+] as const
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function ChooserSection() {
+  return (
+    <ExampleSection
+      title='Chooser'
+      description={
+        <>
+          The blocks differ only in what sits above the standard rows. Pick the one whose extra
+          content your service actually has. Each block is a registry item of its own — install it
+          with <code>npx shadcn@latest add</code> and the item name — and each is shown below.
+        </>
+      }
+    >
+      <div className='overflow-x-auto'>
+        <table className='w-full text-left text-base'>
+          <thead>
+            <tr className='border-b border-foreground/10'>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Block
+              </th>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                What it adds
+              </th>
+              <th scope='col' className='py-3 font-semibold'>
+                Registry item
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {blocks.map((block) => (
+              <tr key={block.item} className='border-b border-foreground/10 align-top'>
+                <th scope='row' className='py-3 pe-6 font-semibold'>
+                  {block.name}
+                  <code className='block font-normal text-muted-foreground'>{block.component}</code>
+                </th>
+                <td className='py-3 pe-6 text-muted-foreground'>{block.adds}</td>
+                <td className='py-3'>
+                  <code className='whitespace-nowrap'>@nswds/{block.item}</code>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </ExampleSection>
+  )
+}
+
+function ColoursSection() {
+  const shown: FooterColor[] = ['white', 'grey-200', 'primary-800']
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          Every block takes Footer&apos;s <code>color</code>: white, and the <code>200</code> to{' '}
+          <code>800</code> steps of the grey, primary and accent ramps. Links, borders and focus
+          rings derive from the surface, and the logo picks its own colourway — reversed on the{' '}
+          <code>-800</code> steps. Prefer the <code>-800</code> steps for a coloured footer; the{' '}
+          <code>-600</code> steps force the restricted mono logo.
+        </>
+      }
+    >
+      <Example code={`<FooterCompact color="primary-800" />`} layout='fill'>
+        <div className='space-y-6'>
+          {shown.map((color) => (
+            <div key={color} className='space-y-2'>
+              <p className='text-base text-muted-foreground'>{color}</p>
+              <FooterCompact {...shared} color={color} />
+            </div>
+          ))}
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SimpleCentredSection() {
+  return (
+    <ExampleSection
+      title='Simple centred'
+      description='Logo, acknowledgement of Country, legal links and ownership, centred. The smallest footer that is still complete — for a single-purpose service with few pages.'
+    >
+      <Example code={`<FooterSimpleCentred socialLinks={socialLinks} />`} layout='fill'>
+        <FooterSimpleCentred {...shared} />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function CompactBarSection() {
+  return (
+    <ExampleSection
+      title='Compact bar'
+      description='One row, for embedded tools and admin screens where a full footer would crowd the work. It is the one block without acknowledgement of Country — a service using it owes the acknowledgement somewhere else on the page.'
+    >
+      <Example code={`<FooterCompact color="grey-200" socialLinks={socialLinks} />`} layout='fill'>
+        <FooterCompact {...shared} color='grey-200' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SiteMapSection() {
+  return (
+    <ExampleSection
+      title='Site map'
+      description={
+        <>
+          Four columns of links above the standard rows, in one navigation landmark. The default for
+          a department or agency site. Replace the sample <code>columns</code> with your own.
+        </>
+      }
+    >
+      <Example code={`<FooterSitemap columns={columns} socialLinks={socialLinks} />`} layout='fill'>
+        <FooterSitemap {...shared} />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SiteMapWithBrandSection() {
+  return (
+    <ExampleSection
+      title='Site map with brand'
+      description={
+        <>
+          The logo and a one-paragraph <code>mission</code> beside three link columns, for a service
+          that needs to say what it is as well as where things are.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterSitemapBrand color="grey-200" mission="…" socialLinks={socialLinks} />`}
+        layout='fill'
+      >
+        <FooterSitemapBrand {...shared} color='grey-200' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function NewsletterSection() {
+  return (
+    <ExampleSection
+      title='Newsletter'
+      description={
+        <>
+          Link columns beside an email subscription form, for services people opt into updates from
+          — grant rounds, policy changes, alerts. <code>onSubscribe</code> receives the address and
+          may return a promise: the form disables while it is pending, then reports success or
+          failure in a polite live region. Collecting an email makes this a collection point under
+          the PPIP Act, so put your privacy notice beside the field.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterNewsletter onSubscribe={(email) => subscribe(email)} socialLinks={socialLinks} />`}
+        layout='fill'
+      >
+        <FooterNewsletter {...shared} onSubscribe={() => Promise.resolve()} />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ContactDetailsSection() {
+  return (
+    <ExampleSection
+      title='Contact details'
+      description={
+        <>
+          Phone, email, address and opening hours in an <code>&lt;address&gt;</code> beside the site
+          map. The phone number and email are <code>tel:</code> and <code>mailto:</code> links, so
+          they work on a phone with one tap.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterContact color="grey-200" contact={contact} socialLinks={socialLinks} />`}
+        layout='fill'
+      >
+        <FooterContact {...shared} color='grey-200' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function CallToActionSection() {
+  return (
+    <ExampleSection
+      title='Call to action'
+      description={
+        <>
+          A prominent action band above the site map, for the one next step most people reaching the
+          end of a page need — usually getting help. Pass it as <code>cta</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterCta color="primary-800" cta={cta} socialLinks={socialLinks} />`}
+        layout='fill'
+      >
+        <FooterCta {...shared} color='primary-800' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function CollapsibleSiteMapSection() {
+  return (
+    <ExampleSection
+      title='Collapsible site map'
+      description={
+        <>
+          A long site map that lays out as columns from <code>lg</code> up and collapses to
+          accordions below it, so a phone reader is not scrolling past twenty links. The columns
+          render open first, so every link is reachable without JavaScript. Narrow the window to see
+          it collapse.
+        </>
+      }
+    >
+      <Example
+        code={`<FooterAccordion columns={columns} socialLinks={socialLinks} />`}
+        layout='fill'
+      >
+        <FooterAccordion {...shared} />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function FooterBlocksDocs() {
+  return (
+    <DocsPage
+      eyebrow='Pattern'
+      title='FooterBlocks'
+      summary={
+        <>
+          Eight ready-made footers built on the published Footer, differing only in what sits above
+          its standard rows — a site map, a mission, contact details, a subscription form, a call to
+          action. They ship with sample links so they render complete on arrival: install the one
+          you need from the chooser below, then replace the samples with your own.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Starting the footer of a new service from a complete, accessible layout.',
+          'A site map, contact details or newsletter sign-up at the end of every page.',
+          'Seeing which footer layout fits before committing to one.',
+        ]}
+        avoid={[
+          'Only the standard rows — acknowledgement, legal links, ownership — use Footer.',
+          'Navigation people need before they reach the end of the page — use MainNav or SideNav.',
+          'A one-off message at the end of a single page — use Callout.',
+        ]}
+      />
+      <ChooserSection />
+      <ColoursSection />
+      <SimpleCentredSection />
+      <CompactBarSection />
+      <SiteMapSection />
+      <SiteMapWithBrandSection />
+      <NewsletterSection />
+      <ContactDetailsSection />
+      <CallToActionSection />
+      <CollapsibleSiteMapSection />
+      <DocsApi description='Props of FooterSitemap. Every block takes the same Footer props — color, socialLinks, legalLinks, department, year and the rest — plus the block’s own sample data (columns, contact, cta, mission, onSubscribe).' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
-  title: 'Patterns/Footer blocks',
+  title: 'Patterns/FooterBlocks',
+  component: FooterSitemap,
   tags: ['autodocs'],
   parameters: {
     layout: 'fullscreen',
-    docs: {
-      description: {
-        component:
-          'Eight ready-made footers built on the published Footer component. Copy-and-adapt blocks — not published components.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: FooterBlocksDocs },
   },
-} satisfies Meta
+  args: {
+    ...shared,
+    color: 'white',
+  },
+  argTypes: {
+    columns: {
+      control: false,
+      description: 'Link columns of the site map. Defaults to sample links — replace them.',
+      table: { category: 'Content' },
+    },
+    legalLinks: {
+      control: false,
+      description: 'Supporting and legal links — privacy, accessibility, copyright.',
+      table: { category: 'Content' },
+    },
+    socialLinks: {
+      control: false,
+      description: 'Social channels, rendered as icon-only links beside the copyright line.',
+      table: { category: 'Content' },
+    },
+    department: {
+      control: 'text',
+      description: 'Owning agency, named in the copyright line.',
+      table: { category: 'Content' },
+    },
+    year: {
+      control: 'number',
+      description: 'Copyright year.',
+      table: { category: 'Content' },
+    },
+    acknowledgement: {
+      control: 'boolean',
+      description: 'Acknowledgement of Country: on by default, false omits it, a node replaces it.',
+      table: { category: 'Content' },
+    },
+    smallPrint: {
+      control: 'boolean',
+      description: 'The copyright line and social channels.',
+      table: { category: 'Content' },
+    },
+    color: {
+      control: 'select',
+      options: footerColors,
+      description: 'Surface colour. Links, borders and the logo colourway follow it.',
+      table: { category: 'Appearance' },
+    },
+    container: {
+      control: 'inline-radio',
+      options: ['fluid', 'contained'],
+      description: 'Whether the inner content is constrained to the contained page width.',
+      table: { category: 'Appearance' },
+    },
+    topBorder: {
+      control: 'boolean',
+      description: 'Rule along the top edge of the footer content.',
+      table: { category: 'Appearance' },
+    },
+    className: { table: { disable: true } },
+    containerClassName: { table: { disable: true } },
+  },
+} satisfies Meta<typeof FooterSitemap>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-function BlockCard({ block }: { block: Block }) {
-  return (
-    <section className='overflow-hidden rounded-sm border border-border'>
-      <header className='space-y-1 border-b border-border bg-muted px-4 py-3'>
-        <h2 className='text-sm font-bold text-foreground'>{block.name}</h2>
-        <p className='text-sm text-muted-foreground'>{block.blurb}</p>
-      </header>
-      {block.render({ color: block.colour })}
-    </section>
-  )
-}
-
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
-/** All eight side by side — the story to open when picking one. */
-/**
- * Yield without `setTimeout`: the Vitest browser pool runs story files in
- * parallel tabs and Chromium throttles background-tab timers to ~1s ticks, so
- * a timer-based poll sleep blows the test budget. MessageChannel messages are
- * not throttled. Same helper, same reason, as push-menu.stories.tsx.
- */
-function yieldToBrowser() {
-  return new Promise<void>((resolve) => {
-    const channel = new MessageChannel()
-    channel.port1.onmessage = () => resolve()
-    channel.port2.postMessage(0)
-  })
-}
-
-/** Poll until `predicate` holds, so async submission state has time to settle. */
-async function waitFor(predicate: () => boolean, message: string, timeout = 2000) {
-  const deadline = Date.now() + timeout
-  while (Date.now() < deadline) {
-    if (predicate()) {
-      return
-    }
-    await yieldToBrowser()
-  }
-  throw new Error(message)
-}
-
-export const Chooser: Story = {
-  render: () => (
-    <div className='space-y-6 p-4'>
-      {BLOCKS.map((block) => (
-        <BlockCard key={block.id} block={block} />
-      ))}
-    </div>
-  ),
+export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const footers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')
-    if (footers.length !== BLOCKS.length) {
-      throw new Error(`Expected ${BLOCKS.length} footer blocks, got ${footers.length}.`)
+    const footer = canvasElement.querySelector<HTMLElement>('[data-slot="footer"]')
+    if (footer?.tagName !== 'FOOTER') {
+      throw new Error('Expected FooterSitemap to render a <footer> landmark.')
     }
-
-    for (const footer of footers) {
-      if (footer.tagName !== 'FOOTER') {
-        throw new Error(`Every block must render a <footer> landmark, got <${footer.tagName}>.`)
-      }
-      // The whole point of building on Footer: the ink token must resolve, or
-      // every derived colour in the block silently falls back to unset.
-      const ink = getComputedStyle(footer).getPropertyValue('--footer-ink').trim()
-      if (!ink) {
-        throw new Error('Expected every block to inherit a resolved --footer-ink from Footer.')
-      }
-    }
-
-    // Compact is the one block that deliberately omits acknowledgement of
-    // Country; every other block must carry it. This guards against a future
-    // edit quietly dropping it from one of them.
-    const withAcknowledgement = [...footers].filter((f) =>
-      f.textContent?.includes('Traditional Custodians'),
-    )
-    if (withAcknowledgement.length !== BLOCKS.length - 1) {
-      throw new Error(
-        `Expected ${BLOCKS.length - 1} blocks to carry acknowledgement of Country, got ${withAcknowledgement.length}.`,
-      )
+    if (!footer.querySelector('[data-slot="footer-nav"]')) {
+      throw new Error('Expected the site map above the standard footer rows.')
     }
   },
+}
+
+export const Playground: Story = {}
+
+export const Chooser: Story = {
+  name: 'Chooser',
+  parameters: { layout: 'padded' },
+  render: () => <ChooserSection />,
+}
+
+export const Colours: Story = {
+  name: 'Colours',
+  parameters: { layout: 'padded' },
+  render: () => <ColoursSection />,
 }
 
 export const SimpleCentred: Story = {
   name: 'Simple centred',
-  render: () => <FooterSimpleCentred {...shared} />,
+  parameters: { layout: 'padded' },
+  render: () => <SimpleCentredSection />,
 }
 
 export const Compact: Story = {
   name: 'Compact bar',
-  render: () => <FooterCompact {...shared} color='grey-200' />,
+  parameters: { layout: 'padded' },
+  render: () => <CompactBarSection />,
 }
 
 export const Sitemap: Story = {
   name: 'Site map',
-  render: () => <FooterSitemap {...shared} />,
-  play: async ({ canvasElement }) => {
-    const nav = canvasElement.querySelector('[data-slot="footer-nav"]')
-    if (!nav) {
-      throw new Error('Expected a [data-slot="footer-nav"] landmark.')
-    }
-    if (nav.querySelectorAll('[data-slot="footer-nav-column"]').length !== 4) {
-      throw new Error('Expected four site-map columns.')
-    }
-    // One landmark for the whole site map, not one per column.
-    if (nav.querySelectorAll('nav').length !== 0) {
-      throw new Error('Expected columns to be headed lists, not nested nav landmarks.')
-    }
-  },
+  parameters: { layout: 'padded' },
+  render: () => <SiteMapSection />,
 }
 
 export const SitemapBrand: Story = {
   name: 'Site map with brand',
-  render: () => <FooterSitemapBrand {...shared} color='grey-200' />,
-}
-
-/**
- * The logo colourway on every surface class, checked against the masterbrand
- * guidelines' order of preference: full colour preferred, reversed where the
- * primary mark is illegible, mono restricted to where neither reads.
- *
- * This story exists because its absence is what hid the original bug: every
- * logo block was only ever rendered on `white` or `grey-200`, and the one block
- * shown on `primary-800` (the CTA) has no logo — so a wordmark painted in its
- * own background colour was unreachable from Storybook and from Chromatic.
- */
-export const LogoColourways: Story = {
-  name: 'Logo colourways by surface',
-  render: () => (
-    <div className='flex flex-col gap-8'>
-      {/* Light: full colour. Dark -800: reversed. Mid -600: mono. */}
-      <FooterSimpleCentred {...shared} color='white' />
-      <FooterSimpleCentred {...shared} color='primary-800' />
-      <FooterCompact {...shared} color='grey-800' />
-      <FooterSitemapBrand {...shared} color='accent-800' />
-      <FooterCompact {...shared} color='accent-600' />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    // Chromium serialises computed colours in whatever space the value was
-    // authored in — these resolve as `oklch(...)`, not `rgb(...)` — so the
-    // reference is read back through the same pipeline rather than hardcoded.
-    const probe = document.createElement('div')
-    probe.className = 'bg-white'
-    canvasElement.append(probe)
-    const WHITE = getComputedStyle(probe).backgroundColor
-    probe.remove()
-    if (!WHITE) {
-      throw new Error('Could not resolve a white reference colour.')
-    }
-    // Which colourway each surface must resolve to, per the guidelines.
-    const expected: Record<string, 'full-colour' | 'reversed' | 'mono'> = {
-      white: 'full-colour',
-      'primary-800': 'reversed',
-      'grey-800': 'reversed',
-      'accent-800': 'reversed',
-      'accent-600': 'mono',
-    }
-
-    const footers = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')]
-    if (footers.length !== Object.keys(expected).length) {
-      throw new Error(`Expected ${Object.keys(expected).length} footers, got ${footers.length}.`)
-    }
-
-    for (const footer of footers) {
-      const colour = footer.dataset.color ?? '(none)'
-      const surface = getComputedStyle(footer).backgroundColor
-      const svg = footer.querySelector('svg')
-      if (!svg) {
-        throw new Error(`Expected a logo in the ${colour} footer.`)
-      }
-
-      const fills = [...svg.querySelectorAll('path')].map((path) => getComputedStyle(path).fill)
-      if (fills.length === 0) {
-        throw new Error('Expected the logo to render paths.')
-      }
-
-      // The defect itself, asserted directly rather than via a class name: no
-      // part of the mark may be painted in its own background.
-      for (const fill of fills) {
-        if (fill === surface) {
-          throw new Error(
-            `Logo path is painted in the footer's own background (${fill}) on color="${colour}" — the mark is invisible.`,
-          )
-        }
-        if (fill === '' || fill === 'none') {
-          throw new Error(`Expected the logo path to resolve a fill on ${colour}, got "${fill}".`)
-        }
-      }
-
-      const distinct = new Set(fills)
-      const want = expected[colour]
-      // Without this the story can quietly stop testing: an unmapped colour
-      // falls through to the two-tone branch, where both the `reversed` and
-      // `full-colour` assertions are no-ops, so only the weak "has 2 colours"
-      // check runs. The footer count above catches an ADDED footer; this
-      // catches a CHANGED colour, which keeps the count intact.
-      if (!want) {
-        throw new Error(
-          `No expected colourway mapped for color="${colour}" — add it to \`expected\` rather than letting the assertions silently weaken.`,
-        )
-      }
-
-      if (want === 'mono') {
-        // Mono is one colour throughout — the waratah gives up its red.
-        if (distinct.size !== 1 || !distinct.has(WHITE)) {
-          throw new Error(
-            `Expected the restricted mono logo (white throughout) on ${colour}, got ${[...distinct].join(', ')}.`,
-          )
-        }
-      } else {
-        // Full colour and reversed are both two-tone: the waratah keeps its
-        // red. That is the whole reason mono is a last resort.
-        if (distinct.size !== 2) {
-          throw new Error(
-            `Expected a two-tone mark on ${colour} (${want}), got ${distinct.size} colour(s): ${[...distinct].join(', ')}.`,
-          )
-        }
-        const hasWhite = distinct.has(WHITE)
-        if (want === 'reversed' && !hasWhite) {
-          throw new Error(
-            `Expected the reversed mark's wordmark to be white (${WHITE}) on ${colour}, got ${[...distinct].join(', ')}.`,
-          )
-        }
-        if (want === 'full-colour' && hasWhite) {
-          throw new Error(
-            `Expected the full-colour mark on ${colour}, but a path is white — that is the reversed treatment.`,
-          )
-        }
-      }
-    }
-  },
-}
-
-/**
- * The subscription form reports what happened. Submitting used to call
- * `onSubscribe` and change nothing on screen.
- */
-/**
- * A submit that lands while one is already in flight is dropped.
- *
- * The disabled submit button already covers the keyboard route — Enter while
- * pending fires no second call, because implicit submission runs the default
- * button's activation behaviour and a disabled button has none. It does not
- * cover `form.requestSubmit()`, which ignores the button entirely; without the
- * guard in `handleSubmit` that starts a second overlapping `onSubscribe`.
- */
-export const NewsletterReentrancy: Story = {
-  name: 'Newsletter — concurrent submits',
-  render: () => {
-    let calls = 0
-    return (
-      <div
-        data-calls-probe=''
-        ref={(node) => {
-          if (node) {
-            ;(node as HTMLElement & { __calls?: () => number }).__calls = () => calls
-          }
-        }}
-      >
-        <FooterNewsletter
-          {...shared}
-          onSubscribe={() => {
-            calls += 1
-            return new Promise<void>((resolve) => {
-              setTimeout(resolve, 400)
-            })
-          }}
-        />
-      </div>
-    )
-  },
-  play: async ({ canvasElement }) => {
-    const probe = canvasElement.querySelector('[data-calls-probe]') as HTMLElement & {
-      __calls: () => number
-    }
-    const form = canvasElement.querySelector('form')
-    const input = canvasElement.querySelector<HTMLInputElement>('input[name="email"]')
-    const button = canvasElement.querySelector<HTMLButtonElement>('button[type="submit"]')
-    if (!probe || !form || !input || !button) {
-      throw new Error('Expected the newsletter form, its email input and its submit button.')
-    }
-
-    input.value = 'someone@example.com'
-    button.click()
-
-    await waitFor(() => probe.__calls() === 1, 'Expected the first submit to reach onSubscribe.')
-    if (!button.disabled) {
-      throw new Error('Expected the submit button to be disabled while the attempt is pending.')
-    }
-
-    // The route the disabled button cannot block.
-    form.requestSubmit()
-    form.requestSubmit()
-
-    // Give any second call a chance to land before asserting it did not.
-    await waitFor(() => probe.__calls() > 1, 'settle', 150).then(
-      () => {
-        throw new Error(
-          `Expected concurrent submits to be dropped, but onSubscribe ran ${probe.__calls()} times.`,
-        )
-      },
-      () => undefined,
-    )
-
-    // And the form recovers: once the attempt settles, a new submit works.
-    await waitFor(
-      () => !button.disabled,
-      'Expected the form to accept submissions again once the attempt settled.',
-      2000,
-    )
-    input.value = 'another@example.com'
-    button.click()
-    await waitFor(() => probe.__calls() === 2, 'Expected a later submit to be accepted.')
-  },
-}
-
-export const NewsletterStates: Story = {
-  name: 'Newsletter — success and failure',
-  render: () => (
-    <div className='flex flex-col gap-8'>
-      <FooterNewsletter {...shared} onSubscribe={() => Promise.resolve()} />
-      <FooterNewsletter {...shared} onSubscribe={() => Promise.reject(new Error('nope'))} />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const forms = [...canvasElement.querySelectorAll('form')]
-    if (forms.length !== 2) {
-      throw new Error(`Expected two subscription forms, got ${forms.length}.`)
-    }
-
-    for (const [index, form] of forms.entries()) {
-      const input = form.querySelector<HTMLInputElement>('input[name="email"]')
-      const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')
-      const status = form.querySelector<HTMLElement>('[role="status"]')
-      if (!input || !button || !status) {
-        throw new Error('Expected an email input, a submit button and a live region.')
-      }
-
-      // Stand in for the extended form this block invites consumers to build.
-      // Its defaultValue is empty, so `form.reset()` would wipe it on success
-      // — only clearing the email control specifically leaves it alone.
-      const extra = document.createElement('input')
-      extra.type = 'text'
-      extra.name = 'extra'
-      extra.value = 'keep me'
-      // Named: the story runs the a11y checks too, and an unlabelled input is
-      // a violation regardless of it being a test fixture.
-      extra.setAttribute('aria-label', 'Extra control')
-      form.append(extra)
-
-      // The live region must already exist while empty — a region mounted at
-      // the same moment as its text is not reliably announced.
-      if (status.textContent?.trim()) {
-        throw new Error('Expected the live region to start empty.')
-      }
-      if (status.getAttribute('aria-live') !== 'polite') {
-        throw new Error('Expected a polite live region.')
-      }
-
-      // Staying mounted must not cost layout. The Field is `flex-col gap-2`,
-      // so an always-present child adds 8px of dead trailing space unless the
-      // gap is cancelled while it is empty. Measured rather than asserted on a
-      // class name, because the safe fix (a negative margin) and the unsafe one
-      // (`empty:hidden`, which removes the region from the accessibility tree)
-      // both make the space go away — only one keeps the region announceable.
-      const description = form.querySelector<HTMLElement>('[data-slot="field-description"]')
-      if (description) {
-        const gap = status.getBoundingClientRect().top - description.getBoundingClientRect().bottom
-        if (gap > 0.5) {
-          throw new Error(
-            `The empty live region adds ${gap.toFixed(1)}px of dead space above it — cancel the Field gap while it is empty.`,
-          )
-        }
-      }
-      if (getComputedStyle(status).display === 'none') {
-        throw new Error(
-          'The live region must stay displayed while empty — display:none removes it from the accessibility tree, and a region that re-enters the tree with its text is not reliably announced.',
-        )
-      }
-
-      // The form reads FormData off the DOM, so setting value directly is
-      // enough — no React state to sync.
-      input.value = 'someone@example.com'
-      button.click()
-
-      await waitFor(
-        () => Boolean(status.textContent?.trim()),
-        `Expected form ${index + 1} to report an outcome.`,
-      )
-
-      const text = status.textContent ?? ''
-      if (index === 0) {
-        if (!/check your inbox/i.test(text)) {
-          throw new Error(`Expected a success message, got "${text}".`)
-        }
-        if (input.value !== '') {
-          throw new Error('Expected the field to be cleared after a successful submit.')
-        }
-        if (extra.value !== 'keep me') {
-          throw new Error(
-            'A successful submit cleared an unrelated control — clear the email field specifically, not the whole form.',
-          )
-        }
-      } else {
-        if (!/did not go through/i.test(text)) {
-          throw new Error(`Expected a failure message, got "${text}".`)
-        }
-        // The address survives a failure the reader did not cause, and so
-        // does everything else on the form.
-        if (input.value !== 'someone@example.com') {
-          throw new Error('Expected the address to be preserved after a failure.')
-        }
-        if (extra.value !== 'keep me') {
-          throw new Error('Expected unrelated controls to be untouched after a failure.')
-        }
-      }
-
-      // The button must not be left disabled once the attempt settles.
-      if (button.disabled) {
-        throw new Error('Expected the submit button to be re-enabled after the attempt.')
-      }
-    }
-  },
+  parameters: { layout: 'padded' },
+  render: () => <SiteMapWithBrandSection />,
 }
 
 export const Newsletter: Story = {
   name: 'Newsletter',
-  render: () => <FooterNewsletter {...shared} />,
-  play: async ({ canvasElement }) => {
-    const input = canvasElement.querySelector<HTMLInputElement>('input[type="email"]')
-    if (!input) {
-      throw new Error('Expected an email input.')
-    }
-    // A placeholder is not an accessible name — the Field must supply a label.
-    const id = input.getAttribute('id')
-    const label = id ? canvasElement.querySelector(`label[for="${id}"]`) : null
-    if (!label?.textContent?.trim()) {
-      throw new Error('Expected the email input to have an associated, non-empty <label>.')
-    }
-    if (!input.getAttribute('aria-describedby')) {
-      throw new Error('Expected the FieldDescription to be wired via aria-describedby.')
-    }
-  },
+  parameters: { layout: 'padded' },
+  render: () => <NewsletterSection />,
 }
 
 export const Contact: Story = {
   name: 'Contact details',
-  render: () => <FooterContact {...shared} color='grey-200' />,
-  play: async ({ canvasElement }) => {
-    const address = canvasElement.querySelector('address')
-    if (!address) {
-      throw new Error('Expected contact details to sit in an <address> element.')
-    }
-    if (!address.querySelector('a[href^="tel:"]')) {
-      throw new Error('Expected the phone number to be a tel: link.')
-    }
-    if (!address.querySelector('a[href^="mailto:"]')) {
-      throw new Error('Expected the email address to be a mailto: link.')
-    }
-  },
+  parameters: { layout: 'padded' },
+  render: () => <ContactDetailsSection />,
 }
 
 export const Cta: Story = {
   name: 'Call to action',
-  render: () => <FooterCta {...shared} color='primary-800' />,
+  parameters: { layout: 'padded' },
+  render: () => <CallToActionSection />,
 }
 
 export const Accordion: Story = {
   name: 'Collapsible site map',
-  render: () => <FooterAccordion {...shared} />,
-  play: async ({ canvasElement }) => {
-    // The Storybook viewport is desktop-width, so the columns render open and
-    // the disclosure buttons are hidden — nothing extra in the tab order.
-    const triggers = canvasElement.querySelectorAll<HTMLElement>('button[aria-expanded]')
-    if (triggers.length !== 4) {
-      throw new Error(`Expected four disclosure buttons in the DOM, got ${triggers.length}.`)
-    }
-    for (const trigger of triggers) {
-      // checkVisibility(), not computed display: `lg:hidden` sits on the
-      // wrapping <h2>, so the button's OWN display is still `flex` while the
-      // ancestor is what removes it from the page (and the a11y tree).
-      if (trigger.checkVisibility()) {
-        throw new Error('Expected the disclosure buttons to be hidden at desktop width.')
-      }
-      // WAI-ARIA accordion pattern: the button sits INSIDE the heading.
-      if (trigger.parentElement?.tagName !== 'H2') {
-        throw new Error('Expected each disclosure button to be wrapped in an <h2>.')
-      }
-    }
-
-    // Exactly one heading per column is exposed — the plain desktop <h2>.
-    const visibleHeadings = [...canvasElement.querySelectorAll<HTMLElement>('h2')].filter((h) =>
-      h.checkVisibility(),
-    )
-    if (visibleHeadings.length !== 4) {
-      throw new Error(
-        `Expected four visible column headings at desktop width, got ${visibleHeadings.length}.`,
-      )
-    }
-
-    // Every link must be present and reachable on desktop — this is what the
-    // "render open, collapse in an effect" approach buys, and what a no-JS
-    // visitor gets.
-    const links = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer-nav-link"]')]
-    if (links.length !== 20) {
-      throw new Error(`Expected all 20 site-map links to be rendered, got ${links.length}.`)
-    }
-
-    // Rendered is not enough: they must be VISIBLE. This is the guard on the
-    // block's breakpoint detection. It used to restate Tailwind's `lg` in JS
-    // as a matchMedia string with nothing keeping the two in step: if the
-    // theme's breakpoint moved, CSS would hide the disclosure buttons
-    // (asserted above) while matchMedia still reported mobile, leaving the
-    // columns collapsed and every link unreachable with no way to expand
-    // them. The block now reads a probe element carrying the same `lg:hidden`
-    // utility, so the two cannot drift — but this assertion stays, because it
-    // tests the BEHAVIOUR (are the links reachable?) rather than the
-    // mechanism, and would catch a regression in either.
-    const visibleLinks = links.filter((link) => link.checkVisibility())
-    if (visibleLinks.length !== 20) {
-      throw new Error(
-        `Expected all 20 links visible at desktop width, got ${visibleLinks.length} — the layout probe and the lg breakpoint disagree, so the columns collapsed while their disclosure buttons are hidden.`,
-      )
-    }
-  },
+  parameters: { layout: 'padded' },
+  render: () => <CollapsibleSiteMapSection />,
 }

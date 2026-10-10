@@ -17,8 +17,9 @@ import { wcagStoryMeta } from '../components/story-helpers.js'
 import { ForgotPasswordForm } from './forgot-password-form.js'
 
 const meta = {
-  title: 'Components/ForgotPasswordForm/Accessibility',
+  title: 'Patterns/ForgotPasswordForm/Accessibility',
   component: ForgotPasswordForm,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -32,7 +33,7 @@ type Story = StoryObj<typeof meta>
 // ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
 
 export const LabelAssociation: Story = {
-  name: '1.3.1 Info and Relationships',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -69,7 +70,7 @@ export const LabelAssociation: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {

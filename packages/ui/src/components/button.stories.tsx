@@ -1,19 +1,25 @@
 /**
- * Button — Default + Playground
+ * Button — the reference story set for docs/reference-storybook-standard.md.
  *
- * Sub-groups live in separate story files so Storybook renders them as
- * collapsible sidebar folders:
- *   Components/Button/Features        → button.features.stories.tsx
- *   Components/Button/Accessibility   → button.accessibility.stories.tsx
+ *   Components/Button                → this file: Docs, Default, Playground and
+ *                                      one story per docs section
+ *   Components/Button/Tests          → button.tests.stories.tsx
+ *   Components/Button/Accessibility  → button.accessibility.stories.tsx
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
-
-import { cn } from '../lib/utils.js'
+import { expect, fn } from 'storybook/test'
 
 import { IconAdd, IconArrowForward, IconExpandMore, IconSearch } from '../icons/index.js'
 import { Button, ButtonLink } from './button.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const variants = ['solid', 'soft', 'surface', 'outline', 'ghost', 'link'] as const
 const sizes = ['sm', 'default', 'lg', 'icon'] as const
@@ -29,16 +35,8 @@ const colors = [
   'warning',
 ] as const
 
-// Colour groupings used by the docs page. Brand colours track the active
-// masterbrand theme (and the toolbar Primary/Accent pickers); semantic colours
-// carry a fixed meaning regardless of theme; on-dark colours are designed to
-// sit on coloured/dark surfaces (their light treatments don't read on white).
-const brandColors = ['primary', 'tertiary', 'accent', 'grey'] as const
-const onDarkColors = ['white', 'secondary'] as const
-const semanticColors = ['danger', 'success', 'warning'] as const
-
-// The variant treatments shown in each colour row of the colour matrix.
-const matrixVariants = ['solid', 'soft', 'surface', 'outline'] as const
+// The variant treatments shown in each colour row.
+const colourVariants = ['solid', 'soft', 'surface', 'outline'] as const
 
 const variantDocs: ReadonlyArray<readonly [(typeof variants)[number], string]> = [
   ['solid', 'High emphasis — the single primary action on a screen.'],
@@ -49,84 +47,261 @@ const variantDocs: ReadonlyArray<readonly [(typeof variants)[number], string]> =
   ['link', 'Minimal — renders as inline underlined text.'],
 ]
 
-// ─── Docs page building blocks ──────────────────────────────────────────────
+const capitalise = (value: string) => value.charAt(0).toUpperCase() + value.slice(1)
 
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <section className='space-y-5'>
-      <div className='space-y-2'>
-        <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-        {description ? (
-          <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>{description}</p>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  )
-}
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
 
-// A neutral, generously padded surface that frames live examples and gives
-// each section plenty of breathing room.
-function Preview({
-  children,
-  dark = false,
-  className,
-}: {
-  children: React.ReactNode
-  dark?: boolean
-  className?: string
-}) {
+function VariantsSection() {
   return (
-    <div
-      className={cn(
-        'rounded-xl border p-8',
-        dark ? 'border-transparent bg-primary' : 'border-border bg-muted/40',
-        className,
-      )}
+    <ExampleSection
+      title='Variants'
+      description='The variant sets the visual weight. Step the emphasis down as actions become more secondary, and keep one solid button per view.'
     >
-      {children}
-    </div>
+      <Example code={`<Button variant="soft">Soft</Button>`}>
+        {variants.map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <Button variant={variant}>{capitalise(variant)}</Button>
+          </ExampleCell>
+        ))}
+      </Example>
+      <dl className='grid gap-x-10 gap-y-3 sm:grid-cols-2'>
+        {variantDocs.map(([name, description]) => (
+          <div key={name} className='flex gap-4'>
+            <dt className='w-20 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
   )
 }
 
-function Cell({ label, children }: { label: string; children: React.ReactNode }) {
+function SizesSection() {
   return (
-    <div className='flex flex-col items-center gap-3'>
-      <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-xs font-medium tracking-wide text-muted-foreground'>{label}</span>
-    </div>
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          Three steps — <code>sm</code>, <code>default</code>, <code>lg</code> — 52, 60 and 68px
+          tall on narrow viewports and 44, 52 and 60px from the <code>sm:</code> breakpoint up. The
+          label is 16px bold at every step; only the padding changes.
+        </>
+      }
+    >
+      <Example code={`<Button size="lg">Continue</Button>`}>
+        {(['sm', 'default', 'lg'] as const).map((size) => (
+          <ExampleCell key={size} label={size}>
+            <Button size={size}>Continue</Button>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
   )
 }
 
-// One row of the colour matrix: a colour name followed by that colour rendered
-// across the key variant treatments, so the difference between brand and
-// semantic colours is legible at a glance.
-function ColorRow({ color, dark = false }: { color: (typeof colors)[number]; dark?: boolean }) {
+function IconOnlySection() {
   return (
-    <div className='flex flex-wrap items-center gap-3 py-1'>
-      <span
-        className={cn(
-          'w-20 shrink-0 text-sm font-semibold',
-          dark ? 'text-primary-foreground' : 'text-foreground',
-        )}
+    <ExampleSection
+      title='Icon only'
+      description={
+        <>
+          Add <code>iconOnly</code> to square a button at the active <code>size</code>, so it sits
+          level with text buttons beside it. <code>size=&quot;icon&quot;</code> is a separate 40×40
+          chrome square for header actions and close buttons that align with nothing. Either way,
+          give it an <code>aria-label</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<Button iconOnly variant="outline" aria-label="Search" leadingVisual={IconSearch} />`}
       >
-        {color}
-      </span>
-      {matrixVariants.map((variant) => (
+        {(['sm', 'default', 'lg'] as const).map((size) => (
+          <ExampleCell key={size} label={`${size} + iconOnly`}>
+            <div className='flex items-center gap-2'>
+              <Button size={size}>Search</Button>
+              <Button
+                size={size}
+                iconOnly
+                variant='outline'
+                aria-label={`Search (${size})`}
+                leadingVisual={IconSearch}
+              />
+            </div>
+          </ExampleCell>
+        ))}
+        <ExampleCell label='size="icon"'>
+          <Button size='icon' variant='ghost' aria-label='Add' leadingVisual={IconAdd} />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ColourRow({ color }: { color: (typeof colors)[number] }) {
+  return (
+    <div className='flex flex-wrap items-center gap-3'>
+      <span className='w-24 shrink-0 font-semibold'>{color}</span>
+      {colourVariants.map((variant) => (
         <Button key={variant} color={color} variant={variant}>
-          {variant}
+          {capitalise(variant)}
         </Button>
       ))}
     </div>
   )
+}
+
+function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          <code>color</code> picks a role, not a hue. Brand colours follow the active theme;{' '}
+          <code>white</code> and <code>secondary</code> are for coloured or dark surfaces; status
+          colours keep their meaning in every theme — reserve <code>danger</code> for destructive
+          actions.
+        </>
+      }
+    >
+      <Example layout='stack' code={`<Button color="tertiary" variant="soft">Soft</Button>`}>
+        {(['primary', 'tertiary', 'accent', 'grey'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+      <Example layout='stack' surface='brand'>
+        {(['white', 'secondary'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+      <Example layout='stack'>
+        {(['danger', 'success', 'warning'] as const).map((color) => (
+          <ColourRow key={color} color={color} />
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function WithIconsSection() {
+  return (
+    <ExampleSection
+      title='With icons'
+      description='A leading or trailing icon reinforces the label; it never replaces it. Icons are 24px beside the label at every size.'
+    >
+      <Example code={`<Button trailingVisual={IconArrowForward}>Next</Button>`}>
+        <ExampleCell label='leadingVisual'>
+          <Button leadingVisual={IconAdd}>Add item</Button>
+        </ExampleCell>
+        <ExampleCell label='trailingVisual'>
+          <Button trailingVisual={IconArrowForward}>Next</Button>
+        </ExampleCell>
+        <ExampleCell label='trailingAction'>
+          <Button variant='outline' trailingAction={IconExpandMore}>
+            Options
+          </Button>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description='Loading shows a spinner and blocks interaction while keeping the label; disabled removes the button from use. Prefer explaining why an action is unavailable over disabling it silently.'
+    >
+      <Example code={`<Button loading>Save</Button>`}>
+        <ExampleCell label='default'>
+          <Button>Save</Button>
+        </ExampleCell>
+        <ExampleCell label='loading'>
+          <Button loading>Save</Button>
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <Button disabled>Save</Button>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function AsALinkSection() {
+  return (
+    <ExampleSection
+      title='As a link'
+      description={
+        <>
+          <code>ButtonLink</code> renders an anchor with the button&apos;s full treatment, for
+          navigation that should look like an action. It routes through <code>Link</code>, so a
+          framework link set on <code>LinkProvider</code> applies.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonLink href="/apply" trailingVisual={IconArrowForward}>Start now</ButtonLink>`}
+      >
+        {(['solid', 'outline', 'link'] as const).map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <ButtonLink href='#' variant={variant} trailingVisual={IconArrowForward}>
+              Start now
+            </ButtonLink>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function ButtonDocs() {
+  return (
+    <DocsPage
+      title='Button'
+      npm={['Button', 'ButtonLink']}
+      registry='button'
+      summary={
+        <>
+          Buttons let people take an action or make a choice. Pair a <strong>variant</strong> (how
+          much emphasis it carries) with a <strong>colour</strong> (the role it plays): one
+          high-emphasis button for the primary action, quieter treatments for the rest.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Submitting a form or starting a task.',
+          'Confirming, cancelling or otherwise answering a dialog.',
+          'A call to action that starts a journey — as a ButtonLink when it navigates.',
+        ]}
+        avoid={[
+          'Moving to another page as part of running text — use Link.',
+          'Switching a setting on or off — use Switch or Toggle.',
+          'Choosing between a few related options — use ButtonGroup, ToggleGroup or RadioGroup.',
+        ]}
+      />
+      <VariantsSection />
+      <SizesSection />
+      <ColoursSection />
+      <StatesSection />
+      <WithIconsSection />
+      <IconOnlySection />
+      <AsALinkSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const iconOptions = {
+  none: undefined,
+  arrow_forward: IconArrowForward,
+  add: IconAdd,
+  search: IconSearch,
+  chevron_down: IconExpandMore,
 }
 
 const meta = {
@@ -135,259 +310,8 @@ const meta = {
   tags: ['autodocs'],
   parameters: {
     layout: 'padded',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        // `sb-unstyled` opts these anchors out of Storybook's docs stylesheet,
-        // whose unlayered `:where(a:not(.sb-unstyled a))` rule paints every link
-        // blue + underlined and (being unlayered) beats Tailwind's layered
-        // utilities. Without this, a Button rendered as a link (href) loses its
-        // variant text colour *inside docs only* — it renders correctly in real
-        // apps and in the story canvas. The `[&_code]` styles restore the inline
-        // code chips that `sb-unstyled` would otherwise reset.
-        <div className='sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground'>
-          {/* Intro */}
-          <section className='space-y-4'>
-            <h1 className='text-5xl font-bold tracking-tight'>Button</h1>
-            <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>
-              Buttons let people take actions and make choices. Pair a{' '}
-              <strong className='font-semibold text-foreground'>variant</strong> (how much emphasis
-              it carries) with a <strong className='font-semibold text-foreground'>colour</strong>{' '}
-              (which role it plays) — use one high-emphasis button for the primary action and
-              quieter treatments for everything else.
-            </p>
-          </section>
-
-          {/* Default */}
-          <Section
-            title='Default'
-            description='A solid, primary-coloured button — the out-of-the-box configuration.'
-          >
-            <Preview className='flex items-center'>
-              <Button>Continue</Button>
-            </Preview>
-          </Section>
-
-          {/* Variants */}
-          <Section
-            title='Variants'
-            description='The variant sets the visual weight. Step down the emphasis as actions become more secondary.'
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                {variants.map((variant) => (
-                  <Cell key={variant} label={variant}>
-                    <Button variant={variant}>
-                      {variant.charAt(0).toUpperCase() + variant.slice(1)}
-                    </Button>
-                  </Cell>
-                ))}
-              </div>
-            </Preview>
-            <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
-              {variantDocs.map(([name, desc]) => (
-                <div key={name} className='flex gap-3 text-sm'>
-                  <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
-                  <dd className='text-muted-foreground'>{desc}</dd>
-                </div>
-              ))}
-            </dl>
-          </Section>
-
-          {/* Sizes */}
-          <Section
-            title='Sizes'
-            description={
-              <>
-                Three scale steps — <code>sm</code>, <code>default</code>, <code>lg</code> — running
-                52 / 60 / 68px tall on narrow viewports and 44 / 52 / 60px from the <code>sm:</code>{' '}
-                breakpoint up. <code>icon</code> is not a fourth step on that ramp: it is a flat
-                40×40 chrome square for header actions, dialog close buttons and footer social
-                links, and it lines up with none of the three.
-              </>
-            }
-          >
-            <Preview>
-              <div className='flex flex-wrap items-end gap-8'>
-                <Cell label='sm'>
-                  <Button size='sm'>Button</Button>
-                </Cell>
-                <Cell label='default'>
-                  <Button size='default'>Button</Button>
-                </Cell>
-                <Cell label='lg'>
-                  <Button size='lg'>Button</Button>
-                </Cell>
-                <Cell label='icon'>
-                  <Button size='icon' aria-label='Add' leadingVisual={IconAdd} />
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* Icon-only buttons */}
-          <Section
-            title='Icon-only buttons'
-            description={
-              <>
-                The scale step and whether a button is icon-only are separate choices. Add{' '}
-                <code>iconOnly</code> to square the button at whatever <code>size</code> is active,
-                so it sits level with the text buttons beside it — the layout{' '}
-                <code>HeaderActions</code> exists for. Reach for <code>size=&apos;icon&apos;</code>{' '}
-                instead when you want the smaller chrome square and nothing needs to align with it.
-                Either way, supply an <code>aria-label</code>: there is no visible text.
-              </>
-            }
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-4'>
-                {(['sm', 'default', 'lg'] as const).map((size) => (
-                  <div key={size} className='flex items-center gap-2'>
-                    <Button size={size}>Button</Button>
-                    <Button
-                      size={size}
-                      iconOnly
-                      variant='outline'
-                      aria-label={`Search (${size})`}
-                      leadingVisual={IconSearch}
-                    />
-                  </div>
-                ))}
-              </div>
-            </Preview>
-          </Section>
-
-          {/* Colours */}
-          <Section
-            title='Colours'
-            description='The colour prop maps to a semantic token — it does not hard-code a hue. Colours fall into three roles, each shown below across the main variants.'
-          >
-            <div className='space-y-10'>
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>Brand colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Drawn from the active masterbrand theme and the toolbar Primary / Accent
-                    pickers. Use <code>primary</code> for the main action; <code>tertiary</code> and{' '}
-                    <code>accent</code> for supporting actions; <code>grey</code> for neutral,
-                    low-emphasis actions.
-                  </p>
-                </div>
-                <Preview className='space-y-3'>
-                  {brandColors.map((color) => (
-                    <ColorRow key={color} color={color} />
-                  ))}
-                </Preview>
-              </div>
-
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>On dark surfaces</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Theme colours designed to sit on coloured or dark backgrounds — their lighter
-                    treatments do not read on white. Use <code>white</code> for a high-contrast
-                    action and <code>secondary</code> for a softer one. Shown here on a primary
-                    background.
-                  </p>
-                </div>
-                <Preview dark className='space-y-3'>
-                  {onDarkColors.map((color) => (
-                    <ColorRow key={color} color={color} dark />
-                  ))}
-                </Preview>
-              </div>
-
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>Semantic colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Fixed meanings that stay constant across themes. Reserve <code>danger</code> for
-                    destructive actions, and use <code>success</code> / <code>warning</code>{' '}
-                    sparingly for status-driven actions.
-                  </p>
-                </div>
-                <Preview className='space-y-3'>
-                  {semanticColors.map((color) => (
-                    <ColorRow key={color} color={color} />
-                  ))}
-                </Preview>
-              </div>
-            </div>
-          </Section>
-
-          {/* With icons */}
-          <Section
-            title='With icons'
-            description='Add a leadingVisual or trailingVisual to reinforce meaning. Keep icons to a single, recognisable glyph.'
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                <Cell label='leadingVisual'>
-                  <Button leadingVisual={IconAdd}>Add item</Button>
-                </Cell>
-                <Cell label='trailingVisual'>
-                  <Button trailingVisual={IconArrowForward}>Next</Button>
-                </Cell>
-                <Cell label='icon only'>
-                  <Button aria-label='Search' leadingVisual={IconSearch} size='icon' />
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* States */}
-          <Section
-            title='States'
-            description='Loading shows a spinner and blocks interaction; disabled removes the button from the tab order and dims it.'
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                <Cell label='default'>
-                  <Button>Save</Button>
-                </Cell>
-                <Cell label='loading'>
-                  <Button loading>Save</Button>
-                </Cell>
-                <Cell label='disabled'>
-                  <Button disabled>Save</Button>
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* As a link */}
-          <Section
-            title='As a link'
-            description="ButtonLink renders an anchor element with the button's full visual treatment — useful for navigation that should look like an action. It stays keyboard- and screen-reader-accessible."
-          >
-            <Preview className='flex flex-wrap items-center gap-8'>
-              <Cell label='solid'>
-                <ButtonLink href='#' variant='solid' trailingVisual={IconArrowForward}>
-                  View documentation
-                </ButtonLink>
-              </Cell>
-              <Cell label='outline'>
-                <ButtonLink href='#' variant='outline' trailingVisual={IconArrowForward}>
-                  View documentation
-                </ButtonLink>
-              </Cell>
-              <Cell label='link'>
-                <ButtonLink href='#' variant='link' trailingVisual={IconArrowForward}>
-                  View documentation
-                </ButtonLink>
-              </Cell>
-            </Preview>
-          </Section>
-        </div>
-      ),
-      description: {
-        component:
-          'High-detail button stories for design QA, interaction regression testing, and accessibility verification. Stories are organized by **theme first** and include matrix, stress, and touch-target diagnostics.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: ButtonDocs },
   },
   args: {
     children: 'Continue',
@@ -408,45 +332,28 @@ const meta = {
     },
     leadingVisual: {
       control: 'select',
-      options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
-      mapping: {
-        none: undefined,
-        arrow_forward: IconArrowForward,
-        add: IconAdd,
-        search: IconSearch,
-        chevron_down: IconExpandMore,
-      },
-      description: 'Icon component rendered before the label.',
+      options: Object.keys(iconOptions),
+      mapping: iconOptions,
+      description: 'Icon rendered before the label.',
       table: { category: 'Content' },
     },
     trailingVisual: {
       control: 'select',
-      options: ['none', 'arrow_forward', 'add', 'search', 'chevron_down'],
-      mapping: {
-        none: undefined,
-        arrow_forward: IconArrowForward,
-        add: IconAdd,
-        search: IconSearch,
-        chevron_down: IconExpandMore,
-      },
-      description: 'Icon component rendered after the label.',
+      options: Object.keys(iconOptions),
+      mapping: iconOptions,
+      description: 'Icon rendered after the label.',
       table: { category: 'Content' },
     },
     trailingAction: {
       control: 'select',
-      options: ['none', 'arrow_forward', 'add', 'chevron_down'],
-      mapping: {
-        none: undefined,
-        arrow_forward: IconArrowForward,
-        add: IconAdd,
-        chevron_down: IconExpandMore,
-      },
-      description: 'Icon component rendered as a trailing action (far end).',
+      options: Object.keys(iconOptions),
+      mapping: iconOptions,
+      description: 'Icon rendered as a trailing action at the far end.',
       table: { category: 'Content' },
     },
     labelWrap: {
       control: 'boolean',
-      description: 'Allow the button label to wrap onto multiple lines.',
+      description: 'Allow the label to wrap onto multiple lines.',
       table: { category: 'Content' },
     },
     count: {
@@ -467,49 +374,47 @@ const meta = {
     variant: {
       control: 'inline-radio',
       options: variants,
-      description: 'Visual treatment of the button.',
+      description: 'Visual treatment — how much emphasis the button carries.',
       table: { category: 'Appearance' },
     },
     color: {
       control: 'select',
       options: colors,
-      description: 'Theme token mapped to button foreground/background/border.',
+      description: 'Colour role. White and secondary need a coloured or dark surface.',
       table: { category: 'Appearance' },
     },
     size: {
       control: 'inline-radio',
       options: sizes,
-      description: 'Height/padding preset including icon-only mode.',
+      description: 'Scale step; `icon` is the flat 40×40 chrome square.',
+      table: { category: 'Appearance' },
+    },
+    iconOnly: {
+      control: 'boolean',
+      description: 'Square the button at the active size. Requires an aria-label.',
       table: { category: 'Appearance' },
     },
     block: {
       control: 'boolean',
-      description: 'Stretches the button to fill its container width.',
+      description: 'Stretch the button to fill its container.',
       table: { category: 'Appearance' },
     },
     alignContent: {
       control: 'inline-radio',
       options: ['center', 'start'],
-      description: 'Horizontal alignment of button content.',
+      description: 'Horizontal alignment of the content.',
       table: { category: 'Appearance' },
     },
     onClick: {
-      description: 'Click handler (logged in Actions panel).',
+      description: 'Click handler (logged in the Actions panel).',
       table: { category: 'Events' },
     },
     'aria-label': {
       control: 'text',
-      description: 'Accessible name for icon-only or non-text content.',
+      description: 'Accessible name for icon-only buttons.',
       table: { category: 'Accessibility' },
     },
-    'aria-disabled': {
-      control: 'boolean',
-      description: 'Marks the button as disabled without removing it from the tab order.',
-      table: { category: 'Accessibility' },
-    },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
+    className: { table: { disable: true } },
   },
 } satisfies Meta<typeof Button>
 
@@ -517,113 +422,28 @@ export default meta
 
 type Story = StoryObj<typeof meta>
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getButton(canvasElement: HTMLElement, name: string) {
-  const button = Array.from(canvasElement.querySelectorAll('button')).find(
-    (el) => el.textContent === name || el.getAttribute('aria-label') === name,
-  )
-
-  if (!button) throw new Error(`Could not find button named "${name}".`)
-
-  return button
-}
-
-function expectAttribute(element: Element, name: string, expectedValue: string) {
-  const receivedValue = element.getAttribute(name)
-
-  if (receivedValue !== expectedValue) {
-    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
-  }
-}
-
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
-  args: {
-    children: 'Continue',
-    variant: 'solid',
-  },
   play: async ({ canvasElement }) => {
-    const button = getButton(canvasElement, 'Continue')
-    expectAttribute(button, 'data-variant', 'solid')
+    const button = canvasElement.querySelector('button')
+    await expect(button).toHaveTextContent('Continue')
+    await expect(button).toHaveAttribute('data-variant', 'solid')
   },
 }
 
-export const IconSlotForms: Story = {
-  name: 'Icon Slot Forms',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The icon slots take the component (`leadingVisual={IconAdd}`) or an element (`leadingVisual={<IconAdd />}`). Both render the same markup; the element form is the one a React Server Component must use, because a bare icon function cannot cross the RSC boundary into this client component.',
-      },
-    },
-  },
-  render: () => (
-    <div className='flex gap-4'>
-      <Button leadingVisual={IconAdd} trailingVisual={IconArrowForward}>
-        Component form
-      </Button>
-      <Button leadingVisual={<IconAdd />} trailingVisual={<IconArrowForward />}>
-        Element form
-      </Button>
-      {/* A consumer-supplied mark with no baked-in data-slot — the button must
-          stamp one on, or it loses the icon sizing and colour rules. */}
-      <Button leadingVisual={<svg viewBox='0 0 24 24' aria-hidden />}>Bare svg</Button>
-      {/* Forwarding an optional prop that happens to be undefined is idiomatic
-          React and must read as "not specified", not as "override with nothing"
-          — otherwise the stamp is erased and the icon silently loses its sizing
-          and colour rules. */}
-      <Button leadingVisual={<IconAdd data-slot={undefined} />}>Undefined slot</Button>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const iconsIn = (name: string) =>
-      Array.from(getButton(canvasElement, name).querySelectorAll('svg[data-slot="icon"]'))
+export const Playground: Story = {}
 
-    const componentForm = iconsIn('Component form')
-    const elementForm = iconsIn('Element form')
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
 
-    if (componentForm.length !== 2) {
-      throw new Error(`Component form: expected 2 icons, got ${componentForm.length}.`)
-    }
-    if (elementForm.length !== 2) {
-      throw new Error(`Element form: expected 2 icons, got ${elementForm.length}.`)
-    }
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
 
-    // Same slot, same order, same paths — the two forms are interchangeable.
-    componentForm.forEach((icon, i) => {
-      if (icon.innerHTML !== elementForm[i]!.innerHTML) {
-        throw new Error(`Icon ${i} differs between the component and element forms.`)
-      }
-    })
+export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
 
-    if (iconsIn('Bare svg').length !== 1) {
-      throw new Error('An element without its own data-slot should still be stamped with one.')
-    }
+export const States: Story = { name: 'States', render: () => <StatesSection /> }
 
-    // React 19's cloneElement copies every config key over the element's props
-    // with no undefined-skip, so a `data-slot={undefined}` passed straight into
-    // the clone config erases the stamp instead of deferring to it.
-    if (iconsIn('Undefined slot').length !== 1) {
-      throw new Error('data-slot={undefined} should count as unset and still be stamped.')
-    }
-  },
-}
+export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
 
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      // Compact view: Name + Control only, no description/type/default columns
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-  render: (args) => (
-    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
-      <Button {...args}>{args.children}</Button>
-    </div>
-  ),
-}
+export const IconOnly: Story = { name: 'Icon only', render: () => <IconOnlySection /> }
+
+export const AsALink: Story = { name: 'As a link', render: () => <AsALinkSection /> }

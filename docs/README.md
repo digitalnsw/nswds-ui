@@ -24,12 +24,13 @@ design system — organised by what you're trying to do.
 
 ## Contributing to the system
 
-|                                                 |                                                                                      |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------ |
-| [Add a component](tutorial-add-a-component.md)  | **Tutorial** — a new component through every gate onto both channels                 |
-| [CI gates reference](reference-ci-gates.md)     | **Reference** — every check, what it runs, what a failure means                      |
-| [Release notes and changelog](release-notes.md) | **Reference** — how release notes are generated                                      |
-| [AGENTS.md](../AGENTS.md)                       | The canonical contributor instructions — architecture, conventions, release pipeline |
+|                                                       |                                                                                      |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| [Add a component](tutorial-add-a-component.md)        | **Tutorial** — a new component through every gate onto both channels                 |
+| [CI gates reference](reference-ci-gates.md)           | **Reference** — every check, what it runs, what a failure means                      |
+| [Storybook standard](reference-storybook-standard.md) | **Reference** — the one shape every component's stories take                         |
+| [Release notes and changelog](release-notes.md)       | **Reference** — how release notes are generated                                      |
+| [AGENTS.md](../AGENTS.md)                             | The canonical contributor instructions — architecture, conventions, release pipeline |
 
 ## Elsewhere
 

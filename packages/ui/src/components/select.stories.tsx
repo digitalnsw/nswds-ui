@@ -1,13 +1,17 @@
 /**
- * Select — Default, Variants, CssCheck
+ * Select — the docs page, Default, Playground and one story per docs section.
+ *
+ *   Components/Select        → this file
+ *   Components/Select/Tests  → select.tests.stories.tsx
  *
  * Built on the Base UI Select primitive: the trigger renders in the canvas, but
  * the option list is PORTALED to document.body, so it must be queried there.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 
+import { Field, FieldDescription, FieldError, FieldLabel } from './field.js'
 import {
   Select,
   SelectContent,
@@ -18,30 +22,379 @@ import {
   SelectTrigger,
   SelectValue,
 } from './select.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+const states = [
+  ['nsw', 'New South Wales'],
+  ['act', 'Australian Capital Territory'],
+  ['vic', 'Victoria'],
+  ['qld', 'Queensland'],
+  ['sa', 'South Australia'],
+  ['wa', 'Western Australia'],
+  ['tas', 'Tasmania'],
+  ['nt', 'Northern Territory'],
+] as const
+
+// Maps each value to its label, so the closed trigger shows the label rather
+// than the raw value before the popup has mounted its items.
+const stateItems = Object.fromEntries(states)
+
+function StateItems() {
+  return (
+    <>
+      {states.map(([value, label]) => (
+        <SelectItem key={value} value={value}>
+          {label}
+        </SelectItem>
+      ))}
+    </>
+  )
+}
+
+const centreItems = {
+  parramatta: 'Parramatta',
+  penrith: 'Penrith',
+  liverpool: 'Liverpool',
+  dubbo: 'Dubbo',
+  tamworth: 'Tamworth',
+  wagga: 'Wagga Wagga',
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          <code>default</code> is the bordered field that matches Input. <code>filled</code> is a
+          borderless tinted band that shows its border on hover, for filters and toolbars where a
+          row of boxed fields would be heavy.
+        </>
+      }
+    >
+      <Example code={`<SelectTrigger variant="filled">…</SelectTrigger>`}>
+        {(['default', 'filled'] as const).map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <Select items={stateItems} defaultValue='nsw'>
+              <SelectTrigger
+                variant={variant}
+                className='w-72'
+                aria-label={`State or territory (${variant})`}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <StateItems />
+              </SelectContent>
+            </Select>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          <code>default</code> is 48px, level with Input. <code>sm</code> is 40px, for dense
+          filters; keep it out of forms people fill in.
+        </>
+      }
+    >
+      <Example code={`<SelectTrigger size="sm">…</SelectTrigger>`}>
+        {(['default', 'sm'] as const).map((size) => (
+          <ExampleCell key={size} label={size}>
+            <Select items={stateItems} defaultValue='nsw'>
+              <SelectTrigger
+                size={size}
+                className='w-72'
+                aria-label={`State or territory (${size})`}
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <StateItems />
+              </SelectContent>
+            </Select>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          With nothing chosen, the trigger shows the <code>SelectValue</code> placeholder in the
+          muted ink. Invalid takes Input&apos;s 2px danger border and focus ring; disabled fades the
+          trigger and stops it opening.
+        </>
+      }
+    >
+      <Example code={`<SelectValue placeholder="Select a state or territory" />`}>
+        <ExampleCell label='placeholder'>
+          <Select items={stateItems}>
+            <SelectTrigger className='w-72' aria-label='State or territory (placeholder)'>
+              <SelectValue placeholder='Select a state or territory' />
+            </SelectTrigger>
+            <SelectContent>
+              <StateItems />
+            </SelectContent>
+          </Select>
+        </ExampleCell>
+        <ExampleCell label='invalid'>
+          <Select items={stateItems}>
+            <SelectTrigger aria-invalid className='w-72' aria-label='State or territory (invalid)'>
+              <SelectValue placeholder='Select a state or territory' />
+            </SelectTrigger>
+            <SelectContent>
+              <StateItems />
+            </SelectContent>
+          </Select>
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <Select items={stateItems} defaultValue='nsw' disabled>
+            <SelectTrigger className='w-72' aria-label='State or territory (disabled)'>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <StateItems />
+            </SelectContent>
+          </Select>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function GroupedOptionsSection() {
+  return (
+    <ExampleSection
+      title='Grouped options'
+      description={
+        <>
+          <code>SelectGroup</code> and <code>SelectLabel</code> sort a long list under headings;{' '}
+          <code>SelectSeparator</code> draws a hairline between groups.
+        </>
+      }
+    >
+      <Example
+        code={`<SelectGroup>
+  <SelectLabel>Greater Sydney</SelectLabel>
+  <SelectItem value="parramatta">Parramatta</SelectItem>
+</SelectGroup>
+<SelectSeparator />`}
+      >
+        <Select items={centreItems} defaultValue='parramatta'>
+          <SelectTrigger className='w-72' aria-label='Nearest service centre'>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Greater Sydney</SelectLabel>
+              <SelectItem value='parramatta'>Parramatta</SelectItem>
+              <SelectItem value='penrith'>Penrith</SelectItem>
+              <SelectItem value='liverpool'>Liverpool</SelectItem>
+            </SelectGroup>
+            <SelectSeparator />
+            <SelectGroup>
+              <SelectLabel>Regional NSW</SelectLabel>
+              <SelectItem value='dubbo'>Dubbo</SelectItem>
+              <SelectItem value='tamworth'>Tamworth</SelectItem>
+              <SelectItem value='wagga'>Wagga Wagga</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function WithFieldSection() {
+  return (
+    <ExampleSection
+      title='With Field'
+      description={
+        <>
+          Inside a <code>Field</code>, the <code>FieldLabel</code> names the trigger, and{' '}
+          <code>Field invalid</code> and <code>disabled</code> reach it — no <code>aria-label</code>{' '}
+          needed.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<Field invalid>
+  <FieldLabel>State or territory</FieldLabel>
+  <Select name="state" items={states}>
+    <SelectTrigger className="w-72">
+      <SelectValue placeholder="Select a state or territory" />
+    </SelectTrigger>
+    <SelectContent>…</SelectContent>
+  </Select>
+  <FieldError>Select the state or territory you live in.</FieldError>
+</Field>`}
+      >
+        <div className='grid w-72 gap-8'>
+          <Field>
+            <FieldLabel>State or territory</FieldLabel>
+            <Select name='state' items={stateItems} defaultValue='nsw'>
+              <SelectTrigger className='w-full'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <StateItems />
+              </SelectContent>
+            </Select>
+            <FieldDescription>Where you live now.</FieldDescription>
+          </Field>
+          <Field invalid>
+            <FieldLabel>State or territory</FieldLabel>
+            <Select name='state-invalid' items={stateItems}>
+              <SelectTrigger className='w-full'>
+                <SelectValue placeholder='Select a state or territory' />
+              </SelectTrigger>
+              <SelectContent>
+                <StateItems />
+              </SelectContent>
+            </Select>
+            <FieldError>Select the state or territory you live in.</FieldError>
+          </Field>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function SelectDocs() {
+  return (
+    <DocsPage
+      title='Select'
+      npm={[
+        'Select',
+        'SelectTrigger',
+        'SelectValue',
+        'SelectContent',
+        'SelectItem',
+        'SelectGroup',
+        'SelectLabel',
+        'SelectSeparator',
+      ]}
+      registry='select'
+      summary={
+        <>
+          A custom-styled list for choosing one option. The trigger matches Input; the list opens in
+          a popup portalled to the end of the page. Base UI owns focus, typeahead, keyboard
+          movement, ARIA and positioning.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Choosing one option from a list too long for radio buttons.',
+          'A choice that needs the system’s styling in its list, such as grouped options.',
+          'Filters and settings where the list stays out of the way until opened.',
+        ]}
+        avoid={[
+          'The platform’s own picker would serve phones better — use NativeSelect.',
+          'People need to type to find their answer in a long list — use Combobox.',
+          'There are only a few options, and seeing them all helps — use RadioGroup.',
+        ]}
+      />
+      <VariantsSection />
+      <SizesSection />
+      <StatesSection />
+      <GroupedOptionsSection />
+      <WithFieldSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Select',
   component: Select,
   tags: ['autodocs'],
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'A custom-styled select on the Base UI Select primitive. Base UI owns the focus management, typeahead, keyboard navigation, ARIA, and the portaled popup positioning. The trigger renders inline; the option list is portaled to the document body.',
-      },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: SelectDocs },
+  },
+  args: {
+    items: stateItems,
+    disabled: false,
+    onValueChange: fn(),
+  },
+  argTypes: {
+    items: {
+      control: false,
+      description: 'Map of values to labels, so the trigger can show a label before opening.',
+      table: { category: 'Content' },
+    },
+    defaultValue: {
+      control: 'text',
+      description: 'Initially selected value when uncontrolled.',
+      table: { category: 'Behavior' },
+    },
+    value: {
+      control: 'text',
+      description: 'Controlled selected value. Pair with onValueChange.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Prevents the select from opening.',
+      table: { category: 'Behavior' },
+    },
+    readOnly: {
+      control: 'boolean',
+      description: 'Keeps the value but prevents changing it.',
+      table: { category: 'Behavior' },
+    },
+    required: {
+      control: 'boolean',
+      description: 'A value must be chosen before the form is submitted.',
+      table: { category: 'Behavior' },
+    },
+    name: {
+      control: 'text',
+      description: 'Name submitted with the form.',
+      table: { category: 'Behavior' },
+    },
+    onValueChange: {
+      description: 'Called with the newly selected value (logged in the Actions panel).',
+      table: { category: 'Events' },
     },
   },
   render: (args) => (
     <Select {...args}>
-      <SelectTrigger className='w-56' aria-label='State'>
-        <SelectValue placeholder='Select a state' />
+      <SelectTrigger className='w-72' aria-label='State or territory'>
+        <SelectValue placeholder='Select a state or territory' />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value='nsw'>New South Wales</SelectItem>
-        <SelectItem value='vic'>Victoria</SelectItem>
-        <SelectItem value='qld'>Queensland</SelectItem>
-        <SelectItem value='wa'>Western Australia</SelectItem>
+        <StateItems />
       </SelectContent>
     </Select>
   ),
@@ -71,104 +424,17 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col items-start gap-6'>
-      {/* Default (crisp field) alongside the filled-band variant */}
-      <div className='flex flex-wrap items-start gap-4'>
-        <Select defaultValue='nsw'>
-          <SelectTrigger className='w-56' aria-label='State (crisp field)'>
-            <SelectValue placeholder='Select a state' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='nsw'>New South Wales</SelectItem>
-            <SelectItem value='vic'>Victoria</SelectItem>
-            <SelectItem value='qld'>Queensland</SelectItem>
-          </SelectContent>
-        </Select>
+export const Playground: Story = {}
 
-        <Select defaultValue='nsw'>
-          <SelectTrigger variant='filled' className='w-56' aria-label='State (filled band)'>
-            <SelectValue placeholder='Select a state' />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value='nsw'>New South Wales</SelectItem>
-            <SelectItem value='vic'>Victoria</SelectItem>
-            <SelectItem value='qld'>Queensland</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
 
-      {/* Grouped items with labels and a separator */}
-      <Select defaultValue='syd'>
-        <SelectTrigger className='w-56' aria-label='City'>
-          <SelectValue placeholder='Select a city' />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>New South Wales</SelectLabel>
-            <SelectItem value='syd'>Sydney</SelectItem>
-            <SelectItem value='new'>Newcastle</SelectItem>
-          </SelectGroup>
-          <SelectSeparator />
-          <SelectGroup>
-            <SelectLabel>Victoria</SelectLabel>
-            <SelectItem value='mel'>Melbourne</SelectItem>
-            <SelectItem value='gee'>Geelong</SelectItem>
-          </SelectGroup>
-        </SelectContent>
-      </Select>
+export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
 
-      {/* Small trigger */}
-      <Select defaultValue='vic'>
-        <SelectTrigger size='sm' className='w-56' aria-label='State (small)'>
-          <SelectValue placeholder='Select a state' />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value='nsw'>New South Wales</SelectItem>
-          <SelectItem value='vic'>Victoria</SelectItem>
-          <SelectItem value='qld'>Queensland</SelectItem>
-        </SelectContent>
-      </Select>
+export const States: Story = { name: 'States', render: () => <StatesSection /> }
 
-      {/* Invalid — 2px danger border, danger focus ring (matches Input) */}
-      <Select>
-        <SelectTrigger aria-invalid className='w-56' aria-label='State (invalid)'>
-          <SelectValue placeholder='Select a state' />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value='nsw'>New South Wales</SelectItem>
-          <SelectItem value='vic'>Victoria</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {/* Disabled */}
-      <Select disabled>
-        <SelectTrigger className='w-56' aria-label='Disabled'>
-          <SelectValue placeholder='Unavailable' />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value='a'>Option A</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  ),
+export const GroupedOptions: Story = {
+  name: 'Grouped options',
+  render: () => <GroupedOptionsSection />,
 }
 
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  play: async ({ canvasElement }) => {
-    // Target the always-visible trigger, never the portaled popup.
-    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="select-trigger"]')
-    if (!trigger) {
-      throw new Error('Could not find [data-slot="select-trigger"].')
-    }
-
-    // Proves globals.css loaded: the --input-border token resolves to a real
-    // colour rather than staying transparent.
-    const borderColor = getComputedStyle(trigger).borderColor
-    if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected the --input-border token to resolve, received "${borderColor}".`)
-    }
-  },
-}
+export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
