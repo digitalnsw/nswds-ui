@@ -1026,10 +1026,8 @@ Output Directory: dist
 ### Trigger behaviour
 
 All four projects are Git-integrated. `nswds-ui-web` and `nswds-ui-storybook`
-auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only when a push
-touches `apps/infographics` or a workspace it depends on: Vercel's **skip unaffected
-projects** is on for it (the default for new projects), and it counts any file outside
-a workspace (`docs/`, AGENTS.md, `.github/`) as affecting every app.
+auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only on pushes
+that can change it — see the two skip layers below.
 
 The **registry** project is gated: `apps/registry/vercel.json` sets an `ignoreCommand`
 that skips the build unless the latest commit is a semantic-release commit
@@ -1037,6 +1035,31 @@ that skips the build unless the latest commit is a semantic-release commit
 the npm release — the two distribution channels can't drift apart between releases.
 (Note: this also skips registry preview deployments on PRs; the PR Checks workflow
 verifies registry output freshness instead.)
+
+The **infographics** project skips commits that cannot change it, in two layers:
+
+1. Vercel's built-in **skip unaffected projects** (on by default for new projects;
+   `enableAffectedProjectsDeployments`) skips before a build slot is taken when the
+   commit touches neither `apps/infographics` nor a workspace it depends on. It treats
+   any file outside a workspace — `docs/`, AGENTS.md, `.github/` — as a global change
+   and builds.
+2. The `ignoreCommand` in `apps/infographics/vercel.json` then runs
+   `turbo query affected --packages infographics` against `VERCEL_GIT_PREVIOUS_SHA`,
+   which narrows those root-file changes: docs, workflow and agent-guide commits skip,
+   while `turbo.json`, `registry.config.json` (turbo `globalDependencies`), lockfile
+   changes reaching its dependencies, `packages/ui/**` and `apps/infographics/**` build.
+   Before turbo, a `git diff` on the root `package.json` and `.npmrc` forces a build:
+   turbo counts a root manifest change without a lockfile change as unaffected, but
+   with `engine-strict=true` an `engines` change alone can break `npm ci`. A canceled
+   run still takes a build slot, unlike layer 1.
+
+The command fails **open**: Vercel documents only exit `0` (skip) and `1` (build), so
+anything other than a clean "unaffected" — no previous SHA on a branch's first deploy,
+a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is
+likeliest in practice: if the last successful deployment is older than the history
+Vercel clones, turbo assumes everything changed and every commit builds until one
+succeeds, so the skip quietly stops saving builds during busy stretches. To force a
+deploy, use **Redeploy** with "Use project's Ignore Build Step" unchecked.
 
 ---
 
