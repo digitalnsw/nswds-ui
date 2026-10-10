@@ -31,12 +31,13 @@ Run in this order, in one job:
 | 12  | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
 | 13  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
 | 14  | Unit tests                 | `npm test -w @nswds/ui`                                    |
-| 15  | Package checks             | `npm run check:package -w @nswds/ui`                       |
-| 16  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
-| 17  | Registry freshness         | rebuild + `git status` comparison                          |
-| 18  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
-| 19  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
-| 20  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
+| 15  | Next app builds            | `npm run build -w web -w infographics`                     |
+| 16  | Package checks             | `npm run check:package -w @nswds/ui`                       |
+| 17  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
+| 18  | Registry freshness         | rebuild + `git status` comparison                          |
+| 19  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
+| 20  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
+| 21  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
 
 A separate `visual-change-release-guard` job runs in parallel.
 
@@ -133,13 +134,11 @@ inside it. The failure names the file, the line and the shape it found.
 
 ### 10 · `check:theme-parity`
 
-`packages/ui/scripts/check-theme-parity.mjs` asserts the shadcn→NSW token map is identical in the
-two places that ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface, also
-published as source for the single-build entry) and the `registry:theme` item's `cssVars.light` in
-`registry.json` (the registry surface). They are hand-maintained copies of one map, so a drift means
-an npm consumer and a registry consumer render different tokens — invisible to every other gate.
-It also holds `cssVars.dark` empty and the reduced-motion rule in step. Its fixture tests run under
-[script tests](#5--script-tests).
+The shadcn→NSW token map is hand-maintained twice: the `:root` block of
+`src/styles/theme.css` (npm) and the `registry:theme` item's `cssVars.light` in
+`registry.json` (registry). This asserts they agree, so an npm consumer and a
+registry consumer render the same tokens. Reads source only, so it runs before
+the build. Self-tested under `test:scripts`.
 
 **Fix:** make the same change in both places — `theme.css` `:root` and `registry.json`
 `cssVars.light` — then rerun `npm run check:theme-parity -w @nswds/ui`.
@@ -202,12 +201,20 @@ with no coverage and two bugs.
 
 **Pure logic goes here; rendered behaviour goes in a story.**
 
-### 15 · `check:package`
+### 15 · Next app builds
+
+`apps/web` and `apps/infographics` compile `@nswds/ui` from source
+(`transpilePackages` and the `globals.css` dev entry), so a change in
+`packages/ui` can break their `next build` while lint, typecheck and the package
+build all pass. Before this step the only signal was each app's Vercel deploy
+check. Needs the `@nswds/ui` build first, like the Vercel build commands.
+
+### 16 · `check:package`
 
 `publint --strict` + `are-the-types-wrong` against the built tarball. Catches export-map and
 type-resolution faults that `build` alone will happily produce.
 
-### 16 · Consumer fixture
+### 17 · Consumer fixture
 
 **The only gate with no npm script** — invisible from `package.json`. Run it by path:
 
@@ -227,7 +234,7 @@ Build `@nswds/ui` first. Not redundant with `check:package`: that validates the 
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside
 ours, the only place the two-build cascade is tested end to end.
 
-### 17 · Registry freshness
+### 18 · Registry freshness
 
 Rebuilds the registry and fails if committed output differs. Run `npm run registry:build` and
 commit `apps/registry/public/r/` whenever component source, `registry.json` or `components.json`
@@ -237,7 +244,7 @@ change.
 > `git status`, which cannot see a file nothing regenerates. Deleting an item from `registry.json`
 > also means deleting `apps/registry/public/r/<name>.json` by hand.
 
-### 18 · `check:registry-resolves`
+### 19 · `check:registry-resolves`
 
 The companion to `check:drift`, and easy to confuse with it. **Drift proves an item is registered;
 this proves it would actually compile** once `shadcn add` copies it.
@@ -260,7 +267,7 @@ Four real bugs motivated it, all of which passed drift, validate **and** the fre
 
 **Import icons per-icon (`../icons/close.js`), never through the barrel.**
 
-### 19 · `check:optimize-deps`
+### 20 · `check:optimize-deps`
 
 Asserts every bare import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
 `apps/storybook/vitest.config.ts`.
@@ -273,7 +280,7 @@ that kills whichever story was mid-flight.
 Add a component with a new dependency, forget this list, and the Storybook job starts failing
 intermittently **somewhere else entirely**.
 
-### 20 · Storybook tests
+### 21 · Storybook tests
 
 Every story rendered in real Chromium, with axe at WCAG 2.x AA enforced as an error. This is the
 suite that actually proves the components work. Takes roughly 80–170s.
@@ -319,6 +326,9 @@ npm run test:scripts
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui
+npm run check:portal-boundary -w @nswds/ui
+npm run check:theme-parity -w @nswds/ui
+npm run check:stories -w @nswds/ui
 npm test -w @workspace/semantic-release-config
 npm run build -w @nswds/ui
 npm test -w @nswds/ui
