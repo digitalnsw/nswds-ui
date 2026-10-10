@@ -1038,7 +1038,10 @@ The **infographics** project skips commits that cannot change it, in two layers:
 
 The command fails **open**: Vercel documents only exit `0` (skip) and `1` (build), so
 anything other than a clean "unaffected" — no previous SHA on a branch's first deploy,
-a SHA outside the clone, `turbo` missing — is mapped to `1`. A root `package.json`
+a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is likeliest in
+practice: if the last successful deployment is older than the history
+Vercel clones, turbo assumes everything changed and every commit builds until
+one succeeds, so the skip quietly stops saving builds during busy stretches. A root `package.json`
 change that leaves the lockfile alone is the one case it skips that layer 1 would
 build; to force a deploy, use **Redeploy** with "Use project's Ignore Build Step"
 unchecked.
