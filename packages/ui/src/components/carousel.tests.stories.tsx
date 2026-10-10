@@ -307,6 +307,10 @@ export const CompositeInSlide: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
+    // Without the engine, a press is a silent no-op and every "did not move"
+    // assertion below would pass vacuously.
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // The role that consumes arrows is on the ANCESTOR tablist, not on the tab
@@ -601,7 +605,10 @@ export const Vertical: Story = {
     const canvas = within(canvasElement)
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="carousel"]')!
     const previous = canvas.getByRole('button', { name: /previous slide/i })
+    const next = canvas.getByRole('button', { name: /next slide/i })
 
+    // Without the engine, ArrowRight being "inert" would prove nothing.
+    await waitForReady(next)
     await waitFor(() => previous.hasAttribute('disabled'), 'Expected to start on the first slide.')
 
     // Left/Right belong to the inline axis and must be inert here.

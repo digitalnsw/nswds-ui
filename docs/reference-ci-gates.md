@@ -70,7 +70,7 @@ platform computes.
 ### 5 · Script tests
 
 `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs` — today, the `check:workflows`
-scanner and the `check:portal-boundary` and `check:stories` gates.
+scanner and the `check:portal-boundary`, `check:theme-parity` and `check:stories` gates.
 
 Not belt-and-braces. A gate that stops gating exits 0, which reads exactly like success, and this
 one has done it twice: the first version silently missed every `- run:` written as a YAML sequence
@@ -130,6 +130,19 @@ inside it; that reset is pinned by the `In Overlays` story instead. Its fixture 
 
 **Fix:** make `<ButtonGroupBoundary>` the portal's only child, with everything the portal renders
 inside it. The failure names the file, the line and the shape it found.
+
+### 10 · `check:theme-parity`
+
+`packages/ui/scripts/check-theme-parity.mjs` asserts the shadcn→NSW token map is identical in the
+two places that ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface, also
+published as source for the single-build entry) and the `registry:theme` item's `cssVars.light` in
+`registry.json` (the registry surface). They are hand-maintained copies of one map, so a drift means
+an npm consumer and a registry consumer render different tokens — invisible to every other gate.
+It also holds `cssVars.dark` empty and the reduced-motion rule in step. Its fixture tests run under
+[script tests](#5--script-tests).
+
+**Fix:** make the same change in both places — `theme.css` `:root` and `registry.json`
+`cssVars.light` — then rerun `npm run check:theme-parity -w @nswds/ui`.
 
 ### 11 · `check:stories`
 

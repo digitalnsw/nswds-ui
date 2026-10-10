@@ -15,6 +15,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 
 import { Spinner } from './spinner.js'
 import { ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
@@ -185,10 +186,10 @@ export const NonTextContent: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '1.1.1',
-          why: 'The animated SVG inside Spinner is non-text content. It must either be marked decorative and accompanied by a text alternative, or carry an accessible name itself. The Spinner pattern delegates the text alternative to the outer role="status" element via aria-label.',
-          how: 'Inspect the DOM: the SVG should not carry role="img" or its own aria-label. The accessible name is supplied by the outer span via aria-label. The play() function asserts that when aria-label is missing the spinner has no accessible name — surfacing the consumer caveat below.',
+          why: 'The animated SVG inside Spinner is non-text content. It must either be marked decorative and accompanied by a text alternative, or carry an accessible name itself. The Spinner pattern hides the SVG and names the outer role="status" element instead — from its visually hidden `label` text ("Loading" by default), or from an aria-label.',
+          how: 'Inspect the DOM: the SVG is aria-hidden and carries no role or name of its own. The play() asserts that a spinner given no aria-label still has a name: the visually hidden default "Loading" text inside its role="status" element.',
           caveat:
-            'Spinner does NOT default an aria-label. Consumers MUST supply one (or render visually-hidden text inside the span) — otherwise the role="status" element has no accessible name and screen readers will announce a bare "status" with no context.',
+            'The default "Loading" is accurate but generic. Pass a specific `label` ("Loading search results") so the announcement says what is loading. An empty `label` removes the status role entirely — for a Spinner inside a Button whose own aria-busy already conveys the state.',
         }),
       },
     },
@@ -203,14 +204,16 @@ export const NonTextContent: Story = {
         </p>
       </section>
 
-      <section className='border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6'>
-        <h4 className='text-base font-semibold text-foreground'>Caveat — no aria-label</h4>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <h4 className='text-base font-semibold text-foreground'>
+          No aria-label — the default label
+        </h4>
         <span data-no-label-spinner>
           <Spinner />
         </span>
         <p className='text-base text-muted-foreground'>
-          Without aria-label, the role=&quot;status&quot; element has no accessible name. Screen
-          readers will announce only the live region with no context — always supply a label.
+          Without aria-label, the spinner is still named — by its visually hidden default text,
+          &quot;Loading&quot;. Pass a specific <code>label</code> so people hear what is loading.
         </p>
       </section>
     </div>
@@ -233,5 +236,8 @@ export const NonTextContent: Story = {
     if (label !== null && label.trim().length > 0) {
       throw new Error(`Expected the unlabelled spinner to have no aria-label, received "${label}".`)
     }
+
+    // …and still be named, by the visually hidden default label.
+    await expect(status).toHaveTextContent('Loading')
   },
 }

@@ -299,8 +299,8 @@ function StickyScene() {
 
   return (
     <div className='h-96 overflow-y-auto'>
-      <Masthead color='dark' />
-      <Header ref={headerRef} color='white' sticky>
+      <Masthead id='main-nav-sticky-masthead' color='dark' />
+      <Header id='main-nav-sticky-header' ref={headerRef} color='white' sticky>
         <HeaderBrand sitename='Quit smoking' />
       </Header>
       <MainNav
@@ -393,8 +393,8 @@ function InContextSection() {
       }
     >
       <Example layout='fill' className='max-sm:p-0 sm:p-0'>
-        <Masthead color='dark' />
-        <Header color='white' sticky={false}>
+        <Masthead id='main-nav-in-context-masthead' color='dark' />
+        <Header id='main-nav-in-context-header' color='white' sticky={false}>
           <HeaderBrand sitename='Quit smoking' />
         </Header>
         <MainNav id='main-nav-in-context' navigation={demoNavigation} currentHref='#quitline' />

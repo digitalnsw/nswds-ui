@@ -120,7 +120,7 @@ export const ErrorIdentification: Story = {
           why: 'When a form control rejects input, the affected field and the nature of the problem must be identified in text so users can understand what went wrong and correct it.',
           how: 'Inspect the rendered error: FieldError renders inside the Field with role="alert" and visible destructive-token text. The play() function asserts the FieldError element exists, carries role="alert", and contains the error message text.',
           caveat:
-            'Inside a Field, setting `invalid` on the Field sets the control’s aria-invalid and Base UI links the error via aria-describedby automatically (see the automatic-association story, AutomaticAssociation). This story shows the equivalent manual wiring, which still works and takes precedence.',
+            'Inside a Field, setting `invalid` on the Field sets the control’s aria-invalid and Base UI links the error via aria-describedby automatically (see the “Info and Relationships, automatic” story). This story shows the equivalent manual wiring, which still works and takes precedence.',
         }),
       },
     },
@@ -173,7 +173,7 @@ export const LabelsOrInstructions: Story = {
           why: 'Form controls that require user input must be paired with a label or instruction so users know what data to enter and in what format.',
           how: 'Each Field shows a FieldLabel as the visible name and a FieldDescription as supplementary instructional text. The play() function asserts each input has an associated label and that descriptive helper text is present in the Field.',
           caveat:
-            'Inside a Field, FieldDescription is automatically linked to the control via aria-describedby (see the automatic-association story, AutomaticAssociation). Manual describedby still works and is shown here for an implementation-agnostic example.',
+            'Inside a Field, FieldDescription is automatically linked to the control via aria-describedby (see the “Info and Relationships, automatic” story). Manual describedby still works and is shown here for an implementation-agnostic example.',
         }),
       },
     },
@@ -312,13 +312,13 @@ export const StatusMessages: Story = {
 // ─── Automatic association (Base UI Field) ────────────────────────────────────
 
 export const AutomaticAssociation: Story = {
-  name: 'Info and Relationships — 1.3.1 / 3.3.1',
+  name: 'Info and Relationships, automatic — 1.3.1 / 3.3.1',
   parameters: {
     wcag: ['1.3.1', '3.3.1'],
     docs: {
       description: {
         story: wcagStoryMeta({
-          criteria: '1.3.1',
+          criteria: ['1.3.1', '3.3.1'],
           why: 'Field wraps the Base UI Field primitive, which wires the label, description, and error to the control automatically — no manual htmlFor / id / aria-describedby. Setting `invalid` on the Field marks the control aria-invalid.',
           how: 'This story sets NO id, htmlFor, or aria-* in the markup. The play() asserts the input still has an associated label, gets aria-invalid="true" from the Field’s `invalid` prop, and exposes an aria-describedby that resolves to both the FieldDescription and the FieldError text.',
           caveat:

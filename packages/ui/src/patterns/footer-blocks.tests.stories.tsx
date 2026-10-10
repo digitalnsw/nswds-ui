@@ -13,6 +13,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
 import type { FooterColor } from '../components/footer.js'
+import { IconLinkedIn, IconX, IconYouTube } from '../icons/brands/index.js'
 
 import { FooterAccordion } from './footer-accordion.js'
 import { FooterCompact } from './footer-compact.js'
@@ -23,40 +24,11 @@ import { FooterSimpleCentred } from './footer-simple-centred.js'
 import { FooterSitemapBrand } from './footer-sitemap-brand.js'
 import { FooterSitemap } from './footer-sitemap.js'
 
-// Brand marks are not part of the NSWDS icon set (Material Symbols), so social
-// icons are supplied by the consuming app — the blocks take them as data.
-function LinkedInIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path d='M19 3A2 2 0 0 1 21 5V19A2 2 0 0 1 19 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H19M18.5 18.5V13.2A3.26 3.26 0 0 0 15.24 9.94C14.39 9.94 13.4 10.46 12.92 11.24V10.13H10.13V18.5H12.92V13.57C12.92 12.8 13.54 12.17 14.31 12.17A1.4 1.4 0 0 1 15.71 13.57V18.5H18.5M6.88 8.56A1.68 1.68 0 0 0 8.56 6.88C8.56 5.95 7.81 5.19 6.88 5.19A1.69 1.69 0 0 0 5.19 6.88C5.19 7.81 5.95 8.56 6.88 8.56M8.27 18.5V10.13H5.5V18.5H8.27Z' />
-    </svg>
-  )
-}
-
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path d='M13.6823 10.6218L20.2391 3H18.6854L12.9921 9.61788L8.44486 3H3.2002L10.0765 13.0074L3.2002 21H4.75404L10.7663 14.0113L15.5685 21H20.8131L13.6819 10.6218H13.6823ZM11.5541 13.0956L10.8574 12.0991L5.31391 4.16971H7.70053L12.1742 10.5689L12.8709 11.5655L18.6861 19.8835H16.2995L11.5541 13.096V13.0956Z' />
-    </svg>
-  )
-}
-
-function YouTubeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg fill='currentColor' viewBox='0 0 24 24' aria-hidden='true' {...props}>
-      <path
-        fillRule='evenodd'
-        d='M19.812 5.418c.861.23 1.538.907 1.768 1.768C21.998 8.746 22 12 22 12s0 3.255-.418 4.814a2.504 2.504 0 0 1-1.768 1.768c-1.56.419-7.814.419-7.814.419s-6.255 0-7.814-.419a2.505 2.505 0 0 1-1.768-1.768C2 15.255 2 12 2 12s0-3.255.417-4.814a2.507 2.507 0 0 1 1.768-1.768C5.744 5 11.998 5 11.998 5s6.255 0 7.814.418ZM15.194 12 10 15V9l5.194 3Z'
-        clipRule='evenodd'
-      />
-    </svg>
-  )
-}
-
+// The same brand marks the docs page uses, so the tests exercise what it shows.
 const socialLinks = [
-  { name: 'LinkedIn', href: '#linkedin', icon: LinkedInIcon },
-  { name: 'X', href: '#x', icon: XIcon },
-  { name: 'YouTube', href: '#youtube', icon: YouTubeIcon },
+  { name: 'LinkedIn', href: '#linkedin', icon: IconLinkedIn },
+  { name: 'X', href: '#x', icon: IconX },
+  { name: 'YouTube', href: '#youtube', icon: IconYouTube },
 ]
 
 // Pinned so Chromatic snapshots don't churn every new year.

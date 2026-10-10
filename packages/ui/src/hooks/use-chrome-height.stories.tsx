@@ -33,8 +33,19 @@ const PROPERTY = '--story-chrome-height'
  * The composition the hook exists for: a `Header` and an `OnThisPage` sharing
  * one sticky wrapper, whose measured height becomes both the scroll-spy line
  * and (in a real app) the document's `scroll-padding-top`.
+ *
+ * The docs page renders it twice, so `idPrefix` keeps each instance's section
+ * ids unique — OnThisPage links to them, and duplicates would send the second
+ * instance's links to the first instance's sections.
  */
-function StickyChromeDemo({ showReadout = true }: { showReadout?: boolean }) {
+function StickyChromeDemo({
+  showReadout = true,
+  idPrefix = '',
+}: {
+  showReadout?: boolean
+  idPrefix?: string
+}) {
+  const items = ITEMS.map(({ id, title }) => ({ id: idPrefix ? `${idPrefix}-${id}` : id, title }))
   // Destructured at the call site, which is also how the hook documents
   // itself. Holding the result as one object and reading `chrome.ref` /
   // `chrome.height` during render trips React Compiler's "cannot access refs
@@ -57,10 +68,10 @@ function StickyChromeDemo({ showReadout = true }: { showReadout?: boolean }) {
             ) : null}
           </HeaderActions>
         </Header>
-        <OnThisPage items={ITEMS} offset={height} />
+        <OnThisPage items={items} offset={height} />
       </div>
 
-      {ITEMS.map(({ id, title }) => (
+      {items.map(({ id, title }) => (
         <Section key={id} id={id} labelledBy={`${id}-heading`} divider spacing='tight'>
           <Container>
             <h2 id={`${id}-heading`} className='text-2xl font-bold text-foreground'>
@@ -147,7 +158,7 @@ function InContextSection() {
 }`}
       >
         <ScrollFrame>
-          <StickyChromeDemo showReadout={false} />
+          <StickyChromeDemo showReadout={false} idPrefix='context' />
         </ScrollFrame>
       </Example>
     </ExampleSection>

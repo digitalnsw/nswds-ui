@@ -16,7 +16,7 @@ import { IconSearch } from '../icons/search.js'
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
 import { Masthead } from './masthead.js'
-import { SkipLinks } from './skip-link.js'
+import { SkipLink, SkipLinks } from './skip-link.js'
 import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
 const HEADER_COLORS = ['white', 'light', 'dark', 'grey'] as const
@@ -330,13 +330,22 @@ function InContextSection() {
         {/* SkipLinks is `fixed` to the viewport; `absolute` keeps it inside
             this frame instead of the top of the docs page. */}
         <div className='relative overflow-hidden ring-1 ring-foreground/10'>
-          <SkipLinks color='dark' className='absolute' />
+          {/* One link, to a frame-scoped id: the default pair also targets
+              #nav, and this frame has no navigation to skip to. */}
+          <SkipLinks color='dark' className='absolute'>
+            <SkipLink color='dark' href='#header-context-content'>
+              Skip to content
+            </SkipLink>
+          </SkipLinks>
           <Masthead id='header-context-masthead' color='dark' />
           <Header id='header-context' color='white' sticky={false}>
             <HeaderBrand sitename={sitename} version='2.1.0' />
             <DemoActions />
           </Header>
-          <div id='content' className='space-y-2 bg-background px-6 py-6 text-foreground'>
+          <div
+            id='header-context-content'
+            className='space-y-2 bg-background px-6 py-6 text-foreground'
+          >
             <p className='text-2xl font-bold'>Apply for a recreational fishing licence</p>
             <p className='text-base'>
               You need a licence to fish in NSW waters, including from the shore.
