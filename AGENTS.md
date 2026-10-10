@@ -1044,17 +1044,18 @@ The **infographics** project skips commits that cannot change it, in two layers:
    which narrows those root-file changes: docs, workflow and agent-guide commits skip,
    while `turbo.json`, `registry.config.json` (turbo `globalDependencies`), lockfile
    changes reaching its dependencies, `packages/ui/**` and `apps/infographics/**` build.
-   A canceled run still takes a build slot, unlike layer 1.
+   Before turbo, a `git diff` on the root `package.json` and `.npmrc` forces a build:
+   turbo counts a root manifest change without a lockfile change as unaffected, but
+   with `engine-strict=true` an `engines` change alone can break `npm ci`. A canceled
+   run still takes a build slot, unlike layer 1.
 
 The command fails **open**: Vercel documents only exit `0` (skip) and `1` (build), so
 anything other than a clean "unaffected" — no previous SHA on a branch's first deploy,
 a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is
 likeliest in practice: if the last successful deployment is older than the history
 Vercel clones, turbo assumes everything changed and every commit builds until one
-succeeds, so the skip quietly stops saving builds during busy stretches. A root
-`package.json` change that leaves the lockfile alone is the one case it skips that
-layer 1 would build; to force a deploy, use **Redeploy** with "Use project's Ignore
-Build Step" unchecked.
+succeeds, so the skip quietly stops saving builds during busy stretches. To force a
+deploy, use **Redeploy** with "Use project's Ignore Build Step" unchecked.
 
 ---
 

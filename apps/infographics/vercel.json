@@ -1,5 +1,5 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build -w @nswds/ui && next build",
-  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && turbo query affected --base=\"$VERCEL_GIT_PREVIOUS_SHA\" --packages infographics --exit-code; [ $? -eq 0 ] && exit 0; exit 1"
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- :/package.json :/.npmrc && turbo query affected --base=\"$VERCEL_GIT_PREVIOUS_SHA\" --packages infographics --exit-code; [ $? -eq 0 ] && exit 0; exit 1"
 }
