@@ -42,6 +42,12 @@ If your app also imports the `@nswds/tokens` Tailwind bridges — you only need 
 
 /* Your own Tailwind build last — see the next section. */
 @import 'tailwindcss';
+
+/* Your build re-emits Tailwind's default font stacks; map them back — see Fonts. */
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
 ```
 
 The bridges must come first because both stylesheets emit an unlayered `:root` block of light-mode values, and only `@nswds/ui/styles.css` also ships the `[data-theme='dark'], .dark` block. `:root` and `.dark` have identical specificity, so the block that appears **last** wins. Import a bridge afterwards and its light values land last: every `bg-*` utility still flips to dark (those are compiled classes, not tokens) while the semantic role tokens stay light — so backgrounds go dark and text stays dark on top of them. Nothing errors; it just looks broken.
@@ -80,6 +86,36 @@ If you do hit a conflict, a call-site override outranks both halves:
 ```
 
 > **Don't reach for a named cascade layer to pin the order.** `@import '@nswds/ui/styles.css' layer(nswds)` looks tidy, but it also layers the `:root` and `[data-theme='dark'], .dark` token blocks the file carries, and layered custom properties lose to any unlayered `:root` — including the ones the bridges above ship. That is the dark-mode failure described in the previous section, with no import order that recovers it.
+
+Your own build also re-emits Tailwind's default font stacks, which win over ours — add the `@theme` mapping described under [Fonts](#fonts).
+
+### Fonts
+
+Text uses the NSW stacks from `@nswds/tokens`: **Public Sans** for `font-sans` (body text, via `body`) and **JetBrains Mono** for `font-mono`, each with system fallbacks.
+
+**Load the font files yourself.** `@nswds/ui` ships no `@font-face`, so Public Sans only renders where your app loads it (or it happens to be installed locally); everywhere else you get the system fallback. With Next.js, `next/font` works out of the box — use `variable: '--font-sans'` (and `'--font-mono'`) and put the class on `<html>`, not `<body>`, so it overrides the stack at the root.
+
+**Change the font with `--font-sans`, not `font-family` on `html`.** `body` sets `font-family: var(--font-sans)`, so a `font-family` you put on `html` never reaches body text. If your loader registers Public Sans under another name — `@fontsource-variable/public-sans` registers `'Public Sans Variable'` — put that name in front of the NSW stack:
+
+```css
+:root {
+  --font-sans: 'Public Sans Variable', var(--font-family-sans);
+}
+```
+
+**Two-build setups** (`@nswds/ui/styles.css` plus your own `@import 'tailwindcss'`) need one more step. Your build re-emits Tailwind's default `--font-sans` and `--font-mono` in the same `theme` layer as ours, and after ours, so they win and your app renders in system fonts. Point them back at the NSW stacks, which `@nswds/ui/styles.css` ships on `:root` as `--font-family-sans` / `--font-family-mono`, right after your `@import 'tailwindcss'`:
+
+```css
+@import '@nswds/ui/styles.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
+```
+
+Keep it a plain `@theme`, not `@theme inline`: your `font-sans` utilities then read `var(--font-sans)` where they are used, so an override of `--font-sans` — at `:root` as above, or on any subtree — reaches them. The single-build entry needs none of this; its own theme already carries the NSW stacks.
 
 ### Dark mode
 

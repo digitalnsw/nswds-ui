@@ -11,13 +11,16 @@
 // it was publint, in CI, intermittently — long after the build had claimed
 // success. This turns that into an immediate, deterministic, local failure.
 //
-// Deliberately cheap: a readdir and some set arithmetic, no `npm pack`. It is
+// Deliberately cheap: a readdir, some set arithmetic and one pass over
+// dist/styles.css, no `npm pack`. It is
 // not a replacement for `check:package` (publint/attw still validate the real
 // tarball against package.json `exports`) — it is the fast guard that runs on
 // every build, including Vercel's.
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { extname, join, relative } from 'node:path'
+
+import { checkFontStack, findCycles, parseCss } from './check-font-stack.mjs'
 
 const problems = []
 
@@ -137,6 +140,34 @@ if (!existsSync('src')) {
         `entry moved between the core and icons configs without its onSuccess following.`,
     )
   }
+}
+
+// ── Custom-property cycles and font stacks ───────────────────────────────────
+//
+// theme.css shipped `--font-sans: var(--font-sans)` from #14 until it was
+// fixed: a self-referencing custom property is guaranteed-invalid, so every
+// consumer lost Public Sans with the build, lint and Storybook all green. Check
+// the whole class, not just fonts: no root custom property in the compiled
+// stylesheet may depend on itself. Then prove the NSW stacks actually win in
+// it (check-font-stack.mjs models the cascade and resolves the var() chains).
+const STYLESHEET = 'dist/styles.css'
+
+if (!existsSync(STYLESHEET)) {
+  problems.push(`${STYLESHEET} is missing — build:css did not run before verify:dist`)
+} else {
+  const css = readFileSync(STYLESHEET, 'utf8')
+  const cycles = findCycles(parseCss(css))
+  if (cycles.length > 0) {
+    problems.push(
+      (cycles.length === 1
+        ? `1 custom property depends on itself in ${STYLESHEET}, so it is guaranteed-invalid `
+        : `${cycles.length} custom properties depend on themselves in ${STYLESHEET}, so they are ` +
+          `guaranteed-invalid `) +
+        `for every consumer (e.g. ${cycles.slice(0, 5).join('; ')}). Look for an @theme key ` +
+        `redeclared as var() of itself in src/styles/theme.css.`,
+    )
+  }
+  problems.push(...checkFontStack(css, STYLESHEET))
 }
 
 if (problems.length > 0) {
