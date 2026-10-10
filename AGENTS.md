@@ -910,12 +910,11 @@ which project's Root Directory is set.
 | Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
 | -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
 | `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
-| `nswds-ui-infographics` | `apps/infographics` | `https://nswds-ui-infographics.vercel.app` (no custom domain yet; Vercel-SSO-protected until one is added) | Infographics site |
+| `nswds-ui-infographics` | `apps/infographics` | `https://infographics.design.nsw.gov.au` | Infographics site |
 | `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
 | `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
 
-Every project except `nswds-ui-infographics` (which has no custom domain yet) serves
-from a **custom domain**, not its `*.vercel.app` URL — the
+Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
 `.vercel.app` hostnames resolve but do not serve these projects
 (`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
 docs/README.md pointed at the wrong host for Storybook on the strength of the
