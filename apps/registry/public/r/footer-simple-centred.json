@@ -4,10 +4,10 @@
   "title": "Footer — Simple Centred",
   "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-    "https://ui.digital.nsw.gov.au/registry/r/logo.json",
-    "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/footer.json",
+    "https://registry.design.nsw.gov.au/r/logo.json",
+    "https://registry.design.nsw.gov.au/r/separator.json"
   ],
   "files": [
     {
@@ -19,6 +19,6 @@
   ],
   "type": "registry:block",
   "meta": {
-    "nswdsVersion": "9.1.1"
+    "nswdsVersion": "9.1.2"
   }
 }

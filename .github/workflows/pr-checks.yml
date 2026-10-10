@@ -133,6 +133,13 @@ jobs:
       - name: Unit tests (@nswds/ui)
         run: npm test -w @nswds/ui
 
+      # apps/web and apps/infographics compile @nswds/ui from SOURCE
+      # (transpilePackages + the globals.css dev entry), so a packages/ui change
+      # can break their `next build` while every check above passes. Without
+      # this step the only signal is the Vercel deploy check, after the fact.
+      - name: Build Next apps (web, infographics)
+        run: npm run build -w web -w infographics
+
       # publint validates package.json/files/exports against the packed
       # tarball; attw checks that every exports entry resolves with correct
       # types under bundler + node16 ESM resolution. Both run on `npm pack`

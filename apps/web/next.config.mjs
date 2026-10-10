@@ -10,17 +10,18 @@ if (existsSync(rootEnv)) {
   process.loadEnvFile(rootEnv)
 }
 
-// Where the shadcn registry is actually deployed — the Vercel project's own
-// origin, which is what /registry on this domain proxies TO.
+// Where the shadcn registry is actually deployed — what /registry on this
+// domain proxies TO. Consumers now install from the registry's own domain
+// (`location` in registry.config.json); this rewrite keeps the legacy
+// https://ui.digital.nsw.gov.au/registry path resolving, because items
+// installed before the move carry it in their registryDependencies.
 //
-// This MUST be `origin`, never `location`. registry.config.json carries both:
-//   location — the public URL consumers are told to use, which is this domain's
-//              /registry path. It is what gets stamped into the registry JSON's
-//              registryDependencies and into the docs.
-//   origin   — the underlying registry deployment.
-// They are different values precisely because this rewrite exists. Reading
-// `location` here would rewrite /registry/:path* to /registry/:path* on this
-// same host — an infinite proxy loop.
+// Read `origin`, not `location`: the two are separate fields so the public URL
+// can move without touching this proxy. `origin` must never be a path on THIS
+// domain — pointing it at .../registry here would rewrite /registry/:path* to
+// /registry/:path* on the same host, an infinite proxy loop. Prefer the
+// registry's custom domain over its *.vercel.app name: Vercel renamed that
+// alias once (nswds-ui-registry → nswds-registry) and silently broke this path.
 //
 // Single source of truth: registry.config.json (updated via
 // `npm run registry:sync`). A REGISTRY_ORIGIN env var overrides at runtime.
