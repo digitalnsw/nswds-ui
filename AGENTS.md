@@ -15,7 +15,7 @@
 
 This is a **reusable design system** for NSW Government digital products. It is NOT an application.
 It is built to be consumed by _other_ teams' projects — the apps inside this monorepo
-(`apps/web`, `apps/storybook`) exist only to develop and preview the system, not as end products.
+(`apps/web`, `apps/infographics`, `apps/storybook`) exist only to develop and preview the system, not as end products.
 
 **Two distribution channels:**
 
@@ -43,6 +43,8 @@ nswds-ui/                        ← private monorepo root (name: "design")
 ├── apps/
 │   ├── web/                     ← private Next.js 16 sandbox (name: "web")
 │   │   └── next.config.mjs      transpilePackages: ["@nswds/ui"]
+│   ├── infographics/            ← private Next.js 16 infographics site (name: "infographics")
+│   │   └── next.config.mjs      transpilePackages: ["@nswds/ui"], no /registry proxy
 │   ├── storybook/               ← private Storybook 10 + Vitest (name: "@workspace/storybook")
 │   │   └── .storybook/
 │   │       ├── main.ts          stories glob: packages/ui/src/**/*.stories.*
@@ -429,6 +431,7 @@ Run from the **repo root** unless noted.
 | Dev all apps                    | `npm run dev`                                                  |
 | Storybook only                  | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
 | Web sandbox only                | `npm run dev -w web` → http://localhost:3000                   |
+| Infographics site only          | `npm run dev -w infographics` → http://localhost:3001          |
 | Build everything                | `npm run build`                                                |
 | Build UI package only           | `npm run build -w @nswds/ui`                                   |
 | Build JS only                   | `npm run build:js -w @nswds/ui`                                |
@@ -900,17 +903,19 @@ only if the repo is made public.
 
 ## 7. Vercel Deployments
 
-Three separate Vercel projects, each linked to `github.com/digitalnsw/nswds-ui`. Vercel
+Four separate Vercel projects, each linked to `github.com/digitalnsw/nswds-ui`. Vercel
 detects npm from `package-lock.json` and runs `npm install` from the git root regardless of
 which project's Root Directory is set.
 
 | Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
 | -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
 | `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
+| `nswds-ui-infographics` | `apps/infographics` | `https://nswds-ui-infographics.vercel.app` (no custom domain yet; Vercel-SSO-protected until one is added) | Infographics site |
 | `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
 | `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
 
-Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
+Every project except `nswds-ui-infographics` (which has no custom domain yet) serves
+from a **custom domain**, not its `*.vercel.app` URL — the
 `.vercel.app` hostnames resolve but do not serve these projects
 (`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
 docs/README.md pointed at the wrong host for Storybook on the strength of the
@@ -965,6 +970,18 @@ Build Command:    npm run build -w @nswds/ui && next build
 Output Directory: .next  (auto)
 ```
 
+**`apps/infographics`** — `apps/infographics/vercel.json`
+
+```
+Framework:        Next.js (auto-detected from apps/infographics/next.config.mjs)
+Root Directory:   apps/infographics
+Build Command:    npm run build -w @nswds/ui && next build
+Output Directory: .next  (auto)
+```
+
+A copy of `apps/web`'s setup without the `/registry` rewrite — that proxy belongs to
+the domain consumers install from, and only `apps/web` owns it.
+
 **`apps/storybook`** — `apps/storybook/vercel.json`
 
 ```
@@ -994,8 +1011,8 @@ Output Directory: dist
 
 ### Trigger behaviour
 
-All three projects are Git-integrated. `nswds-ui-web` and `nswds-ui-storybook`
-auto-deploy on every push to `main`.
+All four projects are Git-integrated. `nswds-ui-web`, `nswds-ui-infographics` and
+`nswds-ui-storybook` auto-deploy on every push to `main`.
 
 The **registry** project is gated: `apps/registry/vercel.json` sets an `ignoreCommand`
 that skips the build unless the latest commit is a semantic-release commit
