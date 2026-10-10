@@ -9,7 +9,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { REGEXP_ONLY_DIGITS } from 'input-otp'
-import { expect, userEvent, within } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from './input-otp.js'
 import { Label } from './label.js'
@@ -200,14 +200,22 @@ export const FocusVisible: Story = {
       },
     },
   },
-  render: () => <VerificationCode />,
+  // CI's real pointer can rest over the first slot and paint a hover state;
+  // focus here is keyboard-driven, so the canvas ignores the pointer.
+  render: () => (
+    <div className='pointer-events-none'>
+      <VerificationCode />
+    </div>
+  ),
   play: async ({ canvasElement }) => {
     const slots = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="input-otp-slot"]')]
     const ringed = () => slots.map((slot) => getComputedStyle(slot).boxShadow !== 'none')
-    await expect(ringed()).toEqual([false, false, false, false, false, false])
+    // The ring transitions in and out, which lands later on CI's slower
+    // runners; wait for each state (read-only — no DOM writes in waitFor).
+    await waitFor(() => expect(ringed()).toEqual([false, false, false, false, false, false]))
     await userEvent.tab()
-    await expect(ringed()).toEqual([true, false, false, false, false, false])
+    await waitFor(() => expect(ringed()).toEqual([true, false, false, false, false, false]))
     await userEvent.keyboard('48')
-    await expect(ringed()).toEqual([false, false, true, false, false, false])
+    await waitFor(() => expect(ringed()).toEqual([false, false, true, false, false, false]))
   },
 }
