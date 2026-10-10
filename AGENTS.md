@@ -469,7 +469,8 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `check:radius`, `check:icons`, `check:portal-boundary`,
 `check:theme-parity`, the
 release-config tests,
-`build -w @nswds/ui`, `test -w @nswds/ui`, `check:package`,
+`build -w @nswds/ui`, `test -w @nswds/ui`, the Next app builds
+(`build -w web -w infographics`), `check:package`,
 `scripts/test-consumer-fixture.sh`, a
 registry-freshness rebuild, `check:registry-resolves`, `check:optimize-deps`, a
 Playwright Chromium install, and the Storybook
