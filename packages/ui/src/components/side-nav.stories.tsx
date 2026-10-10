@@ -1,13 +1,32 @@
 /**
- * SideNav — Default + NestedDeep + CurrentStates + WithOnNavigate + CssCheck
+ * SideNav — left-rail navigation within a section of a site.
  *
- * Left-rail section navigation: headed sections of links with arbitrary
- * collapsible nesting, auto-expanded onto the current page.
+ *   Components/SideNav                → this file: Docs, Default, Playground
+ *   Components/SideNav/Features       → side-nav.features.stories.tsx
+ *   Components/SideNav/Accessibility  → side-nav.accessibility.stories.tsx
+ *   Components/SideNav/Tests          → side-nav.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import React from 'react'
 
+import { IconMenu } from '../icons/menu.js'
+import { Button } from './button.js'
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from './sheet.js'
 import { SideNav, type SideNavItem } from './side-nav.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+// ─── Content ──────────────────────────────────────────────────────────────────
 
 /**
  * Docs-style tree: a flat top-level link, a section with a two-then-three
@@ -48,51 +67,226 @@ const docsNav: SideNavItem[] = [
   },
 ]
 
+/** A rail's realistic width beside page content. */
+const railClassName = 'w-64'
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function AnatomySection() {
+  return (
+    <ExampleSection
+      title='Anatomy'
+      description={
+        <>
+          A top-level item with <code>links</code> renders as a section heading over a rail; one
+          without renders as a plain rail link. Branch rows are disclosure buttons (Base UI
+          Collapsible), never links — give destinations to leaves. Branches nest to any depth.
+        </>
+      }
+    >
+      <Example
+        code={`const sections: SideNavItem[] = [
+  { title: 'Overview', href: '/docs' },
+  {
+    title: 'Getting started',
+    links: [
+      { title: 'Installation', href: '/docs/installation' },
+      {
+        title: 'Components',
+        links: [{ title: 'Button', href: '/docs/components/button' }],
+      },
+    ],
+  },
+]
+
+<SideNav sections={sections} />`}
+      >
+        <ExampleCell label='current page in a branch'>
+          <div className={railClassName}>
+            <SideNav
+              aria-label='Section navigation, anatomy'
+              sections={docsNav}
+              currentHref='/docs/components/button'
+            />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='current page in a nested branch'>
+          <div className={railClassName}>
+            <SideNav
+              aria-label='Section navigation, deep nesting'
+              sections={docsNav}
+              currentHref='/docs/components/side-nav'
+            />
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function CurrentPageSection() {
+  return (
+    <ExampleSection
+      title='Current page'
+      description={
+        <>
+          Pass the router&apos;s pathname as <code>currentHref</code>. The matching link announces{' '}
+          <code>aria-current=&quot;page&quot;</code> and takes the rail&apos;s marker, and every
+          branch on the path to it opens on arrival. Expansion is seeded once, on mount: pass{' '}
+          <code>key={'{currentHref}'}</code> to re-open the path after client-side navigation.
+        </>
+      }
+    >
+      <Example code={`<SideNav sections={sections} currentHref={pathname} />`}>
+        <ExampleCell label='a top-level link'>
+          <div className={railClassName}>
+            <SideNav aria-label='Current: top-level link' sections={docsNav} currentHref='/docs' />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='a link in a section'>
+          <div className={railClassName}>
+            <SideNav
+              aria-label='Current: section link'
+              sections={docsNav}
+              currentHref='/docs/guides/releases'
+            />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='no currentHref'>
+          <div className={railClassName}>
+            <SideNav aria-label='No current page' sections={docsNav} />
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function DrawerScene() {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger render={<Button variant='outline' leadingVisual={IconMenu} />}>
+        In this section
+      </SheetTrigger>
+      <SheetContent side='left' className='p-6'>
+        <SheetTitle>Getting started</SheetTitle>
+        <SideNav
+          sections={docsNav}
+          currentHref='/docs/components/button'
+          onNavigate={(event) => {
+            // Keeps the specimen on this page; an app lets the link navigate.
+            event.preventDefault()
+            setOpen(false)
+          }}
+        />
+      </SheetContent>
+    </Sheet>
+  )
+}
+
+export function DrawerHookSection() {
+  return (
+    <ExampleSection
+      title='Drawer hook'
+      description={
+        <>
+          <code>onNavigate</code> fires from every leaf link — wire it to close a mobile drawer
+          after the reader picks a destination. It never fires from a branch, which only opens and
+          closes. Open the drawer below and pick a page.
+        </>
+      }
+    >
+      <Example code={`<SideNav sections={sections} onNavigate={() => setOpen(false)} />`}>
+        <ExampleCell label='SideNav in a Sheet'>
+          <DrawerScene />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          The rail sits beside the page content. Its section headings are <code>h2</code> by
+          default; step <code>headingLevel</code> down when the rail sits under another heading.
+        </>
+      }
+    >
+      <Example layout='fill'>
+        <div className='flex flex-wrap gap-x-12 gap-y-8'>
+          <div className={railClassName}>
+            <SideNav sections={docsNav} currentHref='/docs/installation' />
+          </div>
+          <div className='min-w-0 flex-1 basis-80 space-y-4'>
+            <p className='text-3xl/tight font-bold'>Installation</p>
+            <p className='max-w-prose'>
+              Install the design system from npm, or copy individual components into your project
+              from the registry. Both channels ship the same NSW Government tokens.
+            </p>
+          </div>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function SideNavDocs() {
+  return (
+    <DocsPage
+      title='SideNav'
+      npm='SideNav'
+      registry='side-nav'
+      summary={
+        <>
+          Left-rail section navigation for documentation-style pages. Sections are headed,
+          always-visible lists; deeper items with children become collapsible branches. Pass the
+          router&rsquo;s pathname as <code>currentHref</code> and the matching link gets{' '}
+          <code>aria-current=&quot;page&quot;</code>, the active rail treatment, and every branch on
+          the path to it starts expanded.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'A section with more pages than its parent navigation can list — guidance, policy or documentation.',
+          'Showing the reader where a page sits in a deep tree.',
+          'Wide screens, beside the page content.',
+        ]}
+        avoid={[
+          'The site’s top-level navigation — use MainNav.',
+          'Drill-down navigation on a phone — use the MobileNav block, which puts PushMenu in a Sheet.',
+          'Jumping between headings on one long page — use OnThisPage.',
+        ]}
+      />
+      <AnatomySection />
+      <CurrentPageSection />
+      <DrawerHookSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Components/SideNav',
   component: SideNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
     docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>SideNav</h1>
-            <p className='text-base text-muted-foreground'>
-              Left-rail section navigation for documentation-style pages. Sections are headed,
-              always-visible lists; deeper items with children become collapsible branches. Pass the
-              router&rsquo;s pathname as <code>currentHref</code> and the matching link gets{' '}
-              <code>aria-current=&quot;page&quot;</code>, the active rail treatment, and every
-              branch on the path to it starts expanded.
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Anatomy</h2>
-            <p className='text-base text-muted-foreground'>
-              A top-level item with <code>links</code> renders as a section heading over a rail; one
-              without renders as a plain rail link. Branch rows are disclosure buttons (Base UI
-              Collapsible), never links — give destinations to leaves.
-            </p>
-            <div className='max-w-xs'>
-              <SideNav sections={docsNav} currentHref='/docs/components/button' />
-            </div>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Drawer hook</h2>
-            <p className='text-base text-muted-foreground'>
-              <code>onNavigate</code> fires from every leaf link — wire it to close a mobile drawer
-              after the reader picks a destination.
-            </p>
-          </section>
-        </div>
-      ),
+      page: SideNavDocs,
       description: {
         component:
           'Left-rail section navigation with headed sections, arbitrary collapsible nesting, and auto-expansion of the branch containing the current page.',
@@ -112,11 +306,17 @@ const meta = {
         'The navigation tree. Top-level items with links are headed sections; deeper items with links are collapsible branches; items with href are leaf links.',
       table: { category: 'Content' },
     },
+    emptyMessage: {
+      control: 'text',
+      description:
+        'Shown when `sections` is empty. Defaults to "No navigation items available."; `null` renders nothing.',
+      table: { category: 'Content' },
+    },
     currentHref: {
       control: 'text',
       description:
-        'The current page — sets aria-current="page" on the matching link and expands the branches containing it. Pass your router pathname.',
-      table: { category: 'State' },
+        'The current page — sets `aria-current="page"` on the matching link and expands the branches containing it, on mount. Pass your router pathname.',
+      table: { category: 'Behavior' },
     },
     onNavigate: {
       control: false,
@@ -129,7 +329,7 @@ const meta = {
       options: [2, 3, 4, 5, 6],
       description:
         'Heading level for section titles; step down when the nav nests under another heading.',
-      table: { category: 'Structure' },
+      table: { category: 'Accessibility' },
     },
     'aria-label': {
       control: 'text',
@@ -137,17 +337,8 @@ const meta = {
         "Accessible name of the nav landmark, distinguishing it from the page's other navigation.",
       table: { category: 'Accessibility' },
     },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
+    className: { table: { disable: true } },
   },
-  decorators: [
-    (Story) => (
-      <div className='max-w-xs'>
-        <Story />
-      </div>
-    ),
-  ],
 } satisfies Meta<typeof SideNav>
 
 export default meta
@@ -187,9 +378,19 @@ async function waitFor(predicate: () => boolean, message: string, timeout = 2000
   throw new Error(message)
 }
 
+/** The rail at a realistic width; the section stories size their own. */
+const railWidth: NonNullable<Story['decorators']> = [
+  (Story) => (
+    <div className='max-w-xs'>
+      <Story />
+    </div>
+  ),
+]
+
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
+  decorators: railWidth,
   play: async ({ canvasElement }) => {
     const nav = getNav(canvasElement)
 
@@ -259,272 +460,4 @@ export const Default: Story = {
   },
 }
 
-export const NestedDeep: Story = {
-  name: 'Deep nesting',
-  args: {
-    // Third-level current page: every ancestor branch must open on arrival.
-    currentHref: '/docs/components/side-nav',
-  },
-  play: async ({ canvasElement }) => {
-    const nav = getNav(canvasElement)
-
-    for (const title of ['Components', 'Navigation']) {
-      const trigger = getTrigger(nav, title)
-      if (!trigger.hasAttribute('data-panel-open')) {
-        throw new Error(
-          `Expected the "${title}" branch to auto-expand — it is on the path to the current page.`,
-        )
-      }
-    }
-
-    const current = nav.querySelector<HTMLAnchorElement>('a[aria-current="page"]')
-    if (!current || current.textContent?.trim() !== 'Side nav') {
-      throw new Error(
-        `Expected the third-level "Side nav" link to be current, got "${current?.textContent}".`,
-      )
-    }
-  },
-}
-
-export const CurrentStates: Story = {
-  name: 'Current page states',
-  render: () => (
-    <div className='flex flex-wrap gap-12'>
-      <div className='w-64'>
-        <SideNav aria-label='Current: top-level link' sections={docsNav} currentHref='/docs' />
-      </div>
-      <div className='w-64'>
-        <SideNav
-          aria-label='Current: section link'
-          sections={docsNav}
-          currentHref='/docs/guides/releases'
-        />
-      </div>
-      <div className='w-64'>
-        <SideNav aria-label='No current page' sections={docsNav} />
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const navs = canvasElement.querySelectorAll<HTMLElement>('[data-slot="side-nav"]')
-    if (navs.length !== 3) {
-      throw new Error(`Expected 3 SideNavs, got ${navs.length}.`)
-    }
-    const [topLevel, section, none] = navs
-
-    const expectations: Array<[HTMLElement, string | null]> = [
-      [topLevel!, 'Overview'],
-      [section!, 'Releases'],
-      [none!, null],
-    ]
-    for (const [nav, expected] of expectations) {
-      const current = nav.querySelectorAll<HTMLAnchorElement>('a[aria-current="page"]')
-      if (expected === null) {
-        if (current.length !== 0) {
-          throw new Error(
-            `Expected no aria-current link without currentHref, got ${current.length}.`,
-          )
-        }
-      } else {
-        if (current.length !== 1 || current[0]!.textContent?.trim() !== expected) {
-          throw new Error(
-            `Expected exactly one current link ("${expected}") in "${nav.getAttribute('aria-label')}", got ${current.length} ("${current[0]?.textContent ?? ''}").`,
-          )
-        }
-      }
-    }
-
-    // Off-path branches stay collapsed in every instance. "Components" is the
-    // observable trigger; the nested "Navigation" branch lives INSIDE its
-    // panel, which Base UI unmounts while closed — so for the inner branch,
-    // absence from the DOM is the collapsed assertion.
-    for (const nav of navs) {
-      const components = getTrigger(nav, 'Components')
-      if (components.hasAttribute('data-panel-open')) {
-        throw new Error('Expected the off-path "Components" branch to stay collapsed.')
-      }
-      const navigationTrigger = Array.from(
-        nav.querySelectorAll<HTMLButtonElement>('[data-slot="side-nav-trigger"]'),
-      ).find((el) => el.textContent?.trim() === 'Navigation')
-      if (navigationTrigger) {
-        throw new Error(
-          'Expected the nested "Navigation" trigger to be unmounted while its parent branch is collapsed.',
-        )
-      }
-    }
-  },
-}
-
-export const WithOnNavigate: Story = {
-  name: 'onNavigate (drawer close hook)',
-  args: {
-    onNavigate: (event) => {
-      // In an app this closes the mobile drawer; here it flags the anchor so
-      // the play() below can observe the call. preventDefault keeps the story
-      // iframe from actually navigating under the test runner.
-      event.preventDefault()
-      event.currentTarget.setAttribute('data-navigated', 'true')
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const nav = getNav(canvasElement)
-
-    const leaf = Array.from(nav.querySelectorAll<HTMLAnchorElement>('a')).find(
-      (el) => el.textContent?.trim() === 'Accessibility',
-    )
-    if (!leaf) {
-      throw new Error('Expected the "Accessibility" leaf link to render.')
-    }
-
-    leaf.click()
-    await waitFor(
-      () => leaf.getAttribute('data-navigated') === 'true',
-      'Expected onNavigate to fire when a leaf link is clicked.',
-    )
-
-    // Branch triggers are disclosure buttons, not links — they must never
-    // reach onNavigate. Clicking one only toggles.
-    const trigger = getTrigger(nav, 'Navigation')
-    trigger.click()
-    await waitFor(
-      () => trigger.hasAttribute('data-panel-open'),
-      'Expected the trigger click to toggle its branch open.',
-    )
-    if (trigger.getAttribute('data-navigated') === 'true') {
-      throw new Error('Expected branch triggers not to fire onNavigate.')
-    }
-  },
-}
-
-/**
- * Rows are laid out to hold the system's 44px touch floor on coarse pointers,
- * and hover no longer changes font weight.
- *
- * The floor itself is applied under `@media (pointer: coarse)`, which a
- * desktop test runner never matches — so this story asserts the contract that
- * makes it work: the row is a centred flex box (an `inline-block` would grow
- * downward instead of centring its text) and carries the coarse-pointer
- * min-height utility. It also pins the Derived State Rule: rest and hover must
- * agree on font-weight, because a weight jump reflows the label under the
- * pointer.
- */
-export const RowMetrics: Story = {
-  name: 'Row metrics',
-  play: async ({ canvasElement }) => {
-    const nav = getNav(canvasElement)
-
-    const row = nav.querySelector<HTMLElement>('[data-slot="side-nav-link"]:not([aria-current])')
-    if (!row) {
-      throw new Error('Expected at least one non-current rail link.')
-    }
-
-    const styles = getComputedStyle(row)
-    if (styles.display !== 'flex') {
-      throw new Error(
-        `Expected rail rows to be flex so the coarse-pointer min-height centres its label, got display: "${styles.display}".`,
-      )
-    }
-    if (styles.alignItems !== 'center') {
-      throw new Error(`Expected rail rows to centre their label, got "${styles.alignItems}".`)
-    }
-
-    // The floor is declared even though this runner reports a fine pointer.
-    const declaresFloor = Array.from(row.classList).some((name) => name.includes('pointer:coarse'))
-    if (!declaresFloor) {
-      throw new Error('Expected rail rows to declare a coarse-pointer minimum height.')
-    }
-
-    // Derived State Rule: hover changes colour, never metrics.
-    if (Array.from(row.classList).some((name) => name.startsWith('hover:font-'))) {
-      throw new Error(
-        'Rail rows must not change font-weight on hover — it reflows the label under the pointer.',
-      )
-    }
-  },
-}
-
-/**
- * An empty tree renders a message rather than a bare `<ul>`. Empty is a
- * runtime state (unpublished content, permission filtering, a failed fetch),
- * not a data mistake.
- */
-export const Empty: Story = {
-  args: {
-    sections: [],
-    currentHref: undefined,
-  },
-  play: async ({ canvasElement }) => {
-    const nav = getNav(canvasElement)
-
-    const empty = nav.querySelector<HTMLElement>('[data-slot="side-nav-empty"]')
-    if (!empty) {
-      throw new Error('Expected an empty-state message when sections is empty.')
-    }
-    if (!empty.textContent?.trim()) {
-      throw new Error('Expected the empty state to carry visible text.')
-    }
-    if (nav.querySelector('[data-slot="side-nav-sections"]')) {
-      throw new Error('Expected no section list to render for an empty tree.')
-    }
-    if (nav.tagName !== 'NAV' || !nav.getAttribute('aria-label')) {
-      throw new Error('Expected the named nav landmark to render even when empty.')
-    }
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: the active row resolves bg-primary-800/10
-    // to a real colour, the rail resolves border-grey-400, and the heading
-    // resolves the @nswds/tokens font-display stack.
-    const nav = getNav(canvasElement)
-
-    const current = nav.querySelector<HTMLAnchorElement>('a[aria-current="page"]')
-    if (!current) {
-      throw new Error('Expected a current link to assert against.')
-    }
-    const linkStyles = getComputedStyle(current)
-    if (linkStyles.backgroundColor === '' || linkStyles.backgroundColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected bg-primary-800/10 on the current link to resolve to a visible colour, got "${linkStyles.backgroundColor}". Is globals.css loaded?`,
-      )
-    }
-    if (linkStyles.borderLeftColor === '' || linkStyles.borderLeftColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected border-primary-800 on the current link to resolve, got "${linkStyles.borderLeftColor}".`,
-      )
-    }
-
-    const list = nav.querySelector<HTMLElement>('[data-slot="side-nav-list"]')
-    if (!list) {
-      throw new Error('Expected a [data-slot="side-nav-list"] rail.')
-    }
-    const listStyles = getComputedStyle(list)
-    if (listStyles.borderLeftColor === '' || listStyles.borderLeftColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected the rail's border-grey-400 to resolve, got "${listStyles.borderLeftColor}".`,
-      )
-    }
-
-    const heading = nav.querySelector<HTMLElement>('[data-slot="side-nav-heading"]')
-    if (!heading) {
-      throw new Error('Expected a [data-slot="side-nav-heading"] section title.')
-    }
-    if (!getComputedStyle(heading).fontFamily.includes('Public Sans')) {
-      throw new Error(
-        `Expected the heading's font-display to resolve to the Public Sans stack, got "${getComputedStyle(heading).fontFamily}".`,
-      )
-    }
-  },
-}
-
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-}
+export const Playground: Story = { decorators: railWidth }

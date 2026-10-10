@@ -1,9 +1,25 @@
 /**
- * TabNav — Default, Variants, CssCheck
+ * TabNav — Docs, Default and Playground.
+ *
+ *   Components/TabNav                → this file
+ *   Components/TabNav/Features       → tab-nav.features.stories.tsx
+ *   Components/TabNav/Accessibility  → tab-nav.accessibility.stories.tsx
+ *   Components/TabNav/Tests          → tab-nav.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 import { TabNav, TabNavLink } from './tab-nav.js'
 
 const PAGES = [
@@ -16,19 +32,244 @@ const PAGES = [
 
 const CURRENT = '/colour/brand'
 
+/** The peer pages of a licence section — long enough to overflow a narrow bar. */
+const LICENCE_PAGES = [
+  { href: '/fishing-licence/overview', title: 'Overview' },
+  { href: '/fishing-licence/who-needs-one', title: 'Who needs a licence' },
+  { href: '/fishing-licence/fees', title: 'Fees and exemptions' },
+  { href: '/fishing-licence/apply', title: 'Apply or renew' },
+  { href: '/fishing-licence/replace', title: 'Replace a lost licence' },
+]
+
+function ColourTabs({
+  currentHref = CURRENT,
+  border,
+  label = 'Colour',
+}: {
+  currentHref?: string
+  border?: boolean
+  label?: string
+}) {
+  return (
+    <TabNav currentHref={currentHref} border={border} aria-label={label}>
+      {PAGES.map((page) => (
+        <TabNavLink key={page.href} href={page.href}>
+          {page.title}
+        </TabNavLink>
+      ))}
+    </TabNav>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          By default the tabs sit on a 1px rule that runs the full scrollable width of the bar. Set{' '}
+          <code>{'border={false}'}</code> inside a <code>Card</code> or panel that already draws its
+          own edge, where a second rule reads as a double border.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<TabNav currentHref={pathname} border={false} aria-label="Colour">…</TabNav>`}
+      >
+        <ExampleCell label='border (default)'>
+          <ColourTabs label='Colour, with rule' />
+        </ExampleCell>
+        <ExampleCell label='border={false}'>
+          <ColourTabs border={false} label='Colour, without rule' />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          The tab whose <code>href</code> equals <code>currentHref</code> is the current page: it
+          takes the primary ink and a 2px marker rule, and is announced with{' '}
+          <code>aria-current=&quot;page&quot;</code>. Matching is exact, so a page the bar does not
+          list marks nothing rather than guessing.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<TabNav currentHref="/colour/brand" aria-label="Colour">
+  <TabNavLink href="/colour/themes">Colour themes</TabNavLink>
+  <TabNavLink href="/colour/brand">Brand palette</TabNavLink>
+</TabNav>`}
+      >
+        <ExampleCell label='currentHref matches a tab'>
+          <ColourTabs label='Colour, current page' />
+        </ExampleCell>
+        <ExampleCell label='currentHref matches no tab'>
+          <ColourTabs currentHref='/colour' label='Colour, nothing current' />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function CustomMatchingSection() {
+  return (
+    <ExampleSection
+      title='Custom matching'
+      description={
+        <>
+          For any rule other than equality — a nested route, a query string, an index page that
+          stays current for its children — compute it from your router and set <code>current</code>{' '}
+          on the link. The bar never second-guesses it. Here the reader is on a chart guide inside
+          Data visualisation.
+        </>
+      }
+    >
+      <Example
+        code={`const pathname = '/colour/data-visualisation/charts'
+
+<TabNav aria-label="Colour">
+  {pages.map((page) => (
+    <TabNavLink key={page.href} href={page.href} current={pathname.startsWith(page.href)}>
+      {page.title}
+    </TabNavLink>
+  ))}
+</TabNav>`}
+      >
+        <TabNav aria-label='Colour, prefix matched'>
+          {PAGES.map((page) => (
+            <TabNavLink
+              key={page.href}
+              href={page.href}
+              current={'/colour/data-visualisation/charts'.startsWith(page.href)}
+            >
+              {page.title}
+            </TabNavLink>
+          ))}
+        </TabNav>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function OverflowSection() {
+  return (
+    <ExampleSection
+      title='Overflow'
+      description='When the tabs outgrow the space, the bar scrolls sideways within itself rather than wrapping or pushing the page wider. The clipped last tab signals there is more; touch, shift-wheel and the keyboard all reach it.'
+    >
+      <Example
+        code={`<TabNav currentHref={pathname} aria-label="Recreational fishing licence">…</TabNav>`}
+      >
+        <div className='w-full max-w-sm'>
+          <TabNav currentHref='/fishing-licence/fees' aria-label='Recreational fishing licence'>
+            {LICENCE_PAGES.map((page) => (
+              <TabNavLink key={page.href} href={page.href}>
+                {page.title}
+              </TabNavLink>
+            ))}
+          </TabNav>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Under the section heading, listing the section’s peer pages. Name the landmark after the section it navigates, so it is distinguishable from the page’s other navigation.'
+    >
+      <Example layout='fill'>
+        <div className='space-y-8'>
+          <div className='space-y-2'>
+            <p className='text-base font-semibold text-muted-foreground'>Recreational fishing</p>
+            <p className='text-3xl/tight font-bold'>Recreational fishing licence</p>
+          </div>
+          <TabNav currentHref='/fishing-licence/fees' aria-label='Recreational fishing licence'>
+            {LICENCE_PAGES.map((page) => (
+              <TabNavLink key={page.href} href={page.href}>
+                {page.title}
+              </TabNavLink>
+            ))}
+          </TabNav>
+          <div className='max-w-prose space-y-4'>
+            <p className='text-2xl font-semibold'>Fees and exemptions</p>
+            <p>
+              The fee depends on how long your licence lasts. Some people do not have to pay,
+              depending on their age or the concession card they hold.
+            </p>
+          </div>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function TabNavDocs() {
+  return (
+    <DocsPage
+      title='TabNav'
+      npm={['TabNav', 'TabNavLink']}
+      registry='tab-nav'
+      summary={
+        <>
+          A flat horizontal bar of links between the peer pages of one section. Each tab is a real
+          link to its own page, and the one being read is marked from <code>currentHref</code> —
+          never from click state — so a fresh page load always marks the right tab. These are not
+          ARIA tabs: the name describes the look, not a panel switcher.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Moving between the peer pages of one section, such as the parts of a licence guide.',
+          'A section of three to seven pages with no hierarchy worth drawing.',
+          'A bar directly under the page heading that stays the same on every page in the section.',
+        ]}
+        avoid={[
+          'Switching panels within one page without a page load — use Tabs.',
+          'A section whose pages nest — use SideNav.',
+          'Jumping between headings on the page being read — use OnThisPage.',
+          'Taking a reader through an ordered journey — use StepIndicator.',
+        ]}
+      />
+      <VariantsSection />
+      <StatesSection />
+      <CustomMatchingSection />
+      <OverflowSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
-  title: 'Components/Tab Navigation',
+  title: 'Components/TabNav',
   component: TabNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
-    layout: 'fullscreen',
+    layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: {
-      description: {
-        component:
-          'TabNav is flat horizontal navigation between the pages of one section — the bar under the site header listing a section\'s peer pages. It is deliberately distinct from the other navigation components: MainNav moves between sites/sections, SideNav between pages as a tree, StepNav through a journey, OnThisPage within the page you are on. These are NOT ARIA tabs: the name describes the visual idiom, but the semantics are a nav landmark over links, each marked aria-current="page" when it is the one being read. The current tab comes from the currentHref prop, never from click state, so a fresh page load marks the right tab.',
-      },
-    },
+    docs: { page: TabNavDocs },
   },
   args: {
     currentHref: CURRENT,
@@ -40,16 +281,26 @@ const meta = {
       control: 'select',
       options: PAGES.map((page) => page.href),
       description:
-        "The current page's href. Matched exactly — prefix matching is the caller's job via the link's `current` prop.",
-      table: { category: 'Behaviour' },
+        "The current page's href. Matched exactly — set `current` on a link for any other rule.",
+      table: { category: 'Behavior' },
     },
     border: {
       control: 'boolean',
       description: 'The rule the tabs sit on. Turn it off inside a Card that draws its own edge.',
       table: { category: 'Appearance' },
     },
-    className: { table: { disable: true, category: 'Advanced' } },
-    children: { table: { disable: true } },
+    'aria-label': {
+      control: 'text',
+      description:
+        'Names the navigation landmark. Defaults to "Subsection navigation"; name it after the section.',
+      table: { category: 'Accessibility' },
+    },
+    children: {
+      control: false,
+      description: 'The TabNavLink tabs.',
+      table: { category: 'Content' },
+    },
+    className: { table: { disable: true } },
   },
   render: (args) => (
     <TabNav {...args}>
@@ -135,153 +386,4 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  parameters: { layout: 'padded' },
-  render: () => (
-    <div className='flex flex-col gap-10'>
-      <section>
-        <h3 className='mb-3 font-bold text-foreground'>Current page</h3>
-        <TabNav currentHref={CURRENT} aria-label='Colour'>
-          {PAGES.map((page) => (
-            <TabNavLink key={page.href} href={page.href}>
-              {page.title}
-            </TabNavLink>
-          ))}
-        </TabNav>
-      </section>
-
-      <section>
-        <h3 className='mb-3 font-bold text-foreground'>
-          No current page — an href the bar does not list
-        </h3>
-        <TabNav currentHref='/somewhere-else' aria-label='Colour, nothing current'>
-          {PAGES.map((page) => (
-            <TabNavLink key={page.href} href={page.href}>
-              {page.title}
-            </TabNavLink>
-          ))}
-        </TabNav>
-      </section>
-
-      <section>
-        <h3 className='mb-3 font-bold text-foreground'>
-          Explicit <code>current</code> — the escape hatch for prefix matching
-        </h3>
-        <TabNav aria-label='Colour, explicitly marked'>
-          {PAGES.map((page) => (
-            <TabNavLink
-              key={page.href}
-              href={page.href}
-              current={page.href === '/colour/data-visualisation'}
-            >
-              {page.title}
-            </TabNavLink>
-          ))}
-        </TabNav>
-      </section>
-
-      <section>
-        <h3 className='mb-3 font-bold text-foreground'>Without the rule</h3>
-        <TabNav currentHref={CURRENT} border={false} aria-label='Colour, no rule'>
-          {PAGES.map((page) => (
-            <TabNavLink key={page.href} href={page.href}>
-              {page.title}
-            </TabNavLink>
-          ))}
-        </TabNav>
-      </section>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  parameters: { layout: 'padded' },
-  render: () => (
-    <TabNav currentHref={CURRENT} aria-label='Colour'>
-      {PAGES.map((page) => (
-        <TabNavLink key={page.href} href={page.href}>
-          {page.title}
-        </TabNavLink>
-      ))}
-    </TabNav>
-  ),
-  play: async ({ canvasElement }) => {
-    const nav = getNav(canvasElement)
-
-    // The bar must be its own scroll container, or a long section overflows
-    // the page instead of scrolling within the bar.
-    const overflowX = getComputedStyle(nav).overflowX
-    if (overflowX !== 'auto' && overflowX !== 'scroll') {
-      throw new Error(`Expected the bar to scroll, received overflow-x "${overflowX}".`)
-    }
-
-    // Current state must not be colour-only: the marker rule carries it too.
-    const active = nav.querySelector<HTMLElement>('[data-active]')
-    if (!active) {
-      throw new Error('Could not find the current tab.')
-    }
-    if (getComputedStyle(active).borderBottomWidth !== '2px') {
-      throw new Error(
-        `Expected a 2px marker rule on the current tab, received "${getComputedStyle(active).borderBottomWidth}".`,
-      )
-    }
-
-    // The idle tabs draw the rule too, in transparent, so becoming current
-    // never changes a tab's size and the bar cannot reflow.
-    const idle = nav.querySelector<HTMLElement>('a:not([data-active])')
-    if (!idle) {
-      throw new Error('Could not find an idle tab.')
-    }
-    if (getComputedStyle(idle).borderBottomWidth !== '2px') {
-      throw new Error(
-        `Expected idle tabs to reserve the marker rule, received "${getComputedStyle(idle).borderBottomWidth}".`,
-      )
-    }
-
-    // The marker must sit ON the list's rule, not float a hairline above it.
-    // `-mb-px` pulls the 2px marker down over the list's 1px border so the two
-    // read as one edge; if that margin is ever dropped or the list's border
-    // moves, the tab's bottom stops coinciding with the list's and the bar
-    // grows a visible seam. Geometry rather than a screenshot, so it keeps
-    // holding in CI.
-    const list = nav.querySelector<HTMLElement>('[data-slot="tab-nav-list"]')
-    if (!list) {
-      throw new Error('Could not find the list.')
-    }
-    const gap = Math.abs(
-      active.getBoundingClientRect().bottom - list.getBoundingClientRect().bottom,
-    )
-    if (gap > 0.5) {
-      throw new Error(
-        `Expected the marker rule to sit on the list's rule, but the tab's bottom is ${gap.toFixed(2)}px off it.`,
-      )
-    }
-  },
-}
-
-// ─── Type guards ──────────────────────────────────────────────────────────────
-
-/**
- * `TabNavLink` must not accept `as`. `Link` strips `href` from any non-anchor
- * intrinsic, so `as='button'` typechecked and rendered
- * `<button href=null aria-current='page'>` — a control that could not navigate
- * while announcing itself as the current page (WCAG 2.2, 4.1.2).
- *
- * Not a story: it is never exported, so Storybook does not collect it. Stories
- * are covered by `tsc --noEmit`, so if `as` is ever re-added to the props the
- * directive below stops suppressing anything and the build fails on the unused
- * `@ts-expect-error` — which is the point of writing it this way.
- */
-function assertAsIsNotAccepted() {
-  return (
-    <TabNav>
-      {/* @ts-expect-error `as` is deliberately omitted from TabNavLinkProps. */}
-      <TabNavLink href='/a' as='button'>
-        Never rendered
-      </TabNavLink>
-    </TabNav>
-  )
-}
-
-void assertAsIsNotAccepted
+export const Playground: Story = {}

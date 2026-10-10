@@ -12,12 +12,25 @@
  * surfaces. ExternalLink wraps Link with the standard NSW-external-link
  * recipe (target="_blank", rel, trailing icon, sr-only suffix). These
  * stories are intended for design QA and CSS refactor regression review.
+ *
+ * The first group renders each section of the docs page on its own canvas
+ * (the sections are exported from link.stories.tsx). Where a section shares
+ * its name with one of the review stories below, it is suffixed "(docs)".
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { forwardRef, type ReactNode } from 'react'
 
 import { ExternalLink, Link, LinkProvider, type LinkProps } from './link.js'
+import {
+  DefaultSection,
+  ExternalSection,
+  InContextSection,
+  RenderedAsAButtonSection,
+  StatesSection,
+  VariantsSection,
+  WithLinkProviderSection,
+} from './link.stories.js'
 import { docsTemplate } from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -80,6 +93,28 @@ const MockNextLink = forwardRef<HTMLAnchorElement, React.ComponentPropsWithoutRe
   },
 )
 
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const DocsDefault: Story = { name: 'Default', render: () => <DefaultSection /> }
+
+export const DocsVariants: Story = { name: 'Variants (docs)', render: () => <VariantsSection /> }
+
+export const DocsExternal: Story = { name: 'External (docs)', render: () => <ExternalSection /> }
+
+export const RenderedAsAButton: Story = {
+  name: 'Rendered as a button',
+  render: () => <RenderedAsAButtonSection />,
+}
+
+export const DocsWithLinkProvider: Story = {
+  name: 'With LinkProvider (docs)',
+  render: () => <WithLinkProviderSection />,
+}
+
+export const DocsStates: Story = { name: 'States (docs)', render: () => <StatesSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
+
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Variants: Story = {
@@ -99,7 +134,7 @@ export const Variants: Story = {
   },
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Variant</span>
         <span className='text-center'>Default</span>
         <span className='text-center'>Hover</span>
@@ -110,7 +145,7 @@ export const Variants: Story = {
       {linkVariantList.map((variant) => (
         <VariantSurface key={`variant-row-${variant}`} variant={variant}>
           <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold capitalize ${titleClasses(variant)}`}>
+            <span className={`text-base font-semibold capitalize ${titleClasses(variant)}`}>
               {variant}
             </span>
             <div className='text-center'>
@@ -284,12 +319,12 @@ export const States: Story = {
   render: () => (
     <div className='space-y-3'>
       <div className='flex items-center gap-4'>
-        <span className='w-24 text-xs font-semibold text-muted-foreground'>Default</span>
+        <span className='w-24 text-base font-semibold text-muted-foreground'>Default</span>
         <Link href='/default-state'>About NSW Government</Link>
       </div>
 
       <div className='flex items-center gap-4'>
-        <span className='w-24 text-xs font-semibold text-muted-foreground'>Hover</span>
+        <span className='w-24 text-base font-semibold text-muted-foreground'>Hover</span>
         <Link
           href='/hover-state'
           className='bg-(--link-halo) decoration-2 shadow-[0_-2px_0_var(--link-halo),0_4px_0_var(--link-halo)]'
@@ -299,7 +334,7 @@ export const States: Story = {
       </div>
 
       <div className='flex items-center gap-4'>
-        <span className='w-24 text-xs font-semibold text-muted-foreground'>Focus</span>
+        <span className='w-24 text-base font-semibold text-muted-foreground'>Focus</span>
         <Link
           href='/focus-state'
           className='outline outline-2 outline-offset-2 outline-(--link-color)'
@@ -309,7 +344,7 @@ export const States: Story = {
       </div>
 
       <div className='flex items-center gap-4'>
-        <span className='w-24 text-xs font-semibold text-muted-foreground'>Active</span>
+        <span className='w-24 text-base font-semibold text-muted-foreground'>Active</span>
         <Link
           href='/active-state'
           className='bg-(--link-halo-active) decoration-2 shadow-[0_-2px_0_var(--link-halo-active),0_4px_0_var(--link-halo-active)]'

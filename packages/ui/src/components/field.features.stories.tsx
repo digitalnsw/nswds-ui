@@ -11,6 +11,10 @@
  * spacing, orientation, or error styling are easy to spot in visual diffs.
  *
  * Accessibility-specific assertions live in field.accessibility.stories.tsx.
+ *
+ * After the matrices, one story per section of the docs page, rendering the
+ * same examples so a feature can be opened on its own canvas. Where a section
+ * shares a matrix's name, its story is suffixed "(docs section)".
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -25,6 +29,15 @@ import {
   FieldSeparator,
   FieldSet,
 } from './field.js'
+import {
+  DefaultSection,
+  ErrorsSection,
+  GroupingSection,
+  InContextSection,
+  OptionsSection,
+  OrientationsSection,
+  StatesSection,
+} from './field.stories.js'
 import { Input } from './input.js'
 import { docsTemplate } from './story-helpers.js'
 
@@ -63,7 +76,7 @@ export const Orientations: Story = {
   render: () => (
     <div className='w-full max-w-2xl space-y-8'>
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Vertical</p>
+        <p className='text-base font-semibold text-foreground'>Vertical</p>
         <Field orientation='vertical'>
           <FieldLabel htmlFor='features-vertical'>Email</FieldLabel>
           <Input id='features-vertical' type='email' placeholder='you@example.com' />
@@ -72,7 +85,7 @@ export const Orientations: Story = {
       </section>
 
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Horizontal</p>
+        <p className='text-base font-semibold text-foreground'>Horizontal</p>
         <Field orientation='horizontal'>
           <FieldLabel htmlFor='features-horizontal'>Email</FieldLabel>
           <Input id='features-horizontal' type='email' placeholder='you@example.com' />
@@ -80,7 +93,7 @@ export const Orientations: Story = {
       </section>
 
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Responsive</p>
+        <p className='text-base font-semibold text-foreground'>Responsive</p>
         <FieldGroup>
           <Field orientation='responsive'>
             <FieldLabel htmlFor='features-responsive'>Email</FieldLabel>
@@ -147,7 +160,7 @@ export const FieldSetWithLegend: Story = {
         story: docsTemplate({
           what: 'FieldSet wraps related Fields under a shared FieldLegend, demonstrating both legend variants (legend and label) and showing several Fields nested inside.',
           why: 'Grouping related controls under a legend gives them a single programmatic name in the accessibility tree — required for radio groups, checkbox groups, and any logical sub-section of a form.',
-          how: 'Inspect the rendered fieldset element: it carries data-slot="field-set" and contains a <legend> with data-slot="field-legend". Both legend variants now render at text-sm (14px); the variant prop changes the line-height — `legend` uses the default leading, `label` uses the relaxed leading to match FieldLabel-style spacing.',
+          how: 'Inspect the rendered fieldset element: it carries data-slot="field-set" and contains a <legend> with data-slot="field-legend". Both legend variants now render at 14px; the variant prop changes the line-height — `legend` uses the default leading, `label` uses the relaxed leading to match FieldLabel-style spacing.',
           caveat:
             'FieldLegend must be a direct child of <fieldset> — placing it elsewhere breaks the native legend association even though the visual styling still applies.',
         }),
@@ -251,7 +264,7 @@ export const States: Story = {
   render: () => (
     <div className='w-full max-w-2xl space-y-8'>
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Default</p>
+        <p className='text-base font-semibold text-foreground'>Default</p>
         <Field>
           <FieldLabel htmlFor='features-state-default'>Email</FieldLabel>
           <Input id='features-state-default' type='email' placeholder='you@example.com' />
@@ -260,7 +273,7 @@ export const States: Story = {
       </section>
 
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Disabled</p>
+        <p className='text-base font-semibold text-foreground'>Disabled</p>
         <Field data-disabled='true'>
           <FieldLabel htmlFor='features-state-disabled'>Email</FieldLabel>
           <Input id='features-state-disabled' type='email' placeholder='you@example.com' disabled />
@@ -269,7 +282,7 @@ export const States: Story = {
       </section>
 
       <section className='space-y-2'>
-        <p className='text-sm font-semibold text-foreground'>Invalid</p>
+        <p className='text-base font-semibold text-foreground'>Invalid</p>
         <Field data-invalid='true'>
           <FieldLabel htmlFor='features-state-invalid'>Email</FieldLabel>
           <Input
@@ -284,3 +297,22 @@ export const States: Story = {
     </div>
   ),
 }
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const DocsOrientations: Story = {
+  name: 'Orientations (docs section)',
+  render: () => <OrientationsSection />,
+}
+
+export const DocsStates: Story = { name: 'States (docs section)', render: () => <StatesSection /> }
+
+export const Errors: Story = { render: () => <ErrorsSection /> }
+
+export const Grouping: Story = { render: () => <GroupingSection /> }
+
+export const Options: Story = { render: () => <OptionsSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

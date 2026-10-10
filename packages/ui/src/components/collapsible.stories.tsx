@@ -1,40 +1,292 @@
 /**
- * Collapsible — an expandable section on the Base UI collapsible primitive.
+ * Collapsible — the story set for docs/reference-storybook-standard.md.
+ *
+ *   Components/Collapsible                → this file: Docs, Default, Playground
+ *   Components/Collapsible/Features       → collapsible.features.stories.tsx
+ *   Components/Collapsible/Accessibility  → collapsible.accessibility.stories.tsx
+ *   Components/Collapsible/Tests          → collapsible.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Base UI owns the disclosure ARIA wiring (aria-expanded / aria-controls) and
- * keyboard handling; we only style the trigger and panel.
+ * keyboard handling; the stories only style the trigger and panel.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 
+import { IconExpandMore } from '../icons/expand-more.js'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const triggerClasses =
-  'flex w-full items-center justify-between rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground'
-const panelClasses =
-  'mt-2 rounded-md border border-border bg-muted p-4 text-sm text-muted-foreground'
+  'group flex w-full items-center justify-between gap-4 rounded-sm px-3 py-2 text-start font-semibold text-primary hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50'
+const panelClasses = 'px-3 pt-2 pb-3 text-foreground'
+
+function Chevron() {
+  return (
+    <IconExpandMore
+      aria-hidden='true'
+      className='size-6 shrink-0 group-data-[panel-open]:rotate-180 motion-safe:transition-transform'
+    />
+  )
+}
+
+function Disclosure({
+  defaultOpen,
+  disabled,
+  label,
+}: {
+  defaultOpen?: boolean
+  disabled?: boolean
+  label: string
+}) {
+  return (
+    <Collapsible defaultOpen={defaultOpen} disabled={disabled} className='w-60'>
+      <CollapsibleTrigger className={triggerClasses}>
+        {label}
+        <Chevron />
+      </CollapsibleTrigger>
+      <CollapsibleContent className={panelClasses}>
+        Bring photo ID and proof of your NSW address.
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          A collapsible starts closed. Pass <code>defaultOpen</code> to start it open when most
+          people will need what is inside. The panel only mounts while open. <code>disabled</code>{' '}
+          stops the trigger toggling it, in whichever state it is in.
+        </>
+      }
+    >
+      <Example
+        className='items-start'
+        code={`<Collapsible defaultOpen>
+  <CollapsibleTrigger>What to bring</CollapsibleTrigger>
+  <CollapsibleContent>…</CollapsibleContent>
+</Collapsible>`}
+      >
+        <ExampleCell label='closed (default)'>
+          <Disclosure label='What to bring' />
+        </ExampleCell>
+        <ExampleCell label='defaultOpen'>
+          <Disclosure label='What to bring' defaultOpen />
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <Disclosure label='What to bring' disabled />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className='w-80 space-y-3'>
+      <Collapsible open={open} onOpenChange={setOpen}>
+        <CollapsibleTrigger className={triggerClasses}>
+          Opening hours
+          <Chevron />
+        </CollapsibleTrigger>
+        <CollapsibleContent className={panelClasses}>
+          Monday to Friday, 8:30am to 5pm. Closed on public holidays.
+        </CollapsibleContent>
+      </Collapsible>
+      <p className='text-muted-foreground'>The panel is {open ? 'open' : 'closed'}.</p>
+    </div>
+  )
+}
+
+export function ControlledSection() {
+  return (
+    <ExampleSection
+      title='Controlled'
+      description={
+        <>
+          Pass <code>open</code> and <code>onOpenChange</code> to hold the state yourself — to open
+          the panel from elsewhere on the page, or to remember it between visits.
+        </>
+      }
+    >
+      <Example
+        code={`const [open, setOpen] = useState(false)
+
+<Collapsible open={open} onOpenChange={setOpen}>…</Collapsible>`}
+      >
+        <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function StylingSection() {
+  return (
+    <ExampleSection
+      title='Styling'
+      description={
+        <>
+          Collapsible ships no styles: Base UI supplies the behaviour and the ARIA, and the trigger
+          and panel take your classes. Style the open state from <code>data-panel-open</code> on the
+          trigger — the chevron below turns with <code>group-data-[panel-open]:rotate-180</code> —
+          and give the trigger a visible focus outline, because nothing else will.
+        </>
+      }
+    >
+      <Example
+        code={`<CollapsibleTrigger className="group flex w-full justify-between focus-visible:outline-2 focus-visible:outline-ring">
+  Opening hours
+  <IconExpandMore aria-hidden="true" className="group-data-[panel-open]:rotate-180" />
+</CollapsibleTrigger>`}
+      >
+        <ExampleCell label='styled trigger and panel'>
+          <Disclosure label='Opening hours' defaultOpen />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Optional detail tucked under an application summary, so the summary stays short for the people who do not need it.'
+    >
+      <Example
+        layout='fill'
+        code={`<Collapsible>
+  <CollapsibleTrigger>Who is exempt from the fee</CollapsibleTrigger>
+  <CollapsibleContent>You do not need to pay if …</CollapsibleContent>
+</Collapsible>`}
+      >
+        <div className='max-w-md space-y-3 rounded-md p-6 ring-1 ring-foreground/10'>
+          <p className='font-semibold'>Recreational fishing licence</p>
+          <p className='text-muted-foreground'>3 years · $85.00</p>
+          <Collapsible>
+            <CollapsibleTrigger className={triggerClasses}>
+              Who is exempt from the fee
+              <Chevron />
+            </CollapsibleTrigger>
+            <CollapsibleContent className={panelClasses}>
+              You do not need to pay if you are under 18, or if you hold a Pensioner Concession
+              Card.
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function CollapsibleDocs() {
+  return (
+    <DocsPage
+      title='Collapsible'
+      npm={['Collapsible', 'CollapsibleTrigger', 'CollapsibleContent']}
+      registry='collapsible'
+      summary={
+        <>
+          A single trigger that shows and hides one panel of content. Base UI wires up the
+          disclosure semantics and keyboard support; you style the <strong>trigger</strong> and the{' '}
+          <strong>panel</strong>.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'One piece of optional detail most people can skip.',
+          'A “Show more” for a long summary or list.',
+          'An advanced-options panel under a short form.',
+        ]}
+        avoid={[
+          'Several related sections that open and close together — use Accordion.',
+          'Switching between parallel views of the same thing — use Tabs.',
+          'Information everyone needs to read — show it on the page.',
+        ]}
+      />
+      <StatesSection />
+      <ControlledSection />
+      <StylingSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Collapsible',
   component: Collapsible,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
-    docs: {
-      description: {
-        component:
-          'An expandable/collapsible disclosure section. Base UI manages the ARIA and keyboard behaviour; the panel mounts only while open.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: CollapsibleDocs },
   },
-  render: (args) => (
-    <Collapsible {...args} className='w-full max-w-md'>
-      <CollapsibleTrigger className={triggerClasses}>Toggle details</CollapsibleTrigger>
-      <CollapsibleContent className={panelClasses}>
-        Hidden content revealed when the trigger is activated.
-      </CollapsibleContent>
-    </Collapsible>
-  ),
+  args: {
+    defaultOpen: false,
+    disabled: false,
+    className: 'w-full max-w-md',
+    children: [
+      <CollapsibleTrigger key='trigger' className={triggerClasses}>
+        What to bring
+        <Chevron />
+      </CollapsibleTrigger>,
+      <CollapsibleContent key='content' className={panelClasses}>
+        Bring photo ID and proof of your NSW address.
+      </CollapsibleContent>,
+    ],
+  },
+  argTypes: {
+    children: {
+      control: false,
+      description: 'A CollapsibleTrigger and the CollapsibleContent it shows and hides.',
+      table: { category: 'Content' },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the panel starts open (uncontrolled).',
+      table: { category: 'Behavior' },
+    },
+    open: {
+      control: 'boolean',
+      description: 'Whether the panel is open (controlled). Pair with `onOpenChange`.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Stops the trigger from opening or closing the panel.',
+      table: { category: 'Behavior' },
+    },
+    onOpenChange: {
+      description: 'Called when the panel opens or closes.',
+      table: { category: 'Events' },
+    },
+    className: { table: { disable: true } },
+  },
 } satisfies Meta<typeof Collapsible>
 
 export default meta
@@ -52,37 +304,4 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <div className='flex w-full max-w-md flex-col gap-8'>
-      {[false, true].map((open) => (
-        <Collapsible key={String(open)} defaultOpen={open}>
-          <CollapsibleTrigger className={triggerClasses}>
-            {open ? 'Open by default' : 'Closed by default'}
-          </CollapsibleTrigger>
-          <CollapsibleContent className={panelClasses}>
-            Panel content for the {open ? 'open' : 'closed'} example.
-          </CollapsibleContent>
-        </Collapsible>
-      ))}
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  args: { defaultOpen: true },
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: with the panel open, the --muted token
-    // resolves to a real, non-transparent colour.
-    const panel = canvasElement.querySelector<HTMLElement>('[data-slot="collapsible-content"]')
-    if (!panel) throw new Error('Open collapsible panel not found.')
-    const bg = getComputedStyle(panel).backgroundColor
-    if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected the --muted token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
-      )
-    }
-  },
-}
+export const Playground: Story = {}

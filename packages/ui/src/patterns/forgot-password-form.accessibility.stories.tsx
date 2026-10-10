@@ -4,6 +4,7 @@
  * A single-field reset-request pattern. Covered here:
  *
  *   1.3.1 Info and Relationships          (A)  — LabelAssociation
+ *   1.3.5 Identify Input Purpose          (AA) — IdentifyInputPurpose
  *   4.1.2 Name, Role, Value               (A)  — NameRoleValue
  *
  * The form sets no hardcoded id: the Field associates the label with the email
@@ -12,13 +13,15 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 
 import { wcagStoryMeta } from '../components/story-helpers.js'
 import { ForgotPasswordForm } from './forgot-password-form.js'
 
 const meta = {
-  title: 'Components/ForgotPasswordForm/Accessibility',
+  title: 'Patterns/ForgotPasswordForm/Accessibility',
   component: ForgotPasswordForm,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -32,7 +35,7 @@ type Story = StoryObj<typeof meta>
 // ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
 
 export const LabelAssociation: Story = {
-  name: '1.3.1 Info and Relationships',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -69,7 +72,7 @@ export const LabelAssociation: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {
@@ -108,5 +111,36 @@ export const NameRoleValue: Story = {
         `WCAG 4.1.2: submit button accessible name should contain "Send reset link", got "${submitName}".`,
       )
     }
+  },
+}
+
+// ─── 1.3.5 — Identify Input Purpose ───────────────────────────────────────────
+
+export const IdentifyInputPurpose: Story = {
+  name: 'Identify Input Purpose — 1.3.5',
+  parameters: {
+    wcag: ['1.3.5'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.3.5',
+          why: 'Someone locked out of an account is the reader least able to retype an address from memory; an email input that says what it collects lets the browser fill it in.',
+          how: 'Inspect the input: it carries autocomplete="email". The play() finds it by its visible label and asserts the token.',
+          caveat:
+            'email, not username: this step asks for a contact address to send a link to, not the identifier of a sign-in. axe cannot catch a missing token, because its autocomplete-valid rule only checks values that are present.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-md'>
+      <ForgotPasswordForm />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByLabelText('Email')).toHaveAttribute(
+      'autocomplete',
+      'email',
+    )
   },
 }

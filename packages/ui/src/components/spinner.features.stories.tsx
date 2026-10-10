@@ -15,6 +15,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Button } from './button.js'
 import { Spinner } from './spinner.js'
+import {
+  ColoursSection,
+  DefaultSection,
+  InAButtonSection,
+  InContextSection,
+  SizesSection,
+  UsageSection,
+} from './spinner.stories.js'
 import { ThemeSurface, docsTemplate } from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -37,6 +45,33 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+// One story per section of the docs page, rendering the same examples.
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const DocsSizes: Story = {
+  name: 'Sizes (docs)',
+  render: () => <SizesSection />,
+}
+
+export const Usage: Story = { render: () => <UsageSection /> }
+
+export const DocsColours: Story = {
+  name: 'Colours (docs)',
+  render: () => <ColoursSection />,
+}
+
+export const DocsInAButton: Story = {
+  name: 'In a button (docs)',
+  render: () => <InAButtonSection />,
+}
+
+export const InContext: Story = {
+  name: 'In context',
+  render: () => <InContextSection />,
+}
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -61,7 +96,7 @@ export const Sizes: Story = {
         {sizes.map((size) => (
           <div key={size} className='flex flex-col items-center gap-2'>
             <Spinner size={size} aria-label={`Loading (${size})`} />
-            <span className='text-xs text-muted-foreground'>{size}</span>
+            <span className='text-base text-muted-foreground'>{size}</span>
           </div>
         ))}
       </div>
@@ -151,7 +186,7 @@ export const WithText: Story = {
     <div className='w-full max-w-3xl space-y-4 rounded-sm border border-border bg-background p-6'>
       <div className='flex items-center gap-3'>
         <Spinner size='sm' aria-label='Loading' />
-        <span className='text-sm text-foreground'>Loading…</span>
+        <span className='text-base text-foreground'>Loading…</span>
       </div>
       <div className='flex items-center gap-3'>
         <Spinner size='md' aria-label='Loading results' />
@@ -187,7 +222,7 @@ export const Colours: Story = {
           {(['primary', 'accent'] as const).map((color) => (
             <div key={color} className='flex flex-col items-center gap-2'>
               <Spinner color={color} aria-label={`Loading (${color})`} />
-              <span className='text-xs text-muted-foreground'>{color}</span>
+              <span className='text-base text-muted-foreground'>{color}</span>
             </div>
           ))}
         </div>
@@ -195,7 +230,7 @@ export const Colours: Story = {
       <ThemeSurface color='secondary'>
         <div className='flex flex-col items-center gap-2'>
           <Spinner color='white' aria-label='Loading (white)' />
-          <span className='text-xs text-grey-200'>white</span>
+          <span className='text-base text-grey-200'>white</span>
         </div>
       </ThemeSurface>
     </div>
@@ -223,7 +258,7 @@ export const ColourOnDark: Story = {
         {sizes.map((size) => (
           <div key={size} className='flex flex-col items-center gap-2'>
             <Spinner size={size} color='white' aria-label={`Loading (${size})`} />
-            <span className='text-xs text-grey-200'>{size}</span>
+            <span className='text-base text-grey-200'>{size}</span>
           </div>
         ))}
       </div>

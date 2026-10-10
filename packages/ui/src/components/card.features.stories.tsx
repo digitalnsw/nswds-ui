@@ -23,6 +23,14 @@ import {
   CardHeader,
   CardTitle,
 } from './card.js'
+import {
+  CompositionSection,
+  ContentOnlySection,
+  DefaultSection,
+  InContextSection,
+  SizesSection,
+  WithAnImageSection,
+} from './card.stories.js'
 import { docsTemplate } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
@@ -41,6 +49,27 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+// One story per section of the docs page, rendering the same examples.
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const DocsSizes: Story = { name: 'Sizes (docs)', render: () => <SizesSection /> }
+
+export const DocsComposition: Story = {
+  name: 'Composition (docs)',
+  render: () => <CompositionSection />,
+}
+
+export const DocsWithAnImage: Story = {
+  name: 'With an image (docs)',
+  render: () => <WithAnImageSection />,
+}
+
+export const ContentOnly: Story = { name: 'Content only', render: () => <ContentOnlySection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -96,7 +125,7 @@ export const Composition: Story = {
         <CardTitle>Project status</CardTitle>
         <CardDescription>Quarterly summary across active workstreams.</CardDescription>
         <CardAction>
-          <button className='text-xs font-medium text-primary underline-offset-4 hover:underline'>
+          <button className='text-base font-medium text-primary underline-offset-4 hover:underline'>
             View all
           </button>
         </CardAction>
@@ -186,7 +215,7 @@ export const CardWithoutDescription: Story = {
       <CardHeader>
         <CardTitle>Single-row header</CardTitle>
         <CardAction>
-          <button className='text-xs font-medium text-primary underline-offset-4 hover:underline'>
+          <button className='text-base font-medium text-primary underline-offset-4 hover:underline'>
             Edit
           </button>
         </CardAction>

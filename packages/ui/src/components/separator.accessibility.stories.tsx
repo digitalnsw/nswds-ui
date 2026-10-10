@@ -16,6 +16,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 
 import { Separator } from './separator.js'
 import { wcagStoryMeta } from './story-helpers.js'
@@ -23,6 +24,7 @@ import { wcagStoryMeta } from './story-helpers.js'
 const meta = {
   title: 'Components/Separator/Accessibility',
   component: Separator,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -65,23 +67,23 @@ export const InfoAndRelationships: Story = {
   render: () => (
     <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Semantic (role=&quot;separator&quot;)
         </h4>
-        <p className='text-sm text-foreground'>Personal details</p>
+        <p className='text-base text-foreground'>Personal details</p>
         <Separator data-testid='semantic-separator' />
-        <p className='text-sm text-foreground'>Account settings</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Account settings</p>
+        <p className='text-base text-muted-foreground'>
           Exposed to assistive tech as a region boundary.
         </p>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>Decorative (hidden from AT)</h4>
-        <p className='text-sm text-foreground'>Marketing section</p>
+        <h4 className='text-base font-semibold text-foreground'>Decorative (hidden from AT)</h4>
+        <p className='text-base text-foreground'>Marketing section</p>
         <Separator decorative data-testid='decorative-separator' />
-        <p className='text-sm text-foreground'>Featured products</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Featured products</p>
+        <p className='text-base text-muted-foreground'>
           Pass <code>decorative</code> when the divider is purely visual.
         </p>
       </section>
@@ -125,31 +127,75 @@ export const NonTextContrast: Story = {
   render: () => (
     <div className='space-y-4'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Horizontal on the default background
         </h4>
-        <p className='text-sm text-foreground'>Content above the line</p>
+        <p className='text-base text-foreground'>Content above the line</p>
         <Separator />
-        <p className='text-sm text-foreground'>Content below the line</p>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-foreground'>Content below the line</p>
+        <p className='text-base text-muted-foreground'>
           The horizontal line uses the <code>bg-border</code> token and must measure at least 3:1
           against the surrounding background.
         </p>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Vertical on the default background
         </h4>
         <div className='flex h-12 items-stretch gap-3'>
-          <span className='flex items-center text-sm text-foreground'>Left</span>
+          <span className='flex items-center text-base text-foreground'>Left</span>
           <Separator orientation='vertical' />
-          <span className='flex items-center text-sm text-foreground'>Right</span>
+          <span className='flex items-center text-base text-foreground'>Right</span>
         </div>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           Same token, same minimum 3:1 contrast requirement against the surface behind it.
         </p>
       </section>
     </div>
   ),
+}
+
+export const NameRoleValue: Story = {
+  name: 'Name, Role, Value — 4.1.2',
+  parameters: {
+    wcag: ['4.1.2'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '4.1.2',
+          why: 'A semantic separator is a (non-focusable) widget role, and its orientation is part of what it tells assistive technology. A decorative one must expose nothing at all — an `aria-orientation` left on a `role="none"` element is an invalid attribute that axe reports.',
+          how: 'The play() reads both orientations: the semantic separators carry role="separator" with the matching aria-orientation, and the decorative one carries role="none" with no aria-orientation.',
+          caveat:
+            'Passing role="none" or role="presentation" yourself is treated the same as `decorative`, so the attribute is dropped either way.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='space-y-6'>
+      <div className='w-80 space-y-3'>
+        <p>Personal details</p>
+        <Separator data-testid='horizontal' />
+        <p>Contact details</p>
+      </div>
+      <div className='flex h-12 items-stretch gap-3'>
+        <span className='flex items-center'>Licences</span>
+        <Separator orientation='vertical' data-testid='vertical' />
+        <span className='flex items-center'>Permits</span>
+        <Separator orientation='vertical' decorative data-testid='decorative' />
+        <span className='flex items-center'>Fees</span>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [horizontal, vertical] = within(canvasElement).getAllByRole('separator')
+    await expect(horizontal).toHaveAttribute('aria-orientation', 'horizontal')
+    await expect(vertical).toHaveAttribute('aria-orientation', 'vertical')
+
+    const decorative = getSeparatorByTestId(canvasElement, 'decorative')
+    await expect(decorative).toHaveAttribute('role', 'none')
+    await expect(decorative).not.toHaveAttribute('aria-orientation')
+    await expect(within(canvasElement).getAllByRole('separator')).toHaveLength(2)
+  },
 }

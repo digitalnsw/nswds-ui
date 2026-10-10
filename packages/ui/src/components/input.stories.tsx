@@ -1,16 +1,29 @@
 /**
- * Input — Default + Playground
+ * Input — the docs page, Default and Playground.
  *
- * Sub-groups live in separate story files so Storybook renders them as
- * collapsible sidebar folders:
- *   Components/Input/Features        → input.features.stories.tsx
- *   Components/Input/Accessibility   → input.accessibility.stories.tsx
+ *   Components/Input                → this file
+ *   Components/Input/Features       → input.features.stories.tsx
+ *   Components/Input/Accessibility  → input.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 
+import { Button } from './button.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from './field.js'
 import { Input } from './input.js'
+import { Label } from './label.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const types = [
   'text',
@@ -24,54 +37,301 @@ const types = [
   'file',
 ] as const
 
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          A bordered 48px field on the input surface. Without a visible label it still needs an
+          accessible name, so give it an <code>aria-label</code> — and prefer a real label, below.
+        </>
+      }
+    >
+      <Example
+        code={`<Input type="email" placeholder="you@example.com" aria-label="Email address" />`}
+      >
+        <ExampleCell label='default'>
+          <div className='w-72'>
+            <Input type='email' placeholder='you@example.com' aria-label='Email address' />
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithLabelSection() {
+  return (
+    <ExampleSection
+      title='With label'
+      description={
+        <>
+          Point a <code>Label</code> at the input&apos;s <code>id</code> with <code>htmlFor</code>.
+          The label becomes the input&apos;s accessible name, and clicking it focuses the field.
+        </>
+      }
+    >
+      <Example
+        code={`<Label htmlFor="email">Email address</Label>
+<Input id="email" type="email" placeholder="you@example.com" />`}
+      >
+        <div className='grid w-full max-w-sm gap-2'>
+          <Label htmlFor='input-docs-email'>Email address</Label>
+          <Input id='input-docs-email' type='email' placeholder='you@example.com' />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// The forced focus ring uses the same token the component paints on
+// :focus-visible, so the specimen shows the real ring without stealing focus.
+const forcedFocus = 'outline outline-2 outline-offset-2 outline-(--input-ring)'
+
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          The field shifts to the sunken surface on hover and draws a 2px ring on focus. An invalid
+          field takes a 2px danger border — set <code>aria-invalid</code>, or let{' '}
+          <code>Field invalid</code> set it for you. Prefer read-only over disabled when people
+          still need to read or copy the value.
+        </>
+      }
+    >
+      <Example layout='grid' code={`<Input aria-invalid defaultValue="2OOO" />`}>
+        <ExampleCell label='empty'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, empty' />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='filled'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, filled' defaultValue='2000' />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='focus'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, focused' defaultValue='2000' className={forcedFocus} />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='invalid'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, invalid' aria-invalid defaultValue='2OOO' />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='readOnly'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, read only' readOnly defaultValue='2000' />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <div className='w-72'>
+            <Input aria-label='Postcode, disabled' disabled defaultValue='2000' />
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+const typeSpecimens: Record<(typeof types)[number], { label: string; value?: string }> = {
+  text: { label: 'Full name', value: 'Alex Citizen' },
+  email: { label: 'Email address', value: 'alex@example.com' },
+  password: { label: 'Password', value: 'correct-horse' },
+  search: { label: 'Search NSW Government', value: 'Driver licence' },
+  tel: { label: 'Mobile number', value: '0400 000 000' },
+  url: { label: 'Business website', value: 'https://www.nsw.gov.au' },
+  number: { label: 'Number of people in your household', value: '3' },
+  date: { label: 'Date of birth', value: '1990-07-14' },
+  file: { label: 'Upload your proof of address' },
+}
+
+export function TypesSection() {
+  return (
+    <ExampleSection
+      title='Types'
+      description={
+        <>
+          Use the HTML <code>type</code> that matches the answer: it brings up the right keyboard on
+          phones, and the browser can check and autofill the value. Every type keeps the same
+          height, border and focus ring.
+        </>
+      }
+    >
+      <Example layout='grid' code={`<Input type="tel" autoComplete="tel" />`}>
+        {types.map((type) => (
+          <ExampleCell key={type} label={type}>
+            <div className='w-72'>
+              <Input
+                type={type}
+                aria-label={typeSpecimens[type].label}
+                defaultValue={typeSpecimens[type].value}
+              />
+            </div>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithFieldSection() {
+  return (
+    <ExampleSection
+      title='With Field'
+      description={
+        <>
+          Give every input a visible label. Inside a <code>Field</code>, <code>FieldLabel</code>,{' '}
+          <code>FieldDescription</code> and <code>FieldError</code> are wired to the input for you —
+          no <code>id</code>, <code>htmlFor</code> or <code>aria-describedby</code> to keep in step.
+          A placeholder is not a label: it disappears as soon as someone types.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`<Field invalid>
+  <FieldLabel>Postcode</FieldLabel>
+  <Input inputMode="numeric" autoComplete="postal-code" />
+  <FieldDescription>Your 4-digit NSW postcode.</FieldDescription>
+  <FieldError>Enter a postcode with 4 numbers, like 2000.</FieldError>
+</Field>`}
+      >
+        <div className='grid w-full max-w-sm gap-8'>
+          <Field>
+            <FieldLabel>Postcode</FieldLabel>
+            <Input inputMode='numeric' autoComplete='postal-code' />
+            <FieldDescription>Your 4-digit NSW postcode.</FieldDescription>
+          </Field>
+          <Field invalid>
+            <FieldLabel>Postcode</FieldLabel>
+            <Input inputMode='numeric' autoComplete='postal-code' defaultValue='2OOO' />
+            <FieldDescription>Your 4-digit NSW postcode.</FieldDescription>
+            <FieldError>Enter a postcode with 4 numbers, like 2000.</FieldError>
+          </Field>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          A contact details step. Each field states its purpose with <code>autoComplete</code>, so
+          browsers and password managers can fill it in.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<FieldGroup>
+  <Field>
+    <FieldLabel>Full name</FieldLabel>
+    <Input autoComplete="name" />
+  </Field>
+  <Field>
+    <FieldLabel>Email address</FieldLabel>
+    <Input type="email" autoComplete="email" />
+    <FieldDescription>We will send your confirmation here.</FieldDescription>
+  </Field>
+  …
+</FieldGroup>`}
+      >
+        <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>Full name</FieldLabel>
+              <Input autoComplete='name' />
+            </Field>
+            <Field>
+              <FieldLabel>Email address</FieldLabel>
+              <Input type='email' autoComplete='email' />
+              <FieldDescription>We will send your confirmation here.</FieldDescription>
+            </Field>
+            <Field>
+              <FieldLabel>Mobile number</FieldLabel>
+              <Input type='tel' autoComplete='tel' />
+            </Field>
+            <div>
+              <Button type='submit'>Continue</Button>
+            </div>
+          </FieldGroup>
+        </form>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function InputDocs() {
+  return (
+    <DocsPage
+      title='Input'
+      npm='Input'
+      registry='input'
+      summary={
+        <>
+          Single-line text inputs accept short, free-form data such as a name, email address, or
+          search query. Always pair an input with a visible label so the field has an accessible
+          name, and use the matching HTML type so browsers can offer the correct keyboard and
+          validation behaviour. It is 48px tall, takes its colours from the shared{' '}
+          <code>--input-*</code> tokens, and works with <code>Field</code> for its label, hint and
+          error.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Short answers someone types: a name, an email address, a phone number, a postcode.',
+          'A search box, with a visible label or an aria-label.',
+          'A number or date where typing is quicker than picking.',
+        ]}
+        avoid={[
+          'The answer runs to more than one line — use Textarea.',
+          'The answer comes from a known list — use Select, NativeSelect or Combobox.',
+          'A unit, icon or button belongs inside the border — use InputGroup.',
+          'A one-time verification code — use InputOTP.',
+        ]}
+      />
+      <DefaultSection />
+      <WithLabelSection />
+      <StatesSection />
+      <TypesSection />
+      <WithFieldSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Components/Input',
   component: Input,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>Input</h1>
-            <p className='text-base text-muted-foreground'>
-              Single-line text inputs accept short, free-form data such as a name, email address, or
-              search query. Always pair an input with a visible label so the field has an accessible
-              name, and use the matching HTML type so browsers can offer the correct keyboard and
-              validation behaviour.
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Default</h2>
-            <Input placeholder='you@example.com' />
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>With label</h2>
-            <div className='grid w-full max-w-sm gap-1.5'>
-              <label htmlFor='input-docs-email' className='text-sm font-medium'>
-                Email address
-              </label>
-              <Input id='input-docs-email' type='email' placeholder='you@example.com' />
-            </div>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'Single-line text input wrapping the Base UI Input primitive with token-driven NSW styling. Supports every HTML input type, hover and focus indicators, and an aria-invalid error state for inline form validation.',
-      },
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: InputDocs },
   },
   args: {
-    type: 'text',
-    placeholder: 'you@example.com',
+    type: 'email',
+    'aria-label': 'Email address',
+    autoComplete: 'email',
     disabled: false,
     onChange: fn(),
   },
@@ -80,12 +340,12 @@ const meta = {
       control: 'select',
       options: types,
       description:
-        'Native HTML input type — controls mobile keyboard, parsing, and browser validation.',
+        'Native HTML input type — controls the mobile keyboard, parsing and browser validation.',
       table: { category: 'Behavior' },
     },
     placeholder: {
       control: 'text',
-      description: 'Placeholder text shown when the input is empty.',
+      description: 'Example text shown while the input is empty. Never a substitute for a label.',
       table: { category: 'Content' },
     },
     defaultValue: {
@@ -98,6 +358,11 @@ const meta = {
       description: 'Controlled value of the input. Pair with onChange.',
       table: { category: 'Content' },
     },
+    autoComplete: {
+      control: 'text',
+      description: 'The purpose of the field (name, email, tel, postal-code…), for autofill.',
+      table: { category: 'Behavior' },
+    },
     disabled: {
       control: 'boolean',
       description:
@@ -106,7 +371,7 @@ const meta = {
     },
     readOnly: {
       control: 'boolean',
-      description: 'Prevents editing while still allowing focus, selection, and copy.',
+      description: 'Prevents editing while still allowing focus, selection and copy.',
       table: { category: 'Behavior' },
     },
     required: {
@@ -120,72 +385,36 @@ const meta = {
     },
     'aria-invalid': {
       control: 'boolean',
-      description: 'Applies the destructive border and background to indicate validation failure.',
+      description: 'Applies the 2px danger border to indicate a validation failure.',
       table: { category: 'Accessibility' },
     },
     'aria-label': {
       control: 'text',
-      description: 'Accessible name used when there is no associated visible label element.',
+      description: 'Accessible name, when there is no associated visible label.',
       table: { category: 'Accessibility' },
     },
-    className: {
-      control: 'text',
-      description: 'Additional Tailwind classes appended to the input.',
-      table: { disable: true, category: 'Appearance' },
-    },
+    className: { table: { disable: true } },
   },
+  render: (args) => (
+    <div className='max-w-sm'>
+      <Input {...args} />
+    </div>
+  ),
 } satisfies Meta<typeof Input>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function getInput(canvasElement: HTMLElement, name: string) {
-  const input = Array.from(canvasElement.querySelectorAll('input')).find(
-    (el) => el.getAttribute('placeholder') === name || el.getAttribute('aria-label') === name,
-  )
-
-  if (!input) throw new Error(`Could not find input named "${name}".`)
-
-  return input
-}
-
-function expectAttribute(element: Element, name: string, expectedValue: string) {
-  const receivedValue = element.getAttribute(name)
-
-  if (receivedValue !== expectedValue) {
-    throw new Error(`Expected ${name}="${expectedValue}", received "${receivedValue}".`)
-  }
-}
-
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
-  args: {
-    type: 'email',
-    placeholder: 'you@example.com',
-  },
   play: async ({ canvasElement }) => {
-    const input = getInput(canvasElement, 'you@example.com')
-    expectAttribute(input, 'data-slot', 'input')
-    expectAttribute(input, 'data-type', 'email')
+    const input = canvasElement.querySelector('input')
+    await expect(input).toHaveAccessibleName('Email address')
+    await expect(input).toHaveAttribute('data-slot', 'input')
+    await expect(input).toHaveAttribute('data-type', 'email')
   },
 }
 
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      // Compact view: Name + Control only, no description/type/default columns
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-  render: (args) => (
-    <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
-      <Input {...args} />
-    </div>
-  ),
-}
+export const Playground: Story = {}

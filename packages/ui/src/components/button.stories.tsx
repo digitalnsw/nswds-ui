@@ -65,7 +65,7 @@ function Section({
       <div className='space-y-2'>
         <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
         {description ? (
-          <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>{description}</p>
+          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>{description}</p>
         ) : null}
       </div>
       {children}
@@ -101,7 +101,7 @@ function Cell({ label, children }: { label: string; children: React.ReactNode })
   return (
     <div className='flex flex-col items-center gap-3'>
       <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-xs font-medium tracking-wide text-muted-foreground'>{label}</span>
+      <span className='text-base font-medium tracking-wide text-muted-foreground'>{label}</span>
     </div>
   )
 }
@@ -114,7 +114,7 @@ function ColorRow({ color, dark = false }: { color: (typeof colors)[number]; dar
     <div className='flex flex-wrap items-center gap-3 py-1'>
       <span
         className={cn(
-          'w-20 shrink-0 text-sm font-semibold',
+          'w-20 shrink-0 text-base font-semibold',
           dark ? 'text-primary-foreground' : 'text-foreground',
         )}
       >
@@ -148,7 +148,7 @@ const meta = {
         // variant text colour *inside docs only* — it renders correctly in real
         // apps and in the story canvas. The `[&_code]` styles restore the inline
         // code chips that `sb-unstyled` would otherwise reset.
-        <div className='sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground'>
+        <div className='sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-medium [&_code]:text-foreground'>
           {/* Intro */}
           <section className='space-y-4'>
             <h1 className='text-5xl font-bold tracking-tight'>Button</h1>
@@ -189,7 +189,7 @@ const meta = {
             </Preview>
             <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
               {variantDocs.map(([name, desc]) => (
-                <div key={name} className='flex gap-3 text-sm'>
+                <div key={name} className='flex gap-3 text-base'>
                   <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
                   <dd className='text-muted-foreground'>{desc}</dd>
                 </div>
@@ -269,7 +269,7 @@ const meta = {
               <div className='space-y-4'>
                 <div className='space-y-1'>
                   <h3 className='text-lg font-semibold'>Brand colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                  <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
                     Drawn from the active masterbrand theme and the toolbar Primary / Accent
                     pickers. Use <code>primary</code> for the main action; <code>tertiary</code> and{' '}
                     <code>accent</code> for supporting actions; <code>grey</code> for neutral,
@@ -286,7 +286,7 @@ const meta = {
               <div className='space-y-4'>
                 <div className='space-y-1'>
                   <h3 className='text-lg font-semibold'>On dark surfaces</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                  <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
                     Theme colours designed to sit on coloured or dark backgrounds — their lighter
                     treatments do not read on white. Use <code>white</code> for a high-contrast
                     action and <code>secondary</code> for a softer one. Shown here on a primary
@@ -303,7 +303,7 @@ const meta = {
               <div className='space-y-4'>
                 <div className='space-y-1'>
                   <h3 className='text-lg font-semibold'>Semantic colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
+                  <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
                     Fixed meanings that stay constant across themes. Reserve <code>danger</code> for
                     destructive actions, and use <code>success</code> / <code>warning</code>{' '}
                     sparingly for status-driven actions.

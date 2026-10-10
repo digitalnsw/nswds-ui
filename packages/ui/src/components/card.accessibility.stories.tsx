@@ -20,6 +20,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, userEvent, within } from 'storybook/test'
 
 import { Button } from './button.js'
 import {
@@ -31,13 +32,20 @@ import {
   CardHeader,
   CardTitle,
 } from './card.js'
-import { bodyClasses, ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
+import {
+  bodyClasses,
+  expectContrast,
+  ThemeSurface,
+  titleClasses,
+  wcagStoryMeta,
+} from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Card/Accessibility',
   component: Card,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -80,7 +88,7 @@ export const InfoAndRelationships: Story = {
     <Card className='max-w-md'>
       <CardHeader>
         <CardTitle>
-          <h3 className='font-heading text-sm font-medium'>Account settings</h3>
+          <h3>Account settings</h3>
         </CardTitle>
         <CardDescription>
           Update your email, password, and notification preferences.
@@ -107,7 +115,7 @@ export const InfoAndRelationships: Story = {
 }
 
 export const ContrastMinimum: Story = {
-  name: 'Contrast — 1.4.3',
+  name: 'Contrast (Minimum) — 1.4.3',
   parameters: {
     wcag: ['1.4.3'],
     docs: {
@@ -126,7 +134,7 @@ export const ContrastMinimum: Story = {
     <div className='space-y-4'>
       {(['primary', 'white'] as const).map((color) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>
             Surrounding surface: {color}
           </h4>
           <Card className='max-w-md'>
@@ -138,13 +146,31 @@ export const ContrastMinimum: Story = {
               Card text should remain readable regardless of the page surface.
             </CardContent>
           </Card>
-          <p className={`mt-3 text-xs ${bodyClasses(color)}`}>
+          <p className={`mt-3 text-base ${bodyClasses(color)}`}>
             Verify card-foreground vs card background, not vs the surrounding surface.
           </p>
         </ThemeSurface>
       ))}
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const cards = canvasElement.querySelectorAll<HTMLElement>('[data-slot="card"]')
+    await expect(cards).toHaveLength(2)
+    for (const card of cards) {
+      // Measured against the card's own surface, which is opaque whatever it sits on.
+      const surface = getComputedStyle(card).backgroundColor
+      for (const slot of ['card-title', 'card-description', 'card-content']) {
+        const part = card.querySelector<HTMLElement>(`[data-slot="${slot}"]`)!
+        expectContrast(getComputedStyle(part).color, surface, { label: slot })
+      }
+    }
+  },
+}
+
+export const ContrastMinimumDark: Story = {
+  ...ContrastMinimum,
+  name: 'Contrast (Minimum) — 1.4.3 (dark)',
+  globals: { theme: 'dark' },
 }
 
 export const NonTextContrast: Story = {
@@ -166,7 +192,7 @@ export const NonTextContrast: Story = {
   render: () => (
     <div className='space-y-4'>
       <div className='rounded-sm border border-border bg-background p-6'>
-        <p className='mb-3 text-sm font-semibold text-foreground'>Default surface</p>
+        <p className='mb-3 text-base font-semibold text-foreground'>Default surface</p>
         <Card className='max-w-md'>
           <CardHeader>
             <CardTitle>Boundary visibility</CardTitle>
@@ -178,8 +204,8 @@ export const NonTextContrast: Story = {
         </Card>
       </div>
 
-      <div className='rounded-sm border border-grey-700 bg-grey-800 p-6'>
-        <p className='mb-3 text-sm font-semibold text-grey-50'>Dark surface</p>
+      <ThemeSurface color='white'>
+        <p className={`mb-3 text-base font-semibold ${titleClasses('white')}`}>Dark surface</p>
         <Card className='max-w-md'>
           <CardHeader>
             <CardTitle>Boundary visibility</CardTitle>
@@ -189,7 +215,7 @@ export const NonTextContrast: Story = {
           </CardHeader>
           <CardContent>Boundary test against dark background.</CardContent>
         </Card>
-      </div>
+      </ThemeSurface>
     </div>
   ),
 }
@@ -235,4 +261,26 @@ export const FocusVisible: Story = {
       </CardFooter>
     </Card>
   ),
+  play: async ({ canvasElement }) => {
+    const card = getCard(canvasElement)
+    const bounds = card.getBoundingClientRect()
+    for (const name of ['Edit', 'Primary action', 'Learn more']) {
+      await userEvent.tab()
+      const control = within(card).getByRole('button', { name })
+      await expect(control).toHaveFocus()
+
+      // 2.4.7: a ring is drawn.
+      const style = getComputedStyle(control)
+      await expect(style.outlineStyle).not.toBe('none')
+      const ring = parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset)
+      await expect(ring).toBeGreaterThan(0)
+
+      // 2.4.11: the whole ring sits inside the card, which clips its overflow.
+      const box = control.getBoundingClientRect()
+      await expect(box.left - ring).toBeGreaterThanOrEqual(bounds.left)
+      await expect(box.right + ring).toBeLessThanOrEqual(bounds.right)
+      await expect(box.top - ring).toBeGreaterThanOrEqual(bounds.top)
+      await expect(box.bottom + ring).toBeLessThanOrEqual(bounds.bottom)
+    }
+  },
 }

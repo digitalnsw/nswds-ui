@@ -175,23 +175,76 @@ if the committed output differs.
 
 ## Step 6: Write a story
 
+Every component's stories follow [the Storybook standard](reference-storybook-standard.md), which
+is Button's shape. Three files:
+
 ```bash
 touch packages/ui/src/components/notice.stories.tsx
+touch packages/ui/src/components/notice.features.stories.tsx
+touch packages/ui/src/components/notice.accessibility.stories.tsx
 ```
 
-Three stories are the minimum. Follow `button.stories.tsx` as the canonical example:
+**The main file** holds the docs page, `Default` and `Playground`. Each docs section is an
+exported component, so the Features file can render it too:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Notice } from './notice.js'
 
-const meta = { title: 'Components/Notice', component: Notice } satisfies Meta<typeof Notice>
+import { Notice } from './notice.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+const tones = ['neutral', 'info'] as const
+
+export function TonesSection() {
+  return (
+    <ExampleSection title='Tones' description='Info draws the eye; neutral sits back.'>
+      <Example
+        layout='stack'
+        code={`<Notice tone="info">Your return is due 30 September.</Notice>`}
+      >
+        {tones.map((tone) => (
+          <ExampleCell key={tone} label={tone}>
+            <Notice tone={tone}>Your return is due 30 September.</Notice>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function NoticeDocs() {
+  return (
+    <DocsPage title='Notice' npm='Notice' registry='notice' summary='A short, dismissible message.'>
+      <DocsUsage
+        use={['A deadline or change the reader should know about on this page.']}
+        avoid={['An error in a form field — use Field’s error message.']}
+      />
+      <TonesSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+const meta = {
+  title: 'Components/Notice',
+  component: Notice,
+  tags: ['autodocs'],
+  excludeStories: /Section$/,
+  parameters: { layout: 'padded', docs: { page: NoticeDocs } },
+  args: { children: 'Your return is due 30 September.', onDismiss: fn() },
+} satisfies Meta<typeof Notice>
 export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
-  args: { children: 'Your return is due 30 September.', onDismiss: fn() },
   play: async ({ args, canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }))
@@ -199,27 +252,37 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col gap-4'>
-      <Notice tone='neutral'>Neutral</Notice>
-      <Notice tone='info'>Info</Notice>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  args: { children: 'Token check' },
-  play: async ({ canvasElement }) => {
-    const el = canvasElement.querySelector('[data-slot=notice]')!
-    await expect(getComputedStyle(el).padding).not.toBe('0px')
-  },
-}
+export const Playground: Story = {}
 ```
 
-`Default` proves it mounts and is interactive. `Variants` renders every meaningful combination.
-`CssCheck` asserts a computed style, which proves the stylesheet loaded — without it a
-token-resolution failure looks like a passing test.
+**The Features file** has one story per section:
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite'
+
+import { Notice } from './notice.js'
+import { TonesSection } from './notice.stories.js'
+
+const meta = { title: 'Components/Notice/Features', component: Notice } satisfies Meta<
+  typeof Notice
+>
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Tones: Story = { render: () => <TonesSection /> }
+```
+
+**The Accessibility file** has one story per WCAG 2.2 criterion Notice must meet — here its
+dismiss button's name, keyboard use and contrast — each asserting it in `play()`. Copy the shape
+of `button.accessibility.stories.tsx` and `tooltip.accessibility.stories.tsx`.
+
+A `notice.tests.stories.tsx` (titled `Components/Notice/Tests`, tagged `['!dev', '!autodocs']`)
+holds the `CssCheck` story, which asserts a computed style and so proves the stylesheet loaded —
+without it a token-resolution failure looks like a passing test. Check the shape with:
+
+```bash
+npm run check:stories -w @nswds/ui
+```
 
 Stories live in `src/` but are excluded from the tsup build. Don't add an explicit entry for them.
 
@@ -259,6 +322,9 @@ npm run test:scripts
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui
+npm run check:portal-boundary -w @nswds/ui
+npm run check:theme-parity -w @nswds/ui
+npm run check:stories -w @nswds/ui
 npm run build -w @nswds/ui
 npm test -w @nswds/ui
 npm run check:package -w @nswds/ui
@@ -286,6 +352,8 @@ Conventional Commits — the release pipeline depends on the type:
 ```bash
 git add packages/ui/src/components/notice.tsx \
         packages/ui/src/components/notice.stories.tsx \
+        packages/ui/src/components/notice.features.stories.tsx \
+        packages/ui/src/components/notice.accessibility.stories.tsx \
         packages/ui/src/index.ts \
         packages/ui/registry.json \
         apps/registry/public/r/notice.json \

@@ -123,7 +123,7 @@ function getButton(canvasElement: HTMLElement, name: string) {
 function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
   return (
     <div className='w-full max-w-7xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
           <span key={`theme-header-${variant}`} className='text-center capitalize'>
@@ -135,7 +135,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
       {rowColors.map((color) => (
         <ThemeSurface key={`theme-row-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`${color}-${variant}`}
@@ -201,7 +201,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
         <section className='overflow-x-auto'>
           <div className='space-y-2' style={{ minWidth: `${16 + standardCols * 10}rem` }}>
             <div
-              className='grid items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'
+              className='grid items-center gap-2 px-3 text-base font-semibold text-muted-foreground'
               style={{
                 gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
               }}
@@ -222,7 +222,9 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
-                <span className='text-sm font-semibold text-foreground capitalize'>{variant}</span>
+                <span className='text-base font-semibold text-foreground capitalize'>
+                  {variant}
+                </span>
                 {standard.map((color) => (
                   <Button
                     key={`variant-standard-${variant}-${color}`}
@@ -244,7 +246,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
           <div className='overflow-x-auto'>
             <div className='space-y-2' style={{ minWidth: `${16 + lowCols * 18}rem` }}>
               <div
-                className='grid items-center gap-2 px-3 text-xs font-semibold text-grey-200'
+                className='grid items-center gap-2 px-3 text-base font-semibold text-grey-200'
                 style={{
                   gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                 }}
@@ -265,7 +267,9 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                     gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className='text-sm font-semibold text-grey-100 capitalize'>{variant}</span>
+                  <span className='text-base font-semibold text-grey-100 capitalize'>
+                    {variant}
+                  </span>
                   {lowContrast.map((color) => (
                     <Button
                       key={`variant-low-${variant}-${color}`}
@@ -341,7 +345,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className='w-full max-w-5xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(4,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {sizes.map((size) => (
           <span key={`size-header-${size}`} className='text-center capitalize'>
@@ -361,8 +365,8 @@ export const Sizes: Story = {
                 <span
                   className={
                     i === 0
-                      ? `text-sm font-semibold ${titleClasses(color)}`
-                      : `text-xs ${bodyClasses(color)}`
+                      ? `text-base font-semibold ${titleClasses(color)}`
+                      : `text-base ${bodyClasses(color)}`
                   }
                 >
                   {i === 0 ? color : variant}
@@ -437,7 +441,7 @@ export const IconOnly: Story = {
             data-row={size}
             className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
           >
-            <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>
+            <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>
               {size}
             </span>
             {/* `labelWrap={false}` keeps the assertions about box geometry. A
@@ -477,7 +481,7 @@ export const IconOnly: Story = {
         data-row='icon'
         className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
       >
-        <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>icon</span>
+        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>icon</span>
         <Button data-probe='text' size='default' labelWrap={false}>
           Button
         </Button>
@@ -488,7 +492,7 @@ export const IconOnly: Story = {
           aria-label='Compact search'
           leadingVisual={IconSearch}
         />
-        <span className='text-xs text-muted-foreground'>
+        <span className='text-base text-muted-foreground'>
           Compact chrome square — 40×40 at every breakpoint, deliberately shorter than the text
           steps.
         </span>
@@ -501,7 +505,9 @@ export const IconOnly: Story = {
         data-row='variants'
         className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
       >
-        <span className='w-16 shrink-0 text-xs font-semibold text-muted-foreground'>variants</span>
+        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>
+          variants
+        </span>
         {borderedVariants.map((variant) => (
           <Button key={`variant-height-${variant}`} data-probe={variant} variant={variant}>
             {variant}
@@ -606,7 +612,7 @@ export const WithIcon: Story = {
   },
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
           <span key={`icon-header-${variant}`} className='text-center capitalize'>
@@ -618,7 +624,7 @@ export const WithIcon: Story = {
       {colors.map((color) => (
         <ThemeSurface key={`icon-row-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`icon-${color}-${variant}`}
@@ -681,7 +687,7 @@ export const InteractionStates: Story = {
         }
       `}</style>
 
-      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
           <span key={`states-header-${variant}`} className='text-center capitalize'>
@@ -695,7 +701,7 @@ export const InteractionStates: Story = {
           <div className='space-y-1.5'>
             {/* Default / resting */}
             <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-              <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+              <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
               {variants.map((variant) => (
                 <Button
                   key={`default-${color}-${variant}`}
@@ -710,7 +716,7 @@ export const InteractionStates: Story = {
 
             {/* Hover */}
             <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-              <span className={`text-xs ${bodyClasses(color)}`}>Hover</span>
+              <span className={`text-base ${bodyClasses(color)}`}>Hover</span>
               {variants.map((variant) => (
                 <button
                   key={`hover-${color}-${variant}`}
@@ -725,7 +731,7 @@ export const InteractionStates: Story = {
 
             {/* Active / pressed */}
             <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-              <span className={`text-xs ${bodyClasses(color)}`}>Active</span>
+              <span className={`text-base ${bodyClasses(color)}`}>Active</span>
               {variants.map((variant) => (
                 <button
                   key={`active-${color}-${variant}`}
@@ -740,7 +746,7 @@ export const InteractionStates: Story = {
 
             {/* Focused */}
             <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-              <span className={`text-xs ${bodyClasses(color)}`}>Focused</span>
+              <span className={`text-base ${bodyClasses(color)}`}>Focused</span>
               {variants.map((variant) => (
                 <button
                   key={`focused-${color}-${variant}`}
@@ -779,7 +785,7 @@ export const States: Story = {
   },
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
           <span key={`disabled-header-${variant}`} className='text-center capitalize'>
@@ -791,7 +797,7 @@ export const States: Story = {
       {colors.map((color) => (
         <ThemeSurface key={`disabled-row-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <Button
                 key={`disabled-${color}-${variant}`}
@@ -827,7 +833,7 @@ export const Focused: Story = {
   },
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {variants.map((variant) => (
           <span key={`focused-header-${variant}`} className='text-center capitalize'>
@@ -839,7 +845,7 @@ export const Focused: Story = {
       {colors.map((color) => (
         <ThemeSurface key={`focused-row-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(6,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <button
                 key={`focused-${color}-${variant}`}

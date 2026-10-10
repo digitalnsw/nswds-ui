@@ -1,7 +1,8 @@
 /**
  * Breadcrumb — Features
  *
- * Look matrices, the ellipsis menu, wrapping and collapse, for visual QA and
+ * One story per section of the docs page, rendering the same examples, then
+ * look matrices, the ellipsis menu, wrapping and collapse, for visual QA and
  * design-token reviews. Like Button's Features stories these show every look
  * at once rather than typical usage; each story says what to look for and how
  * to test it. Guidance for choosing a look lives on the Looks pages.
@@ -11,6 +12,17 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 
 import { Breadcrumb, BreadcrumbList } from './breadcrumb.js'
+import {
+  AccessibilitySection,
+  AnatomySection,
+  ChooseALookSection,
+  DefaultSection,
+  FrameworkLinksSection,
+  HiddenStepsSection,
+  InContextSection,
+  OnNarrowScreensSection,
+  WritingTheTrailSection,
+} from './breadcrumb.stories.js'
 import {
   BREADCRUMB_LOOKS,
   breadcrumbMoreTrigger,
@@ -34,6 +46,37 @@ type Story = StoryObj<typeof meta>
 
 const LONG = ['Home', 'Services', 'Licences and permits']
 const LONG_CURRENT = 'Apply for a recreational fishing licence'
+
+// ─── Docs page sections ───────────────────────────────────────────────────────
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const ChooseALook: Story = { name: 'Choose a look', render: () => <ChooseALookSection /> }
+
+export const Anatomy: Story = { render: () => <AnatomySection /> }
+
+export const OnNarrowScreens: Story = {
+  name: 'On narrow screens',
+  render: () => <OnNarrowScreensSection />,
+}
+
+export const HiddenSteps: Story = { name: 'Hidden steps', render: () => <HiddenStepsSection /> }
+
+export const FrameworkLinks: Story = {
+  name: 'Framework links',
+  render: () => <FrameworkLinksSection />,
+}
+
+export const WritingTheTrail: Story = {
+  name: 'Writing the trail',
+  render: () => <WritingTheTrailSection />,
+}
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
+
+export const Accessibility: Story = { render: () => <AccessibilitySection /> }
+
+// ─── Look matrices, ellipsis, wrapping and collapse ──────────────────────────
 
 export const Looks: Story = {
   name: 'Looks',

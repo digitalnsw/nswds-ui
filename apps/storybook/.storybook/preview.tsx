@@ -144,7 +144,7 @@ const DocsThemeSync = ({ context }: { context: DocsContainerProps['context'] }) 
 const docsContainer = ({ children, ...props }: PropsWithChildren<DocsContainerProps>) => (
   <DocsContainer {...props}>
     <DocsThemeSync context={props.context} />
-    <div className='sb-unstyled bg-background text-foreground [&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-muted [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-[0.85em] [&_:not(pre)>code]:font-medium [&_:not(pre)>code]:text-foreground'>
+    <div className='sb-unstyled bg-background text-foreground [&_:not(pre)>code]:rounded-sm [&_:not(pre)>code]:bg-foreground/5 [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:text-foreground'>
       {children}
     </div>
   </DocsContainer>
@@ -216,43 +216,19 @@ export default definePreview({
 
   parameters: {
     options: {
+      // The catalogue order every component follows (see
+      // docs/reference-storybook-standard.md): its docs page, the two fixed
+      // stories, its example stories in the order they are written, then the
+      // Tests and Accessibility folders.
       storySort: {
         order: [
           'Getting Started',
           ['Welcome'],
           'Components',
-          [
-            'Button',
-            ['Docs', 'Default', 'Playground', 'Features', 'Tests', 'Accessibility'],
-            'Badge',
-            [
-              'Docs',
-              'Default',
-              'Playground',
-              'Variants',
-              'Colours',
-              'Sizes',
-              'Status',
-              'Counts',
-              'With Icon',
-              'In Context',
-            ],
-            'Tag',
-            [
-              'Docs',
-              'Default',
-              'Playground',
-              'Variants',
-              'Colours',
-              'Sizes',
-              'Links',
-              'Selectable',
-              'Removable',
-              'Actions',
-              'States',
-              'In Context',
-            ],
-          ],
+          ['*', ['Docs', 'Default', 'Playground', '*', 'Tests', 'Accessibility']],
+          'Patterns',
+          ['*', ['Docs', 'Default', 'Playground', '*', 'Tests', 'Accessibility']],
+          'Hooks',
         ],
       },
     },

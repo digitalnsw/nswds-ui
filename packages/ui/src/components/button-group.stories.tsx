@@ -1,18 +1,22 @@
 /**
- * ButtonGroup — Default + Playground
+ * ButtonGroup — the docs page, Default and Playground
+ * (docs/reference-storybook-standard.md).
  *
- * Sub-groups live in separate story files so Storybook renders them as
- * collapsible sidebar folders:
- *   Components/ButtonGroup/Features        → button-group.features.stories.tsx
- *   Components/ButtonGroup/Accessibility   → button-group.accessibility.stories.tsx
+ *   Components/ButtonGroup                → this file
+ *   Components/ButtonGroup/Features       → button-group.features.stories.tsx
+ *   Components/ButtonGroup/Accessibility  → button-group.accessibility.stories.tsx
+ *   Components/ButtonGroup/Tests          → button-group.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
-import { cn } from '../lib/utils.js'
-
 import {
+  IconChevronLeft,
+  IconChevronRight,
   IconContentCopy,
   IconContentCut,
   IconContentPaste,
@@ -28,6 +32,14 @@ import {
 } from './button-group.js'
 import { Button, ButtonLink } from './button.js'
 import { Popover, PopoverContent, PopoverTrigger } from './popover.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const variants = [
   'outline',
@@ -67,76 +79,15 @@ const variantDocs: ReadonlyArray<readonly [(typeof variants)[number], string]> =
   ['ghost', 'Low emphasis — no frame, no fill; only the hairlines between segments.'],
 ]
 
-// ─── Docs page building blocks ──────────────────────────────────────────────
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <section className='space-y-5'>
-      <div className='space-y-2'>
-        <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-        {description ? (
-          <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>{description}</p>
-        ) : null}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-// A neutral, generously padded surface that frames live examples and gives
-// each section plenty of breathing room.
-function Preview({
-  children,
-  dark = false,
-  className,
-}: {
-  children: React.ReactNode
-  dark?: boolean
-  className?: string
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-xl border p-8',
-        dark ? 'border-transparent bg-primary' : 'border-border bg-muted/40',
-        className,
-      )}
-    >
-      {children}
-    </div>
-  )
-}
-
-function Cell({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className='flex flex-col items-center gap-3'>
-      <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-xs font-medium tracking-wide text-muted-foreground'>{label}</span>
-    </div>
-  )
-}
-
-// One row of the colour matrix: a colour name followed by a two-segment group
-// in that colour across the key group treatments.
-function ColorRow({ color, dark = false }: { color: (typeof colors)[number]; dark?: boolean }) {
+/**
+ * One row of the colour matrix: a colour name followed by a two-segment group
+ * in that colour across the key group treatments. The name inherits the
+ * panel's text colour, so it reads on the brand panel too.
+ */
+function ColorRow({ color }: { color: (typeof colors)[number] }) {
   return (
     <div className='flex flex-wrap items-center gap-3 py-1'>
-      <span
-        className={cn(
-          'w-20 shrink-0 text-sm font-semibold',
-          dark ? 'text-primary-foreground' : 'text-foreground',
-        )}
-      >
-        {color}
-      </span>
+      <span className='w-20 shrink-0 font-semibold'>{color}</span>
       {matrixVariants.map((variant) => (
         <ButtonGroup
           key={variant}
@@ -152,360 +103,587 @@ function ColorRow({ color, dark = false }: { color: (typeof colors)[number]; dar
   )
 }
 
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description='An outline group of ghost segments in the primary colour — the out-of-the-box configuration.'
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Clipboard">
+  <Button>Copy</Button>
+  <Button>Paste</Button>
+  <Button>Cut</Button>
+</ButtonGroup>`}
+      >
+        <ButtonGroup aria-label='Clipboard'>
+          <Button>Copy</Button>
+          <Button>Paste</Button>
+          <Button>Cut</Button>
+        </ButtonGroup>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description="The variant is the group's: it decides the frame or band every segment sits in. Segments stay ghost, so the group paints once and the labels sit on top."
+    >
+      <Example
+        code={`<ButtonGroup variant="soft" aria-label="Clipboard">
+  <Button>Copy</Button>
+  <Button>Paste</Button>
+  <Button>Cut</Button>
+</ButtonGroup>`}
+      >
+        {variants.map((variant) => (
+          <ExampleCell key={variant} label={variant}>
+            <ButtonGroup variant={variant} aria-label={`${variant} clipboard`}>
+              <Button>Copy</Button>
+              <Button>Paste</Button>
+              <Button>Cut</Button>
+            </ButtonGroup>
+          </ExampleCell>
+        ))}
+      </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
+        {variantDocs.map(([name, desc]) => (
+          <div key={name} className='flex gap-3 text-base'>
+            <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+export function EmphasisSection() {
+  return (
+    <ExampleSection
+      title='Emphasis'
+      description={
+        <>
+          A segment may name its own emphasis. A <code>solid</code> or <code>soft</code> child
+          paints its own fill inside the group, which is how a Save sits beside a ghost Cancel as
+          the row&apos;s primary action, and how a split button pairs an action with its menu. Two
+          solid segments divide with a reversed hairline. Any other child variant —{' '}
+          <code>outline</code>, <code>ghost</code>, <code>link</code> — renders as a plain segment,
+          so the shadcn idiom of writing <code>variant=&apos;outline&apos;</code> on every child
+          draws no second border.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Application">
+  <Button>Cancel</Button>
+  <Button variant="solid">Save and continue</Button>
+</ButtonGroup>
+
+<ButtonGroup aria-label="Save">
+  <Button variant="solid">Save</Button>
+  <Button variant="solid" iconOnly aria-label="More save options" leadingVisual={IconExpandMore} />
+</ButtonGroup>`}
+      >
+        <ExampleCell label='primary action'>
+          <ButtonGroup aria-label='Application'>
+            <Button>Cancel</Button>
+            <Button variant='solid'>Save and continue</Button>
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='split button'>
+          <ButtonGroup aria-label='Save'>
+            <Button variant='solid'>Save</Button>
+            <Button
+              variant='solid'
+              iconOnly
+              aria-label='More save options'
+              leadingVisual={IconExpandMore}
+            />
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+      <Example
+        code={`<ButtonGroup aria-label="View">
+  <Button>Day</Button>
+  <Button variant="soft">Week</Button>
+  <Button>Month</Button>
+</ButtonGroup>`}
+      >
+        <ExampleCell label='soft segment'>
+          <ButtonGroup aria-label='View'>
+            <Button>Day</Button>
+            <Button variant='soft'>Week</Button>
+            <Button>Month</Button>
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='on a band'>
+          <ButtonGroup variant='solid' aria-label='View on a band'>
+            <Button>Day</Button>
+            <Button variant='soft'>Week</Button>
+            <Button>Month</Button>
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function SizesSection() {
+  return (
+    <ExampleSection
+      title='Sizes'
+      description={
+        <>
+          Button&apos;s three scale steps — <code>sm</code>, <code>default</code>, <code>lg</code> —
+          as the default for every segment. A group is exactly as tall as the lone Button beside it:
+          the frame is drawn inside the box, not around it. <code>icon</code> is not offered,
+          because the group clips to its own box and would cut off the 44px touch expansion the 40px
+          chrome square relies on; pair <code>iconOnly</code> with <code>sm</code> instead.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonGroup size="lg" aria-label="Clipboard">…</ButtonGroup>
+
+<ButtonGroup size="sm" aria-label="Clipboard">
+  <Button iconOnly aria-label="Copy" leadingVisual={IconContentCopy} />
+  <Button iconOnly aria-label="Paste" leadingVisual={IconContentPaste} />
+  <Button iconOnly aria-label="Cut" leadingVisual={IconContentCut} />
+</ButtonGroup>`}
+      >
+        {sizes.map((size) => (
+          <ExampleCell key={size} label={size}>
+            <ButtonGroup size={size} aria-label={`${size} clipboard`}>
+              <Button>Copy</Button>
+              <Button>Paste</Button>
+            </ButtonGroup>
+          </ExampleCell>
+        ))}
+        <ExampleCell label='iconOnly, sm'>
+          <ButtonGroup size='sm' aria-label='Clipboard'>
+            <Button iconOnly aria-label='Copy' leadingVisual={IconContentCopy} />
+            <Button iconOnly aria-label='Paste' leadingVisual={IconContentPaste} />
+            <Button iconOnly aria-label='Cut' leadingVisual={IconContentCut} />
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description="The colour prop is Button's: it sets the ink the frame, band and dividers are drawn in, and the default colour of every segment. Shown here across the main group treatments."
+    >
+      <div className='space-y-10'>
+        <div className='space-y-4'>
+          <div className='space-y-1'>
+            <h3 className='text-lg font-semibold'>Brand colours</h3>
+            <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+              Drawn from the active masterbrand theme. Use <code>primary</code> for a group of main
+              actions; <code>tertiary</code> and <code>accent</code> for supporting ones;{' '}
+              <code>grey</code> for a neutral toolbar.
+            </p>
+          </div>
+          {/* On the page's own white, not the tinted panel: tertiary, success
+              and warning ink clears 4.5:1 on white but not on the tint. */}
+          <Example
+            layout='stack'
+            className='bg-background'
+            code={`<ButtonGroup color="tertiary" variant="soft" aria-label="Clipboard">…</ButtonGroup>`}
+          >
+            {brandColors.map((color) => (
+              <ColorRow key={color} color={color} />
+            ))}
+          </Example>
+        </div>
+
+        <div className='space-y-4'>
+          <div className='space-y-1'>
+            <h3 className='text-lg font-semibold'>On dark surfaces</h3>
+            <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+              Theme colours designed to sit on coloured or dark backgrounds. The outline group draws
+              no fill of its own, so a <code>white</code> frame on a primary panel stays a frame.
+              Shown here on a primary background.
+            </p>
+          </div>
+          <Example
+            layout='stack'
+            surface='brand'
+            code={`<ButtonGroup color="white" aria-label="Clipboard">…</ButtonGroup>`}
+          >
+            {onDarkColors.map((color) => (
+              <ColorRow key={color} color={color} />
+            ))}
+          </Example>
+        </div>
+
+        <div className='space-y-4'>
+          <div className='space-y-1'>
+            <h3 className='text-lg font-semibold'>Semantic colours</h3>
+            <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+              Fixed meanings that stay constant across themes. A <code>danger</code> split button is
+              the common case: Delete, with its options under the chevron.
+            </p>
+          </div>
+          <Example
+            layout='stack'
+            className='bg-background'
+            code={`<ButtonGroup color="danger" aria-label="Delete">
+  <Button variant="solid">Delete</Button>
+  <Button variant="solid" iconOnly aria-label="More delete options" leadingVisual={IconExpandMore} />
+</ButtonGroup>`}
+          >
+            {semanticColors.map((color) => (
+              <ColorRow key={color} color={color} />
+            ))}
+          </Example>
+        </div>
+      </div>
+    </ExampleSection>
+  )
+}
+
+export function OrientationSection() {
+  return (
+    <ExampleSection
+      title='Orientation'
+      description='The same rules rotated. A vertical group stacks its segments and moves the hairline to the top edge of each one.'
+    >
+      <Example
+        className='items-start'
+        code={`<ButtonGroup orientation="vertical" aria-label="Clipboard">…</ButtonGroup>`}
+      >
+        {orientations.map((orientation) => (
+          <ExampleCell key={orientation} label={orientation}>
+            <ButtonGroup orientation={orientation} aria-label={`${orientation} group`}>
+              <Button>Top</Button>
+              <Button>Middle</Button>
+              <Button>Bottom</Button>
+            </ButtonGroup>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InlineTextAndSeparatorsSection() {
+  return (
+    <ExampleSection
+      title='Inline text and separators'
+      description={
+        <>
+          <code>ButtonGroupText</code> is an inline label between segments — a unit, a count, a mode
+          — at the body size, never fine print. <code>ButtonGroupSeparator</code> is a semantic
+          boundary for assistive technology; every segment is already divided by a hairline, so it
+          draws nothing of its own.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Formatting">
+  <Button iconOnly aria-label="Bold" leadingVisual={IconFormatBold} />
+  <ButtonGroupText>Aa</ButtonGroupText>
+  <Button iconOnly aria-label="Italic" leadingVisual={IconFormatItalic} />
+</ButtonGroup>
+
+<ButtonGroup aria-label="Clipboard">
+  <Button>Copy</Button>
+  <Button>Paste</Button>
+  <ButtonGroupSeparator />
+  <Button>Cut</Button>
+</ButtonGroup>`}
+      >
+        <ExampleCell label='text cell'>
+          <ButtonGroup aria-label='Formatting'>
+            <Button iconOnly aria-label='Bold' leadingVisual={IconFormatBold} />
+            <ButtonGroupText>Aa</ButtonGroupText>
+            <Button iconOnly aria-label='Italic' leadingVisual={IconFormatItalic} />
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='separator'>
+          <ButtonGroup aria-label='Clipboard'>
+            <Button>Copy</Button>
+            <Button>Paste</Button>
+            <ButtonGroupSeparator />
+            <Button>Cut</Button>
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='on a band'>
+          <ButtonGroup variant='solid' aria-label='Formatting on a band'>
+            <Button>Bold</Button>
+            <ButtonGroupText>Aa</ButtonGroupText>
+            <Button>Italic</Button>
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description="A disabled segment dims itself and leaves the tab order. The hairline before it is drawn on the segment before it, so the row's dividers stay at one strength. A loading segment shows a spinner and blocks interaction."
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Clipboard">
+  <Button>Copy</Button>
+  <Button disabled>Paste</Button>
+  <Button>Cut</Button>
+</ButtonGroup>
+
+<Button variant="solid" loading>Save</Button>`}
+      >
+        <ExampleCell label='disabled'>
+          <ButtonGroup aria-label='Clipboard'>
+            <Button>Copy</Button>
+            <Button disabled>Paste</Button>
+            <Button>Cut</Button>
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='loading'>
+          <ButtonGroup aria-label='Save changes'>
+            <Button>Cancel</Button>
+            <Button variant='solid' loading>
+              Save
+            </Button>
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithIconsSection() {
+  return (
+    <ExampleSection
+      title='With icons'
+      description={
+        <>
+          Segments take Button&apos;s icon props. A <code>leadingVisual</code> or{' '}
+          <code>trailingVisual</code> reinforces a label; it never replaces it — reach for{' '}
+          <code>iconOnly</code> (see Sizes) only when the icon alone is unambiguous.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Search results pages">
+  <Button leadingVisual={IconChevronLeft}>Previous</Button>
+  <Button trailingVisual={IconChevronRight}>Next</Button>
+</ButtonGroup>`}
+      >
+        <ExampleCell label='leadingVisual and trailingVisual'>
+          <ButtonGroup aria-label='Search results pages'>
+            <Button leadingVisual={IconChevronLeft}>Previous</Button>
+            <Button trailingVisual={IconChevronRight}>Next</Button>
+          </ButtonGroup>
+        </ExampleCell>
+        <ExampleCell label='leadingVisual on every segment'>
+          <ButtonGroup aria-label='Clipboard with icons'>
+            <Button leadingVisual={IconContentCopy}>Copy</Button>
+            <Button leadingVisual={IconContentPaste}>Paste</Button>
+            <Button leadingVisual={IconContentCut}>Cut</Button>
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithLinksSection() {
+  return (
+    <ExampleSection
+      title='With links'
+      description='ButtonLink is a segment like any other. Mix navigation and actions in one row when they belong to one job.'
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Record">
+  <ButtonLink href="/record">View</ButtonLink>
+  <ButtonLink href="/record/history">History</ButtonLink>
+  <Button variant="solid">Edit</Button>
+</ButtonGroup>`}
+      >
+        <ExampleCell label='mixed'>
+          <ButtonGroup aria-label='Record'>
+            <ButtonLink href='#view'>View</ButtonLink>
+            <ButtonLink href='#history'>History</ButtonLink>
+            <Button variant='solid'>Edit</Button>
+          </ButtonGroup>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InAPopupSection() {
+  return (
+    <ExampleSection
+      title='In a popup'
+      description={
+        <>
+          A popup opened from a segment renders through a portal, which React context follows. Every
+          popup in this package resets the group at its portal, so the Buttons inside render
+          normally. Wrap the contents of an overlay from another library in{' '}
+          <code>ButtonGroupBoundary</code> to get the same.
+        </>
+      }
+    >
+      <Example
+        code={`<ButtonGroup aria-label="Save">
+  <Button variant="solid">Save</Button>
+  <Popover>
+    <PopoverTrigger
+      render={<Button variant="solid" iconOnly aria-label="More save options" leadingVisual={IconExpandMore} />}
+    />
+    <PopoverContent>
+      <Button variant="soft" block>Save as draft</Button>
+      <Button variant="ghost" block>Save and close</Button>
+    </PopoverContent>
+  </Popover>
+</ButtonGroup>
+
+// An overlay from another library
+<OtherPopup>
+  <ButtonGroupBoundary>…</ButtonGroupBoundary>
+</OtherPopup>`}
+      >
+        <ButtonGroup aria-label='Save'>
+          <Button variant='solid'>Save</Button>
+          <Popover>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant='solid'
+                  iconOnly
+                  aria-label='More save options'
+                  leadingVisual={IconExpandMore}
+                />
+              }
+            />
+            <PopoverContent>
+              <Button variant='soft' block>
+                Save as draft
+              </Button>
+              <Button variant='ghost' block>
+                Save and close
+              </Button>
+            </PopoverContent>
+          </Popover>
+        </ButtonGroup>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='A booking page: a view switcher above the list of available appointments, and the paging controls under it.'
+    >
+      <Example layout='fill'>
+        <div className='max-w-md space-y-6'>
+          <div className='flex flex-wrap items-center justify-between gap-4'>
+            <p className='text-xl font-semibold'>Available appointments</p>
+            <ButtonGroup size='sm' aria-label='Appointment view'>
+              <Button>Day</Button>
+              <Button variant='soft'>Week</Button>
+              <Button>Month</Button>
+            </ButtonGroup>
+          </div>
+          <ul className='divide-y divide-foreground/10 border-y border-foreground/10'>
+            {[
+              'Service NSW Parramatta — Tue 14 Oct, 9:30am',
+              'Service NSW Parramatta — Wed 15 Oct, 2:00pm',
+              'Service NSW Haymarket — Thu 16 Oct, 11:15am',
+            ].map((slot) => (
+              <li key={slot} className='py-3'>
+                {slot}
+              </li>
+            ))}
+          </ul>
+          <ButtonGroup aria-label='Appointment pages'>
+            <Button leadingVisual={IconChevronLeft}>Previous week</Button>
+            <Button trailingVisual={IconChevronRight}>Next week</Button>
+          </ButtonGroup>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function ButtonGroupDocs() {
+  return (
+    <DocsPage
+      title='ButtonGroup'
+      npm={['ButtonGroup', 'ButtonGroupText', 'ButtonGroupSeparator', 'ButtonGroupBoundary']}
+      registry='button-group'
+      summary={
+        <>
+          A group joins a row or column of Buttons into one control. The group draws the boundary —
+          the frame or band, the hairline between segments, the corners — and takes Button&apos;s{' '}
+          <strong className='font-semibold text-foreground'>variant</strong> family,{' '}
+          <strong className='font-semibold text-foreground'>colour</strong> tokens and{' '}
+          <strong className='font-semibold text-foreground'>size</strong> steps, handing them to its
+          segments as defaults. A segment is an ordinary Button.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'A few closely related actions that act on the same thing — Day, Week and Month views of one calendar.',
+          'A split button: a primary action beside a menu of its alternatives.',
+          'Paging or stepping controls (Previous and Next) that belong together.',
+        ]}
+        avoid={[
+          'Choosing one value that stays selected — use ToggleGroup or RadioGroup.',
+          'An input or select with an attached action — use InputGroup.',
+          'Unrelated actions that only happen to sit side by side — use separate Buttons with a gap.',
+        ]}
+      />
+      <DefaultSection />
+      <VariantsSection />
+      <EmphasisSection />
+      <SizesSection />
+      <ColoursSection />
+      <OrientationSection />
+      <InlineTextAndSeparatorsSection />
+      <StatesSection />
+      <WithIconsSection />
+      <WithLinksSection />
+      <InAPopupSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Components/ButtonGroup',
   component: ButtonGroup,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
+    controls: { expanded: true, sort: 'requiredFirst' },
     docs: {
-      page: () => (
-        // `sb-unstyled` opts these anchors out of Storybook's docs stylesheet —
-        // see the same note on Button's docs page.
-        <div className='sb-unstyled max-w-4xl space-y-16 py-2 text-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.85em] [&_code]:font-medium [&_code]:text-foreground'>
-          {/* Intro */}
-          <section className='space-y-4'>
-            <h1 className='text-5xl font-bold tracking-tight'>ButtonGroup</h1>
-            <p className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>
-              A group joins a row or column of Buttons into one control. The group draws the
-              boundary — the frame or band, the hairline between segments, the corners — and takes
-              Button&apos;s <strong className='font-semibold text-foreground'>variant</strong>{' '}
-              family, <strong className='font-semibold text-foreground'>colour</strong> tokens and{' '}
-              <strong className='font-semibold text-foreground'>size</strong> steps, handing them to
-              its segments as defaults. A segment is an ordinary Button.
-            </p>
-          </section>
-
-          {/* Default */}
-          <Section
-            title='Default'
-            description='An outline group of ghost segments in the primary colour — the out-of-the-box configuration.'
-          >
-            <Preview className='flex items-center'>
-              <ButtonGroup aria-label='Clipboard'>
-                <Button>Copy</Button>
-                <Button>Paste</Button>
-                <Button>Cut</Button>
-              </ButtonGroup>
-            </Preview>
-          </Section>
-
-          {/* Variants */}
-          <Section
-            title='Variants'
-            description="The variant is the group's: it decides the frame or band every segment sits in. Segments stay ghost, so the group paints once and the labels sit on top."
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                {variants.map((variant) => (
-                  <Cell key={variant} label={variant}>
-                    <ButtonGroup variant={variant} aria-label={`${variant} clipboard`}>
-                      <Button>Copy</Button>
-                      <Button>Paste</Button>
-                      <Button>Cut</Button>
-                    </ButtonGroup>
-                  </Cell>
-                ))}
-              </div>
-            </Preview>
-            <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
-              {variantDocs.map(([name, desc]) => (
-                <div key={name} className='flex gap-3 text-sm'>
-                  <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
-                  <dd className='text-muted-foreground'>{desc}</dd>
-                </div>
-              ))}
-            </dl>
-          </Section>
-
-          {/* Emphasis */}
-          <Section
-            title='Emphasis'
-            description={
-              <>
-                A segment may name its own emphasis. A <code>solid</code> or <code>soft</code> child
-                paints its own fill inside the group, which is how a Save sits beside a ghost Cancel
-                as the row&apos;s primary action, and how a split button pairs an action with its
-                menu. Two solid segments divide with a reversed hairline. Any other child variant —{' '}
-                <code>outline</code>, <code>ghost</code>, <code>link</code> — renders as a plain
-                segment, so the shadcn idiom of writing <code>variant=&apos;outline&apos;</code> on
-                every child draws no second border.
-              </>
-            }
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                <Cell label='primary action'>
-                  <ButtonGroup>
-                    <Button>Cancel</Button>
-                    <Button variant='solid'>Save and continue</Button>
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='split button'>
-                  <ButtonGroup>
-                    <Button variant='solid'>Save</Button>
-                    <Button
-                      variant='solid'
-                      iconOnly
-                      aria-label='More save options'
-                      leadingVisual={IconExpandMore}
-                    />
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='soft segment'>
-                  <ButtonGroup aria-label='View'>
-                    <Button>Day</Button>
-                    <Button variant='soft'>Week</Button>
-                    <Button>Month</Button>
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='on a band'>
-                  <ButtonGroup variant='solid' aria-label='View'>
-                    <Button>Day</Button>
-                    <Button variant='soft'>Week</Button>
-                    <Button>Month</Button>
-                  </ButtonGroup>
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* Sizes */}
-          <Section
-            title='Sizes'
-            description={
-              <>
-                Button&apos;s three scale steps — <code>sm</code>, <code>default</code>,{' '}
-                <code>lg</code> — as the default for every segment. A group is exactly as tall as
-                the lone Button beside it: the frame is drawn inside the box, not around it.{' '}
-                <code>icon</code> is not offered, because the group clips to its own box and would
-                cut off the 44px touch expansion the 40px chrome square relies on; pair{' '}
-                <code>iconOnly</code> with <code>sm</code> instead.
-              </>
-            }
-          >
-            <Preview>
-              <div className='flex flex-wrap items-end gap-8'>
-                {sizes.map((size) => (
-                  <Cell key={size} label={size}>
-                    <ButtonGroup size={size} aria-label={`${size} clipboard`}>
-                      <Button>Copy</Button>
-                      <Button>Paste</Button>
-                    </ButtonGroup>
-                  </Cell>
-                ))}
-                <Cell label='iconOnly, sm'>
-                  <ButtonGroup size='sm' aria-label='Clipboard'>
-                    <Button iconOnly aria-label='Copy' leadingVisual={IconContentCopy} />
-                    <Button iconOnly aria-label='Paste' leadingVisual={IconContentPaste} />
-                    <Button iconOnly aria-label='Cut' leadingVisual={IconContentCut} />
-                  </ButtonGroup>
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* Colours */}
-          <Section
-            title='Colours'
-            description="The colour prop is Button's: it sets the ink the frame, band and dividers are drawn in, and the default colour of every segment. Shown here across the main group treatments."
-          >
-            <div className='space-y-10'>
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>Brand colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Drawn from the active masterbrand theme. Use <code>primary</code> for a group of
-                    main actions; <code>tertiary</code> and <code>accent</code> for supporting ones;{' '}
-                    <code>grey</code> for a neutral toolbar.
-                  </p>
-                </div>
-                <Preview className='space-y-3'>
-                  {brandColors.map((color) => (
-                    <ColorRow key={color} color={color} />
-                  ))}
-                </Preview>
-              </div>
-
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>On dark surfaces</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Theme colours designed to sit on coloured or dark backgrounds. The outline group
-                    draws no fill of its own, so a <code>white</code> frame on a primary panel stays
-                    a frame. Shown here on a primary background.
-                  </p>
-                </div>
-                <Preview dark className='space-y-3'>
-                  {onDarkColors.map((color) => (
-                    <ColorRow key={color} color={color} dark />
-                  ))}
-                </Preview>
-              </div>
-
-              <div className='space-y-4'>
-                <div className='space-y-1'>
-                  <h3 className='text-lg font-semibold'>Semantic colours</h3>
-                  <p className='max-w-2xl text-sm leading-relaxed text-muted-foreground'>
-                    Fixed meanings that stay constant across themes. A <code>danger</code> split
-                    button is the common case: Delete, with its options under the chevron.
-                  </p>
-                </div>
-                <Preview className='space-y-3'>
-                  {semanticColors.map((color) => (
-                    <ColorRow key={color} color={color} />
-                  ))}
-                </Preview>
-              </div>
-            </div>
-          </Section>
-
-          {/* Orientation */}
-          <Section
-            title='Orientation'
-            description='The same rules rotated. A vertical group stacks its segments and moves the hairline to the top edge of each one.'
-          >
-            <Preview>
-              <div className='flex flex-wrap items-start gap-8'>
-                {orientations.map((orientation) => (
-                  <Cell key={orientation} label={orientation}>
-                    <ButtonGroup orientation={orientation} aria-label={`${orientation} group`}>
-                      <Button>Top</Button>
-                      <Button>Middle</Button>
-                      <Button>Bottom</Button>
-                    </ButtonGroup>
-                  </Cell>
-                ))}
-              </div>
-            </Preview>
-          </Section>
-
-          {/* Inline text and separators */}
-          <Section
-            title='Inline text and separators'
-            description={
-              <>
-                <code>ButtonGroupText</code> is an inline label between segments — a unit, a count,
-                a mode — at the body size, never fine print. <code>ButtonGroupSeparator</code> is a
-                semantic boundary for assistive technology; every segment is already divided by a
-                hairline, so it draws nothing of its own.
-              </>
-            }
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                <Cell label='text cell'>
-                  <ButtonGroup aria-label='Formatting'>
-                    <Button iconOnly aria-label='Bold' leadingVisual={IconFormatBold} />
-                    <ButtonGroupText>Aa</ButtonGroupText>
-                    <Button iconOnly aria-label='Italic' leadingVisual={IconFormatItalic} />
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='separator'>
-                  <ButtonGroup aria-label='Clipboard'>
-                    <Button>Copy</Button>
-                    <Button>Paste</Button>
-                    <ButtonGroupSeparator />
-                    <Button>Cut</Button>
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='on a band'>
-                  <ButtonGroup variant='solid' aria-label='Formatting'>
-                    <Button>Bold</Button>
-                    <ButtonGroupText>Aa</ButtonGroupText>
-                    <Button>Italic</Button>
-                  </ButtonGroup>
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* States */}
-          <Section
-            title='States'
-            description="A disabled segment dims itself and leaves the tab order. The hairline before it is drawn on the segment before it, so the row's dividers stay at one strength. A loading segment shows a spinner and blocks interaction."
-          >
-            <Preview>
-              <div className='flex flex-wrap items-center gap-8'>
-                <Cell label='disabled'>
-                  <ButtonGroup aria-label='Clipboard'>
-                    <Button>Copy</Button>
-                    <Button disabled>Paste</Button>
-                    <Button>Cut</Button>
-                  </ButtonGroup>
-                </Cell>
-                <Cell label='loading'>
-                  <ButtonGroup>
-                    <Button>Cancel</Button>
-                    <Button variant='solid' loading>
-                      Save
-                    </Button>
-                  </ButtonGroup>
-                </Cell>
-              </div>
-            </Preview>
-          </Section>
-
-          {/* As links */}
-          <Section
-            title='With links'
-            description='ButtonLink is a segment like any other. Mix navigation and actions in one row when they belong to one job.'
-          >
-            <Preview className='flex flex-wrap items-center gap-8'>
-              <Cell label='mixed'>
-                <ButtonGroup aria-label='Record'>
-                  <ButtonLink href='#view'>View</ButtonLink>
-                  <ButtonLink href='#history'>History</ButtonLink>
-                  <Button variant='solid'>Edit</Button>
-                </ButtonGroup>
-              </Cell>
-            </Preview>
-          </Section>
-
-          {/* In a popup */}
-          <Section
-            title='In a popup'
-            description={
-              <>
-                A popup opened from a segment renders through a portal, which React context follows.
-                Every popup in this package resets the group at its portal, so the Buttons inside
-                render normally. Wrap the contents of an overlay from another library in{' '}
-                <code>ButtonGroupBoundary</code> to get the same.
-              </>
-            }
-          >
-            <Preview className='flex items-center'>
-              <ButtonGroup>
-                <Button variant='solid'>Save</Button>
-                <Popover>
-                  <PopoverTrigger
-                    render={
-                      <Button
-                        variant='solid'
-                        iconOnly
-                        aria-label='More save options'
-                        leadingVisual={IconExpandMore}
-                      />
-                    }
-                  />
-                  <PopoverContent>
-                    <Button variant='soft' block>
-                      Save as draft
-                    </Button>
-                    <Button variant='ghost' block>
-                      Save and close
-                    </Button>
-                  </PopoverContent>
-                </Popover>
-              </ButtonGroup>
-            </Preview>
-          </Section>
-        </div>
-      ),
+      page: ButtonGroupDocs,
       description: {
         component:
           "Joins related Buttons into one control, horizontally or vertically. Takes Button's variant family (outline by default, solid, soft, surface, ghost), its colour tokens and its size steps, and hands them to its segments as defaults; a segment may name its own emphasis, so a solid Save sits inside an outline group as the row's primary action. Mix in ButtonGroupText for an inline label and ButtonGroupSeparator for a semantic boundary.",
@@ -517,8 +695,22 @@ const meta = {
     orientation: 'horizontal',
     color: 'primary',
     size: 'default',
+    'aria-label': 'Clipboard',
+    children: (
+      <>
+        <Button>Copy</Button>
+        <Button>Paste</Button>
+        <Button>Cut</Button>
+      </>
+    ),
   },
   argTypes: {
+    children: {
+      control: false,
+      description:
+        'Buttons, ButtonLinks, ButtonGroupText and ButtonGroupSeparator, as direct children.',
+      table: { category: 'Content' },
+    },
     variant: {
       control: 'inline-radio',
       options: variants,
@@ -549,9 +741,7 @@ const meta = {
       description: 'Accessible name for the group, announced before its segments.',
       table: { category: 'Accessibility' },
     },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
+    className: { table: { disable: true } },
   },
 } satisfies Meta<typeof ButtonGroup>
 
@@ -569,13 +759,6 @@ function isPainted(color: string) {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
-  render: (args) => (
-    <ButtonGroup {...args} aria-label='Clipboard'>
-      <Button>Copy</Button>
-      <Button>Paste</Button>
-      <Button>Cut</Button>
-    </ButtonGroup>
-  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
 
@@ -609,66 +792,6 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  render: () => (
-    <div className='flex flex-col gap-6'>
-      {variants.map((variant) => (
-        <div key={variant} className='flex flex-wrap items-start gap-4'>
-          <ButtonGroup variant={variant} aria-label={`${variant} clipboard`}>
-            <Button>Copy</Button>
-            <Button>Paste</Button>
-            <Button>Cut</Button>
-          </ButtonGroup>
-          <ButtonGroup variant={variant}>
-            <Button variant='solid'>Save</Button>
-            <Button
-              variant='solid'
-              iconOnly
-              aria-label='More save options'
-              leadingVisual={IconExpandMore}
-            />
-          </ButtonGroup>
-          <ButtonGroup variant={variant}>
-            <Button>Cancel</Button>
-            <Button variant='solid'>Save and continue</Button>
-          </ButtonGroup>
-          <ButtonGroup variant={variant} aria-label={`${variant} formatting`}>
-            <Button>Bold</Button>
-            <ButtonGroupText>Aa</ButtonGroupText>
-            <Button>Italic</Button>
-          </ButtonGroup>
-          <ButtonGroup variant={variant}>
-            <Button>Rest</Button>
-            <Button variant='soft'>Soft</Button>
-            <Button disabled>Off</Button>
-          </ButtonGroup>
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-
-    // A child that asks for emphasis keeps it, whatever the group variant.
-    for (const save of canvas.getAllByRole('button', { name: 'Save' })) {
-      await expect(save).toHaveAttribute('data-variant', 'solid')
-      await expect(save).toHaveAttribute('data-segment', 'override')
-    }
-    for (const soft of canvas.getAllByRole('button', { name: 'Soft' })) {
-      await expect(soft).toHaveAttribute('data-variant', 'soft')
-      await expect(soft).toHaveAttribute('data-segment', 'override')
-    }
-
-    // In a solid band every segment that is not itself solid takes the band's
-    // label colour as its ink, so nothing is blue on blue.
-    const band = canvas.getByRole('group', { name: 'solid clipboard' })
-    const solidLabel = getComputedStyle(canvas.getAllByRole('button', { name: 'Save' })[0]!).color
-    for (const segment of within(band).getAllByRole('button')) {
-      await expect(getComputedStyle(segment).color).toBe(solidLabel)
-    }
-  },
-}
-
 export const Playground: Story = {
   name: 'Playground',
   parameters: {
@@ -680,46 +803,7 @@ export const Playground: Story = {
   },
   render: (args) => (
     <div className='w-full max-w-xl rounded-sm border border-border bg-background p-6'>
-      <ButtonGroup {...args} aria-label='Clipboard'>
-        <Button>Copy</Button>
-        <Button>Paste</Button>
-        <Button>Cut</Button>
-      </ButtonGroup>
+      <ButtonGroup {...args} />
     </div>
   ),
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  render: () => (
-    <ButtonGroup aria-label='Clipboard'>
-      <Button>One</Button>
-      <ButtonGroupText>Aa</ButtonGroupText>
-      <Button>Two</Button>
-    </ButtonGroup>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const group = canvas.getByRole('group', { name: 'Clipboard' })
-
-    // Proves globals.css loaded: the outline frame is an inset ring in the
-    // ink, which only resolves when the token layers are present.
-    const shadow = getComputedStyle(group).boxShadow
-    if (shadow === '' || shadow === 'none') {
-      throw new Error(`Expected the outline frame ring to paint, received "${shadow}".`)
-    }
-
-    // The text cell sits at the body size, never fine print, and its
-    // background stops at the padding box so the frame shows through.
-    const cell = canvasElement.querySelector<HTMLElement>('[data-slot="button-group-text"]')
-    if (!cell) {
-      throw new Error('Could not find [data-slot="button-group-text"].')
-    }
-    await expect(parseFloat(getComputedStyle(cell).fontSize)).toBeGreaterThanOrEqual(16)
-    await expect(getComputedStyle(cell).backgroundClip).toBe('padding-box')
-
-    // The group is exactly one button tall: the frame adds no height.
-    const button = canvas.getByRole('button', { name: 'One' })
-    await expect(group.getBoundingClientRect().height).toBe(button.getBoundingClientRect().height)
-  },
 }

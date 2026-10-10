@@ -408,18 +408,30 @@ indefinitely. `check:registry-resolves` fails on the orphan if you forget.
 
 ### Step 4 — Write a Storybook story
 
+Every component's stories take Button's shape, defined in
+[docs/reference-storybook-standard.md](docs/reference-storybook-standard.md). Button is the
+reference — copy it, not a neighbour:
+
 ```
-packages/ui/src/components/<name>.stories.tsx
+packages/ui/src/components/<name>.stories.tsx                Components/<Name>
+packages/ui/src/components/<name>.features.stories.tsx       Components/<Name>/Features
+packages/ui/src/components/<name>.accessibility.stories.tsx  Components/<Name>/Accessibility
+packages/ui/src/components/<name>.tests.stories.tsx          Components/<Name>/Tests (optional, hidden)
 ```
 
-**Minimum required stories** (follow `button.stories.tsx` as the canonical example):
+- **The main file** holds the docs page, built from the docs kit in `story-helpers.tsx`
+  (`DocsPage`, `DocsUsage`, `ExampleSection`, `Example`, `ExampleCell`, `DocsApi`), which
+  renders exactly like Button's page — plus `Default` (with a `play()` proving it mounted) and
+  `Playground`. Its sections are exported and kept out of the index with
+  `excludeStories: /Section$/`.
+- **The Features file** has one story per docs section, rendering the same section components.
+- **The Accessibility file** has one story per WCAG 2.2 criterion the component must meet, named
+  `<W3C title> — <number>`, each asserting its criterion in `play()`.
+- **The Tests file**, if any, holds the `CssCheck` story (a computed-style assertion proving
+  globals.css loaded) and regressions, tagged `['!dev', '!autodocs']`.
 
-- `Default` — with a `play()` test proving the component mounts and is interactive.
-- `Variants` — one story rendering all meaningful variant combinations.
-- A `CssCheck` story asserting a computed style property — this proves globals.css loaded.
-
-Stories live in `packages/ui/src/` but are **excluded from the tsup build** (see tsup.config.ts:
-`name.endsWith('.stories.tsx')` check).
+`check:stories` (§5) enforces the shape. Stories live in `packages/ui/src/` but are **excluded
+from the tsup build** (see tsup.config.ts: `name.endsWith('.stories.tsx')` check).
 
 ---
 
@@ -449,6 +461,7 @@ Run from the **repo root** unless noted.
 | Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                   |
+| Check the story standard        | `npm run check:stories -w @nswds/ui`                           |
 | Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                      |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
 | Check published package         | `npm run check:package -w @nswds/ui`                           |
@@ -467,7 +480,7 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:workflows`, `test:scripts`, `check:drift`,
 `check:radius`, `check:icons`, `check:portal-boundary`,
-`check:theme-parity`, the
+`check:theme-parity`, `check:stories`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, the Next app builds
 (`build -w web -w infographics`), `check:package`,
@@ -492,12 +505,12 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs`.
-  Today that is the `check:workflows` scanner, the `check:portal-boundary` and
-  `check:theme-parity` gates, and a guard pinning `globals.css`'s `@source`
-  directives to `packages/ui/src` (one outside it leaks every app's classes into
-  every other app's CSS, which no build or visual check can see), and it is not
-  belt-and-braces: the scanner's first version silently
-  missed every `- run:` written as a YAML sequence item — the common form —
+  Today that is the `check:workflows` scanner, the `check:portal-boundary`,
+  `check:theme-parity` and `check:stories` gates, and a guard pinning
+  `globals.css`'s `@source` directives to `packages/ui/src` (one outside it
+  leaks every app's classes into every other app's CSS, which no build or
+  visual check can see), and it is not belt-and-braces: the scanner's first
+  version silently missed every `- run:` written as a YAML sequence item — the common form —
   while still passing `release.yml`, which happens to use the bare `run:` form,
   and the portal gate's first version passed three shapes that leak because it
   checked only a prefix. A gate that stops gating exits 0, which reads exactly
@@ -559,6 +572,17 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   merely begins with it. A self-closing `<X.Portal />` fails by construction —
   it wraps nothing, and that is the shape every one of these files had before
   the boundary landed.
+- **`check:stories`** (`packages/ui/scripts/check-stories.mjs`) holds every
+  story file to [the Storybook standard](docs/reference-storybook-standard.md),
+  which is Button's shape: a main file with a kit-built docs page, `Default`
+  and `Playground`; a Features file and an Accessibility file for every
+  component and pattern; `Components/<ExportName>` titles; WCAG-named
+  accessibility stories; hidden Tests; and the 16px floor. Nothing else reads a
+  story file for its shape — a file that breaks the standard still lints,
+  typechecks and passes its `play()`. It parses the TypeScript syntax tree for
+  the same reason the portal gate does, its recorded exceptions (`REFERENCE`,
+  `EXTRAS`, `GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each carry a reason, and
+  it is self-tested under `test:scripts`.
 - **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
   asserts the shadcn→NSW token map is identical across the two channels that
   ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,

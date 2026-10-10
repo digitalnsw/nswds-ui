@@ -3,8 +3,10 @@
  *
  * Regression stories that exist for CI rather than for readers: fallbacks,
  * the ellipsis trigger's escape hatches, and the collapse measurement's edge
- * cases. Hidden from the sidebar and docs (`!dev`, `!autodocs`), as Badge's and
- * Tag's tests are; the Storybook test run still plays every one.
+ * cases, then the CSS check. The look matrices, ellipsis menu, wrapping and
+ * collapse contracts live in breadcrumb.features.stories.tsx. Hidden from the
+ * sidebar and docs (`!dev`, `!autodocs`); the Storybook test run still plays
+ * every one. The examples a reader needs are on the Breadcrumb docs page.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -634,5 +636,32 @@ export const CollapseWhileHidden: Story = {
     holder.style.display = 'block'
     await waitFor(() => expect(nav).toHaveAttribute('data-measured'))
     await expect(nav).not.toHaveAttribute('data-collapsed')
+  },
+}
+
+// ─── CSS check ────────────────────────────────────────────────────────────────
+
+export const CssCheck: Story = {
+  name: 'CssCheck',
+  render: () => (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
+      </BreadcrumbList>
+    </Breadcrumb>
+  ),
+  play: async ({ canvasElement }) => {
+    // Proves globals.css loaded: the list's separator colour resolves through
+    // --bc-separator to a real colour rather than staying unset.
+    const list = canvasElement.querySelector<HTMLElement>('[data-slot="breadcrumb-list"]')
+    if (!list) {
+      throw new Error('Could not find [data-slot="breadcrumb-list"].')
+    }
+    const color = getComputedStyle(list).color
+    if (color === '' || color === 'rgba(0, 0, 0, 0)' || color === 'transparent') {
+      throw new Error(`Expected the --muted-foreground token to resolve, received "${color}".`)
+    }
+    // The 16px text floor: the trail used to render at 12px.
+    await expect(getComputedStyle(list).fontSize).toBe('16px')
   },
 }

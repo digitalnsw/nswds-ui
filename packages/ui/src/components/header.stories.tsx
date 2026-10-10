@@ -1,12 +1,17 @@
 /**
- * Header — Default + Colours + Containers + Actions + Scroll + Playground
+ * Header — the top-of-page banner landmark.
  *
- * The top-of-page banner landmark: brand lockup, site name, optional version
- * badge and a slot for header controls. Sits below SkipLinks and Masthead.
+ *   Components/Header                → this file: Docs, Default, Playground
+ *   Components/Header/Features       → header.features.stories.tsx
+ *   Components/Header/Accessibility  → header.accessibility.stories.tsx
+ *   Components/Header/Tests          → header.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import React from 'react'
+import type * as React from 'react'
 
 import { IconDarkMode } from '../icons/dark-mode.js'
 import { IconMenu } from '../icons/menu.js'
@@ -15,125 +20,10 @@ import { IconSearch } from '../icons/search.js'
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
 import { Masthead } from './masthead.js'
-import { SkipLinks } from './skip-link.js'
+import { SkipLink, SkipLinks } from './skip-link.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
-const meta = {
-  title: 'Components/Header',
-  component: Header,
-  tags: ['autodocs'],
-  parameters: {
-    layout: 'fullscreen',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>Header</h1>
-            <p className='text-base text-muted-foreground'>
-              The header carries the NSW Government brand, the service name and the controls that
-              belong to every page. It sits directly below the Masthead, with SkipLinks rendered
-              before both. Compose the row from <code>HeaderBrand</code> and{' '}
-              <code>HeaderActions</code>.
-            </p>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Colours</h2>
-            <p className='text-base text-muted-foreground'>
-              Four surfaces, sharing the Masthead&rsquo;s vocabulary so one word themes the whole
-              page chrome. Every text/background pair is WCAG 2.2 AAA, in both light and dark mode.
-            </p>
-            {/* Unique ids: the component defaults to id="nsw-header", which is
-                only valid once per page. */}
-            <div className='space-y-2'>
-              <Header id='docs-header-white' color='white' sticky={false}>
-                <HeaderBrand sitename='White' />
-              </Header>
-              <Header id='docs-header-light' color='light' sticky={false}>
-                <HeaderBrand sitename='Light' />
-              </Header>
-              <Header id='docs-header-dark' color='dark' sticky={false}>
-                <HeaderBrand sitename='Dark' />
-              </Header>
-              <Header id='docs-header-grey' color='grey' sticky={false}>
-                <HeaderBrand sitename='Grey' />
-              </Header>
-            </div>
-          </section>
-
-          <section className='space-y-4'>
-            <h2 className='text-2xl font-bold tracking-normal'>Scroll state</h2>
-            <p className='text-base text-muted-foreground'>
-              A sticky header exposes <code>data-scrolled</code> once the page has moved off the
-              top. The built-in <code>shadow</code> treatment keys off it; style your own scrolled
-              state with the same attribute.
-            </p>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'Top-of-page banner landmark with brand lockup, site name, version badge and a slot for header controls, in four WCAG 2.2 AAA surface colours.',
-      },
-    },
-  },
-  args: {
-    color: 'white',
-    container: 'fluid',
-    sticky: true,
-    border: true,
-    shadow: true,
-  },
-  argTypes: {
-    color: {
-      control: 'inline-radio',
-      options: ['white', 'light', 'dark', 'grey'],
-      description:
-        'Surface colour, sharing the Masthead and SkipLink vocabulary. Every pair is WCAG 2.2 AAA and follows the theme in dark mode.',
-      table: { category: 'Appearance' },
-    },
-    container: {
-      control: 'inline-radio',
-      options: ['fluid', 'contained'],
-      description:
-        'Inner wrapper layout — fluid is full-bleed (nswds-app), contained centres a 1200px column (legacy nsw-container).',
-      table: { category: 'Layout' },
-    },
-    sticky: {
-      control: 'boolean',
-      description: 'Stick to the top of the viewport as the page scrolls.',
-      table: { category: 'Layout' },
-    },
-    border: {
-      control: 'boolean',
-      description: 'Hairline rule along the bottom edge, derived from the surface ink.',
-      table: { category: 'Appearance' },
-    },
-    shadow: {
-      control: 'boolean',
-      description: 'Raise the header with a shadow once the page is scrolled.',
-      table: { category: 'Appearance' },
-    },
-    children: {
-      table: { disable: true, category: 'Content' },
-    },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
-    containerClassName: {
-      table: { disable: true, category: 'Advanced' },
-    },
-  },
-} satisfies Meta<typeof Header>
-
-export default meta
-
-type Story = StoryObj<typeof meta>
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+const HEADER_COLORS = ['white', 'light', 'dark', 'grey'] as const
 
 function getHeader(canvasElement: HTMLElement) {
   const el = canvasElement.querySelector<HTMLElement>('[data-slot="header"]')
@@ -141,18 +31,6 @@ function getHeader(canvasElement: HTMLElement) {
     throw new Error('Could not find an element with [data-slot="header"].')
   }
   return el
-}
-
-/** Poll until `predicate` holds, so scroll-driven state has time to settle. */
-async function waitFor(predicate: () => boolean, message: string, timeout = 2000) {
-  const deadline = Date.now() + timeout
-  while (Date.now() < deadline) {
-    if (predicate()) {
-      return
-    }
-    await new Promise((resolve) => setTimeout(resolve, 16))
-  }
-  throw new Error(message)
 }
 
 /** Stand-in for the controls an app supplies — search, theme, navigation. */
@@ -185,10 +63,400 @@ function DemoActions() {
   )
 }
 
-// ─── Stories ──────────────────────────────────────────────────────────────────
+/**
+ * A labelled full-width specimen. ExampleCell sizes its child to its content,
+ * which would shrink a full-bleed header to the width of its brand.
+ */
+function Strip({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className='space-y-2'>
+      <p className='text-base text-muted-foreground'>{label}</p>
+      <div className='ring-1 ring-foreground/10'>{children}</div>
+    </div>
+  )
+}
 
-export const Default: Story = {
+const sitename = 'Department of Primary Industries'
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Every Header on the docs page takes its own id (the component defaults to
+// id="nsw-header", valid once per page) and sticky={false}, so the specimens
+// stack instead of pinning to the top of the docs page.
+
+export function ColoursSection() {
+  return (
+    <ExampleSection
+      title='Colours'
+      description={
+        <>
+          Four surfaces, sharing the Masthead&rsquo;s vocabulary so one word themes the whole page
+          chrome. Every text/background pair is WCAG 2.2 AAA, in both light and dark mode. On{' '}
+          <code>dark</code> and <code>grey</code> the brand switches itself to the reversed logo and
+          a white version badge — the NSW logo never inherits a colour, so the surface decides it.
+          All four deepen in dark mode.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Header color="dark">…</Header>`}>
+        <div className='space-y-6'>
+          {HEADER_COLORS.map((color) => (
+            <Strip key={color} label={color === 'white' ? 'white (default)' : color}>
+              <Header id={`header-colour-${color}`} color={color} sticky={false}>
+                <HeaderBrand sitename={sitename} version='2.1.0' />
+              </Header>
+            </Strip>
+          ))}
+        </div>
+      </Example>
+      <Example layout='fill' surface='dark'>
+        <div className='space-y-6'>
+          {HEADER_COLORS.map((color) => (
+            <Strip key={color} label={`${color} — dark mode`}>
+              <Header id={`header-colour-dark-${color}`} color={color} sticky={false}>
+                <HeaderBrand sitename={sitename} version='2.1.0' />
+              </Header>
+            </Strip>
+          ))}
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function BrandSection() {
+  return (
+    <ExampleSection
+      title='Brand'
+      description={
+        <>
+          <code>HeaderBrand</code> links the NSW Government logo and the site name to the home page.
+          The site name is a <code>span</code>, never a heading — the page&apos;s own{' '}
+          <code>h1</code> belongs to its main content. The version badge sits outside the link and
+          reads “Version 2.1.0” to a screen reader; <code>badgeProps</code> reaches the badge when a
+          house rule needs a larger size.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<HeaderBrand sitename="Department of Primary Industries" version="2.1.0" />`}
+      >
+        <div className='space-y-6'>
+          <Strip label='logo only'>
+            <Header id='header-brand-logo' sticky={false}>
+              <HeaderBrand />
+            </Header>
+          </Strip>
+          <Strip label='sitename'>
+            <Header id='header-brand-sitename' sticky={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='sitename + version'>
+            <Header id='header-brand-version' sticky={false}>
+              <HeaderBrand sitename={sitename} version='2.1.0' />
+            </Header>
+          </Strip>
+          <Strip label={`badgeProps={{ size: 'lg' }}`}>
+            <Header id='header-brand-badge' sticky={false}>
+              <HeaderBrand sitename={sitename} version='2.1.0' badgeProps={{ size: 'lg' }} />
+            </Header>
+          </Strip>
+          <Strip label='logo={false}'>
+            <Header id='header-brand-no-logo' sticky={false}>
+              <HeaderBrand logo={false} sitename={sitename} />
+            </Header>
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithActionsSection() {
+  return (
+    <ExampleSection
+      title='With actions'
+      description={
+        <>
+          <code>HeaderActions</code> is the trailing slot for search, a theme switcher or sign-in. A
+          row of icons uses <code>size=&quot;icon&quot;</code>, the 40×40 chrome square. Beside a
+          labelled control, use <code>iconOnly</code> at the labelled control&apos;s{' '}
+          <code>size</code> instead, so the row shares one height, and keep the label on one line
+          with <code>labelWrap=&#123;false&#125;</code>.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<HeaderActions>
+  <Button variant="ghost" color="grey" size="icon" aria-label="Search" leadingVisual={IconSearch} />
+</HeaderActions>`}
+      >
+        <Strip label='icons only'>
+          <Header id='header-actions-icons' sticky={false}>
+            <HeaderBrand sitename={sitename} />
+            <DemoActions />
+          </Header>
+        </Strip>
+      </Example>
+      <Example
+        layout='fill'
+        code={`<HeaderActions>
+  <Button variant="ghost" color="grey" iconOnly aria-label="Search" leadingVisual={IconSearch} />
+  <ButtonLink href="/sign-in" variant="outline" labelWrap={false}>Sign in</ButtonLink>
+</HeaderActions>`}
+      >
+        <Strip label='icons beside a labelled action'>
+          <Header id='header-actions-mixed' sticky={false}>
+            <HeaderBrand sitename={sitename} />
+            <HeaderActions>
+              <Button
+                variant='ghost'
+                color='grey'
+                iconOnly
+                aria-label='Search'
+                leadingVisual={IconSearch}
+              />
+              <Button
+                variant='ghost'
+                color='grey'
+                iconOnly
+                aria-label='Switch to dark theme'
+                leadingVisual={IconDarkMode}
+              />
+              <ButtonLink href='#sign-in' variant='outline' labelWrap={false}>
+                Sign in
+              </ButtonLink>
+            </HeaderActions>
+          </Header>
+        </Strip>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ScrollStateSection() {
+  return (
+    <ExampleSection
+      title='Scroll state'
+      description={
+        <>
+          A sticky header exposes <code>data-scrolled</code> once the page has moved off the top.
+          The built-in <code>shadow</code> treatment keys off it; style your own scrolled state with
+          the same attribute.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<Header className="data-scrolled:border-transparent">…</Header>`}
+      >
+        <div className='space-y-6'>
+          <Strip label='at the top of the page'>
+            <Header id='header-scroll-top' sticky={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='data-scrolled'>
+            {/* data-scrolled pinned on for the specimen; a real header sets it
+                itself as the page scrolls. */}
+            <Header id='header-scroll-scrolled' sticky={false} data-scrolled=''>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function BorderAndShadowSection() {
+  return (
+    <ExampleSection
+      title='Border and shadow'
+      description={
+        <>
+          By default the header draws a hairline along its bottom edge in its own ink, and a light
+          shadow once it is scrolled. Turn either off when the header sits on a band of the same
+          colour, or when something directly below it draws its own edge.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Header border={false} shadow={false}>…</Header>`}>
+        <div className='space-y-6'>
+          <Strip label='border (default)'>
+            <Header id='header-edge-border' sticky={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='border={false}'>
+            <Header id='header-edge-none' sticky={false} border={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='scrolled, shadow={false}'>
+            <Header id='header-edge-no-shadow' sticky={false} shadow={false} data-scrolled=''>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ContainersSection() {
+  return (
+    <ExampleSection
+      title='Containers'
+      description={
+        <>
+          <code>fluid</code> (the default) runs the row from the page edge; <code>contained</code>{' '}
+          centres it in a 1200px column. Retune either with <code>--header-max-width</code> and{' '}
+          <code>--header-padding-x</code>; set the max width on a shared ancestor to line the
+          Masthead and Breadcrumb up with it.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Header container="contained">…</Header>`}>
+        <div className='space-y-6'>
+          <Strip label='fluid'>
+            <Header id='header-container-fluid' container='fluid' color='light' sticky={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='contained'>
+            <Header
+              id='header-container-contained'
+              container='contained'
+              color='light'
+              sticky={false}
+            >
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='contained, --header-max-width: 40rem'>
+            <Header
+              id='header-container-custom'
+              container='contained'
+              color='light'
+              sticky={false}
+              style={{ '--header-max-width': '40rem' } as React.CSSProperties}
+            >
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='SkipLinks, Masthead and Header stack in that order at the top of every page. Click inside the frame and press Tab to reveal the skip links above the masthead.'
+    >
+      <Example
+        layout='fill'
+        code={`<SkipLinks />
+<Masthead />
+<Header>
+  <HeaderBrand sitename="Department of Primary Industries" version="2.1.0" />
+  <HeaderActions>…</HeaderActions>
+</Header>`}
+      >
+        {/* SkipLinks is `fixed` to the viewport; `absolute` keeps it inside
+            this frame instead of the top of the docs page. */}
+        <div className='relative overflow-hidden ring-1 ring-foreground/10'>
+          {/* One link, to a frame-scoped id: the default pair also targets
+              #nav, and this frame has no navigation to skip to. */}
+          <SkipLinks color='dark' className='absolute'>
+            <SkipLink color='dark' href='#header-context-content'>
+              Skip to content
+            </SkipLink>
+          </SkipLinks>
+          <Masthead id='header-context-masthead' color='dark' />
+          <Header id='header-context' color='white' sticky={false}>
+            <HeaderBrand sitename={sitename} version='2.1.0' />
+            <DemoActions />
+          </Header>
+          <div
+            id='header-context-content'
+            className='space-y-2 bg-background px-6 py-6 text-foreground'
+          >
+            <p className='text-2xl font-bold'>Apply for a recreational fishing licence</p>
+            <p className='text-base'>
+              You need a licence to fish in NSW waters, including from the shore.
+            </p>
+          </div>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function HeaderDocs() {
+  return (
+    <DocsPage
+      title='Header'
+      npm={['Header', 'HeaderBrand', 'HeaderActions']}
+      registry='header'
+      summary={
+        <>
+          The header carries the NSW Government brand, the service name and the controls that belong
+          to every page. It sits directly below the Masthead, with SkipLinks rendered before both.
+          Compose the row from <code>HeaderBrand</code> and <code>HeaderActions</code>. It is the
+          page&apos;s <code>banner</code> landmark, so render it once.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'The top of every page, rendered once in a shared layout below the Masthead.',
+          'Naming the service beside the NSW Government logo, linked to its home page.',
+          'Holding a few site-wide controls — search, theme, sign-in.',
+        ]}
+        avoid={[
+          'Listing the sections of the site — use MainNav below the Header.',
+          'Moving around on a small screen — use MobileNav, opened from a HeaderActions button.',
+          'Saying the site is an official NSW Government website — use Masthead.',
+        ]}
+      />
+      <ColoursSection />
+      <BrandSection />
+      <WithActionsSection />
+      <ScrollStateSection />
+      <BorderAndShadowSection />
+      <ContainersSection />
+      <InContextSection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const meta = {
+  title: 'Components/Header',
+  component: Header,
+  tags: ['autodocs'],
+  excludeStories: /Section$/,
+  parameters: {
+    layout: 'fullscreen',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: HeaderDocs },
+  },
   args: {
+    color: 'white',
+    container: 'fluid',
+    sticky: true,
+    border: true,
+    shadow: true,
     children: (
       <>
         <HeaderBrand sitename='Design System' version='2.1.0' />
@@ -196,6 +464,58 @@ export const Default: Story = {
       </>
     ),
   },
+  argTypes: {
+    color: {
+      control: 'inline-radio',
+      options: HEADER_COLORS,
+      description:
+        'Surface colour, sharing the Masthead and SkipLinks vocabulary. Every pair is WCAG 2.2 AAA and deepens in dark mode.',
+      table: { category: 'Appearance' },
+    },
+    container: {
+      control: 'inline-radio',
+      options: ['fluid', 'contained'],
+      description:
+        'Inner wrapper layout — fluid is full-bleed, contained centres a 1200px column. Retune with --header-max-width and --header-padding-x.',
+      table: { category: 'Appearance' },
+    },
+    border: {
+      control: 'boolean',
+      description: 'Hairline rule along the bottom edge, derived from the surface ink.',
+      table: { category: 'Appearance' },
+    },
+    shadow: {
+      control: 'boolean',
+      description: 'Raise the header with a shadow once the page is scrolled.',
+      table: { category: 'Appearance' },
+    },
+    sticky: {
+      control: 'boolean',
+      description: 'Stick to the top of the viewport as the page scrolls.',
+      table: { category: 'Behavior' },
+    },
+    children: {
+      control: false,
+      description: 'The row: a HeaderBrand, then HeaderActions.',
+      table: { category: 'Content' },
+    },
+    id: {
+      control: 'text',
+      description: 'Defaults to "nsw-header" for shells that target it. Unique per page.',
+      table: { category: 'Accessibility' },
+    },
+    className: { table: { disable: true } },
+    containerClassName: { table: { disable: true } },
+  },
+} satisfies Meta<typeof Header>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+// ─── Stories ──────────────────────────────────────────────────────────────────
+
+export const Default: Story = {
   play: async ({ canvasElement }) => {
     const header = getHeader(canvasElement)
 
@@ -265,336 +585,4 @@ export const Default: Story = {
   },
 }
 
-// Multi-instance stories pass unique ids: the component defaults to
-// id="nsw-header", which is only valid once per page. sticky={false} keeps
-// them stacked in the canvas instead of overlapping.
-export const Colours: Story = {
-  render: () => (
-    <div className='space-y-2'>
-      <Header id='header-white' color='white' sticky={false}>
-        <HeaderBrand sitename='White (default)' version='2.1.0' />
-      </Header>
-      <Header id='header-light' color='light' sticky={false}>
-        <HeaderBrand sitename='Light' version='2.1.0' />
-      </Header>
-      <Header id='header-dark' color='dark' sticky={false}>
-        <HeaderBrand sitename='Dark' version='2.1.0' />
-      </Header>
-      <Header id='header-grey' color='grey' sticky={false}>
-        <HeaderBrand sitename='Grey' version='2.1.0' />
-      </Header>
-      {/* A key that is merely present in badgeProps must not beat the
-          surface-aware default. Passing `color: undefined` used to reach cva,
-          which fell back to its own `primary` — this header's own background —
-          and the badge disappeared. The contrast check below covers it. */}
-      <Header id='header-dark-badge-undefined' color='dark' sticky={false}>
-        <HeaderBrand
-          sitename='Dark, badgeProps color undefined'
-          version='2.1.0'
-          badgeProps={{ color: undefined }}
-        />
-      </Header>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const headers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header"]')
-    if (headers.length !== 5) {
-      throw new Error(`Expected 5 headers, got ${headers.length}.`)
-    }
-
-    // The dark surfaces must not paint the default (blue) wordmark, which
-    // would disappear against them — HeaderBrand switches to the reversed
-    // lockup via the colour context.
-    for (const header of headers) {
-      const color = header.dataset.color
-      const wordmark = header.querySelector('svg path')
-      if (!wordmark) {
-        throw new Error(`Expected a logo inside the ${color} header.`)
-      }
-      const fill = getComputedStyle(wordmark).fill
-      if (fill === '' || fill === 'none') {
-        throw new Error(
-          `Expected the ${color} header's logo to have a resolved fill, got "${fill}".`,
-        )
-      }
-      const isReversed = wordmark.classList.contains('fill-white')
-      if ((color === 'dark' || color === 'grey') !== isReversed) {
-        throw new Error(
-          `Expected the ${color} header to use the ${
-            color === 'dark' || color === 'grey' ? 'reversed' : 'default'
-          } logo lockup.`,
-        )
-      }
-
-      // Same trap, second surface: Badge's primary ink IS the dark header's
-      // background, so the version would read as a blank rectangle on it.
-      const badge = header.querySelector<HTMLElement>('[data-slot="header-version"]')
-      if (!badge) {
-        throw new Error(`Expected a version badge inside the ${color} header.`)
-      }
-      if (getComputedStyle(badge).color === getComputedStyle(header).backgroundColor) {
-        throw new Error(`The ${color} header's version badge paints its own surface colour.`)
-      }
-    }
-  },
-}
-
-export const Containers: Story = {
-  render: () => (
-    <div className='space-y-2'>
-      <Header id='header-fluid' container='fluid' color='light' sticky={false}>
-        <HeaderBrand sitename='fluid — full-bleed (nswds-app parity)' />
-      </Header>
-      <Header id='header-contained' container='contained' color='light' sticky={false}>
-        <HeaderBrand sitename='contained — centred 1200px column' />
-      </Header>
-      <Header
-        id='header-contained-custom'
-        container='contained'
-        color='light'
-        sticky={false}
-        style={{ '--header-max-width': '40rem' } as React.CSSProperties}
-      >
-        <HeaderBrand sitename='contained — custom --header-max-width: 40rem' />
-      </Header>
-    </div>
-  ),
-}
-
-export const Brand: Story = {
-  name: 'Brand variations',
-  render: () => (
-    <div className='space-y-2'>
-      <Header id='header-brand-logo-only' sticky={false}>
-        <HeaderBrand />
-      </Header>
-      <Header id='header-brand-sitename' sticky={false}>
-        <HeaderBrand sitename='Service name' />
-      </Header>
-      <Header id='header-brand-version' sticky={false}>
-        <HeaderBrand sitename='Service name' version='2.1.0' />
-      </Header>
-      <Header id='header-brand-no-logo' sticky={false}>
-        <HeaderBrand logo={false} sitename='No logo' />
-      </Header>
-      <Header id='header-brand-badge-props' sticky={false}>
-        <HeaderBrand sitename='Larger version badge' version='2.1.0' badgeProps={{ size: 'lg' }} />
-      </Header>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const brands = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header-brand"]')
-    if (brands.length !== 5) {
-      throw new Error(`Expected 5 brands, got ${brands.length}.`)
-    }
-
-    const [, plain, , noLogo, badgeSized] = brands
-
-    // The site name is never a heading: the brand sits ahead of <main>, so a
-    // heading here would precede the page's own <h1> in the outline.
-    if (plain!.querySelector('h1, h2, h3, h4, h5, h6')) {
-      throw new Error('Expected the site name to render as a span, not a heading.')
-    }
-    // logo={false} removes the mark and its visually-hidden organisation name.
-    if (noLogo!.querySelector('svg')) {
-      throw new Error('Expected logo={false} to omit the logo.')
-    }
-
-    // badgeProps reaches the version Badge, and `lg` resolves to 16px at every
-    // viewport — the scale is flat, so this holds whatever width the test runs
-    // at. Both halves matter to a service held to a minimum type size: without
-    // the passthrough the size is unreachable, and before the scale was
-    // flattened `lg` still fell to 14px above 640px.
-    const sized = badgeSized!.querySelector<HTMLElement>('[data-slot="header-version"]')
-    if (!sized) {
-      throw new Error('Expected a version badge in the badgeProps header.')
-    }
-    const fontSize = getComputedStyle(sized).fontSize
-    if (fontSize !== '16px') {
-      throw new Error(`Expected badgeProps={{ size: 'lg' }} to render 16px text, got ${fontSize}.`)
-    }
-  },
-}
-
-export const Actions: Story = {
-  name: 'With actions',
-  render: () => (
-    <Header sticky={false}>
-      <HeaderBrand sitename='Design System' />
-      <DemoActions />
-    </Header>
-  ),
-}
-
-export const MixedActions: Story = {
-  name: 'With mixed actions',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'An action row that mixes icon buttons with a labelled one. `size="icon"` is the right call when the row is all icons (see "With actions"), but it is a flat 40×40 that matches no text step — drop it next to a `ButtonLink` and it sits short. Use `iconOnly` at the same `size` as the labelled control instead, and the row shares one height.',
-      },
-    },
-  },
-  render: () => (
-    <Header sticky={false}>
-      <HeaderBrand sitename='Design System' />
-      <HeaderActions>
-        <Button
-          data-probe='icon-only'
-          variant='ghost'
-          color='grey'
-          size='default'
-          iconOnly
-          aria-label='Search'
-          leadingVisual={IconSearch}
-        />
-        <Button
-          variant='ghost'
-          color='grey'
-          size='default'
-          iconOnly
-          aria-label='Switch to dark theme'
-          leadingVisual={IconDarkMode}
-        />
-        {/* `labelWrap={false}` is not incidental. `HeaderActions` is a flex row,
-            so a labelled control shrinks when the header is cramped and its
-            label wraps to a second line — which makes the row ragged again for
-            an entirely different reason than the one this story is about. A
-            header action should stay on one line; opt out explicitly. */}
-        <ButtonLink
-          data-probe='labelled'
-          href='#'
-          size='default'
-          variant='outline'
-          labelWrap={false}
-        >
-          Sign in
-        </ButtonLink>
-      </HeaderActions>
-    </Header>
-  ),
-  play: async ({ canvasElement }) => {
-    const square = canvasElement.querySelector<HTMLElement>('[data-probe="icon-only"]')
-    const labelled = canvasElement.querySelector<HTMLElement>('[data-probe="labelled"]')
-    if (!square || !labelled) {
-      throw new Error('Expected both an icon-only Button and a labelled ButtonLink in the row.')
-    }
-
-    const a = square.getBoundingClientRect()
-    const b = labelled.getBoundingClientRect()
-    if (Math.abs(a.height - b.height) > 0.5) {
-      throw new Error(
-        `Header action row is ragged: the icon-only Button is ${a.height}px tall, the ButtonLink beside it ${b.height}px.`,
-      )
-    }
-  },
-}
-
-export const Scrolled: Story = {
-  name: 'Sticky and scrolled',
-  render: () => (
-    <div>
-      <Header>
-        <HeaderBrand sitename='Design System' />
-        <DemoActions />
-      </Header>
-      <div className='h-[200vh] bg-background p-6 text-foreground'>
-        Scroll the canvas: the header stays put and gains <code>data-scrolled</code>, which the
-        shadow treatment keys off.
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const header = getHeader(canvasElement)
-
-    if (header.hasAttribute('data-scrolled')) {
-      throw new Error('Expected no data-scrolled attribute at the top of the page.')
-    }
-
-    window.scrollTo(0, 400)
-    await waitFor(
-      () => window.scrollY > 0,
-      'The story canvas did not scroll — the page needs to overflow the viewport.',
-    )
-    await waitFor(
-      () => header.hasAttribute('data-scrolled'),
-      'Expected data-scrolled to appear once the page scrolled.',
-    )
-
-    window.scrollTo(0, 0)
-    await waitFor(
-      () => !header.hasAttribute('data-scrolled'),
-      'Expected data-scrolled to clear once the page returned to the top.',
-    )
-  },
-}
-
-export const PageChrome: Story = {
-  name: 'Page chrome',
-  render: () => (
-    <div className='relative'>
-      <SkipLinks color='dark' />
-      <Masthead color='dark' />
-      <Header color='white' sticky={false}>
-        <HeaderBrand sitename='Design System' version='2.1.0' />
-        <DemoActions />
-      </Header>
-      <main id='content' className='bg-background p-6 text-foreground'>
-        SkipLinks, Masthead and Header stack in that order. Tab into the canvas to reveal the skip
-        links above the masthead.
-      </main>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  args: {
-    color: 'dark',
-    sticky: false,
-    children: <HeaderBrand sitename='Design System' />,
-  },
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: the dark colour variant resolves
-    // bg-primary-800 to a real, non-transparent colour, and the bottom rule
-    // resolves through the --header-ink → --header-border color-mix chain.
-    const header = getHeader(canvasElement)
-    const styles = getComputedStyle(header)
-
-    if (styles.backgroundColor === '' || styles.backgroundColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected bg-primary-800 to resolve to a visible colour, got "${styles.backgroundColor}". Is globals.css loaded?`,
-      )
-    }
-
-    const ink = styles.getPropertyValue('--header-ink').trim()
-    if (ink === '') {
-      throw new Error('Expected the colour variant to declare --header-ink.')
-    }
-
-    if (styles.borderBottomColor === '' || styles.borderBottomColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected --header-border to mix down from --header-ink, got "${styles.borderBottomColor}".`,
-      )
-    }
-  },
-}
-
-export const Playground: Story = {
-  name: 'Playground',
-  args: {
-    children: (
-      <>
-        <HeaderBrand sitename='Design System' version='2.1.0' />
-        <DemoActions />
-      </>
-    ),
-  },
-  parameters: {
-    controls: {
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-}
+export const Playground: Story = {}

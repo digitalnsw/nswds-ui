@@ -2,36 +2,331 @@
  * Tooltip — a small label shown on hover or focus, on the Base UI tooltip
  * primitive. Wrap one or more tooltips in a single TooltipProvider to share
  * the open delay.
+ *
+ *   Components/Tooltip                → this file: Docs, Default, Playground
+ *   Components/Tooltip/Features       → tooltip.features.stories.tsx
+ *   Components/Tooltip/Accessibility  → tooltip.accessibility.stories.tsx
+ *   Components/Tooltip/Tests          → tooltip.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ComponentProps } from 'react'
+import { expect, fn, within } from 'storybook/test'
 
+import {
+  IconDownload,
+  IconFormatBold,
+  IconFormatItalic,
+  IconFormatUnderlined,
+  IconPrint,
+  IconSearch,
+} from '../icons/index.js'
+import { Button } from './button.js'
+import { Kbd, KbdGroup } from './kbd.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip.js'
 
-const triggerClasses = 'rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground'
+type Side = NonNullable<ComponentProps<typeof TooltipContent>['side']>
+
+const sides: Side[] = ['top', 'bottom', 'left', 'right']
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function PlacementSection() {
+  return (
+    <ExampleSection
+      title='Placement'
+      description={
+        <>
+          <code>side</code> on <code>TooltipContent</code> picks the edge of the trigger the label
+          appears on — <code>top</code> by default. It is a preference: Base UI flips it to keep it
+          on screen. Hover or focus a button to show its tooltip.
+        </>
+      }
+    >
+      <Example code={`<TooltipContent side="right">Download PDF</TooltipContent>`}>
+        <TooltipProvider>
+          {sides.map((side) => (
+            <ExampleCell key={side} label={`side="${side}"`}>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant='outline'
+                      iconOnly
+                      aria-label={`Download PDF (${side})`}
+                      leadingVisual={IconDownload}
+                    />
+                  }
+                />
+                <TooltipContent side={side}>Download PDF</TooltipContent>
+              </Tooltip>
+            </ExampleCell>
+          ))}
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+const formatting = [
+  ['Bold', IconFormatBold],
+  ['Italic', IconFormatItalic],
+  ['Underline', IconFormatUnderlined],
+] as const
+
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          A tooltip opens on hover or keyboard focus after the provider&apos;s delay.{' '}
+          <code>defaultOpen</code> starts it open; <code>disabled</code> stops it opening while the
+          trigger itself stays usable, so the control still needs its own name.
+        </>
+      }
+    >
+      <Example code={`<Tooltip disabled>…</Tooltip>`}>
+        <TooltipProvider>
+          <ExampleCell label='default'>
+            <Tooltip>
+              <TooltipTrigger render={<Button variant='outline'>Save draft</Button>} />
+              <TooltipContent>Saves without submitting</TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+          <ExampleCell label='disabled'>
+            <Tooltip disabled>
+              <TooltipTrigger render={<Button variant='outline'>Save draft</Button>} />
+              <TooltipContent>Saves without submitting</TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithShortcutSection() {
+  return (
+    <ExampleSection
+      title='With a shortcut'
+      description={
+        <>
+          Put a keyboard shortcut after the label with <code>Kbd</code>; the tooltip tightens its
+          end padding around it. Keep the label itself to a few words.
+        </>
+      }
+    >
+      <Example
+        code={`<TooltipContent>
+  Search <KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup>
+</TooltipContent>`}
+      >
+        <TooltipProvider>
+          <ExampleCell label='Kbd in TooltipContent'>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant='outline'
+                    iconOnly
+                    aria-label='Search'
+                    leadingVisual={IconSearch}
+                  />
+                }
+              />
+              <TooltipContent>
+                Search
+                <KbdGroup>
+                  <Kbd>⌘</Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+              </TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          A toolbar of icon-only buttons, each named with <code>aria-label</code> and shown with a
+          tooltip carrying the same words. One <code>TooltipProvider</code> around the toolbar
+          shares the delay, so once one tooltip is open the next opens straight away.
+        </>
+      }
+    >
+      <Example
+        code={`<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger render={<Button iconOnly aria-label="Bold" leadingVisual={IconFormatBold} />} />
+    <TooltipContent>Bold</TooltipContent>
+  </Tooltip>
+  …
+</TooltipProvider>`}
+      >
+        <TooltipProvider>
+          <div className='flex gap-1 rounded-md p-1 ring-1 ring-foreground/10'>
+            {formatting.map(([label, icon]) => (
+              <Tooltip key={label}>
+                <TooltipTrigger
+                  render={
+                    <Button variant='ghost' iconOnly aria-label={label} leadingVisual={icon} />
+                  }
+                />
+                <TooltipContent>{label}</TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function TooltipDocs() {
+  return (
+    <DocsPage
+      title='Tooltip'
+      npm={['Tooltip', 'TooltipTrigger', 'TooltipContent', 'TooltipProvider']}
+      registry='tooltip'
+      summary={
+        <>
+          A short text label that appears when a reader hovers over or focuses a control — most
+          often to name an icon-only button. It never holds anything interactive and never takes
+          focus. Base UI owns the timing, positioning and ARIA wiring.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Naming an icon-only button for sighted mouse and keyboard readers.',
+          'A keyboard shortcut or one-line hint for a control.',
+          'Repeating, visually, an aria-label the control already has.',
+        ]}
+        avoid={[
+          'The content has links, buttons or more than a line — use Popover.',
+          'A preview of where a link goes — use HoverCard.',
+          'Information the reader needs to complete a task — show it on the page.',
+        ]}
+      />
+      <PlacementSection />
+      <StatesSection />
+      <WithShortcutSection />
+      <InContextSection />
+      <DocsApi description='Props of the Tooltip root, plus the side set on TooltipContent. Try them live in the Playground story.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+/**
+ * The side is a prop of `TooltipContent`, not of the root the meta documents,
+ * so the args type is widened to let the Playground switch it.
+ */
+type StoryArgs = ComponentProps<typeof Tooltip> & { side?: Side }
 
 const meta = {
   title: 'Components/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'A small label shown on hover or focus. Base UI owns the timing, positioning, and ARIA wiring; a TooltipProvider shares the delay across tooltips.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: TooltipDocs },
   },
-  render: (args) => (
+  args: {
+    side: 'top',
+    disabled: false,
+    onOpenChange: fn(),
+  },
+  argTypes: {
+    side: {
+      control: 'inline-radio',
+      options: sides,
+      description: 'Set on TooltipContent: the edge of the trigger the label appears on.',
+      table: { category: 'Appearance' },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the tooltip is open on first render (uncontrolled).',
+      table: { category: 'Behavior' },
+    },
+    open: {
+      control: false,
+      description: 'Whether the tooltip is open. Pair with onOpenChange to control it.',
+      table: { category: 'Behavior' },
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Stops the tooltip from opening. The trigger itself stays usable.',
+      table: { category: 'Behavior' },
+    },
+    disableHoverablePopup: {
+      control: 'boolean',
+      description: 'Close the tooltip when the pointer moves from the trigger onto the label.',
+      table: { category: 'Behavior' },
+    },
+    trackCursorAxis: {
+      control: 'inline-radio',
+      options: ['none', 'x', 'y', 'both'],
+      description: 'Make the label follow the cursor along an axis.',
+      table: { category: 'Behavior' },
+    },
+    onOpenChange: {
+      description: 'Called when the tooltip opens or closes (logged in the Actions panel).',
+      table: { category: 'Events' },
+    },
+    onOpenChangeComplete: {
+      description: 'Called once the open or close transition has finished.',
+      table: { category: 'Events' },
+    },
+    actionsRef: { table: { disable: true } },
+    handle: { table: { disable: true } },
+    triggerId: { table: { disable: true } },
+    defaultTriggerId: { table: { disable: true } },
+    children: { table: { disable: true } },
+  },
+  render: ({ side, ...args }) => (
     <TooltipProvider>
       <Tooltip {...args}>
-        <TooltipTrigger className={triggerClasses}>Hover me</TooltipTrigger>
-        <TooltipContent>Tooltip label</TooltipContent>
+        <TooltipTrigger
+          render={
+            <Button
+              variant='outline'
+              iconOnly
+              aria-label='Print this page'
+              leadingVisual={IconPrint}
+            />
+          }
+        />
+        <TooltipContent side={side}>Print this page</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   ),
-} satisfies Meta<typeof Tooltip>
+} satisfies Meta<StoryArgs>
 
 export default meta
 
@@ -41,43 +336,10 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const trigger = canvasElement.querySelector('[data-slot="tooltip-trigger"]')
-    if (!trigger) {
-      throw new Error('Could not find [data-slot="tooltip-trigger"].')
-    }
+    // The trigger is named on its own; the tooltip only repeats it visually.
+    const trigger = within(canvasElement).getByRole('button', { name: 'Print this page' })
+    await expect(trigger).toHaveAttribute('data-slot', 'tooltip-trigger')
   },
 }
 
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <TooltipProvider>
-      <div className='flex flex-wrap gap-4'>
-        {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
-          <Tooltip key={side}>
-            <TooltipTrigger className='rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground'>
-              {side}
-            </TooltipTrigger>
-            <TooltipContent side={side}>Side: {side}</TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-    </TooltipProvider>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    // Proves globals.css is loaded: the trigger resolves the semantic
-    // --primary token to a real, non-transparent colour.
-    const trigger = canvasElement.querySelector<HTMLElement>('[data-slot="tooltip-trigger"]')
-    if (!trigger) throw new Error('Tooltip trigger not found.')
-    const bg = getComputedStyle(trigger).backgroundColor
-    if (bg === '' || bg === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected the --primary token to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
-      )
-    }
-  },
-}
+export const Playground: Story = {}

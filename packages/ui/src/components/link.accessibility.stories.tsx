@@ -13,17 +13,18 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { userEvent } from 'storybook/test'
+import { expect, userEvent, waitFor } from 'storybook/test'
 
 import { IconOpenInNew } from '../icons/index.js'
 import { Link } from './link.js'
-import { wcagStoryMeta } from './story-helpers.js'
+import { compositeOver, expectContrast, resolveColor, wcagStoryMeta } from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Link/Accessibility',
   component: Link,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -52,10 +53,29 @@ function getAnchor(canvasElement: HTMLElement, accessibleName: string) {
   return anchor
 }
 
+/**
+ * The opaque colour an element is painted on: its own background composited
+ * over each ancestor's until an opaque one is reached.
+ */
+function paintedBackground(element: Element): string {
+  const layers: string[] = []
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    const background = getComputedStyle(node).backgroundColor
+    layers.push(background)
+    if (resolveColor(background).a === 1) {
+      const [base, ...tints] = layers.reverse()
+      let painted = resolveColor(base!)
+      for (const tint of tints) painted = { ...compositeOver(resolveColor(tint), painted), a: 1 }
+      return `rgb(${painted.r} ${painted.g} ${painted.b})`
+    }
+  }
+  throw new Error('No opaque background behind the element.')
+}
+
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Contrast: Story = {
-  name: 'Contrast — 1.4.3 / 1.4.11',
+  name: 'Contrast (Minimum) — 1.4.3 / 1.4.11',
   parameters: {
     wcag: ['1.4.3', '1.4.11'],
     docs: {
@@ -63,7 +83,7 @@ export const Contrast: Story = {
         story: wcagStoryMeta({
           criteria: ['1.4.3', '1.4.11'],
           why: 'Link text must meet 4.5:1 contrast against its background, and the underline (the non-text indicator that distinguishes the link from surrounding text) must meet 3:1 contrast so users with low vision can both read the label and detect the link.',
-          how: 'Use a colour-contrast checker (Chrome DevTools Accessibility pane) on the link text against the background, then on the underline against the background. Repeat for the muted/secondary surface below.',
+          how: 'The play() measures each link’s text against the surface it is painted on (4.5:1) and its underline against the same surface (3:1), on the page and on the muted surface, and asserts the underline is drawn. The (dark) story repeats it in dark mode.',
           caveat:
             'Contrast values depend on the active theme — verify both light and dark modes. The underline is a presentational indicator; if links are distinguished by colour alone, 1.4.1 Use of Color also applies and a separate visual indicator is required.',
         }),
@@ -73,7 +93,7 @@ export const Contrast: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>On default background</h4>
+        <h4 className='text-base font-semibold text-foreground'>On default background</h4>
         <p className='text-base text-foreground'>
           Read more on the{' '}
           <Link href='/about' variant='primary'>
@@ -84,7 +104,7 @@ export const Contrast: Story = {
       </section>
 
       <section className='space-y-2 rounded-sm border border-border bg-muted p-4'>
-        <h4 className='text-sm font-semibold text-foreground'>On muted surface</h4>
+        <h4 className='text-base font-semibold text-foreground'>On muted surface</h4>
         <p className='text-base text-foreground'>
           Read more on the{' '}
           <Link href='/about' variant='primary'>
@@ -95,6 +115,26 @@ export const Contrast: Story = {
       </section>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    // Text (4.5:1) and its underline, the non-text cue that marks it as a
+    // link (3:1), on each surface. The underline is drawn in currentColor.
+    for (const link of canvasElement.querySelectorAll('a')) {
+      const style = getComputedStyle(link)
+      const background = paintedBackground(link)
+      const surface = link.closest('section')?.querySelector('h4')?.textContent ?? 'link'
+      expectContrast(style.color, background, { label: `Link text, ${surface}` })
+      const underline =
+        style.textDecorationColor === 'currentcolor' ? style.color : style.textDecorationColor
+      expectContrast(underline, background, { minimum: 3, label: `Underline, ${surface}` })
+      await expect(style.textDecorationLine).toContain('underline')
+    }
+  },
+}
+
+export const ContrastDark: Story = {
+  ...Contrast,
+  name: 'Contrast (Minimum) — 1.4.3 / 1.4.11 (dark)',
+  globals: { theme: 'dark' },
 }
 
 export const FocusVisible: Story = {
@@ -106,7 +146,7 @@ export const FocusVisible: Story = {
         story: wcagStoryMeta({
           criteria: ['2.4.7', '2.4.11'],
           why: 'Keyboard users must see which element has focus at all times, and the focus indicator must not be entirely obscured by other content.',
-          how: 'Tab onto the first link to see the native focus ring. The second link below renders the focus outline at rest so the indicator can be reviewed without tabbing.',
+          how: 'Tab onto the first link to see the native focus ring; the play() does so and asserts a 2px outline in the link ink at 3:1 against the page, with nothing covering the link. The second link renders the focus outline at rest so the indicator can be reviewed without tabbing.',
           caveat:
             'Focus on the second link is forced via outline utility classes — a faithful preview of the focus state rather than a real DOM focus.',
         }),
@@ -127,6 +167,27 @@ export const FocusVisible: Story = {
       </Link>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const link = getAnchor(canvasElement, 'Tab here to see real focus')
+    await userEvent.tab()
+    await expect(link).toHaveFocus()
+
+    // 2.4.7: a real outline, in the link ink, clear of the page behind it.
+    // The ink eases in with transition-colors, so wait for it to land.
+    const style = getComputedStyle(link)
+    await expect(style.outlineStyle).toBe('solid')
+    await expect(style.outlineWidth).toBe('2px')
+    await waitFor(() => expect(getComputedStyle(link).outlineColor).toBe(style.color))
+    expectContrast(style.outlineColor, paintedBackground(link), {
+      minimum: 3,
+      label: 'Focus outline',
+    })
+
+    // 2.4.11: nothing sits over the focused link.
+    const box = link.getBoundingClientRect()
+    const top = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+    await expect(link.contains(top)).toBe(true)
+  },
 }
 
 export const Keyboard: Story = {
@@ -150,7 +211,7 @@ export const Keyboard: Story = {
       <Link href='#keyboard-target' variant='primary'>
         Press me with Enter
       </Link>
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Tab to focus, then press Enter to activate. Space does not activate links — it scrolls the
         page.
       </p>
@@ -210,7 +271,7 @@ export const LabelInName: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Text link (accessible name = visible label)
         </h4>
         <Link href='/about' variant='primary'>
@@ -219,7 +280,7 @@ export const LabelInName: Story = {
       </section>
 
       <section className='space-y-2'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Icon-only link (accessible name supplied via aria-label)
         </h4>
         <Link

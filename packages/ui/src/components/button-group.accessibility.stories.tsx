@@ -149,6 +149,7 @@ const WCAG_CRITERIA: Record<string, WcagCriterion> = {
 const meta = {
   title: 'Components/ButtonGroup/Accessibility',
   component: ButtonGroup,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -266,7 +267,7 @@ function TargetSizePanel({
               </Button>
             ))}
           </ButtonGroup>
-          <p className={`text-xs ${bodyClasses(color)}`}>{size} icon segments</p>
+          <p className={`text-base ${bodyClasses(color)}`}>{size} icon segments</p>
         </div>
       ))}
     </div>
@@ -276,7 +277,7 @@ function TargetSizePanel({
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const ContrastMinimum: Story = {
-  name: 'Contrast — 1.4.3 / 1.4.11',
+  name: 'Contrast (Minimum) — 1.4.3 / 1.4.11',
   parameters: {
     wcag: ['1.4.3', '1.4.11'],
     docs: {
@@ -313,7 +314,7 @@ export const ContrastMinimum: Story = {
     <div className='w-full max-w-7xl space-y-3'>
       {themeColors.map((color) => (
         <ThemeSurface key={`contrast-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <div className='flex flex-wrap items-center gap-3'>
             {variants.map((variant) => (
               <ButtonGroup
@@ -331,7 +332,7 @@ export const ContrastMinimum: Story = {
         </ThemeSurface>
       ))}
       <ThemeSurface color='primary'>
-        <h4 className='mb-3 text-sm font-semibold text-foreground'>Solid bands</h4>
+        <h4 className='mb-3 text-base font-semibold text-foreground'>Solid bands</h4>
         <div className='flex flex-wrap items-center gap-3'>
           {solidBandColors.map((color) => (
             <ButtonGroup
@@ -369,7 +370,7 @@ export const FocusVisible: Story = {
   render: () => (
     <div className='w-full max-w-7xl space-y-3'>
       <ThemeSurface color='primary'>
-        <h4 className='mb-3 text-sm font-semibold text-foreground'>Tab through these</h4>
+        <h4 className='mb-3 text-base font-semibold text-foreground'>Tab through these</h4>
         <div className='flex flex-wrap items-center gap-4'>
           <ButtonGroup aria-label='Clipboard'>
             <Button>Copy</Button>
@@ -389,7 +390,7 @@ export const FocusVisible: Story = {
       </ThemeSurface>
       {themeColors.map((color) => (
         <ThemeSurface key={`focus-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <div className='flex flex-wrap items-center gap-4'>
             {variants.map((variant) => (
               <ButtonGroup
@@ -456,7 +457,7 @@ export const Keyboard: Story = {
         <Button disabled>Off</Button>
         <Button>Cut</Button>
       </ButtonGroup>
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Tab through the segments, then press Enter or Space to activate one.
       </p>
     </div>
@@ -542,7 +543,7 @@ export const NameRoleValue: Story = {
 }
 
 export const TargetSizeMinimum: Story = {
-  name: 'Target Size — 2.5.8',
+  name: 'Target Size (Minimum) — 2.5.8',
   parameters: {
     wcag: ['2.5.8'],
     docs: {
@@ -561,9 +562,9 @@ export const TargetSizeMinimum: Story = {
     <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`target-size-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <TargetSizePanel color={color} overlaySize='1.5rem' />
-          <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
+          <p className={`mt-3 text-base ${bodyClasses(color)}`}>
             Red dashed outline = WCAG 2.5.8 minimum (24×24px), drawn inside each segment.
           </p>
         </ThemeSurface>
@@ -580,7 +581,7 @@ export const TargetSizeMinimum: Story = {
 }
 
 export const TapTarget: Story = {
-  name: 'Target Size Enhanced — 2.5.5',
+  name: 'Target Size (Enhanced) — 2.5.5',
   parameters: {
     wcag: ['2.5.5'],
     docs: {
@@ -599,9 +600,9 @@ export const TapTarget: Story = {
     <div className='w-full max-w-6xl space-y-3'>
       {(['primary', 'accent'] as const).map((color) => (
         <ThemeSurface key={`tap-target-${color}`} color={color}>
-          <h4 className={`mb-3 text-sm font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
+          <h4 className={`mb-3 text-base font-semibold ${titleClasses(color)}`}>Theme: {color}</h4>
           <TargetSizePanel color={color} overlaySize='2.75rem' />
-          <p className={`mt-3 text-sm ${bodyClasses(color)}`}>
+          <p className={`mt-3 text-base ${bodyClasses(color)}`}>
             Red dashed outline = 44×44px enhanced target, drawn inside each segment.
           </p>
         </ThemeSurface>

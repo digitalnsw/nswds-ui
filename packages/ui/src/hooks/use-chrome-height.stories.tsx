@@ -1,20 +1,28 @@
 /**
- * useChromeHeight — Default, Variants, CssCheck
+ * useChromeHeight — the story set, per docs/reference-storybook-standard.md.
  *
- * The only hook with a story. It earns one because it has no rendered surface
- * of its own: what it does is only visible in what it lets OTHER components do
- * — anchor targets clearing a sticky header, and `OnThisPage` putting its
- * scroll-spy line in the right place. Those compositions are the documentation.
+ *   Hooks/useChromeHeight        → this file: Docs, Default and one story per
+ *                                  docs example (a hook has no Features or
+ *                                  Accessibility folder)
+ *   Hooks/useChromeHeight/Tests  → use-chrome-height.tests.stories.tsx (hidden)
+ *
+ * The hook has no rendered surface of its own: what it does is only visible in
+ * what it lets OTHER components do — anchor targets clearing a sticky header,
+ * and `OnThisPage` putting its scroll-spy line in the right place. Those
+ * compositions are the documentation.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the stories below render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import * as React from 'react'
-import { expect } from 'storybook/test'
+import type * as React from 'react'
 
 import { Container } from '../components/container.js'
 import { Header, HeaderActions, HeaderBrand } from '../components/header.js'
 import { OnThisPage } from '../components/on-this-page.js'
 import { Section } from '../components/section.js'
+import { DocsPage, DocsUsage, Example, ExampleSection } from '../components/story-helpers.js'
 import { useChromeHeight } from './use-chrome-height.js'
 
 const ITEMS = [
@@ -29,8 +37,19 @@ const PROPERTY = '--story-chrome-height'
  * The composition the hook exists for: a `Header` and an `OnThisPage` sharing
  * one sticky wrapper, whose measured height becomes both the scroll-spy line
  * and (in a real app) the document's `scroll-padding-top`.
+ *
+ * The docs page renders it twice, so `idPrefix` keeps each instance's section
+ * ids unique — OnThisPage links to them, and duplicates would send the second
+ * instance's links to the first instance's sections.
  */
-function StickyChromeDemo({ showReadout = true }: { showReadout?: boolean }) {
+function StickyChromeDemo({
+  showReadout = true,
+  idPrefix = '',
+}: {
+  showReadout?: boolean
+  idPrefix?: string
+}) {
+  const items = ITEMS.map(({ id, title }) => ({ id: idPrefix ? `${idPrefix}-${id}` : id, title }))
   // Destructured at the call site, which is also how the hook documents
   // itself. Holding the result as one object and reading `chrome.ref` /
   // `chrome.height` during render trips React Compiler's "cannot access refs
@@ -53,10 +72,10 @@ function StickyChromeDemo({ showReadout = true }: { showReadout?: boolean }) {
             ) : null}
           </HeaderActions>
         </Header>
-        <OnThisPage items={ITEMS} offset={height} />
+        <OnThisPage items={items} offset={height} />
       </div>
 
-      {ITEMS.map(({ id, title }) => (
+      {items.map(({ id, title }) => (
         <Section key={id} id={id} labelledBy={`${id}-heading`} divider spacing='tight'>
           <Container>
             <h2 id={`${id}-heading`} className='text-2xl font-bold text-foreground'>
@@ -74,16 +93,254 @@ function StickyChromeDemo({ showReadout = true }: { showReadout?: boolean }) {
   )
 }
 
+/**
+ * A page-sized scroll box, so the sticky chrome has something to stick within
+ * on the docs page. Its scroll padding reads the published property, exactly
+ * as a consumer's `html { scroll-padding-top }` would.
+ */
+function ScrollFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className='h-[32rem] overflow-y-auto'
+      style={{ scrollPaddingTop: `var(${PROPERTY}, 0px)` }}
+    >
+      {children}
+    </div>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one example story AND one part of the docs page.
+
+export function MeasuringTheChromeSection() {
+  return (
+    <ExampleSection
+      title='Measuring the chrome'
+      description={
+        <>
+          Attach <code>ref</code> to the sticky wrapper around everything that stays on screen. The
+          hook returns the live <code>height</code> and publishes it on <code>&lt;html&gt;</code> as
+          the custom property you name. The readout in the header is that number: scroll, or narrow
+          the window until the header wraps, and it follows. It is <code>0</code> until after mount.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`const { ref, height } = useChromeHeight({ property: '--site-chrome-height' })
+
+<div ref={ref} className="sticky top-0 z-40">
+  <Header sticky={false} />
+  <OnThisPage items={items} offset={height} />
+</div>`}
+      >
+        <ScrollFrame>
+          <StickyChromeDemo />
+        </ScrollFrame>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          The property&rsquo;s main reader is CSS. Set <code>scroll-padding-top</code> from it so
+          anchor targets land below the chrome rather than behind it, with a <code>0px</code>{' '}
+          fallback for the first paint. Choose a section in &ldquo;On this page&rdquo; to jump to
+          it.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`html {
+  scroll-padding-top: calc(var(--site-chrome-height, 0px) + 1.5rem);
+}`}
+      >
+        <ScrollFrame>
+          <StickyChromeDemo showReadout={false} idPrefix='context' />
+        </ScrollFrame>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+const behaviour: ReadonlyArray<readonly [string, React.ReactNode]> = [
+  [
+    'Destructure the result',
+    <>
+      Write <code>const {'{ ref, height }'} = useChromeHeight()</code>. Holding the result as one
+      object and reading <code>chrome.height</code> fails React Compiler&rsquo;s &ldquo;Cannot
+      access refs during render&rdquo; lint, because the object carries a <code>ref</code>.
+    </>,
+  ],
+  [
+    'Zero until after mount',
+    <>
+      The height is measured in an effect, so the server render and the first client render agree.
+      Give the property a fallback in CSS — <code>var(--site-chrome-height, 0px)</code> — for that
+      first paint.
+    </>,
+  ],
+  [
+    'Removed on unmount',
+    <>
+      When the chrome element goes away the property is removed, so no stale offset is left for
+      whatever renders next.
+    </>,
+  ],
+  [
+    'Safe to share a property',
+    <>
+      Two instances may publish the same property — a sticky header and a sticky sub-nav, say. It is
+      cleared only when the last of them unmounts, and while any remain a survivor republishes.
+    </>,
+  ],
+]
+
+export function BehaviourSection() {
+  return (
+    <ExampleSection
+      title='Behaviour'
+      description='What the hook does around the measurement, and the one way to call it that the React Compiler lint accepts.'
+    >
+      <dl className='grid gap-x-10 gap-y-6 sm:grid-cols-2'>
+        {behaviour.map(([term, detail]) => (
+          <div key={term} className='space-y-1'>
+            <dt className='text-lg font-semibold'>{term}</dt>
+            <dd className='text-base leading-relaxed text-muted-foreground'>{detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+const api: ReadonlyArray<readonly [string, string, string, React.ReactNode]> = [
+  [
+    'property',
+    'Option',
+    "string | null — default '--chrome-height'",
+    <>
+      The custom property to publish the height to, on <code>&lt;html&gt;</code>. Pass{' '}
+      <code>null</code> to publish nothing and use the returned number only.
+    </>,
+  ],
+  [
+    'ref',
+    'Returns',
+    'RefCallback<T>',
+    'Attach to the element whose height is tracked. A callback ref, so the observer follows the element if it is swapped or remounted.',
+  ],
+  [
+    'height',
+    'Returns',
+    'number',
+    'The live border-box height in CSS pixels, unaffected by transforms. 0 until the first measurement.',
+  ],
+]
+
+export function ApiSection() {
+  return (
+    <ExampleSection
+      title='API'
+      description={
+        <>
+          <code>useChromeHeight&lt;T extends HTMLElement&gt;(options?)</code> takes one option and
+          returns two values.
+        </>
+      }
+    >
+      <div className='overflow-x-auto'>
+        <table className='w-full text-left text-base'>
+          <thead>
+            <tr className='border-b border-foreground/10'>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Name
+              </th>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Kind
+              </th>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Type
+              </th>
+              <th scope='col' className='py-3 font-semibold'>
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {api.map(([name, kind, type, description]) => (
+              <tr key={name} className='border-b border-foreground/10 align-top'>
+                <th scope='row' className='py-3 pe-6 font-semibold'>
+                  <code>{name}</code>
+                </th>
+                <td className='py-3 pe-6 text-muted-foreground'>{kind}</td>
+                <td className='py-3 pe-6'>
+                  <code>{type}</code>
+                </td>
+                <td className='py-3 text-muted-foreground'>{description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function UseChromeHeightDocs() {
+  return (
+    <DocsPage
+      eyebrow='Hook'
+      title='useChromeHeight'
+      npm={['useChromeHeight']}
+      registry='use-chrome-height'
+      summary={
+        <>
+          Measures a sticky chrome element and publishes its height as a CSS custom property on{' '}
+          <code>&lt;html&gt;</code>, keeping it current as the element resizes. Use it wherever
+          something needs to know how much of the screen the header covers — scroll padding for
+          anchor links, the scroll-spy line in OnThisPage, or <code>--main-nav-top</code> under a
+          sticky Header.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'A sticky Header whose height changes — it wraps to two lines at some widths.',
+          'Anchor links on a page with sticky chrome, so their targets clear it.',
+          'Passing the chrome height to OnThisPage as its offset.',
+        ]}
+        avoid={[
+          'Chrome that is not sticky — it scrolls away, so there is nothing to clear.',
+          'A sticky element of fixed, known height — set the custom property in CSS once.',
+          'Highlighting the section in view — that is OnThisPage’s job; this only feeds it.',
+        ]}
+      />
+      <MeasuringTheChromeSection />
+      <BehaviourSection />
+      <InContextSection />
+      <ApiSection />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Hooks/useChromeHeight',
+  tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
-    layout: 'fullscreen',
-    docs: {
-      description: {
-        component:
-          'useChromeHeight measures a sticky chrome element and publishes its height as a CSS custom property on <html>, keeping it current as the element resizes. MainNav already documents that a consumer stacking it under a sticky Header must set --main-nav-top to the header height, and any page with anchor links needs the same number for scroll-padding-top — so every consumer was writing the same ResizeObserver. The height is 0 until after mount (it is measured in an effect, so the server and first client render agree), which is why the CSS fallback matters: var(--site-chrome-height, 0px).',
-      },
-    },
+    layout: 'padded',
+    docs: { page: UseChromeHeightDocs },
   },
 } satisfies Meta
 
@@ -94,6 +351,7 @@ type Story = StoryObj<typeof meta>
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const Default: Story = {
+  parameters: { layout: 'fullscreen' },
   render: () => <StickyChromeDemo />,
   play: async ({ canvasElement }) => {
     const chrome = canvasElement.querySelector<HTMLElement>('[data-testid="chrome"]')
@@ -134,139 +392,11 @@ export const Default: Story = {
   },
 }
 
-export const Variants: Story = {
-  name: 'Without the readout',
-  render: () => <StickyChromeDemo showReadout={false} />,
+export const MeasuringTheChrome: Story = {
+  name: 'Measuring the chrome',
+  render: () => <MeasuringTheChromeSection />,
 }
 
-const SHARED_PROPERTY = '--story-shared-chrome-height'
+export const Behaviour: Story = { render: () => <BehaviourSection /> }
 
-/** A publisher of fixed height, mountable and unmountable on demand. */
-function SharedPublisher({ height, testId }: { height: number; testId: string }) {
-  const { ref } = useChromeHeight<HTMLDivElement>({ property: SHARED_PROPERTY })
-  return <div ref={ref} data-testid={testId} style={{ height }} />
-}
-
-function SharedPropertyHarness() {
-  const [first, setFirst] = React.useState(true)
-  const [second, setSecond] = React.useState(true)
-  return (
-    <div className='flex flex-col gap-2 p-4'>
-      {first ? <SharedPublisher height={40} testId='publisher-a' /> : null}
-      {second ? <SharedPublisher height={70} testId='publisher-b' /> : null}
-      <button type='button' data-testid='drop-a' onClick={() => setFirst(false)}>
-        Unmount A
-      </button>
-      <button type='button' data-testid='drop-b' onClick={() => setSecond(false)}>
-        Unmount B
-      </button>
-    </div>
-  )
-}
-
-/**
- * Two instances publishing to ONE property name — the case the ownership
- * registry exists for, and the case nothing else here exercises.
- *
- * The failure it guards against is silent: an unmount that clears a property a
- * surviving instance still owns leaves `var(--x, 0px)` falling back to its
- * default, so anchor targets quietly start landing behind the chrome. Without
- * this story the registry could be deleted outright and the whole suite would
- * stay green.
- *
- * Both orders are covered, because they exercise different branches: B
- * published last, so unmounting B is the OWNER leaving (the survivor must be
- * asked to republish), while unmounting A first is a non-owner leaving (the
- * property must simply be left alone).
- */
-export const SharedProperty: Story = {
-  name: 'Two instances, one property',
-  render: () => <SharedPropertyHarness />,
-  play: async ({ canvasElement }) => {
-    const root = document.documentElement
-    const read = () => root.style.getPropertyValue(SHARED_PROPERTY).trim()
-    const click = (id: string) =>
-      canvasElement.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`)!.click()
-    const settle = () => new Promise((resolve) => setTimeout(resolve, 60))
-
-    await settle()
-    // B mounted second, so it published last and owns the value.
-    await expect(read()).toBe('70px')
-
-    // Non-owner leaves: the owner's value must survive untouched.
-    click('drop-a')
-    await settle()
-    await expect(read()).toBe('70px')
-
-    // Owner leaves with nobody left: only now is the property cleared.
-    click('drop-b')
-    await settle()
-    await expect(read()).toBe('')
-  },
-}
-
-/**
- * The mirror image, and the one that actually failed before the registry
- * landed: the OWNER unmounts while another instance is still mounted. The
- * survivor's element has not resized, so no ResizeObserver callback is coming
- * — the value has to be restored by asking it to republish.
- */
-export const SharedPropertyOwnerLeavesFirst: Story = {
-  name: 'Two instances, owner unmounts first',
-  render: () => <SharedPropertyHarness />,
-  play: async ({ canvasElement }) => {
-    const root = document.documentElement
-    const read = () => root.style.getPropertyValue(SHARED_PROPERTY).trim()
-    const click = (id: string) =>
-      canvasElement.querySelector<HTMLButtonElement>(`[data-testid="${id}"]`)!.click()
-    const settle = () => new Promise((resolve) => setTimeout(resolve, 60))
-
-    await settle()
-    await expect(read()).toBe('70px')
-
-    // B owns the value. Unmounting it must NOT blank the property — A is still
-    // mounted and still needs it, so A republishes its own 40px.
-    click('drop-b')
-    await settle()
-    await expect(read()).toBe('40px')
-
-    // And the last one out does clear it.
-    click('drop-a')
-    await settle()
-    await expect(read()).toBe('')
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CssCheck',
-  render: () => <StickyChromeDemo />,
-  play: async ({ canvasElement }) => {
-    await new Promise((resolve) => requestAnimationFrame(resolve))
-    await new Promise((resolve) => requestAnimationFrame(resolve))
-
-    const chrome = canvasElement.querySelector<HTMLElement>('[data-testid="chrome"]')
-    if (!chrome) {
-      throw new Error('Could not find the chrome element.')
-    }
-
-    // Proves globals.css loaded: `sticky` resolves to real position stickiness,
-    // without which the hook would be measuring an element that scrolls away
-    // and the whole offset would be pointless.
-    const position = getComputedStyle(chrome).position
-    if (position !== 'sticky') {
-      throw new Error(`Expected the chrome wrapper to be position: sticky, received "${position}".`)
-    }
-
-    // The published property must be usable in a calc() — the scroll-padding
-    // case is the hook's primary consumer.
-    const probe = canvasElement.ownerDocument.createElement('div')
-    probe.style.height = `calc(var(${PROPERTY}, 0px) + 10px)`
-    canvasElement.append(probe)
-    const probeHeight = Number.parseFloat(getComputedStyle(probe).height)
-    probe.remove()
-
-    if (!Number.isFinite(probeHeight) || probeHeight <= 10) {
-      throw new Error(`Expected ${PROPERTY} to resolve inside calc(), got height ${probeHeight}px.`)
-    }
-  },
-}
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

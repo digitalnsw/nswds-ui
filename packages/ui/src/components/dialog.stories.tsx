@@ -2,10 +2,19 @@
  * Dialog — a centred modal window on the Base UI dialog primitive. Base UI
  * owns the focus trap, scroll lock, focus return and Escape / outside-click
  * dismissal.
+ *
+ *   Components/Dialog                → this file: Docs, Default, Playground
+ *   Components/Dialog/Features       → dialog.features.stories.tsx
+ *   Components/Dialog/Accessibility  → dialog.accessibility.stories.tsx
+ *   Components/Dialog/Tests          → dialog.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { type ComponentProps, useState } from 'react'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 
 import { Button } from './button.js'
 import {
@@ -17,26 +26,430 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  type DialogVariant,
 } from './dialog.js'
-import { closeOverlay } from './story-helpers.js'
+import { Input } from './input.js'
+import { Label } from './label.js'
+import {
+  closeOverlay,
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
+
+const looks: ReadonlyArray<readonly [DialogVariant, string]> = [
+  [
+    'default',
+    'Hairline — the header and footer are divided off by hairlines that bleed to the edges.',
+  ],
+  ['band', 'The header is a solid band in the action colour; the footer sits on a subtle band.'],
+  [
+    'rule',
+    'A 4px rule caps the top edge, the title sits on a hairline, and actions align to the start.',
+  ],
+]
+
+/** The contact-details dialog every look is shown with. */
+function ContactDialog({ variant, trigger }: { variant?: DialogVariant; trigger: string }) {
+  return (
+    <Dialog>
+      <DialogTrigger render={<Button variant='outline' />}>{trigger}</DialogTrigger>
+      <DialogContent variant={variant}>
+        <DialogHeader>
+          <DialogTitle>Edit contact details</DialogTitle>
+          <DialogDescription>
+            We use these details to contact you about your application.
+          </DialogDescription>
+        </DialogHeader>
+        <p>Your changes are saved when you select Save.</p>
+        <DialogFooter>
+          <DialogClose render={<Button variant='outline' />}>Cancel</DialogClose>
+          <DialogClose render={<Button />}>Save</DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          <code>variant</code> on <code>DialogContent</code> picks one of three looks. None casts a
+          shadow or blurs the page behind — depth is drawn. Select a button to open the dialog in
+          that look.
+        </>
+      }
+    >
+      <Example code={`<DialogContent variant="band">…</DialogContent>`}>
+        {looks.map(([look]) => (
+          <ExampleCell key={look} label={look}>
+            <ContactDialog variant={look} trigger={`Open ${look}`} />
+          </ExampleCell>
+        ))}
+      </Example>
+      <dl className='grid gap-x-10 gap-y-3'>
+        {looks.map(([name, description]) => (
+          <div key={name} className='flex gap-4'>
+            <dt className='w-20 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+export function CloseButtonSection() {
+  return (
+    <ExampleSection
+      title='Close button'
+      description={
+        <>
+          Every dialog gets an icon-only close button in the corner. Its name is{' '}
+          <code>closeLabel</code> — the only thing a screen reader hears, so translate it with the
+          page. Where a labelled button reads better, turn the corner one off with{' '}
+          <code>showCloseButton=&#123;false&#125;</code> and add one to the footer.
+        </>
+      }
+    >
+      <Example
+        code={`<DialogContent showCloseButton={false}>
+  …
+  <DialogFooter showCloseButton closeLabel="Done" />
+</DialogContent>`}
+      >
+        <ExampleCell label='corner (default)'>
+          <Dialog>
+            <DialogTrigger render={<Button variant='outline' />}>View receipt</DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Payment received</DialogTitle>
+                <DialogDescription>
+                  Receipt number 4410 2387 has been emailed to you.
+                </DialogDescription>
+              </DialogHeader>
+            </DialogContent>
+          </Dialog>
+        </ExampleCell>
+        <ExampleCell label='footer'>
+          <Dialog>
+            <DialogTrigger render={<Button variant='outline' />}>Save changes</DialogTrigger>
+            <DialogContent showCloseButton={false}>
+              <DialogHeader>
+                <DialogTitle>Changes saved</DialogTitle>
+                <DialogDescription>Your contact details have been updated.</DialogDescription>
+              </DialogHeader>
+              <DialogFooter showCloseButton closeLabel='Done' />
+            </DialogContent>
+          </Dialog>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function LongContentSection() {
+  return (
+    <ExampleSection
+      title='Long content'
+      description='The dialog caps its height at the viewport and scrolls inside, so the footer is never off-screen. It opens at the top with focus on the close button, so a reader starts at the title, not past it.'
+    >
+      <Example
+        code={`<DialogContent>{/* scrolls once it reaches the viewport height */}</DialogContent>`}
+      >
+        <Dialog>
+          <DialogTrigger render={<Button variant='outline' />}>Read the conditions</DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Conditions of your permit</DialogTitle>
+              <DialogDescription>Read every condition before you accept.</DialogDescription>
+            </DialogHeader>
+            {[
+              'Display the permit on the dashboard so it can be read from outside the vehicle.',
+              'The permit is valid only for the vehicle registration shown on it.',
+              'Park only in the zones listed for your permit area.',
+              'Tell us within 14 days if you change address or vehicle.',
+              'A lost or stolen permit must be reported before a replacement is issued.',
+              'The permit does not exempt you from clearways, bus zones or no stopping signs.',
+              'We may cancel the permit if it is misused or the conditions are not met.',
+              'The permit remains the property of the council and must be returned on request.',
+            ].map((condition, i) => (
+              <p key={i}>
+                {i + 1}. {condition}
+              </p>
+            ))}
+            <DialogFooter>
+              <DialogClose render={<Button variant='outline' />}>Cancel</DialogClose>
+              <DialogClose render={<Button />}>Accept conditions</DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [open, setOpen] = useState(false)
+  const [saved, setSaved] = useState(false)
+  return (
+    <div className='flex flex-col items-start gap-4'>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger render={<Button variant='outline' />}>Change email address</DialogTrigger>
+        <DialogContent>
+          <form
+            className='grid gap-6'
+            onSubmit={(event) => {
+              event.preventDefault()
+              setSaved(true)
+              setOpen(false)
+            }}
+          >
+            <DialogHeader>
+              <DialogTitle>Change email address</DialogTitle>
+              <DialogDescription>We will send a confirmation to the new address.</DialogDescription>
+            </DialogHeader>
+            <div className='grid gap-2'>
+              <Label htmlFor='controlled-email'>Email address</Label>
+              <Input id='controlled-email' type='email' defaultValue='alex.citizen@example.com' />
+            </div>
+            <DialogFooter>
+              <DialogClose render={<Button variant='outline' />}>Cancel</DialogClose>
+              <Button type='submit'>Save email</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      <p className='text-muted-foreground' aria-live='polite'>
+        {saved ? 'Email address updated.' : 'No changes yet.'}
+      </p>
+    </div>
+  )
+}
+
+export function ControlledSection() {
+  return (
+    <ExampleSection
+      title='Controlled'
+      description={
+        <>
+          Pass <code>open</code> and <code>onOpenChange</code> to close the dialog from your own
+          code — after a save succeeds, say, rather than as soon as a button is pressed. Keep it
+          open and show the error if the save fails.
+        </>
+      }
+    >
+      <Example
+        code={`const [open, setOpen] = useState(false)
+
+<Dialog open={open} onOpenChange={setOpen}>
+  …
+  <form onSubmit={async (event) => {
+    event.preventDefault()
+    await save()
+    setOpen(false)
+  }}>…</form>
+</Dialog>`}
+      >
+        <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='A summary of the details a service holds, with each change made in a dialog so the reader never leaves the page.'
+    >
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<Dialog>
+  <DialogTrigger render={<Button variant="outline" size="sm" />}>Change postal address</DialogTrigger>
+  <DialogContent>
+    <form onSubmit={save}>
+      <DialogHeader>
+        <DialogTitle>Change postal address</DialogTitle>
+        <DialogDescription>We send renewal notices to this address.</DialogDescription>
+      </DialogHeader>
+      …
+      <DialogFooter>
+        <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+        <DialogClose render={<Button />}>Save address</DialogClose>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>`}
+      >
+        <div className='max-w-md space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
+          <h3 className='text-xl font-semibold'>Your details</h3>
+          <dl className='space-y-3'>
+            <div>
+              <dt className='font-semibold'>Postal address</dt>
+              <dd className='text-muted-foreground'>12 Smith Street, Parramatta NSW 2150</dd>
+            </div>
+          </dl>
+          <Dialog>
+            <DialogTrigger render={<Button variant='outline' size='sm' />}>
+              Change postal address
+            </DialogTrigger>
+            <DialogContent>
+              <form className='grid gap-6' onSubmit={(event) => event.preventDefault()}>
+                <DialogHeader>
+                  <DialogTitle>Change postal address</DialogTitle>
+                  <DialogDescription>We send renewal notices to this address.</DialogDescription>
+                </DialogHeader>
+                <div className='grid gap-2'>
+                  <Label htmlFor='context-street'>Street address</Label>
+                  <Input id='context-street' defaultValue='12 Smith Street' />
+                </div>
+                <div className='grid gap-2'>
+                  <Label htmlFor='context-suburb'>Suburb</Label>
+                  <Input id='context-suburb' defaultValue='Parramatta' />
+                </div>
+                <DialogFooter>
+                  <DialogClose render={<Button variant='outline' />}>Cancel</DialogClose>
+                  <DialogClose render={<Button />}>Save address</DialogClose>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function DialogDocs() {
+  return (
+    <DocsPage
+      title='Dialog'
+      npm={[
+        'Dialog',
+        'DialogTrigger',
+        'DialogContent',
+        'DialogHeader',
+        'DialogTitle',
+        'DialogDescription',
+        'DialogFooter',
+        'DialogClose',
+      ]}
+      registry='dialog'
+      summary={
+        <>
+          A modal window centred over the page, for a short task that needs the reader&apos;s full
+          attention without taking them somewhere else. Base UI traps focus inside it, locks the
+          page scroll, returns focus to the trigger on close and dismisses it on Escape or an
+          outside click.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Editing a small set of details without leaving the page.',
+          'A short form or task that blocks the rest of the page until it is done.',
+          'Showing supporting detail, like a receipt, that the reader dismisses when finished.',
+        ]}
+        avoid={[
+          'The reader must confirm or cancel a consequential action — use AlertDialog.',
+          'A longer task, or filters to keep beside the page — use Sheet, or Drawer on touch.',
+          'Confirming that something happened without blocking the page — use a toast (Toaster).',
+        ]}
+      />
+      <VariantsSection />
+      <CloseButtonSection />
+      <LongContentSection />
+      <ControlledSection />
+      <InContextSection />
+      <DocsApi description='Props of the Dialog root, plus the look set on DialogContent. Try them live in the Playground story.' />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+/**
+ * The look is a prop of `DialogContent`, not of the root the meta documents,
+ * so the args type is widened to let the Playground switch it.
+ */
+type StoryArgs = ComponentProps<typeof Dialog> & { variant?: DialogVariant }
 
 const meta = {
   title: 'Components/Dialog',
   component: Dialog,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
-    layout: 'centered',
-    docs: {
-      description: {
-        component:
-          'A modal window centred over the page. Base UI provides the focus trap, scroll lock, focus return and Escape / outside-click dismissal. Use AlertDialog instead when the user must make an explicit choice.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: DialogDocs },
   },
-  render: (args) => (
+  args: {
+    variant: 'default',
+    modal: true,
+    disablePointerDismissal: false,
+    onOpenChange: fn(),
+  },
+  argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'band', 'rule'],
+      description: 'The look, set on DialogContent: default (Hairline), band or rule.',
+      table: { category: 'Appearance' },
+    },
+    defaultOpen: {
+      control: 'boolean',
+      description: 'Whether the dialog is open on first render (uncontrolled).',
+      table: { category: 'Behavior' },
+    },
+    open: {
+      control: false,
+      description: 'Whether the dialog is open. Pair with onOpenChange to control it.',
+      table: { category: 'Behavior' },
+    },
+    modal: {
+      control: 'inline-radio',
+      options: [true, false, 'trap-focus'],
+      description:
+        'true locks scroll and blocks the page; trap-focus keeps focus inside without locking scroll.',
+      table: { category: 'Behavior' },
+    },
+    disablePointerDismissal: {
+      control: 'boolean',
+      description: 'Stops an outside click from closing the dialog. Escape still closes it.',
+      table: { category: 'Behavior' },
+    },
+    onOpenChange: {
+      description: 'Called when the dialog opens or closes (logged in the Actions panel).',
+      table: { category: 'Events' },
+    },
+    onOpenChangeComplete: {
+      description: 'Called once the open or close transition has finished.',
+      table: { category: 'Events' },
+    },
+    actionsRef: { table: { disable: true } },
+    handle: { table: { disable: true } },
+    triggerId: { table: { disable: true } },
+    defaultTriggerId: { table: { disable: true } },
+    children: { table: { disable: true } },
+  },
+  render: ({ variant, ...args }) => (
     <Dialog {...args}>
       <DialogTrigger render={<Button />}>Edit contact details</DialogTrigger>
-      <DialogContent>
+      <DialogContent variant={variant}>
         <DialogHeader>
           <DialogTitle>Edit contact details</DialogTitle>
           <DialogDescription>
@@ -51,44 +464,11 @@ const meta = {
       </DialogContent>
     </Dialog>
   ),
-} satisfies Meta<typeof Dialog>
+} satisfies Meta<StoryArgs>
 
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-const closeWithEscape = () => closeOverlay('dialog-content')
-
-/**
- * Runs the assertions, then closes the dialog even when one of them throws, so
- * a failure does not leave the popup (and its focus guards) behind for the
- * end-of-play axe pass.
- */
-async function thenCloseDialog(assertions: () => Promise<void>) {
-  try {
-    await assertions()
-  } catch (error) {
-    await closeWithEscape().catch(() => {})
-    throw error
-  }
-  await closeWithEscape()
-}
-
-/**
- * Waits out the open transition (a scale from 95%) so rects are final.
- * getAnimations() alone can be empty before the transition registers, so also
- * require that the starting style has gone — once it has, reading animations
- * flushes style and the running transition shows up until it ends.
- */
-async function waitForOpen(dialog: HTMLElement) {
-  await waitFor(
-    () => {
-      expect(dialog).not.toHaveAttribute('data-starting-style')
-      expect(dialog.getAnimations()).toHaveLength(0)
-    },
-    { timeout: 3000 },
-  )
-}
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -107,370 +487,9 @@ export const Default: Story = {
     )
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true))
 
-    await closeWithEscape()
+    await closeOverlay('dialog-content')
     await waitFor(() => expect(trigger).toHaveFocus())
   },
 }
 
-/**
- * The close button is icon-only and portaled, so `closeLabel` is the only name
- * AT ever hears for it and the only way a consumer can translate it.
- */
-export const TranslatedCloseLabel: Story = {
-  name: 'Translated close label',
-  render: () => (
-    <Dialog>
-      <DialogTrigger render={<Button />}>Abrir</DialogTrigger>
-      <DialogContent closeLabel='Cerrar ventana'>
-        <DialogHeader>
-          <DialogTitle>Editar perfil</DialogTitle>
-          <DialogDescription>Realice cambios en su perfil aquí.</DialogDescription>
-        </DialogHeader>
-      </DialogContent>
-    </Dialog>
-  ),
-  play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Abrir' }))
-    const close = await within(document.body).findByRole('button', { name: 'Cerrar ventana' })
-    await userEvent.click(close)
-    await waitFor(() =>
-      expect(document.querySelector('[data-slot="dialog-content"]')).not.toBeInTheDocument(),
-    )
-  },
-}
-
-/**
- * Base UI focuses the first tabbable element on open. The close button is
- * first in the DOM so that is the close button, not a footer action — with
- * the footer first, a long dialog opened scrolled to the bottom and put the
- * reader past everything above it.
- */
-export const LongContentOpensAtTop: Story = {
-  name: 'Long content opens at the top',
-  render: () => (
-    <Dialog>
-      <DialogTrigger render={<Button />}>Read the conditions</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Conditions of use</DialogTitle>
-        </DialogHeader>
-        {Array.from({ length: 30 }, (_, i) => (
-          <p key={i}>Condition {i + 1}. Long enough content to overflow the viewport.</p>
-        ))}
-        <DialogFooter>
-          <DialogClose render={<Button />}>I agree</DialogClose>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  ),
-  play: async ({ canvasElement }) => {
-    await userEvent.click(
-      within(canvasElement).getByRole('button', { name: 'Read the conditions' }),
-    )
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Conditions of use' })
-    await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Close' })).toHaveFocus())
-    await expect(dialog.scrollHeight).toBeGreaterThan(dialog.clientHeight)
-    await expect(dialog.scrollTop).toBe(0)
-    await closeWithEscape()
-  },
-}
-
-/**
- * The close button is first in the DOM, and equal z-indexes paint in DOM
- * order, so a later positioned child in the corner — a sticky header at the
- * conventional z-10, or a Button given z-10 — would paint over it and take its
- * clicks. It carries z-20 to stay on top.
- */
-export const CloseButtonStaysOnTop: Story = {
-  name: 'Close button stays on top',
-  render: () => (
-    <Dialog>
-      <DialogTrigger render={<Button />}>Open toolbar dialog</DialogTrigger>
-      <DialogContent>
-        <Button className='z-10'>Action spanning the top edge</Button>
-        <DialogTitle>Toolbar dialog</DialogTitle>
-      </DialogContent>
-    </Dialog>
-  ),
-  play: async ({ canvasElement }) => {
-    await userEvent.click(
-      within(canvasElement).getByRole('button', { name: 'Open toolbar dialog' }),
-    )
-    const dialog = await within(document.body).findByRole(
-      'dialog',
-      { name: 'Toolbar dialog' },
-      { timeout: 3000 },
-    )
-    await thenCloseDialog(async () => {
-      const close = within(dialog).getByRole('button', { name: 'Close' })
-      const action = within(dialog).getByRole('button', { name: 'Action spanning the top edge' })
-
-      // Prove the two really overlap once the rects are final, or the hit
-      // test below passes on nothing.
-      await waitForOpen(dialog)
-      const c = close.getBoundingClientRect()
-      const a = action.getBoundingClientRect()
-      await expect(
-        a.bottom > c.top && a.top < c.bottom && a.right > c.left && a.left < c.right,
-      ).toBe(true)
-
-      const hit = document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2)
-      await expect(close.contains(hit)).toBe(true)
-    })
-  },
-}
-
-/**
- * `showCloseButton={false}` removes the corner button (and the header padding
- * reserved for it); `DialogFooter showCloseButton` supplies a labelled one.
- */
-export const FooterClose: Story = {
-  name: 'Footer close',
-  render: () => (
-    <Dialog>
-      <DialogTrigger render={<Button />}>Open</DialogTrigger>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Saved</DialogTitle>
-          <DialogDescription>Your details have been updated.</DialogDescription>
-        </DialogHeader>
-        <DialogFooter showCloseButton closeLabel='Done' />
-      </DialogContent>
-    </Dialog>
-  ),
-  play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Open' }))
-    const dialog = await within(document.body).findByRole('dialog', { name: 'Saved' })
-
-    await expect(
-      within(dialog)
-        .getAllByRole('button')
-        .map((b) => b.textContent),
-    ).toEqual(['Done'])
-    const header = dialog.querySelector<HTMLElement>('[data-slot="dialog-header"]')
-    // Only the 24px gutter: no room reserved for a corner button that is not there.
-    await expect(getComputedStyle(header!).paddingInlineEnd).toBe('24px')
-
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Done' }))
-    await waitFor(() =>
-      expect(document.querySelector('[data-slot="dialog-content"]')).not.toBeInTheDocument(),
-    )
-  },
-}
-
-const LOOKS = ['default', 'band', 'rule'] as const
-
-/**
- * The three approved looks. Each is opened and checked for the one property
- * that tells it apart — and none of them blurs the page behind.
- */
-export const Looks: Story = {
-  name: 'Looks',
-  render: () => (
-    <div className='flex flex-wrap gap-4'>
-      {LOOKS.map((look) => (
-        <Dialog key={look}>
-          <DialogTrigger render={<Button variant='outline' />}>Open {look}</DialogTrigger>
-          <DialogContent variant={look}>
-            <DialogHeader>
-              <DialogTitle>Edit contact details</DialogTitle>
-              <DialogDescription>
-                We use these details to contact you about your application.
-              </DialogDescription>
-            </DialogHeader>
-            <p>Your changes are saved when you select Save.</p>
-            <DialogFooter>
-              <DialogClose render={<Button variant='outline' />}>Cancel</DialogClose>
-              <Button>Save</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const seen: Record<string, { headerBorder: string; headerBg: string; capWidth: string }> = {}
-    for (const look of LOOKS) {
-      await userEvent.click(canvas.getByRole('button', { name: `Open ${look}` }))
-      const popup = await waitFor(() => {
-        const el = document.querySelector<HTMLElement>('[data-slot="dialog-content"]')
-        if (!el) throw new Error('Dialog popup not mounted.')
-        return el
-      })
-      await expect(popup).toHaveAttribute('data-variant', look)
-      const overlay = document.querySelector<HTMLElement>('[data-slot="dialog-overlay"]')
-      await expect(getComputedStyle(overlay!).backdropFilter).toBe('none')
-      const header = popup.querySelector<HTMLElement>('[data-slot="dialog-header"]')!
-      const popupStyle = getComputedStyle(popup)
-      const headerStyle = getComputedStyle(header)
-      seen[look] = {
-        headerBorder: headerStyle.borderBottomWidth,
-        headerBg: headerStyle.backgroundColor,
-        capWidth: popupStyle.borderTopWidth,
-      }
-      await closeWithEscape()
-    }
-    // default: the header is divided off by a hairline.
-    await expect(seen.default!.headerBorder).toBe('1px')
-    // band: the header is a filled band, unlike the others.
-    await expect(seen.band!.headerBg).not.toBe(seen.default!.headerBg)
-    // rule: a 4px cap on the popup's top edge.
-    await expect(seen.rule!.capWidth).toBe('4px')
-    await expect(seen.default!.capWidth).toBe('0px')
-  },
-}
-
-/**
- * The structural cases the header rules have to survive: content wrapped in a
- * <form>, a title placed in the body, no header at all, and a header with
- * nothing below it. Each is opened and measured.
- */
-export const Structure: Story = {
-  name: 'Structure',
-  render: () => (
-    <div className='flex flex-wrap gap-4'>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>In a form</DialogTrigger>
-        <DialogContent variant='band'>
-          <form className='grid gap-6' onSubmit={(event) => event.preventDefault()}>
-            <DialogHeader>
-              <DialogTitle>Update the postal address we send your renewal notices to</DialogTitle>
-            </DialogHeader>
-            <p>Changes apply from your next notice.</p>
-            <DialogFooter>
-              <Button type='submit'>Save</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>Body title</DialogTrigger>
-        <DialogContent variant='band'>
-          <DialogHeader>
-            <DialogTitle>Band title</DialogTitle>
-          </DialogHeader>
-          <DialogDescription>A description placed in the body.</DialogDescription>
-        </DialogContent>
-      </Dialog>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>No header</DialogTrigger>
-        <DialogContent variant='band'>
-          <p data-testid='first'>Your session will expire in 2 minutes. Continue?</p>
-        </DialogContent>
-      </Dialog>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>Header only</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Saved</DialogTitle>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const open = async (name: string) => {
-      await userEvent.click(canvas.getByRole('button', { name }))
-      return within(document.body).findByRole('dialog')
-    }
-    const closeInk = (dialog: HTMLElement) =>
-      getComputedStyle(within(dialog).getByRole('button', { name: 'Close' })).color
-    const inverse = 'oklch(1 0 0)'
-
-    // In a form: the header is not a direct child, yet the close button still
-    // takes the band's ink and the title still clears it.
-    let dialog = await open('In a form')
-    const header = dialog.querySelector<HTMLElement>('[data-slot="dialog-header"]')!
-    await expect(closeInk(dialog)).toBe(inverse)
-    await expect(getComputedStyle(header).paddingInlineEnd).toBe('72px')
-    await closeWithEscape()
-
-    // A description in the body stays on the popover, so keeps its own ink.
-    dialog = await open('Body title')
-    const description = dialog.querySelector<HTMLElement>('[data-slot="dialog-description"]')!
-    await expect(getComputedStyle(description).color).not.toBe(inverse)
-    await closeWithEscape()
-
-    // No header: no band to take the inverse ink from, and the first content
-    // reserves the close button's 48px.
-    dialog = await open('No header')
-    await expect(closeInk(dialog)).not.toBe(inverse)
-    await expect(getComputedStyle(within(dialog).getByTestId('first')).paddingInlineEnd).toBe(
-      '48px',
-    )
-    await closeWithEscape()
-
-    // Header only: no divider drawn over empty space.
-    dialog = await open('Header only')
-    const lone = dialog.querySelector<HTMLElement>('[data-slot="dialog-header"]')!
-    await expect(getComputedStyle(lone).borderBottomWidth).toBe('0px')
-    await closeWithEscape()
-  },
-}
-
-export const Variants: Story = {
-  name: 'Variants',
-  render: () => (
-    <div className='flex flex-wrap gap-4'>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>Close button</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>With the close button</DialogTitle>
-            <DialogDescription>The default: an icon button in the corner.</DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
-      <Dialog>
-        <DialogTrigger render={<Button variant='outline' />}>Long content</DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              A long title that must wrap clear of the close button rather than run under it
-            </DialogTitle>
-          </DialogHeader>
-          {Array.from({ length: 12 }, (_, i) => (
-            <p key={i}>
-              Paragraph {i + 1}. The popup caps its height at the viewport and scrolls, so a footer
-              never ends up off-screen.
-            </p>
-          ))}
-          <DialogFooter>
-            <DialogClose render={<Button />}>Done</DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  ),
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    await userEvent.click(
-      within(canvasElement).getByRole('button', { name: 'Edit contact details' }),
-    )
-    const popup = await waitFor(() => {
-      const el = document.querySelector<HTMLElement>('[data-slot="dialog-content"]')
-      if (!el) throw new Error('Dialog popup not mounted.')
-      return el
-    })
-
-    // Proves globals.css loaded: --popover resolves to a real colour.
-    const bg = getComputedStyle(popup).backgroundColor
-    await expect(bg).not.toBe('rgba(0, 0, 0, 0)')
-
-    // The 16px text floor: the description is the smallest text in the popup.
-    const description = popup.querySelector<HTMLElement>('[data-slot="dialog-description"]')
-    await expect(getComputedStyle(description!).fontSize).toBe('16px')
-
-    // The header bleeds to the edge and reserves room for the corner close
-    // button: 24px gutter + 48px.
-    const header = popup.querySelector<HTMLElement>('[data-slot="dialog-header"]')
-    await expect(getComputedStyle(header!).paddingInlineEnd).toBe('72px')
-
-    await closeWithEscape()
-  },
-}
+export const Playground: Story = {}

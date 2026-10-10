@@ -7,6 +7,10 @@
  * errors. Stories that customise the pattern use a hand-rolled render that
  * copies the LoginForm composition — this doubles as an authoring guide for
  * consumers extending the pattern in their own codebases.
+ *
+ * The last four stories render the docs page's sections (exported from
+ * login-form.stories.tsx), so each can be opened on its own canvas. The page's
+ * "Default" section is the Default story above.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -21,11 +25,17 @@ import { Separator } from '../components/separator.js'
 import { docsTemplate } from '../components/story-helpers.js'
 import { IconKey, IconLogin, IconMail } from '../icons/index.js'
 import { LoginForm } from './login-form.js'
+import {
+  CustomisingThePatternSection,
+  InContextSection,
+  ReportingAnErrorSection,
+  WidthSection,
+} from './login-form.stories.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
-  title: 'Components/LoginForm/Features',
+  title: 'Patterns/LoginForm/Features',
   component: LoginForm,
   parameters: {
     layout: 'padded',
@@ -158,7 +168,7 @@ export const WithError: Story = {
                   aria-describedby='login-error-password-error'
                   required
                 />
-                <Link href='#' className='absolute top-0 right-0 text-sm'>
+                <Link href='#' className='absolute top-0 right-0 text-base'>
                   Forgot your password?
                 </Link>
                 <FieldError id='login-error-password-error'>Incorrect password</FieldError>
@@ -214,3 +224,19 @@ export const MobileNarrow: Story = {
     </div>
   ),
 }
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const CustomisingThePattern: Story = {
+  name: 'Customising the pattern',
+  render: () => <CustomisingThePatternSection />,
+}
+
+export const ReportingAnError: Story = {
+  name: 'Reporting an error',
+  render: () => <ReportingAnErrorSection />,
+}
+
+export const Width: Story = { render: () => <WidthSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

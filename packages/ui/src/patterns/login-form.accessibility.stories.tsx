@@ -6,6 +6,7 @@
  * The criteria covered here:
  *
  *   1.3.1 Info and Relationships          (A)  — LabelAssociation
+ *   1.3.5 Identify Input Purpose          (AA) — IdentifyInputPurpose
  *   2.4.3 Focus Order                     (A)  — FocusOrder
  *   3.3.1 Error Identification            (A)  — ErrorIdentification
  *   3.3.2 Labels or Instructions          (A)  — LabelsAndInstructions
@@ -17,6 +18,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 
 import { Button } from '../components/button.js'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
@@ -28,8 +30,9 @@ import { LoginForm } from './login-form.js'
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
-  title: 'Components/LoginForm/Accessibility',
+  title: 'Patterns/LoginForm/Accessibility',
   component: LoginForm,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -53,7 +56,7 @@ function getInputByType(canvasElement: HTMLElement, type: string): HTMLInputElem
 // ─── 1.3.1 — Label Association ────────────────────────────────────────────────
 
 export const LabelAssociation: Story = {
-  name: '1.3.1 Label Association',
+  name: 'Info and Relationships — 1.3.1',
   parameters: {
     wcag: ['1.3.1'],
     docs: {
@@ -91,7 +94,7 @@ export const LabelAssociation: Story = {
 // ─── 2.4.3 — Focus Order ──────────────────────────────────────────────────────
 
 export const FocusOrder: Story = {
-  name: '2.4.3 Focus Order',
+  name: 'Focus Order — 2.4.3',
   parameters: {
     wcag: ['2.4.3'],
     docs: {
@@ -165,7 +168,7 @@ export const FocusOrder: Story = {
 // ─── 3.3.1 — Error Identification ─────────────────────────────────────────────
 
 export const ErrorIdentification: Story = {
-  name: '3.3.1 Error Identification',
+  name: 'Error Identification — 3.3.1',
   parameters: {
     wcag: ['3.3.1'],
     docs: {
@@ -199,7 +202,7 @@ export const ErrorIdentification: Story = {
                   <FieldLabel htmlFor='a11y-err-password'>Password</FieldLabel>
                   <a
                     href='#'
-                    className='ms-auto inline-block text-sm underline-offset-4 hover:underline'
+                    className='ms-auto inline-block text-base underline-offset-4 hover:underline'
                   >
                     Forgot your password?
                   </a>
@@ -264,7 +267,7 @@ export const ErrorIdentification: Story = {
 // ─── 3.3.2 — Labels or Instructions ───────────────────────────────────────────
 
 export const LabelsAndInstructions: Story = {
-  name: '3.3.2 Labels or Instructions',
+  name: 'Labels or Instructions — 3.3.2',
   parameters: {
     wcag: ['3.3.2'],
     docs: {
@@ -318,7 +321,7 @@ export const LabelsAndInstructions: Story = {
 // ─── 4.1.2 — Name, Role, Value ────────────────────────────────────────────────
 
 export const NameRoleValue: Story = {
-  name: '4.1.2 Name, Role, Value',
+  name: 'Name, Role, Value — 4.1.2',
   parameters: {
     wcag: ['4.1.2'],
     docs: {
@@ -363,5 +366,38 @@ export const NameRoleValue: Story = {
         `WCAG 4.1.2: expected submit button accessible name "Login", got "${submitName}".`,
       )
     }
+  },
+}
+
+// ─── 1.3.5 — Identify Input Purpose ───────────────────────────────────────────
+
+export const IdentifyInputPurpose: Story = {
+  name: 'Identify Input Purpose — 1.3.5',
+  parameters: {
+    wcag: ['1.3.5'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.3.5',
+          why: 'Inputs that collect information about the reader must say what they collect in a way software can read, so browsers, password managers and assistive tools can fill them or explain them with familiar icons.',
+          how: 'Inspect the two inputs: the email carries autocomplete="username" and the password autocomplete="current-password". The play() finds each by its visible label and asserts the token.',
+          caveat:
+            '"username", not "email", is the right token for a sign-in identifier even on an email field: password managers pair it with current-password to recognise a sign-in form. axe cannot catch a missing token — its autocomplete-valid rule only checks values that are present — so this story is the gate.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-md'>
+      <LoginForm />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByLabelText('Email')).toHaveAttribute('autocomplete', 'username')
+    await expect(canvas.getByLabelText('Password')).toHaveAttribute(
+      'autocomplete',
+      'current-password',
+    )
   },
 }

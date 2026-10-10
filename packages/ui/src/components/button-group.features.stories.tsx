@@ -1,8 +1,10 @@
 /**
  * ButtonGroup — Features
  *
- * Theme/variant matrices, emphasis, sizes, orientation, compositions, states,
- * and the rules a group promises.
+ * One story per section of the docs page, rendering the same examples (a
+ * section whose name a matrix below already uses is suffixed "(docs
+ * section)"), then theme/variant matrices, emphasis, sizes, orientation,
+ * compositions, states, and the rules a group promises.
  *
  * Every story that pins a RULE carries a play that fails when the rule is
  * removed. The two `By Variant` matrices are the exception and carry none on
@@ -44,6 +46,20 @@ import {
   ButtonGroupText,
   type ButtonGroupVariant,
 } from './button-group.js'
+import {
+  ColoursSection,
+  DefaultSection,
+  EmphasisSection,
+  InAPopupSection,
+  InContextSection,
+  InlineTextAndSeparatorsSection,
+  OrientationSection,
+  SizesSection,
+  StatesSection,
+  VariantsSection,
+  WithIconsSection,
+  WithLinksSection,
+} from './button-group.stories.js'
 import { Button, ButtonLink } from './button.js'
 import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from './drawer.js'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card.js'
@@ -96,6 +112,44 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+// ─── Docs page sections ───────────────────────────────────────────────────────
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const Variants: Story = { render: () => <VariantsSection /> }
+
+export const DocsEmphasis: Story = {
+  name: 'Emphasis (docs section)',
+  render: () => <EmphasisSection />,
+}
+
+export const DocsSizes: Story = { name: 'Sizes (docs section)', render: () => <SizesSection /> }
+
+export const Colours: Story = { render: () => <ColoursSection /> }
+
+export const DocsOrientation: Story = {
+  name: 'Orientation (docs section)',
+  render: () => <OrientationSection />,
+}
+
+export const InlineTextAndSeparators: Story = {
+  name: 'Inline text and separators',
+  render: () => <InlineTextAndSeparatorsSection />,
+}
+
+export const DocsStates: Story = { name: 'States (docs section)', render: () => <StatesSection /> }
+
+export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
+
+export const WithLinks: Story = { name: 'With links', render: () => <WithLinksSection /> }
+
+export const DocsInAPopup: Story = {
+  name: 'In a popup (docs section)',
+  render: () => <InAPopupSection />,
+}
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,7 +212,7 @@ const matrixGrid = 'grid grid-cols-[9rem_repeat(5,minmax(0,1fr))] items-center g
 
 function MatrixHeader({ prefix }: { prefix: string }) {
   return (
-    <div className={`${matrixGrid} px-3 text-xs font-semibold text-muted-foreground`}>
+    <div className={`${matrixGrid} px-3 text-base font-semibold text-muted-foreground`}>
       <span>Theme</span>
       {variants.map((variant) => (
         <span key={`${prefix}-header-${variant}`} className='text-center capitalize'>
@@ -178,7 +232,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
       {rowColors.map((color) => (
         <ThemeSurface key={`theme-row-${color}`} color={color} className='p-3'>
           <div className={matrixGrid}>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <ButtonGroup
                 key={`${color}-${variant}`}
@@ -256,7 +310,7 @@ export const Emphasis: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`emphasis-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} split`}>
               <Button variant='solid'>Save</Button>
               <Button
@@ -307,7 +361,7 @@ export const Emphasis: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-center gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>own colour</span>
+          <span className='w-20 text-base font-semibold text-foreground'>own colour</span>
           <ButtonGroup variant='solid' aria-label='solid own colour'>
             <Button>Day</Button>
             <Button color='secondary'>Own colour</Button>
@@ -416,7 +470,7 @@ export const Sizes: Story = {
   },
   render: () => (
     <div className='w-full max-w-5xl space-y-3'>
-      <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-xs font-semibold text-muted-foreground'>
+      <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2 px-3 text-base font-semibold text-muted-foreground'>
         <span>Theme</span>
         {sizes.map((size) => (
           <span key={`size-header-${size}`} className='text-center capitalize'>
@@ -427,7 +481,7 @@ export const Sizes: Story = {
       {(['primary', 'grey', 'danger'] as const).map((color) => (
         <ThemeSurface key={`sizes-${color}`} color={color} className='p-3'>
           <div className='grid grid-cols-[9rem_repeat(3,minmax(0,1fr))] items-center gap-2'>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {sizes.map((size) => (
               <ButtonGroup
                 key={`sizes-${color}-${size}`}
@@ -445,7 +499,7 @@ export const Sizes: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-start gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>beside</span>
+          <span className='w-20 text-base font-semibold text-foreground'>beside</span>
           <ButtonGroup size='sm' aria-label='Small group'>
             <Button>Small segment</Button>
           </ButtonGroup>
@@ -542,7 +596,7 @@ export const InheritedColour: Story = {
       {(['danger', 'accent', 'grey'] as const).map((color) => (
         <ThemeSurface key={`inherit-${color}`} color={color} className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className={`w-20 text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`w-20 text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             <ButtonGroup color={color} aria-label={`${color} group`}>
               <Button>Inherits</Button>
               <Button color='primary'>Own colour</Button>
@@ -602,7 +656,7 @@ export const Orientation: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`orientation-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-start gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} row`}>
               <Button>Top</Button>
               <Button>Middle</Button>
@@ -732,7 +786,7 @@ export const Compositions: Story = {
       {variants.map((variant) => (
         <ThemeSurface key={`compose-${variant}`} color='primary' className='p-3'>
           <div className='flex flex-wrap items-center gap-4'>
-            <span className='w-20 text-sm font-semibold text-foreground'>{variant}</span>
+            <span className='w-20 text-base font-semibold text-foreground'>{variant}</span>
             <ButtonGroup variant={variant} aria-label={`${variant} icons`}>
               <Button iconOnly aria-label='Copy' leadingVisual={IconContentCopy} />
               <Button iconOnly aria-label='Paste' leadingVisual={IconContentPaste} />
@@ -840,8 +894,8 @@ export const InteractionStates: Story = {
                   <span
                     className={
                       state === 'default'
-                        ? 'w-20 text-sm font-semibold text-foreground'
-                        : 'w-20 text-xs text-muted-foreground'
+                        ? 'w-20 text-base font-semibold text-foreground'
+                        : 'w-20 text-base text-muted-foreground'
                     }
                   >
                     {state === 'default' ? variant : state}
@@ -928,7 +982,7 @@ export const Disabled: Story = {
       {colors.map((color) => (
         <ThemeSurface key={`disabled-${color}`} color={color} className='p-3'>
           <div className={matrixGrid}>
-            <span className={`text-sm font-semibold ${titleClasses(color)}`}>{color}</span>
+            <span className={`text-base font-semibold ${titleClasses(color)}`}>{color}</span>
             {variants.map((variant) => (
               <ButtonGroup
                 key={`disabled-${color}-${variant}`}
@@ -947,7 +1001,7 @@ export const Disabled: Story = {
       ))}
       <ThemeSurface color='primary' className='p-3'>
         <div className='flex flex-wrap items-center gap-4'>
-          <span className='w-20 text-sm font-semibold text-foreground'>separated</span>
+          <span className='w-20 text-base font-semibold text-foreground'>separated</span>
           {variants.map((variant) => (
             <ButtonGroup
               key={`separated-${variant}`}

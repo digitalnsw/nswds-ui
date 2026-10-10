@@ -15,15 +15,24 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 
 import { Spinner } from './spinner.js'
-import { ThemeSurface, wcagStoryMeta } from './story-helpers.js'
+import {
+  compositeOver,
+  expectContrast,
+  resolveColor,
+  ThemeSurface,
+  titleClasses,
+  wcagStoryMeta,
+} from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
   title: 'Components/Spinner/Accessibility',
   component: Spinner,
+  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -51,7 +60,7 @@ function getStatus(canvasElement: HTMLElement): HTMLElement {
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
 export const StatusMessage: Story = {
-  name: 'Status Message — 4.1.3',
+  name: 'Status Messages — 4.1.3',
   parameters: {
     wcag: ['4.1.3'],
     docs: {
@@ -69,7 +78,7 @@ export const StatusMessage: Story = {
   render: () => (
     <div className='space-y-4'>
       <Spinner aria-label='Loading results' />
-      <p className='text-sm text-muted-foreground'>
+      <p className='text-base text-muted-foreground'>
         Outer element has role=&quot;status&quot; and aria-label=&quot;Loading results&quot;.
       </p>
     </div>
@@ -96,10 +105,10 @@ export const NonTextContrast: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '1.4.11',
-          why: 'The spinner is a graphical UI component conveying state. Both the moving arc (fill-primary-800, or fill-white for the white variant) and the static ring (text-grey-400, or text-white/30) must meet 3:1 contrast against the surrounding background, and the arc must be distinguishable from the ring.',
-          how: 'Use a colour-contrast checker on the rendered SVG against each surface below. Verify the moving arc is clearly distinguishable from the static ring and that both are visible against the surface colour.',
+          why: 'The spinner is a graphical object conveying state. The moving arc (fill-primary-800, or fill-white for the white variant) is the part a reader needs to see, so it must meet 3:1 against the surrounding background and stand out from the static ring (text-grey-400, or text-white/30) it travels over.',
+          how: 'Each size on the default background, and the white variant — the one made for them — on a dark surface. The play() measures every arc against its surface and against its track (flattened onto the surface), and requires 3:1 for both.',
           caveat:
-            'Contrast values depend on the active theme; check both light and dark modes. The grey-800 surface (secondary) below models how the spinner is expected to be used on branded dark panels.',
+            'The ring is a faint backdrop, not the indicator: on white it measures about 1.5:1 and is not held to 3:1. Pick the colour to match the surface — primary on light pages, white on the grey-800 and brand panels modelled here.',
         }),
       },
     },
@@ -107,7 +116,7 @@ export const NonTextContrast: Story = {
   render: () => (
     <div className='space-y-4'>
       <div className='rounded-sm border border-border bg-background p-6'>
-        <h4 className='mb-3 text-sm font-semibold text-foreground'>On default background</h4>
+        <h4 className='mb-3 text-base font-semibold text-foreground'>On default background</h4>
         <div className='flex flex-wrap items-end gap-6'>
           <Spinner size='md' aria-label='Loading' />
           <Spinner size='lg' aria-label='Loading' />
@@ -116,19 +125,39 @@ export const NonTextContrast: Story = {
       </div>
 
       <ThemeSurface color='secondary'>
-        <h4 className='mb-3 text-sm font-semibold text-grey-50'>On grey-800 surface</h4>
+        <h4 className={`mb-3 text-base font-semibold ${titleClasses('secondary')}`}>
+          On grey-800 surface
+        </h4>
         <div className='flex flex-wrap items-end gap-6'>
-          <Spinner size='md' aria-label='Loading' />
-          <Spinner size='lg' aria-label='Loading' />
-          <Spinner size='xl' aria-label='Loading' />
+          <Spinner size='md' color='white' aria-label='Loading' />
+          <Spinner size='lg' color='white' aria-label='Loading' />
+          <Spinner size='xl' color='white' aria-label='Loading' />
         </div>
       </ThemeSurface>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const svgs = canvasElement.querySelectorAll<SVGSVGElement>('[role="status"] svg')
+    await expect(svgs).toHaveLength(6)
+    for (const svg of svgs) {
+      const surface = getComputedStyle(svg.closest<HTMLElement>('.rounded-sm')!).backgroundColor
+      const [track, arc] = Array.from(svg.querySelectorAll('path')).map(
+        (path) => getComputedStyle(path).fill,
+      )
+      // The white variant's track is translucent: flatten it onto the surface.
+      const { r, g, b } = compositeOver(resolveColor(track!), resolveColor(surface))
+      const flatTrack = `rgb(${r} ${g} ${b})`
+
+      // The arc is the indicator: it must stand out from the surface…
+      expectContrast(arc!, surface, { minimum: 3, label: 'Spinner arc against the surface' })
+      // …and from the track it travels over.
+      expectContrast(arc!, flatTrack, { minimum: 3, label: 'Spinner arc against its track' })
+    }
+  },
 }
 
 export const UseOfColour: Story = {
-  name: 'Use of Colour — 1.4.1',
+  name: 'Use of Color — 1.4.1',
   parameters: {
     wcag: ['1.4.1'],
     docs: {
@@ -146,32 +175,45 @@ export const UseOfColour: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Animation + accessible name (recommended)
         </h4>
         <div className='flex items-center gap-3'>
           <Spinner aria-label='Loading results' />
-          <span className='text-sm text-muted-foreground'>
+          <span className='text-base text-muted-foreground'>
             Visible animation + role=&quot;status&quot; + aria-label=&quot;Loading results&quot;.
           </span>
         </div>
       </section>
 
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>
+        <h4 className='text-base font-semibold text-foreground'>
           Pair with visible text for maximum clarity
         </h4>
         <div className='flex items-center gap-3'>
           <Spinner size='sm' aria-label='Loading results' />
-          <span className='text-sm text-foreground'>Loading results…</span>
+          <span className='text-base text-foreground'>Loading results…</span>
         </div>
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           A visible &quot;Loading…&quot; label removes any reliance on the spinner&apos;s colour or
           motion to convey the state.
         </p>
       </section>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const statuses = canvasElement.querySelectorAll<HTMLElement>('[role="status"]')
+    await expect(statuses).toHaveLength(2)
+    for (const status of statuses) {
+      // A non-colour cue for screen readers: the status is named.
+      await expect(status).toHaveAccessibleName('Loading results')
+      // And for sighted readers: the arc moves (motion is not reduced in the test browser).
+      const svg = status.querySelector('svg')!
+      await expect(getComputedStyle(svg).animationName).toBe('spin')
+    }
+    // The recommended pairing also says it in visible text.
+    await expect(canvasElement).toHaveTextContent('Loading results…')
+  },
 }
 
 export const NonTextContent: Story = {
@@ -182,10 +224,10 @@ export const NonTextContent: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '1.1.1',
-          why: 'The animated SVG inside Spinner is non-text content. It must either be marked decorative and accompanied by a text alternative, or carry an accessible name itself. The Spinner pattern delegates the text alternative to the outer role="status" element via aria-label.',
-          how: 'Inspect the DOM: the SVG should not carry role="img" or its own aria-label. The accessible name is supplied by the outer span via aria-label. The play() function asserts that when aria-label is missing the spinner has no accessible name — surfacing the consumer caveat below.',
+          why: 'The animated SVG inside Spinner is non-text content. It must either be marked decorative and accompanied by a text alternative, or carry an accessible name itself. The Spinner pattern hides the SVG and names the outer role="status" element instead — from its visually hidden `label` text ("Loading" by default), or from an aria-label.',
+          how: 'Inspect the DOM: the SVG is aria-hidden and carries no role or name of its own. The play() asserts that a spinner given no aria-label still has a name: the visually hidden default "Loading" text inside its role="status" element.',
           caveat:
-            'Spinner does NOT default an aria-label. Consumers MUST supply one (or render visually-hidden text inside the span) — otherwise the role="status" element has no accessible name and screen readers will announce a bare "status" with no context.',
+            'The default "Loading" is accurate but generic. Pass a specific `label` ("Loading search results") so the announcement says what is loading. An empty `label` removes the status role entirely — for a Spinner inside a Button whose own aria-busy already conveys the state.',
         }),
       },
     },
@@ -193,21 +235,23 @@ export const NonTextContent: Story = {
   render: () => (
     <div className='space-y-6'>
       <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>Correct — aria-label supplied</h4>
+        <h4 className='text-base font-semibold text-foreground'>Correct — aria-label supplied</h4>
         <Spinner aria-label='Loading search results' />
-        <p className='text-xs text-muted-foreground'>
+        <p className='text-base text-muted-foreground'>
           The outer span exposes the accessible name; the SVG remains decorative.
         </p>
       </section>
 
-      <section className='border-danger/40 bg-danger/5 space-y-3 rounded-sm border p-6'>
-        <h4 className='text-sm font-semibold text-foreground'>Caveat — no aria-label</h4>
+      <section className='space-y-3 rounded-sm border border-border bg-background p-6'>
+        <h4 className='text-base font-semibold text-foreground'>
+          No aria-label — the default label
+        </h4>
         <span data-no-label-spinner>
           <Spinner />
         </span>
-        <p className='text-xs text-muted-foreground'>
-          Without aria-label, the role=&quot;status&quot; element has no accessible name. Screen
-          readers will announce only the live region with no context — always supply a label.
+        <p className='text-base text-muted-foreground'>
+          Without aria-label, the spinner is still named — by its visually hidden default text,
+          &quot;Loading&quot;. Pass a specific <code>label</code> so people hear what is loading.
         </p>
       </section>
     </div>
@@ -230,5 +274,8 @@ export const NonTextContent: Story = {
     if (label !== null && label.trim().length > 0) {
       throw new Error(`Expected the unlabelled spinner to have no aria-label, received "${label}".`)
     }
+
+    // …and still be named, by the visually hidden default label.
+    await expect(status).toHaveTextContent('Loading')
   },
 }

@@ -10,11 +10,22 @@
  * variant/colour matrix here — instead we cover the orientations and a few
  * representative composition patterns that exercise the data-orientation
  * sizing rules.
+ *
+ * The first group renders each section of the docs page on its own canvas
+ * (the sections are exported from separator.stories.tsx). Where a section
+ * shares its name with one of the review stories below, it is suffixed
+ * "(docs)".
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Separator } from './separator.js'
+import {
+  DecorativeSection,
+  HorizontalSection,
+  InContextSection,
+  VerticalSection,
+} from './separator.stories.js'
 import { docsTemplate } from './story-helpers.js'
 
 const meta = {
@@ -28,6 +39,19 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const DocsHorizontal: Story = {
+  name: 'Horizontal (docs)',
+  render: () => <HorizontalSection />,
+}
+
+export const DocsVertical: Story = { name: 'Vertical (docs)', render: () => <VerticalSection /> }
+
+export const Decorative: Story = { name: 'Decorative', render: () => <DecorativeSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
@@ -48,9 +72,9 @@ export const Horizontal: Story = {
   },
   render: () => (
     <div className='w-full max-w-md space-y-3 rounded-sm border border-border bg-background p-4'>
-      <p className='text-sm text-foreground'>Section one</p>
+      <p className='text-base text-foreground'>Section one</p>
       <Separator />
-      <p className='text-sm text-foreground'>Section two</p>
+      <p className='text-base text-foreground'>Section two</p>
     </div>
   ),
 }
@@ -72,11 +96,11 @@ export const Vertical: Story = {
   },
   render: () => (
     <div className='flex h-12 items-stretch gap-3 rounded-sm border border-border bg-background px-4'>
-      <span className='flex items-center text-sm text-foreground'>Home</span>
+      <span className='flex items-center text-base text-foreground'>Home</span>
       <Separator orientation='vertical' />
-      <span className='flex items-center text-sm text-foreground'>About</span>
+      <span className='flex items-center text-base text-foreground'>About</span>
       <Separator orientation='vertical' />
-      <span className='flex items-center text-sm text-foreground'>Contact</span>
+      <span className='flex items-center text-base text-foreground'>Contact</span>
     </div>
   ),
 }
@@ -100,33 +124,33 @@ export const InMenu: Story = {
     <div className='w-56 rounded-sm border border-border bg-background py-1 shadow-sm'>
       <button
         type='button'
-        className='block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted'
+        className='block w-full px-3 py-2 text-left text-base text-foreground hover:bg-muted'
       >
         Profile
       </button>
       <button
         type='button'
-        className='block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted'
+        className='block w-full px-3 py-2 text-left text-base text-foreground hover:bg-muted'
       >
         Settings
       </button>
       <Separator />
       <button
         type='button'
-        className='block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted'
+        className='block w-full px-3 py-2 text-left text-base text-foreground hover:bg-muted'
       >
         Help
       </button>
       <button
         type='button'
-        className='block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted'
+        className='block w-full px-3 py-2 text-left text-base text-foreground hover:bg-muted'
       >
         Keyboard shortcuts
       </button>
       <Separator />
       <button
         type='button'
-        className='block w-full px-3 py-2 text-left text-sm text-foreground hover:bg-muted'
+        className='block w-full px-3 py-2 text-left text-base text-foreground hover:bg-muted'
       >
         Sign out
       </button>
@@ -151,27 +175,27 @@ export const InToolbar: Story = {
   },
   render: () => (
     <div className='flex h-10 items-stretch gap-1 rounded-sm border border-border bg-background px-2'>
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Bold
       </button>
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Italic
       </button>
       <Separator orientation='vertical' />
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Left
       </button>
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Center
       </button>
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Right
       </button>
       <Separator orientation='vertical' />
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Link
       </button>
-      <button type='button' className='px-2 text-sm text-foreground hover:bg-muted'>
+      <button type='button' className='px-2 text-base text-foreground hover:bg-muted'>
         Image
       </button>
     </div>
@@ -195,13 +219,13 @@ export const WithLabel: Story = {
   },
   render: () => (
     <div className='w-full max-w-md space-y-4 rounded-sm border border-border bg-background p-4'>
-      <p className='text-sm text-foreground'>Continue with Google</p>
+      <p className='text-base text-foreground'>Continue with Google</p>
       <div className='flex items-center gap-3'>
         <Separator className='flex-1' />
-        <span className='text-xs font-medium text-muted-foreground uppercase'>or</span>
+        <span className='text-base font-medium text-muted-foreground uppercase'>or</span>
         <Separator className='flex-1' />
       </div>
-      <p className='text-sm text-foreground'>Sign in with email</p>
+      <p className='text-base text-foreground'>Sign in with email</p>
     </div>
   ),
 }

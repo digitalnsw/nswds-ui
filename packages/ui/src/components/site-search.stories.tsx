@@ -1,6 +1,13 @@
 /**
- * SiteSearch — Default + Shortcut + Empty + Custom trigger + Controlled veto
- * + Custom label + CssCheck
+ * SiteSearch — the story set, per docs/reference-storybook-standard.md.
+ *
+ *   Components/SiteSearch               → this file: Docs, Default, Playground
+ *   Components/SiteSearch/Features      → site-search.features.stories.tsx
+ *   Components/SiteSearch/Accessibility → site-search.accessibility.stories.tsx
+ *   Components/SiteSearch/Tests         → site-search.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Cmd/Ctrl-K command-palette site search: a centred modal panel with a
  * filter-as-you-type input over grouped destinations. Selection is handed to
@@ -11,11 +18,23 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import React from 'react'
+import { fn } from 'storybook/test'
 
+import { IconSearch } from '../icons/search.js'
 import { Button } from './button.js'
+import { Header, HeaderActions, HeaderBrand } from './header.js'
+import { Kbd, KbdGroup } from './kbd.js'
 import { SiteSearch, type SiteSearchGroup, type SiteSearchItem } from './site-search.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
+/** The site map Default and Playground search — Default's play() filters it. */
 const demoGroups: SiteSearchGroup[] = [
   {
     title: 'Getting started',
@@ -34,55 +53,343 @@ const demoGroups: SiteSearchGroup[] = [
   },
 ]
 
+/** A service site map for the examples. */
+const serviceGroups: SiteSearchGroup[] = [
+  {
+    title: 'Driving and transport',
+    items: [
+      {
+        title: 'Renew a driver licence',
+        href: '/driving/renew-licence',
+        keywords: ['license', 'car'],
+      },
+      { title: 'Pay a fine', href: '/fines/pay', keywords: ['penalty', 'infringement'] },
+      { title: 'Check a vehicle registration', href: '/vehicles/rego-check', keywords: ['rego'] },
+    ],
+  },
+  {
+    title: 'Births, deaths and marriages',
+    items: [
+      { title: 'Order a birth certificate', href: '/bdm/birth-certificate' },
+      { title: 'Register a marriage', href: '/bdm/marriage', keywords: ['wedding'] },
+    ],
+  },
+  {
+    title: 'Business',
+    items: [
+      { title: 'Apply for a liquor licence', href: '/business/liquor-licence' },
+      { title: 'Find a grant', href: '/business/grants', keywords: ['funding'] },
+    ],
+  },
+]
+
+const noop = () => {}
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function TriggersSection() {
+  return (
+    <ExampleSection
+      title='Triggers'
+      description={
+        <>
+          By default the trigger is a ghost icon button named by <code>label</code>. Pass{' '}
+          <code>trigger</code> to use your own element — it inherits the dialog-opening behaviour
+          and owns its accessible name, so <code>label</code> is not applied to it. Pass{' '}
+          <code>null</code> for no trigger at all.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch
+  groups={groups}
+  onSelect={(item) => router.push(item.href)}
+  trigger={<Button variant="outline">Search this site</Button>}
+/>`}
+      >
+        <ExampleCell label='default'>
+          <SiteSearch groups={serviceGroups} onSelect={noop} shortcut={false} />
+        </ExampleCell>
+        <ExampleCell label='custom trigger'>
+          <SiteSearch
+            groups={serviceGroups}
+            onSelect={noop}
+            shortcut={false}
+            trigger={
+              <Button variant='outline' leadingVisual={IconSearch}>
+                Search this site
+              </Button>
+            }
+          />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ResultsSection() {
+  return (
+    <ExampleSection
+      title='Results'
+      description={
+        <>
+          <code>groups</code> is the site map: titled groups of <code>title</code>,{' '}
+          <code>href</code> and optional <code>keywords</code>. Typing matches titles and keywords,
+          and drops any group left empty. Choosing a result closes the palette and calls{' '}
+          <code>onSelect</code> with the item — navigate there with your own router. Open it and try
+          &ldquo;rego&rdquo;.
+        </>
+      }
+    >
+      <Example
+        code={`const groups = [
+  {
+    title: 'Driving and transport',
+    items: [
+      { title: 'Renew a driver licence', href: '/driving/renew-licence', keywords: ['license'] },
+      { title: 'Check a vehicle registration', href: '/vehicles/rego-check', keywords: ['rego'] },
+    ],
+  },
+]`}
+      >
+        <SiteSearch
+          groups={serviceGroups}
+          onSelect={noop}
+          shortcut={false}
+          placeholder='Search services'
+          emptyMessage='No services match that search.'
+          trigger={<Button variant='outline'>Open the palette</Button>}
+        />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function KeyboardShortcutSection() {
+  return (
+    <ExampleSection
+      title='Keyboard shortcut'
+      description={
+        <>
+          <KbdGroup>
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>{' '}
+          (or{' '}
+          <KbdGroup>
+            <Kbd>Ctrl</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+          ) opens and closes the palette from anywhere on the page. It is on by default; mount only
+          one SiteSearch with <code>shortcut</code> on per page, or one press toggles them all. Show
+          the shortcut in a custom trigger so people can find it.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch
+  groups={groups}
+  onSelect={onSelect}
+  trigger={
+    <Button variant="outline" leadingVisual={IconSearch}>
+      Search <KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup>
+    </Button>
+  }
+/>`}
+      >
+        <SiteSearch
+          groups={serviceGroups}
+          onSelect={noop}
+          shortcut={false}
+          trigger={
+            <Button variant='outline' leadingVisual={IconSearch}>
+              Search{' '}
+              <KbdGroup>
+                <Kbd>⌘</Kbd>
+                <Kbd>K</Kbd>
+              </KbdGroup>
+            </Button>
+          }
+        />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function LabelsAndMessagesSection() {
+  return (
+    <ExampleSection
+      title='Labels and messages'
+      description={
+        <>
+          <code>label</code> names the panel, the input and the default trigger — say what is being
+          searched, and translate it rather than shipping English. <code>placeholder</code> and{' '}
+          <code>emptyMessage</code> set the field&apos;s hint and the line shown when nothing
+          matches. Anything passed as <code>children</code> sits in a footer under the results, for
+          a hint such as how to close. Open it and search for &ldquo;passport&rdquo;.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch
+  groups={groups}
+  onSelect={onSelect}
+  label="Search Service NSW"
+  placeholder="Search services"
+  emptyMessage="No services match that search. Try another word."
+>
+  Press <Kbd>Esc</Kbd> to close.
+</SiteSearch>`}
+      >
+        <SiteSearch
+          groups={serviceGroups}
+          onSelect={noop}
+          shortcut={false}
+          label='Search Service NSW'
+          placeholder='Search services'
+          emptyMessage='No services match that search. Try another word.'
+          trigger={<Button variant='outline'>Search Service NSW</Button>}
+        >
+          <span>
+            Press <Kbd>Esc</Kbd> to close.
+          </span>
+        </SiteSearch>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AccessibilitySection() {
+  return (
+    <ExampleSection
+      title='Accessibility'
+      description={
+        <>
+          The panel is a Base UI Dialog (focus trap, Escape, backdrop dismissal, focus restore); the
+          search itself is a Base UI Autocomplete rendered inline within it, so the input is
+          announced as a combobox, arrow keys move the highlight while focus stays in the field, and
+          Enter activates the highlighted result. Result rows are at least 44px tall.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch groups={groups} onSelect={onSelect} label="Search Service NSW" />`}
+      >
+        <ExampleCell label='Tab here and press Enter, then use the arrow keys'>
+          <SiteSearch
+            groups={serviceGroups}
+            onSelect={noop}
+            shortcut={false}
+            label='Search Service NSW'
+          />
+        </ExampleCell>
+      </Example>
+      <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+        Name, Role, Value (4.1.2), Keyboard (2.1.1), Focus Order (2.4.3), Status Messages (4.1.3)
+        and Target Size (2.5.8 and 2.5.5) are each asserted in the{' '}
+        <strong className='font-semibold text-foreground'>Accessibility</strong> stories under this
+        component.
+      </p>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='In the header actions of a service site, with the shortcut on. The panel opens centred over the page, whatever the width.'
+    >
+      <Example
+        layout='fill'
+        className='max-sm:p-0 sm:p-0'
+        code={`<Header>
+  <HeaderBrand sitename="Service NSW" />
+  <HeaderActions>
+    <SiteSearch groups={groups} onSelect={onSelect} label="Search Service NSW" />
+  </HeaderActions>
+</Header>`}
+      >
+        <Header sticky={false} shadow={false}>
+          <HeaderBrand sitename='Service NSW' />
+          <HeaderActions>
+            <SiteSearch
+              groups={serviceGroups}
+              onSelect={noop}
+              label='Search Service NSW'
+              placeholder='Search services'
+            >
+              <span>
+                Press <Kbd>Esc</Kbd> to close.
+              </span>
+            </SiteSearch>
+          </HeaderActions>
+        </Header>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+// ─── Docs page ────────────────────────────────────────────────────────────────
+
+function SiteSearchDocs() {
+  return (
+    <DocsPage
+      title='SiteSearch'
+      npm='SiteSearch'
+      registry='site-search'
+      summary={
+        <>
+          A command-palette search over the site map: a trigger (or{' '}
+          <KbdGroup>
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+          ) opens a centred modal panel whose input filters titled groups of destinations as you
+          type. Choosing a result calls <code>onSelect</code> with the item — navigation stays in
+          the app (call your router there), keeping the design system framework-free.
+        </>
+      }
+    >
+      <DocsUsage
+        use={[
+          'Jumping straight to a known page on a large site, such as a service or a form.',
+          'A keyboard-first search across a fixed site map, opened from anywhere with ⌘K.',
+          'A compact search entry in the Header that opens a full panel on demand.',
+        ]}
+        avoid={[
+          'Full-text search across page content that needs a results page — use ExpandableSearch or an InputGroup that submits.',
+          'Filtering a list already on the page — use Input.',
+          'Choosing a value for a form field — use Combobox.',
+        ]}
+      />
+      <TriggersSection />
+      <ResultsSection />
+      <KeyboardShortcutSection />
+      <LabelsAndMessagesSection />
+      <InContextSection />
+      <AccessibilitySection />
+      <DocsApi />
+    </DocsPage>
+  )
+}
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
 const meta = {
   title: 'Components/SiteSearch',
   component: SiteSearch,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
-    layout: 'centered',
-    controls: {
-      expanded: true,
-      sort: 'requiredFirst',
-    },
-    docs: {
-      page: () => (
-        <div className='max-w-3xl space-y-8 p-6 text-foreground'>
-          <section className='space-y-3'>
-            <h1 className='text-4xl font-bold tracking-normal'>SiteSearch</h1>
-            <p className='text-base text-muted-foreground'>
-              A command-palette search over the site map: a trigger (or{' '}
-              <kbd className='rounded-sm border border-foreground/20 px-1 font-mono text-sm'>
-                ⌘K
-              </kbd>
-              ) opens a centred modal panel whose input filters titled groups of destinations as you
-              type. Choosing a result calls <code>onSelect</code> with the item — navigation stays
-              in the app (call your router there), keeping the design system framework-free.
-            </p>
-          </section>
-
-          <section className='space-y-3'>
-            <h2 className='text-2xl font-bold tracking-normal'>Accessibility</h2>
-            <p className='text-base text-muted-foreground'>
-              The panel is a Base UI Dialog (focus trap, Escape, backdrop dismissal, focus restore);
-              the search itself is a Base UI Autocomplete rendered inline within it, so the input is
-              announced as a combobox, arrow keys move the highlight while focus stays in the field,
-              and Enter activates the highlighted result. Result rows are at least 44px tall.
-            </p>
-          </section>
-        </div>
-      ),
-      description: {
-        component:
-          'Cmd/Ctrl-K command-palette site search: a modal panel filtering grouped destinations by title and keywords, handing the chosen item to the app via onSelect.',
-      },
-    },
+    layout: 'padded',
+    controls: { expanded: true, sort: 'requiredFirst' },
+    docs: { page: SiteSearchDocs },
   },
   args: {
     groups: demoGroups,
-    // Typed noop — a bare `() => {}` would make TS infer the meta-level arg as
-    // `() => void`, and per-story overrides would then need the intersection
-    // of both signatures.
-    onSelect: (() => {}) as (item: SiteSearchItem) => void,
+    onSelect: fn() as (item: SiteSearchItem) => void,
     shortcut: false,
     placeholder: 'Type to search across the site...',
     emptyMessage: 'No results found.',
@@ -95,50 +402,55 @@ const meta = {
     onSelect: {
       description:
         'Called with the chosen item after the palette closes. Do your navigation here (e.g. router.push(item.href)).',
-      table: { category: 'Behaviour' },
+      table: { category: 'Events' },
     },
     shortcut: {
       control: 'boolean',
       description:
-        'Wire the global Cmd/Ctrl-K toggle on document. Off in these stories (except Shortcut) so multiple mounted instances on the docs page do not all toggle at once.',
-      table: { category: 'Behaviour' },
+        'Wire the global Cmd/Ctrl-K toggle on document. Off in these stories (except In context) so several mounted instances do not all toggle at once.',
+      table: { category: 'Behavior' },
     },
     open: {
       control: false,
       description: 'Controlled open state.',
-      table: { category: 'Behaviour' },
+      table: { category: 'Behavior' },
     },
     defaultOpen: {
       control: 'boolean',
       description: 'Uncontrolled initial open state.',
-      table: { category: 'Behaviour' },
+      table: { category: 'Behavior' },
     },
     onOpenChange: {
-      table: { disable: true, category: 'Behaviour' },
+      description: 'Called whenever the palette asks to open or close.',
+      table: { category: 'Events' },
     },
     label: {
       control: 'text',
       description:
         'Accessible name for the palette — the dialog panel, the input and the default trigger. Localise it rather than shipping English.',
-      table: { category: 'Content' },
+      table: { category: 'Accessibility' },
     },
     placeholder: {
       control: 'text',
+      description: 'Placeholder for the search input.',
       table: { category: 'Content' },
     },
     emptyMessage: {
       control: 'text',
+      description: 'Message shown when no items match the query.',
       table: { category: 'Content' },
     },
     trigger: {
-      table: { disable: true, category: 'Content' },
+      control: false,
+      description: 'The element that opens the palette, or null for none.',
+      table: { category: 'Content' },
     },
     children: {
-      table: { disable: true, category: 'Content' },
+      control: false,
+      description: 'Content at the foot of the panel, such as shortcut hints.',
+      table: { category: 'Content' },
     },
-    className: {
-      table: { disable: true, category: 'Advanced' },
-    },
+    className: { table: { disable: true } },
   },
 } satisfies Meta<typeof SiteSearch>
 
@@ -196,12 +508,7 @@ function typeIntoInput(input: HTMLInputElement, value: string) {
   input.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
-/**
- * Dispatch a keydown and report whether a handler claimed it. `SiteSearch`
- * calls `preventDefault()` on the chord it acts on, so the return value is a
- * reliable "this press was handled" signal — which lets a caller wait for a
- * listener to attach instead of assuming it already has.
- */
+/** Dispatch a keydown and report whether a handler claimed it. */
 function pressKey(target: EventTarget, key: string, init: KeyboardEventInit = {}) {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init })
   target.dispatchEvent(event)
@@ -217,26 +524,12 @@ async function openPalette(canvasElement: HTMLElement) {
   )
 }
 
-async function closePalette() {
-  const input = document.querySelector<HTMLInputElement>('[data-slot="site-search-input"]')
-  if (input) {
-    pressKey(input, 'Escape')
-  }
-  await waitFor(() => getPanel() === null, 'Expected Escape to close the palette.')
-}
-
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
-const selections: SiteSearchItem[] = []
-
 export const Default: Story = {
-  args: {
-    onSelect: (item) => {
-      selections.push(item)
-    },
-  },
-  play: async ({ canvasElement }) => {
-    selections.length = 0
+  play: async ({ canvasElement, args }) => {
+    // The meta's onSelect is a spy, reset by Storybook before each run.
+    const onSelect = args.onSelect as unknown as ReturnType<typeof fn>
 
     // The trigger is an icon-only button with an accessible name.
     const trigger = getTrigger(canvasElement)
@@ -287,277 +580,15 @@ export const Default: Story = {
     )
     pressKey(input, 'Enter')
     await waitFor(
-      () => selections.length === 1,
+      () => onSelect.mock.calls.length === 1,
       'Expected Enter on the highlighted item to call onSelect once.',
     )
-    if (selections[0]!.href !== '/components/header') {
-      throw new Error(`Expected onSelect to receive the Header item, got "${selections[0]!.href}".`)
+    const selected = onSelect.mock.calls[0]![0] as SiteSearchItem
+    if (selected.href !== '/components/header') {
+      throw new Error(`Expected onSelect to receive the Header item, got "${selected.href}".`)
     }
     await waitFor(() => getPanel() === null, 'Expected the palette to close after selection.')
   },
 }
 
-export const Shortcut: Story = {
-  name: 'Keyboard shortcut',
-  args: {
-    shortcut: true,
-  },
-  play: async () => {
-    if (getPanel() !== null) {
-      throw new Error('Expected the palette to start closed.')
-    }
-
-    // Ctrl-K on the document opens…
-    //
-    // The listener is attached in an effect, and on a cold production build
-    // that effect can flush after the trigger is already in the DOM — a single
-    // dispatch then lands on nothing, so this passed in dev and failed in the
-    // built Storybook Chromatic snapshots. Retry until a press is actually
-    // claimed, then stop: the chord toggles, so pressing again once it has
-    // landed would close the palette we just opened.
-    await waitFor(
-      () => pressKey(document, 'k', { ctrlKey: true }),
-      'Expected the Ctrl-K listener to attach.',
-    )
-    await waitFor(() => getPanel() !== null, 'Expected Ctrl-K to open the palette.')
-
-    // …and the same chord toggles it closed again, per the nswds-app source.
-    pressKey(document, 'k', { ctrlKey: true })
-    await waitFor(() => getPanel() === null, 'Expected a second Ctrl-K to close the palette.')
-  },
-}
-
-export const EmptyState: Story = {
-  name: 'Empty state',
-  args: {
-    emptyMessage: 'Nothing matches that search.',
-  },
-  play: async ({ canvasElement }) => {
-    await openPalette(canvasElement)
-
-    typeIntoInput(getInput(), 'xyzzy')
-    await waitFor(
-      () => document.querySelectorAll('[data-slot="site-search-item"]').length === 0,
-      'Expected no items to match "xyzzy".',
-    )
-    await waitFor(() => {
-      const empty = document.querySelector('[data-slot="site-search-empty"]')
-      return empty?.textContent === 'Nothing matches that search.'
-    }, 'Expected the empty state to announce the configured message.')
-
-    await closePalette()
-  },
-}
-
-export const CustomTrigger: Story = {
-  name: 'Custom trigger',
-  args: {
-    // A text trigger is the composable path — the element owns its accessible
-    // name. `label` still names the panel and input, but must NOT reach here.
-    label: 'Search documentation',
-    trigger: (
-      <Button variant='outline' color='primary'>
-        Search this site
-      </Button>
-    ),
-  },
-  play: async ({ canvasElement }) => {
-    const trigger = getTrigger(canvasElement)
-    if (trigger.dataset.slot !== 'site-search-trigger') {
-      throw new Error('Expected the custom trigger element to carry the trigger data-slot.')
-    }
-    if (!trigger.textContent?.includes('Search this site')) {
-      throw new Error('Expected the custom trigger element to render its own label.')
-    }
-    if (trigger.getAttribute('aria-haspopup') !== 'dialog') {
-      throw new Error('Expected the custom trigger to inherit the dialog trigger ARIA.')
-    }
-    // The default icon button's `aria-label={label}` must not be applied to a
-    // custom trigger — doing so would replace "Search this site" as the
-    // accessible name (WCAG 2.2, 2.5.3 Label in Name).
-    if (trigger.hasAttribute('aria-label')) {
-      throw new Error(
-        `Expected no aria-label on the custom trigger, got "${trigger.getAttribute('aria-label')}".`,
-      )
-    }
-
-    await openPalette(canvasElement)
-    if (getPanel()!.getAttribute('aria-label') !== 'Search documentation') {
-      throw new Error('Expected `label` to still name the panel when a custom trigger is passed.')
-    }
-    await closePalette()
-  },
-}
-
-// ─── Controlled veto ──────────────────────────────────────────────────────────
-
-// Module-level channel between the veto harness and its play(): the harness
-// records every open-change request, and `veto.released` decides whether it
-// applies them — a stand-in for a parent with its own "may I close?" logic.
-const vetoLog: boolean[] = []
-const veto = { released: false }
-
-function VetoHarness() {
-  const [open, setOpen] = React.useState(true)
-  return (
-    <SiteSearch
-      groups={demoGroups}
-      onSelect={() => {}}
-      shortcut={false}
-      open={open}
-      onOpenChange={(next) => {
-        vetoLog.push(next)
-        if (veto.released) {
-          setOpen(next)
-        }
-      }}
-    />
-  )
-}
-
-export const ControlledVeto: Story = {
-  name: 'Controlled veto',
-  render: () => <VetoHarness />,
-  play: async () => {
-    vetoLog.length = 0
-    veto.released = false
-
-    await waitFor(() => getPanel() !== null, 'Expected the controlled palette to start open.')
-    await waitFor(
-      () => document.activeElement === getInput(),
-      'Expected the search input to receive focus when the palette opens.',
-    )
-
-    // First Escape: the parent vetoes — the request is recorded but not
-    // applied, so the palette stays open and no re-render happens.
-    pressKey(getInput(), 'Escape')
-    await waitFor(() => vetoLog.length > 0, 'Expected the first Escape to request a close.')
-    if (vetoLog.some((requested) => requested !== false)) {
-      throw new Error(`Expected only close requests, got [${vetoLog.join(', ')}].`)
-    }
-    if (getPanel() === null) {
-      throw new Error('Expected the vetoing parent to keep the palette open.')
-    }
-    const afterFirstEscape = vetoLog.length
-
-    // Second Escape: the regression this story pins. An optimistic openRef
-    // write used to make the component believe it was already closed, so a
-    // vetoed close permanently swallowed every later identical request.
-    pressKey(getInput(), 'Escape')
-    await waitFor(
-      () => vetoLog.length > afterFirstEscape,
-      'Expected a second Escape to reach onOpenChange again after a vetoed close.',
-    )
-    if (getPanel() === null) {
-      throw new Error('Expected the still-vetoing parent to keep the palette open.')
-    }
-
-    // Release the veto: the next request applies and the palette closes.
-    veto.released = true
-    pressKey(getInput(), 'Escape')
-    await waitFor(() => getPanel() === null, 'Expected the close to apply once the veto lifted.')
-  },
-}
-
-export const CustomLabel: Story = {
-  name: 'Custom accessible name',
-  args: {
-    label: 'Search documentation',
-  },
-  play: async ({ canvasElement }) => {
-    // One `label` prop names all three surfaces: the default trigger, the
-    // dialog panel and the combobox input.
-    const trigger = getTrigger(canvasElement)
-    if (trigger.getAttribute('aria-label') !== 'Search documentation') {
-      throw new Error(
-        `Expected the default trigger to carry the custom label, got "${trigger.getAttribute('aria-label')}".`,
-      )
-    }
-
-    await openPalette(canvasElement)
-    if (getPanel()!.getAttribute('aria-label') !== 'Search documentation') {
-      throw new Error(
-        `Expected the panel to carry the custom label, got "${getPanel()!.getAttribute('aria-label')}".`,
-      )
-    }
-    if (getInput().getAttribute('aria-label') !== 'Search documentation') {
-      throw new Error(
-        `Expected the input to carry the custom label, got "${getInput().getAttribute('aria-label')}".`,
-      )
-    }
-    await closePalette()
-  },
-}
-
-export const WithFooter: Story = {
-  name: 'With footer hint',
-  args: {
-    children: (
-      <span>
-        Press <kbd className='font-mono'>Esc</kbd> to close, <kbd className='font-mono'>↵</kbd> to
-        open the highlighted page.
-      </span>
-    ),
-  },
-  play: async ({ canvasElement }) => {
-    await openPalette(canvasElement)
-    const footer = document.querySelector('[data-slot="site-search-footer"]')
-    if (!footer) {
-      throw new Error('Expected children to render in a [data-slot="site-search-footer"] region.')
-    }
-    await closePalette()
-  },
-}
-
-export const CssCheck: Story = {
-  name: 'CSS Check',
-  play: async ({ canvasElement }) => {
-    await openPalette(canvasElement)
-
-    // Proves globals.css is loaded: the panel's bg-popover resolves to a real,
-    // non-transparent colour, and result rows honour the 44px minimum target.
-    const panel = getPanel()!
-    const styles = getComputedStyle(panel)
-    if (styles.backgroundColor === '' || styles.backgroundColor === 'rgba(0, 0, 0, 0)') {
-      throw new Error(
-        `Expected bg-popover to resolve to a visible colour, got "${styles.backgroundColor}". Is globals.css loaded?`,
-      )
-    }
-
-    // Wait for the entry animation to finish before measuring: the panel
-    // scales in from 95% (data-starting-style:scale-95), and a mid-animation
-    // getBoundingClientRect reports the scaled size (44px × 0.95 = 41.8px).
-    // Tailwind v4's scale-95 sets the standalone `scale` property — NOT
-    // `transform`, which reads "none" throughout — so poll `scale`.
-    await waitFor(() => {
-      const scale = getComputedStyle(getPanel()!).scale
-      return scale === 'none' || scale === '1'
-    }, 'Expected the panel entry animation to settle before measuring.')
-
-    const item = document.querySelector<HTMLElement>('[data-slot="site-search-item"]')
-    if (!item) {
-      throw new Error('Expected at least one result row to render.')
-    }
-    // Sub-pixel tolerance: `scale` serialises as "1" once it rounds there, so
-    // the poll above can clear while the composited value is still a hair
-    // under (44 × 0.99999965 = 43.99998), which failed this intermittently in
-    // the built Storybook. The assertion is about the 44px target size, not
-    // float-exactness.
-    const height = item.getBoundingClientRect().height
-    if (height < 44 - 0.05) {
-      throw new Error(`Expected result rows to be at least 44px tall, got ${height}px.`)
-    }
-
-    await closePalette()
-  },
-}
-
-export const Playground: Story = {
-  name: 'Playground',
-  parameters: {
-    controls: {
-      expanded: false,
-      sort: 'requiredFirst',
-    },
-  },
-}
+export const Playground: Story = {}

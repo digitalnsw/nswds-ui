@@ -9,11 +9,23 @@
  * Label has no variant/colour/size axes — these stories focus on
  * composition with other form controls and on visual states triggered by
  * surrounding markup (peer-disabled, group-data-disabled).
+ *
+ * After these, one story per section of the docs page, rendering the same
+ * examples so a feature can be opened on its own canvas. Where a section
+ * shares a story's name, its story is suffixed "(docs section)".
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Label } from './label.js'
+import {
+  DefaultSection,
+  DisabledStateSection,
+  LongLabelsSection,
+  NamingAControlSection,
+  OptionalFieldsSection,
+  RequiredIndicatorSection,
+} from './label.stories.js'
 import { docsTemplate } from './story-helpers.js'
 
 const meta = {
@@ -55,7 +67,7 @@ export const WithInput: Story = {
         id='label-features-input'
         type='email'
         placeholder='you@example.com'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-base'
       />
     </div>
   ),
@@ -88,7 +100,7 @@ export const WithRequiredIndicator: Story = {
         id='label-required-input'
         type='text'
         required
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-base'
       />
     </div>
   ),
@@ -132,7 +144,7 @@ export const WithCheckboxAndRadio: Story = {
       </div>
 
       <fieldset className='grid gap-2'>
-        <legend className='text-xs/relaxed font-medium'>Preferred contact</legend>
+        <legend className='text-base/relaxed font-medium'>Preferred contact</legend>
         <Label htmlFor='label-features-radio-email'>
           <input
             id='label-features-radio-email'
@@ -180,7 +192,7 @@ export const Disabled: Story = {
           type='text'
           disabled
           defaultValue='cannot edit'
-          className='peer h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50'
+          className='peer h-9 rounded-sm border border-input bg-background px-3 text-base disabled:cursor-not-allowed disabled:opacity-50'
         />
         <Label htmlFor='label-features-disabled'>Read-only field</Label>
       </div>
@@ -194,7 +206,7 @@ export const Disabled: Story = {
           id='label-features-group-disabled'
           type='text'
           disabled
-          className='h-9 rounded-sm border border-input bg-background px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50'
+          className='h-9 rounded-sm border border-input bg-background px-3 text-base disabled:cursor-not-allowed disabled:opacity-50'
         />
       </fieldset>
     </div>
@@ -224,8 +236,34 @@ export const Truncated: Story = {
       <input
         id='label-features-truncated'
         type='text'
-        className='h-9 rounded-sm border border-input bg-background px-3 text-sm'
+        className='h-9 rounded-sm border border-input bg-background px-3 text-base'
       />
     </div>
   ),
 }
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const DisabledState: Story = {
+  name: 'Disabled state',
+  render: () => <DisabledStateSection />,
+}
+
+export const DocsRequiredIndicator: Story = {
+  name: 'Required indicator (docs section)',
+  render: () => <RequiredIndicatorSection />,
+}
+
+export const NamingAControl: Story = {
+  name: 'Naming a control',
+  render: () => <NamingAControlSection />,
+}
+
+export const OptionalFields: Story = {
+  name: 'Optional fields',
+  render: () => <OptionalFieldsSection />,
+}
+
+export const LongLabels: Story = { name: 'Long labels', render: () => <LongLabelsSection /> }

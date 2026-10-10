@@ -7,12 +7,14 @@
  * relative path `./story-helpers.js`. Storybook compiles from source
  * via Vite, so the `.js` specifier resolves to this `.tsx` file.
  *
- * Canonical reference for the patterns implemented here:
+ * The standard these helpers implement is docs/reference-storybook-standard.md;
+ * the canonical example of it is the Button story set:
  *   - packages/ui/src/components/button.stories.tsx
- *   - packages/ui/src/components/button.features.stories.tsx
+ *   - packages/ui/src/components/button.tests.stories.tsx
  *   - packages/ui/src/components/button.accessibility.stories.tsx
  */
 
+import { ArgTypes } from '@storybook/addon-docs/blocks'
 import { Fragment, type ReactNode } from 'react'
 import { expect, userEvent, waitFor } from 'storybook/test'
 
@@ -406,7 +408,101 @@ export function expectContrast(
   return ratio
 }
 
-/** Consumer documentation layout, shared by the Badge and Tag examples. */
+// ─── Docs kit ─────────────────────────────────────────────────────────────────
+//
+// The building blocks of every component's docs page. They reproduce Button's
+// docs page exactly (button.stories.tsx) — the intro, the bold section
+// headings, the tinted preview panels with centred labels, the brand-band
+// panel for colours made for dark surfaces — so every page reads like it.
+// On top of Button's layout each page also carries the install lines, a
+// "When to use" section, a code snippet under each example and the props
+// table. The standard is docs/reference-storybook-standard.md and
+// `check:stories` enforces its shape.
+//
+//   <DocsPage title summary npm registry>      intro + both install lines
+//     <DocsUsage use avoid />                  when to reach for it, and when not
+//     <ExampleSection title description>       one per docs section, each with
+//       <Example code>…<ExampleCell/>…</Example>  a panel and its code
+//     <DocsApi />                              the generated props table
+//   </DocsPage>
+
+const docsPageClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
+
+/** Kept for pages that compose their own header (the Breadcrumb look pages). */
+export const exampleDocsClassName = docsPageClassName
+
+/** One install line under the intro: a channel name and what to type. */
+function InstallLine({ channel, code }: { channel: string; code: string }) {
+  return (
+    <div className='flex flex-wrap items-baseline gap-x-4 gap-y-1'>
+      <dt className='w-20 shrink-0 font-semibold'>{channel}</dt>
+      <dd className='min-w-0'>
+        <code className='break-all'>{code}</code>
+      </dd>
+    </div>
+  )
+}
+
+/**
+ * The page frame and Button's intro: a large title, one paragraph on what the
+ * component is for, then how to get it on each distribution channel. `npm` is
+ * the export (or exports) to import, from the package root unless `from` names
+ * a subpath (`@nswds/ui/icons`); `registry` is the registry item name.
+ * Patterns are registry-only, so they pass no `npm`. `eyebrow` is for guide
+ * pages that sit under a component (the Breadcrumb looks).
+ */
+export function DocsPage({
+  title,
+  summary,
+  eyebrow,
+  npm,
+  from = '@nswds/ui',
+  registry,
+  children,
+}: {
+  title: string
+  summary: ReactNode
+  eyebrow?: string
+  npm?: string | readonly string[]
+  from?: string
+  registry?: string
+  children: ReactNode
+}) {
+  const imports = typeof npm === 'string' ? [npm] : npm
+  return (
+    <div className={docsPageClassName}>
+      <section className='space-y-4'>
+        {eyebrow ? (
+          <p className='text-base font-semibold text-muted-foreground'>{eyebrow}</p>
+        ) : null}
+        <h1 className='text-5xl font-bold tracking-tight'>{title}</h1>
+        <div className='max-w-2xl text-lg leading-relaxed text-muted-foreground'>{summary}</div>
+        {imports || registry ? (
+          <dl className='space-y-2 pt-2 text-base'>
+            {imports ? (
+              // The quoted specifier is interpolated, not written inline:
+              // check:optimize-deps reads any quoted specifier after "from" as an import.
+              <InstallLine
+                channel='npm'
+                code={`import { ${imports.join(', ')} } from ${`'${from}'`}`}
+              />
+            ) : null}
+            {registry ? (
+              <InstallLine channel='Registry' code={`npx shadcn@latest add @nswds/${registry}`} />
+            ) : null}
+          </dl>
+        ) : null}
+      </section>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Button's `Section`: one part of a docs page — and, rendered on its own, one
+ * Features story. The heading is the story's name, so the sidebar and the page
+ * agree.
+ */
 export function ExampleSection({
   title,
   description,
@@ -420,46 +516,159 @@ export function ExampleSection({
     <section className='space-y-5'>
       <div className='space-y-2'>
         <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-        {description && (
-          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>{description}</p>
-        )}
+        {description ? (
+          <div className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+            {description}
+          </div>
+        ) : null}
       </div>
       {children}
     </section>
   )
 }
 
-/** A bordered, lightly tinted panel that frames a docs example. */
-export function ExamplePreview({ children }: { children: ReactNode }) {
-  return <div className='rounded-md border border-border bg-muted/20 p-6'>{children}</div>
-}
+/**
+ * A nested `.dark` flips the role tokens and `dark:` utilities, but the shadcn
+ * bridge tokens (`--foreground`, `--background`, …) are resolved once on
+ * `:root` and inherit their light values — so a dark frame re-declares the
+ * ones examples read, resolving them against the dark role tokens it now
+ * holds. Canvas stories use the story-level `globals: { theme: 'dark' }`
+ * instead, which needs none of this.
+ */
+const darkFrameClassName =
+  'dark bg-(--background) text-(--foreground) [--background:var(--surface-default)] [--border:var(--border-default)] [--foreground:var(--text-default)] [--muted-foreground:var(--text-muted)] [--muted:var(--background-subtle)]'
 
-/** One example in a preview row: the rendered example above its label. */
-export function ExampleCell({ label, children }: { label: string; children: ReactNode }) {
+const exampleSurfaces = {
+  /** Button's neutral panel. Most examples. */
+  default: 'border-border bg-muted/40',
+  /** The same panel; kept so a page can say it wants a page for white surfaces to sit on. */
+  subtle: 'border-border bg-muted/40',
+  /**
+   * Button's dark panel, for colours made for coloured or dark surfaces
+   * (`white`, `secondary`). Specimen labels on it take the band's white, not
+   * the page's muted grey, which fails contrast on it. Only the labels: the
+   * override is its own variable, so a card or form placed on the band keeps
+   * its own muted text.
+   */
+  brand:
+    'border-transparent bg-primary text-primary-foreground [--example-label:var(--color-white)]',
+  /** A dark page inside a light docs page — see darkFrameClassName. */
+  dark: 'border-transparent',
+} as const
+
+const exampleLayouts = {
+  /** Specimens side by side, wrapping, bottom-aligned so their labels line up. */
+  row: 'flex flex-wrap items-end gap-8',
+  /** Specimens one under another (Button's colour rows). */
+  stack: 'flex flex-col items-start gap-3',
+  /** Two equal columns from `sm` up. */
+  grid: 'grid gap-8 sm:grid-cols-2',
+  /** No arrangement: the child fills the panel (page chrome, tables, scenes). */
+  fill: '',
+} as const
+
+/**
+ * Button's `Preview` panel, with the code to write the example under it.
+ * `layout` arranges the specimens; `surface` is the panel. Keep one idea per
+ * Example — two ideas are two Examples, or two sections.
+ */
+export function Example({
+  children,
+  code,
+  surface = 'default',
+  layout = 'row',
+  className,
+}: {
+  children: ReactNode
+  code?: string
+  surface?: keyof typeof exampleSurfaces
+  layout?: keyof typeof exampleLayouts
+  className?: string
+}) {
   return (
-    <div className='flex flex-col items-start gap-3'>
-      <div className='flex min-h-12 items-center'>{children}</div>
-      <span className='text-base text-muted-foreground'>{label}</span>
+    <div className='space-y-3'>
+      <div
+        data-theme={surface === 'dark' ? 'dark' : undefined}
+        className={cn(
+          'rounded-xl border p-8',
+          exampleSurfaces[surface],
+          surface === 'dark' && darkFrameClassName,
+          exampleLayouts[layout],
+          className,
+        )}
+      >
+        {children}
+      </div>
+      {code ? (
+        // Wraps rather than scrolls: a scrolling <pre> is a scroll region that
+        // keyboard users cannot reach, which axe fails (scrollable-region-focusable).
+        <pre className='rounded-xl border border-border bg-background px-5 py-4 text-base leading-relaxed break-words whitespace-pre-wrap text-foreground'>
+          <code>{code}</code>
+        </pre>
+      ) : null}
     </div>
   )
 }
 
-/** A docs code sample: preformatted, scrolling sideways rather than wrapping. */
-export function ExampleCode({ children }: { children: string }) {
+/** Button's `Cell`: one specimen inside an Example, centred above its label. */
+export function ExampleCell({ label, children }: { label: ReactNode; children: ReactNode }) {
   return (
-    <pre className='max-w-full overflow-x-auto rounded-sm border border-border bg-muted/40 p-4 text-base text-foreground'>
-      <code>{children}</code>
-    </pre>
+    <div className='flex flex-col items-center gap-3'>
+      <div className='flex min-h-12 items-center'>{children}</div>
+      <span className='text-base font-medium tracking-wide text-(--example-label,var(--muted-foreground))'>
+        {label}
+      </span>
+    </div>
   )
 }
 
-export const exampleDocsClassName = 'sb-unstyled max-w-4xl space-y-16 py-2 text-foreground'
+/** "When to use", in Button's section style: the cases for it, then for something else. */
+export function DocsUsage({ use, avoid }: { use: ReactNode[]; avoid: ReactNode[] }) {
+  return (
+    <ExampleSection title='When to use'>
+      <div className='grid gap-x-10 gap-y-8 sm:grid-cols-2'>
+        <div className='space-y-2'>
+          <h3 className='text-lg font-semibold'>Use it for</h3>
+          <ul className='list-disc space-y-2 ps-5 text-base leading-relaxed text-muted-foreground'>
+            {use.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div className='space-y-2'>
+          <h3 className='text-lg font-semibold'>Use something else when</h3>
+          <ul className='list-disc space-y-2 ps-5 text-base leading-relaxed text-muted-foreground'>
+            {avoid.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </ExampleSection>
+  )
+}
+
+/** The generated props table for the page's component — every page's last section. */
+export function DocsApi({ description }: { description?: ReactNode }) {
+  return (
+    <ExampleSection
+      title='API'
+      description={
+        description ?? 'Props of the main component. Try them live in the Playground story.'
+      }
+    >
+      <div className='docs-api'>
+        <ArgTypes />
+      </div>
+    </ExampleSection>
+  )
+}
 
 // ─── Breadcrumb fixtures ──────────────────────────────────────────────────────
 
 /**
- * Shared by the Breadcrumb story files (main, Looks/*, Features,
- * Accessibility, Tests). They live here because this is the one non-story
+ * Shared by the Breadcrumb story files (main, Looks/*, Tests,
+ * Accessibility). They live here because this is the one non-story
  * module under `src/components/` that the build and the drift check skip.
  */
 
@@ -654,20 +863,10 @@ export function PhoneFrame({
   )
 }
 
-/**
- * A dark-mode frame inside a light docs page. A nested `.dark` flips the role
- * tokens and `dark:` utilities, but the shadcn bridge tokens (`--foreground`,
- * `--background`, …) are resolved once on `:root` and inherit their light
- * values — so this frame re-declares the ones the examples read, resolving
- * them against the dark role tokens it now holds. Canvas stories use the
- * story-level `globals: { theme: 'dark' }` instead, which needs none of this.
- */
+/** A dark-mode frame inside a light docs page; see darkFrameClassName. */
 export function DarkFrame({ children }: { children: ReactNode }) {
   return (
-    <div
-      data-theme='dark'
-      className='dark rounded-md bg-(--background) p-4 [--background:var(--surface-default)] [--border:var(--border-default)] [--foreground:var(--text-default)] [--muted-foreground:var(--text-muted)] [--muted:var(--background-subtle)]'
-    >
+    <div data-theme='dark' className={cn(darkFrameClassName, 'rounded-md p-4')}>
       {children}
     </div>
   )
@@ -796,7 +995,9 @@ export function BreadcrumbLookPage({
       </ExampleSection>
       {notes}
       <ExampleSection title='Code'>
-        <ExampleCode>{code}</ExampleCode>
+        <pre className='rounded-xl border border-border bg-background px-5 py-4 text-base leading-relaxed break-words whitespace-pre-wrap text-foreground'>
+          <code>{code}</code>
+        </pre>
       </ExampleSection>
     </div>
   )

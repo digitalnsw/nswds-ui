@@ -10,11 +10,23 @@
  * Hover and focus states are forced via utility classes rather than live
  * pointer interaction so the matrix renders deterministically in visual
  * diffs. Touch-target geometry lives in input.accessibility.stories.tsx.
+ *
+ * After the matrices, one story per section of the docs page, rendering the
+ * same examples so a feature can be opened on its own canvas. Where a section
+ * shares a matrix's name, its story is suffixed "(docs section)".
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Input } from './input.js'
+import {
+  DefaultSection,
+  InContextSection,
+  StatesSection,
+  TypesSection,
+  WithFieldSection,
+  WithLabelSection,
+} from './input.stories.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -116,3 +128,17 @@ export const States: Story = {
     </div>
   ),
 }
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const Default: Story = { render: () => <DefaultSection /> }
+
+export const WithLabel: Story = { name: 'With label', render: () => <WithLabelSection /> }
+
+export const DocsStates: Story = { name: 'States (docs section)', render: () => <StatesSection /> }
+
+export const DocsTypes: Story = { name: 'Types (docs section)', render: () => <TypesSection /> }
+
+export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
