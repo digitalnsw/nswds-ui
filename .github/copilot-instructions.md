@@ -8,6 +8,7 @@
   - `apps/storybook` for component development and browser-based tests.
   - `apps/registry` for generated shadcn registry artifacts in `apps/registry/public/r/`.
   - `apps/web` as a Next.js consumer app.
+  - `apps/infographics`, a public Next.js site (`infographics.design.nsw.gov.au`) built on `@nswds/ui`.
 
 ## Environment and setup
 
