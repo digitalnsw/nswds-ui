@@ -1,3 +1,9 @@
+## [9.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.1...@nswds/ui-v9.1.2) (2026-10-10)
+
+### Bug Fixes
+
+* **registry:** serve the registry from registry.design.nsw.gov.au ([#245](https://github.com/digitalnsw/nswds-ui/issues/245)) ([134fbda](https://github.com/digitalnsw/nswds-ui/commit/134fbdaa7f4723e945d4ed24ae11820452e7691b)), closes [#244](https://github.com/digitalnsw/nswds-ui/issues/244)
+
 ## [9.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.0...@nswds/ui-v9.1.1) (2026-10-10)
 
 ### Bug Fixes
