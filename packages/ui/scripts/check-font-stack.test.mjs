@@ -136,6 +136,17 @@ test('findCycles reports direct and indirect cycles, and only cycles', () => {
   ])
 })
 
+test('var( inside a quoted string or another identifier is not a reference', () => {
+  // `content`-style string values and functions whose name ends in "var" are
+  // text, not references: treating them as var() invents false cycles.
+  const css = `:root{--q:"var(--q)";--s:'see var(--s) here';--f:myvar(--f);--r:var(--q)}`
+  const parsed = parseCss(css)
+  assert.deepEqual(findCycles(parsed), [])
+  assert.equal(resolveRoot(parsed, '--q').value, '"var(--q)"')
+  assert.equal(resolveRoot(parsed, '--f').value, 'myvar(--f)')
+  assert.equal(resolveRoot(parsed, '--r').value, '"var(--q)"')
+})
+
 test('CLI exits 1 with ::error:: lines on failure and 0 on success', () => {
   const script = fileURLToPath(new URL('./check-font-stack.mjs', import.meta.url))
   const dir = mkdtempSync(join(tmpdir(), 'font-stack-'))

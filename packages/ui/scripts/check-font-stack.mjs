@@ -209,11 +209,27 @@ export function resolveRoot(parsed, prop, seen = []) {
   return substitute(parsed, decl.value, chain)
 }
 
+/**
+ * Index of the next real `var(` call at or after `from`, or -1. A plain
+ * indexOf would also match text inside a quoted string (`"var(--x)"` is
+ * content, not a reference) and the tail of another identifier (`myvar(`),
+ * both of which would invent references — and false cycles.
+ */
+function nextVarCall(value, from) {
+  for (let i = from; i < value.length; i++) {
+    const ch = value[i]
+    if (ch === '\\') i++
+    else if (ch === '"' || ch === "'") i = skipString(value, i) - 1
+    else if (value.startsWith('var(', i) && !/[\w-]/.test(value[i - 1] ?? '')) return i
+  }
+  return -1
+}
+
 function substitute(parsed, value, chain) {
   let out = ''
   let i = 0
   while (i < value.length) {
-    const at = value.indexOf('var(', i)
+    const at = nextVarCall(value, i)
     if (at === -1) break
     out += value.slice(i, at)
     let depth = 1
