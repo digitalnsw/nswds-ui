@@ -8,6 +8,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select.js'
+import { resolveColor } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Select/Tests',
@@ -44,11 +45,24 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="select-trigger"].')
     }
 
-    // Proves globals.css loaded: the --input-border token resolves to a real
-    // colour rather than staying transparent.
-    const borderColor = getComputedStyle(trigger).borderColor
-    if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
-      throw new Error(`Expected the --input-border token to resolve, received "${borderColor}".`)
+    // Proves globals.css loaded: the border is the --input-border token. Width
+    // and style alone are not enough — an unstyled control already draws a
+    // border of its own — so the colour is compared, by pixel, with the token
+    // this element resolves (getComputedStyle reports oklch strings, which
+    // cannot be compared as text).
+    const style = getComputedStyle(trigger)
+    if (style.borderTopWidth !== '1px' || style.borderTopStyle !== 'solid') {
+      throw new Error(
+        `Expected a 1px solid border, received ${style.borderTopWidth} ${style.borderTopStyle}.`,
+      )
+    }
+    const token = style.getPropertyValue('--input-border').trim()
+    if (!token) throw new Error('Expected the --input-border token to resolve.')
+    const [border, expected] = [resolveColor(style.borderTopColor), resolveColor(token)]
+    if ((['r', 'g', 'b'] as const).some((c) => Math.abs(border[c] - expected[c]) > 2)) {
+      throw new Error(
+        `Expected the border to be the --input-border token (${token}), received "${style.borderTopColor}".`,
+      )
     }
   },
 }

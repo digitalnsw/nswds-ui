@@ -63,7 +63,16 @@ export const CssCheck: Story = {
     if (!active) {
       throw new Error('Could not find the active [data-slot="pagination-link"].')
     }
-    const borderColor = getComputedStyle(active).borderColor
+    // An unstyled anchor has no border (0px, none) yet still computes a visible
+    // currentColor, so the colour alone proves nothing — the outline variant's
+    // 2px solid border is what only the stylesheet draws.
+    const style = getComputedStyle(active)
+    if (style.borderTopWidth !== '2px' || style.borderTopStyle !== 'solid') {
+      throw new Error(
+        `Expected the outline variant's 2px solid border, received ${style.borderTopWidth} ${style.borderTopStyle}.`,
+      )
+    }
+    const borderColor = style.borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
       throw new Error(`Expected the --border token to resolve, received "${borderColor}".`)
     }

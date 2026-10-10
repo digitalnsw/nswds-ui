@@ -44,9 +44,16 @@ export const CssCheck: Story = {
       throw new Error('Could not find [data-slot="input-otp-slot"].')
     }
 
-    // Proves globals.css loaded: border-input resolves to a real colour rather
-    // than staying transparent.
-    const borderColor = getComputedStyle(slot).borderColor
+    // Proves globals.css loaded. An unstyled div has no border (0px, none) yet
+    // still computes a visible currentColor, so the colour alone proves
+    // nothing — the 1px solid border is what only the stylesheet draws.
+    const style = getComputedStyle(slot)
+    if (style.borderTopWidth !== '1px' || style.borderTopStyle !== 'solid') {
+      throw new Error(
+        `Expected the slot's 1px solid border, received ${style.borderTopWidth} ${style.borderTopStyle}.`,
+      )
+    }
+    const borderColor = style.borderColor
     if (borderColor === '' || borderColor === 'rgba(0, 0, 0, 0)' || borderColor === 'transparent') {
       throw new Error(`Expected border-input to resolve, received "${borderColor}".`)
     }
