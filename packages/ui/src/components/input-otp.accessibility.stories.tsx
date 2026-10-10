@@ -23,7 +23,9 @@ const meta = {
 
 export default meta
 
-type Story = StoryObj<typeof meta>
+// Every story renders its own example, so none takes the component's
+// required props as args.
+type Story = StoryObj
 
 function SixSlots() {
   return (

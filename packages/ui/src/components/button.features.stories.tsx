@@ -222,7 +222,9 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
-                <span className='text-base font-semibold text-foreground capitalize'>{variant}</span>
+                <span className='text-base font-semibold text-foreground capitalize'>
+                  {variant}
+                </span>
                 {standard.map((color) => (
                   <Button
                     key={`variant-standard-${variant}-${color}`}
@@ -265,7 +267,9 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                     gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className='text-base font-semibold text-grey-100 capitalize'>{variant}</span>
+                  <span className='text-base font-semibold text-grey-100 capitalize'>
+                    {variant}
+                  </span>
                   {lowContrast.map((color) => (
                     <Button
                       key={`variant-low-${variant}-${color}`}
@@ -501,7 +505,9 @@ export const IconOnly: Story = {
         data-row='variants'
         className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
       >
-        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>variants</span>
+        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>
+          variants
+        </span>
         {borderedVariants.map((variant) => (
           <Button key={`variant-height-${variant}`} data-probe={variant} variant={variant}>
             {variant}

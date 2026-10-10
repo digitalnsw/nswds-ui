@@ -21,7 +21,9 @@ const meta = {
 
 export default meta
 
-type Story = StoryObj<typeof meta>
+// Every story renders its own example, so none takes the component's
+// required props as args.
+type Story = StoryObj
 
 /** A stand-in map: an inline SVG named the way a real image would be. */
 function MapGraphic() {

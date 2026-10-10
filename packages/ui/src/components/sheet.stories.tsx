@@ -55,9 +55,9 @@ export function SidesSection() {
         <>
           <code>side</code> on <code>SheetContent</code> sets the edge it slides in from. Left and
           right sheets take three quarters of a phone screen and 384px from <code>sm</code> up; top
-          and bottom sheets span the width and size to their content. Right is the default; left suits
-          navigation, top an announcement, and bottom short actions on a phone. In a right-to-left
-          page, left and right follow the reading direction.
+          and bottom sheets span the width and size to their content. Right is the default; left
+          suits navigation, top an announcement, and bottom short actions on a phone. In a
+          right-to-left page, left and right follow the reading direction.
         </>
       }
     >
