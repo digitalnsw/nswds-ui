@@ -83,9 +83,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/spinner.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/spinner.json"
       ],
       "files": [
         {
@@ -116,8 +116,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json"
       ],
       "files": [
         {
@@ -149,10 +149,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -182,7 +182,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -209,9 +209,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/label.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/label.json",
+        "https://registry.design.nsw.gov.au/r/separator.json"
       ],
       "files": [
         {
@@ -237,7 +237,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -262,7 +262,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -287,8 +287,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/separator.json"
       ],
       "files": [
         {
@@ -314,7 +314,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -533,7 +533,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -557,7 +557,7 @@
         "clsx"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -578,10 +578,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/separator.json"
       ],
       "files": [
         {
@@ -607,10 +607,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/badge.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/badge.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/logo.json"
       ],
       "files": [
         {
@@ -636,7 +636,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -662,7 +662,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -687,7 +687,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -712,7 +712,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -736,7 +736,7 @@
         "@base-ui/react"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -757,7 +757,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -793,7 +793,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -824,7 +824,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -855,7 +855,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -881,7 +881,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -907,9 +907,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -946,9 +946,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/spinner.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/spinner.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -974,7 +974,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1006,9 +1006,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1044,10 +1044,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/collapsible.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/collapsible.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1073,8 +1073,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/link.json"
       ],
       "files": [
         {
@@ -1099,9 +1099,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1127,8 +1127,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1149,9 +1149,9 @@
       "title": "Theme Switcher",
       "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1171,10 +1171,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1200,9 +1200,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1233,7 +1233,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1259,7 +1259,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1285,8 +1285,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1312,7 +1312,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1337,10 +1337,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/card.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/card.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1365,7 +1365,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1391,7 +1391,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1450,8 +1450,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1477,7 +1477,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1504,10 +1504,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/dropdown-menu.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/dropdown-menu.json"
       ],
       "files": [
         {
@@ -1539,9 +1539,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/separator.json"
       ],
       "files": [
         {
@@ -1572,10 +1572,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/direction.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/direction.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1601,8 +1601,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1628,10 +1628,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input-group.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/input-group.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1678,10 +1678,10 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input.json",
-        "https://ui.digital.nsw.gov.au/registry/r/textarea.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/input.json",
+        "https://registry.design.nsw.gov.au/r/textarea.json"
       ],
       "files": [
         {
@@ -1707,8 +1707,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1733,7 +1733,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1759,8 +1759,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1785,9 +1785,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1813,7 +1813,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1839,7 +1839,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1866,8 +1866,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1898,8 +1898,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -1924,7 +1924,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1951,7 +1951,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -1977,7 +1977,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -2004,7 +2004,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -2031,8 +2031,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/toggle.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/toggle.json"
       ],
       "files": [
         {
@@ -2059,9 +2059,9 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2098,8 +2098,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json"
       ],
       "files": [
         {
@@ -2136,8 +2136,8 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2173,7 +2173,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -2199,7 +2199,7 @@
         "tailwind-merge"
       ],
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json"
+        "https://registry.design.nsw.gov.au/r/theme.json"
       ],
       "files": [
         {
@@ -2220,15 +2220,15 @@
       "title": "Login Form",
       "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/card.json",
-        "https://ui.digital.nsw.gov.au/registry/r/field.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input.json",
-        "https://ui.digital.nsw.gov.au/registry/r/labeled-separator.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/card.json",
+        "https://registry.design.nsw.gov.au/r/field.json",
+        "https://registry.design.nsw.gov.au/r/input.json",
+        "https://registry.design.nsw.gov.au/r/labeled-separator.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/separator.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2244,14 +2244,14 @@
       "title": "Sign-up Form",
       "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/card.json",
-        "https://ui.digital.nsw.gov.au/registry/r/field.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input.json",
-        "https://ui.digital.nsw.gov.au/registry/r/labeled-separator.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/card.json",
+        "https://registry.design.nsw.gov.au/r/field.json",
+        "https://registry.design.nsw.gov.au/r/input.json",
+        "https://registry.design.nsw.gov.au/r/labeled-separator.json",
+        "https://registry.design.nsw.gov.au/r/link.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2267,12 +2267,12 @@
       "title": "Forgot Password Form",
       "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/card.json",
-        "https://ui.digital.nsw.gov.au/registry/r/field.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input.json",
-        "https://ui.digital.nsw.gov.au/registry/r/link.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/card.json",
+        "https://registry.design.nsw.gov.au/r/field.json",
+        "https://registry.design.nsw.gov.au/r/input.json",
+        "https://registry.design.nsw.gov.au/r/link.json"
       ],
       "files": [
         {
@@ -2288,10 +2288,10 @@
       "title": "Footer — Simple Centred",
       "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/logo.json",
-        "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/logo.json",
+        "https://registry.design.nsw.gov.au/r/separator.json"
       ],
       "files": [
         {
@@ -2307,9 +2307,9 @@
       "title": "Footer — Compact Bar",
       "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/logo.json"
       ],
       "files": [
         {
@@ -2325,8 +2325,8 @@
       "title": "Footer — Site Map",
       "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json"
       ],
       "files": [
         {
@@ -2342,9 +2342,9 @@
       "title": "Footer — Site Map with Brand",
       "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/logo.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/logo.json"
       ],
       "files": [
         {
@@ -2360,12 +2360,12 @@
       "title": "Footer — Newsletter",
       "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/field.json",
-        "https://ui.digital.nsw.gov.au/registry/r/input.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/field.json",
+        "https://registry.design.nsw.gov.au/r/input.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2381,9 +2381,9 @@
       "title": "Footer — Contact Details",
       "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2399,10 +2399,10 @@
       "title": "Footer — Call to Action",
       "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2418,10 +2418,10 @@
       "title": "Footer — Collapsible Site Map",
       "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-        "https://ui.digital.nsw.gov.au/registry/r/collapsible.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/footer.json",
+        "https://registry.design.nsw.gov.au/r/collapsible.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {
@@ -2437,11 +2437,11 @@
       "title": "Mobile Navigation Drawer",
       "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
       "registryDependencies": [
-        "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-        "https://ui.digital.nsw.gov.au/registry/r/button.json",
-        "https://ui.digital.nsw.gov.au/registry/r/sheet.json",
-        "https://ui.digital.nsw.gov.au/registry/r/push-menu.json",
-        "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+        "https://registry.design.nsw.gov.au/r/theme.json",
+        "https://registry.design.nsw.gov.au/r/button.json",
+        "https://registry.design.nsw.gov.au/r/sheet.json",
+        "https://registry.design.nsw.gov.au/r/push-menu.json",
+        "https://registry.design.nsw.gov.au/r/icons.json"
       ],
       "files": [
         {

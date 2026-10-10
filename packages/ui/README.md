@@ -219,10 +219,10 @@ Supply the whole ramp — components draw on different steps for fills, borders 
 
 ## Prefer the source in your repo?
 
-The same components are distributed through a [shadcn](https://ui.shadcn.com/) registry at **https://ui.digital.nsw.gov.au/registry**, which copies the component source directly into your project for teams that want to adapt it:
+The same components are distributed through a [shadcn](https://ui.shadcn.com/) registry at **https://registry.design.nsw.gov.au**, which copies the component source directly into your project for teams that want to adapt it:
 
 ```bash
-npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json
+npx shadcn@latest add https://registry.design.nsw.gov.au/r/button.json
 ```
 
 The npm package gives you versioned, upgradeable components; the registry gives you editable source. See the [registry installation guide](https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md) for the full setup, including the one-time `@nswds` namespace configuration.

@@ -10,9 +10,9 @@
     "tailwind-merge"
   ],
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/button.json",
-    "https://ui.digital.nsw.gov.au/registry/r/separator.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/button.json",
+    "https://registry.design.nsw.gov.au/r/separator.json"
   ],
   "files": [
     {
