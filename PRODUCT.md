@@ -23,7 +23,7 @@ An **independent rebuild** — not (yet) officially sanctioned as the NSW Design
 ## Operating Context
 
 - Consumers use one of two channels: `npm install @nswds/ui` (compiled ESM, precompiled stylesheet, no Tailwind required) or `npx shadcn add <registry-url>/r/<item>.json` (copies editable source, installs `@nswds/tokens`).
-- Documented registry location is `https://ui.digital.nsw.gov.au/registry` (proxied by the docs site); the registry's own origin is `https://nswds-ui-registry.vercel.app`.
+- Documented registry location is `https://registry.design.nsw.gov.au`, the registry's own domain. The legacy `https://ui.digital.nsw.gov.au/registry` path is still proxied by the docs site so earlier installs keep resolving.
 - Releases are fully automated: Conventional Commits → semantic-release → npm via OIDC Trusted Publishing → registry deploy, with post-release verification. Manual publishing is prohibited.
 - Consuming repos receive updates via Renovate, so every release fans out CI runs across the fleet — release hygiene (no empty releases) is a product concern, not just housekeeping.
 
@@ -34,7 +34,7 @@ An **independent rebuild** — not (yet) officially sanctioned as the NSW Design
 - Every visual property traces to a CSS custom-property token (four layers: NSW palette → masterbrand theme → shadcn semantic tokens → Tailwind bridges). Components reference semantic tokens only.
 - Class strings must be cascade-safe (consumers run their own Tailwind build alongside the precompiled stylesheet); enforced by `check:cascade`.
 - Terminology: **primitive** (wraps one Base UI element), **component** (self-contained composition), **pattern** (composed UI pattern, registry-only `registry:block`).
-- Undecided product facts: official endorsement path/timeline. (`ui.digital.nsw.gov.au` DNS **is** live and serving — it is the canonical `location` in registry.config.json and the URL release verification polls. The docs site behind it is still a stub, which is TODO #1 in AGENTS.md §9, not a DNS problem.)
+- Undecided product facts: official endorsement path/timeline. (`ui.digital.nsw.gov.au` DNS **is** live and serving the docs site and the legacy `/registry` proxy. The docs site is still a stub, which is TODO #1 in AGENTS.md §9, not a DNS problem.)
 
 ## Brand Commitments
 

@@ -33,7 +33,7 @@ packages/ui/src/components/*.tsx
         ├── tsup ──────────→ dist/ ──────→ npm  @nswds/ui        (compiled, versioned)
         │
         └── shadcn build ──→ r/*.json ───→ registry              (source, editable)
-                                             ui.digital.nsw.gov.au/registry
+                                             registry.design.nsw.gov.au
 ```
 
 Same files, two artefacts. A fix lands once and reaches both.

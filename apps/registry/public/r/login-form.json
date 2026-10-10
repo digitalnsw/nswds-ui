@@ -4,15 +4,15 @@
   "title": "Login Form",
   "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/button.json",
-    "https://ui.digital.nsw.gov.au/registry/r/card.json",
-    "https://ui.digital.nsw.gov.au/registry/r/field.json",
-    "https://ui.digital.nsw.gov.au/registry/r/input.json",
-    "https://ui.digital.nsw.gov.au/registry/r/labeled-separator.json",
-    "https://ui.digital.nsw.gov.au/registry/r/link.json",
-    "https://ui.digital.nsw.gov.au/registry/r/separator.json",
-    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/button.json",
+    "https://registry.design.nsw.gov.au/r/card.json",
+    "https://registry.design.nsw.gov.au/r/field.json",
+    "https://registry.design.nsw.gov.au/r/input.json",
+    "https://registry.design.nsw.gov.au/r/labeled-separator.json",
+    "https://registry.design.nsw.gov.au/r/link.json",
+    "https://registry.design.nsw.gov.au/r/separator.json",
+    "https://registry.design.nsw.gov.au/r/icons.json"
   ],
   "files": [
     {
@@ -24,6 +24,6 @@
   ],
   "type": "registry:block",
   "meta": {
-    "nswdsVersion": "9.1.1"
+    "nswdsVersion": "9.1.2"
   }
 }

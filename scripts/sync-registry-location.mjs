@@ -13,13 +13,13 @@
 // registry.config.json holds TWO urls and this script only ever touches the
 // first:
 //   location — the PUBLIC url consumers are told to use
-//              (https://ui.digital.nsw.gov.au/registry). Stamped into the
+//              (https://registry.design.nsw.gov.au). Stamped into the
 //              registry JSON's registryDependencies and into the docs below.
-//   origin   — the underlying registry deployment that apps/web proxies
-//              /registry to. Deliberately NOT derived from `location`: they
-//              differ because the public url is a proxied path on the web app's
-//              domain, so pointing the proxy at `location` would loop. Change it
-//              by hand, only when the registry's Vercel project url changes.
+//   origin   — the registry deployment that apps/web proxies its legacy
+//              /registry path to. Deliberately NOT derived from `location`, so
+//              the public url can move without touching the proxy; it must
+//              never be a path on the web app's own domain, or the proxy loops.
+//              Change it by hand, only when the registry's own domain changes.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
