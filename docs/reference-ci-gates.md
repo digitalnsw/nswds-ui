@@ -231,6 +231,8 @@ then asserts:
 - an unimported icon's does **not** (tree-shaking)
 - the compiled stylesheet shipped
 - the combined stylesheet is cascade-safe
+- the NSW font stacks (`--font-sans`, `--font-mono`) win in both the two-build and single-build
+  output
 
 Build `@nswds/ui` first. Not redundant with `check:package`: that validates the package's _shape_,
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside

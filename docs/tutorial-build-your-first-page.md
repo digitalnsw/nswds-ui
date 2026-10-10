@@ -60,6 +60,12 @@ Replace `src/index.css` entirely:
 ```css
 @import '@nswds/ui/styles.css';
 @import 'tailwindcss';
+
+/* Your build re-emits Tailwind's default font stacks; map them back to the NSW ones. */
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
 ```
 
 > **Shortcut:** because this app runs its own Tailwind, you can instead import the single entry
@@ -73,6 +79,11 @@ Replace `src/index.css` entirely:
 cascade layer, and a media query carries no extra specificity — so whichever comes last wins any
 tie. Yours going last means a class _you_ wrote beats one you didn't, which is what you want.
 [The token reference](reference-tokens.md#the-import-order-trap) explains what breaks if you flip it.
+
+The `@theme` block is the other half of running two builds: your Tailwind re-emits its default
+system font stacks after ours, so without it the page renders in system fonts instead of Public
+Sans. The package also ships no font files — load Public Sans yourself. See
+[Fonts](https://github.com/digitalnsw/nswds-ui/blob/main/packages/ui/README.md#fonts).
 
 Now replace `src/App.tsx`:
 

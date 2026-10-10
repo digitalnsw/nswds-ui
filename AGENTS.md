@@ -636,7 +636,10 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   (which once reached CI as an intermittent publint failure); the other is a
   stripped `'use client'` directive, which still builds, imports and renders,
   and only fails when a CONSUMER's server component passes one of those
-  exports as a prop.
+  exports as a prop. It also parses `dist/styles.css`: no root custom property
+  may depend on itself (the `--font-sans: var(--font-sans)` cycle that shipped
+  from #14), and the Public Sans / JetBrains Mono stacks must win
+  (`scripts/check-font-stack.mjs`, self-tested under `test:scripts`).
 - **`check:package`** runs `publint` and `are-the-types-wrong` against the built
   tarball, so it catches export-map and type-resolution faults that `build`
   alone will happily produce.
@@ -653,7 +656,8 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   so it is invisible from `package.json` — run it by path. It packs the tarball,
   cold-installs it into `fixtures/consumer`, then runs `tsc --noEmit`,
   `vite build`, and asserts that an imported icon reaches the bundle, an
-  unimported one does not (tree-shaking), and the compiled stylesheet shipped.
+  unimported one does not (tree-shaking), the compiled stylesheet shipped, and
+  the NSW font stacks win over the app's own Tailwind defaults.
   Build `@nswds/ui` first. It is not redundant with `check:package`: that
   validates the package's _shape_, this exercises it as a consumer receives it.
   The fixture runs its OWN Tailwind build alongside our stylesheet (see
@@ -942,47 +946,52 @@ which project's Root Directory is set.
 | `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
 | `nswds-ui-infographics` | `apps/infographics` | `https://infographics.design.nsw.gov.au` | Infographics site |
 | `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
-| `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
+| `nswds-ui-registry`  | `apps/registry`  | `https://registry.design.nsw.gov.au` (legacy path proxied — see below) | shadcn registry JSON endpoint  |
 
-Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
-`.vercel.app` hostnames resolve but do not serve these projects
-(`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
-docs/README.md pointed at the wrong host for Storybook on the strength of the
-`.vercel.app` name.
+Each project serves from a **custom domain**. Link to those, never to a `*.vercel.app`
+name: some do not serve the project at all (`nswds-ui-storybook.vercel.app` returns
+HTTP 404 — docs/README.md once pointed there), and they can be renamed in Vercel without
+notice. The registry's was renamed from `nswds-ui-registry.vercel.app` to
+`nswds-registry.vercel.app`, which broke the web app's `/registry` proxy and failed the
+9.1.1 release verification.
 
 ### The registry's two URLs — `location` vs `origin`
 
-Consumers are told to install from **`https://ui.digital.nsw.gov.au/registry`**, which is
-a path on the **web** project's domain, not the registry project's. `apps/web/next.config.mjs`
-rewrites `/registry/:path*` to the registry deployment. So the registry has two URLs, and
-`registry.config.json` carries both:
+Consumers install from **`https://registry.design.nsw.gov.au`**, the registry project's
+own custom domain. The web app also keeps the legacy path
+`https://ui.digital.nsw.gov.au/registry` working: `apps/web/next.config.mjs` rewrites
+`/registry/:path*` to the registry. That path has to keep resolving because every item
+installed before the move — and the registry JSON deployed before it — carries it in
+`registryDependencies`. `registry.config.json` holds both URLs:
 
-| Field      | Value                                    | Who reads it                                                                                                                 |
-| ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `location` | `https://ui.digital.nsw.gov.au/registry` | `rewrite-registry-aliases.mjs` (stamps `registryDependencies`), `sync-registry-location.mjs` (docs), the two workflows below |
-| `origin`   | `https://nswds-ui-registry.vercel.app`   | `apps/web/next.config.mjs` — the rewrite **destination** only                                                                |
+| Field      | Value                                | Who reads it                                                                                                                 |
+| ---------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `location` | `https://registry.design.nsw.gov.au` | `rewrite-registry-aliases.mjs` (stamps `registryDependencies`), `sync-registry-location.mjs` (docs), the two workflows below |
+| `origin`   | `https://registry.design.nsw.gov.au` | `apps/web/next.config.mjs` — the legacy-path rewrite **destination** only                                                    |
 
-**They must never be collapsed back into one value.** The proxy destination has to be the
-registry's own origin: point the rewrite at `location` and `/registry/:path*` resolves to
-`/registry/:path*` on the same host — an infinite proxy loop that takes the docs site down
-with it. `next.config.mjs` reads `origin` and throws at build time if it is missing, and the
-comment there restates why; do not "simplify" it.
+They hold the same value today, but they stay separate fields so the public URL can move
+without touching the proxy. **`origin` must never be a path on the web domain:** pointed
+at `https://ui.digital.nsw.gov.au/registry` (the old `location`), the rewrite resolves
+`/registry/:path*` to `/registry/:path*` on the same host — an infinite proxy loop that
+takes the docs site down with it. `next.config.mjs` reads `origin`, throws at build time
+if it is missing, and restates this. Point `origin` at the registry's custom domain, not
+its `*.vercel.app` name (see above for why).
 
 Change `location` via `REGISTRY_LOCATION` in `.env` + `npm run registry:sync` (it rewrites
 the config, the docs, and the generated JSON together). Change `origin` by hand, and only
-when the registry project's own Vercel URL changes.
+when the registry project's own domain changes.
 
 Two consequences worth knowing:
 
 - **`registry:sync` only touches `location`.** It preserves `origin`, but it also keys its
   doc find-replace off the _old_ `location`, so editing `registry.config.json` by hand and
   then running it will not update the docs — change `.env` and let the script do both.
-- **Release verification now polls through the proxy.** `release.yml` and
-  `release-drift-audit.yml` read `.location`, so they fetch `/r/version.json` via the web
-  app. That is deliberate — it verifies the URL consumers actually hit — but it means a
-  broken web deploy surfaces as a _registry_ drift alert. If that misdirection ever costs
-  real debugging time, switch those two workflows to `.origin` and accept that the public
-  path goes unchecked.
+- **Release verification polls the registry's own domain.** `release.yml` and
+  `release-drift-audit.yml` read `.location`, so they fetch `/r/version.json` from the URL
+  consumers are told to use. No workflow checks the legacy web path, so if `origin` goes
+  stale again, earlier installs break with every check still green. Because `origin` and
+  `location` currently name the same host, a break there also fails release verification
+  — one more reason to keep `origin` on the custom domain.
 
 ### Per-project settings
 
@@ -1041,10 +1050,8 @@ Output Directory: dist
 ### Trigger behaviour
 
 All four projects are Git-integrated. `nswds-ui-web` and `nswds-ui-storybook`
-auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only when a push
-touches `apps/infographics` or a workspace it depends on: Vercel's **skip unaffected
-projects** is on for it (the default for new projects), and it counts any file outside
-a workspace (`docs/`, AGENTS.md, `.github/`) as affecting every app.
+auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only on pushes
+that can change it — see the two skip layers below.
 
 The **registry** project is gated: `apps/registry/vercel.json` sets an `ignoreCommand`
 that skips the build unless the latest commit is a semantic-release commit
@@ -1052,6 +1059,31 @@ that skips the build unless the latest commit is a semantic-release commit
 the npm release — the two distribution channels can't drift apart between releases.
 (Note: this also skips registry preview deployments on PRs; the PR Checks workflow
 verifies registry output freshness instead.)
+
+The **infographics** project skips commits that cannot change it, in two layers:
+
+1. Vercel's built-in **skip unaffected projects** (on by default for new projects;
+   `enableAffectedProjectsDeployments`) skips before a build slot is taken when the
+   commit touches neither `apps/infographics` nor a workspace it depends on. It treats
+   any file outside a workspace — `docs/`, AGENTS.md, `.github/` — as a global change
+   and builds.
+2. The `ignoreCommand` in `apps/infographics/vercel.json` then runs
+   `turbo query affected --packages infographics` against `VERCEL_GIT_PREVIOUS_SHA`,
+   which narrows those root-file changes: docs, workflow and agent-guide commits skip,
+   while `turbo.json`, `registry.config.json` (turbo `globalDependencies`), lockfile
+   changes reaching its dependencies, `packages/ui/**` and `apps/infographics/**` build.
+   Before turbo, a `git diff` on the root `package.json` and `.npmrc` forces a build:
+   turbo counts a root manifest change without a lockfile change as unaffected, but
+   with `engine-strict=true` an `engines` change alone can break `npm ci`. A canceled
+   run still takes a build slot, unlike layer 1.
+
+The command fails **open**: Vercel documents only exit `0` (skip) and `1` (build), so
+anything other than a clean "unaffected" — no previous SHA on a branch's first deploy,
+a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is
+likeliest in practice: if the last successful deployment is older than the history
+Vercel clones, turbo assumes everything changed and every commit builds until one
+succeeds, so the skip quietly stops saving builds during busy stretches. To force a
+deploy, use **Redeploy** with "Use project's Ignore Build Step" unchecked.
 
 ---
 

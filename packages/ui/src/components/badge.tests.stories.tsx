@@ -112,6 +112,19 @@ export const CssCheck: Story = {
     await expect(background).not.toBe('rgba(0, 0, 0, 0)')
     await expect(getComputedStyle(badge, '::before').content).toBe('none')
     await expect(getComputedStyle(badge, '::after').content).toBe('none')
+
+    // Brand typeface, theme-wide. theme.css once redeclared --font-sans and
+    // --font-mono as var() of themselves, which voids both: body text fell
+    // through to preflight's system-font fallback and font-mono utilities
+    // rendered sans, with every other check still green. Assert the stacks
+    // preset.css defines actually resolve, and that body text (and the badge
+    // inheriting it) uses the sans one. verify-dist.mjs guards the compiled
+    // stylesheet the same way, so this is not the only line of defence.
+    const root = getComputedStyle(document.documentElement)
+    await expect(root.getPropertyValue('--font-sans').trim()).toMatch(/^["']?Public Sans["']?,/)
+    await expect(root.getPropertyValue('--font-mono').trim()).toMatch(/^["']?JetBrains Mono["']?,/)
+    await expect(getComputedStyle(document.body).fontFamily).toMatch(/^["']?Public Sans["']?,/)
+    await expect(before.fontFamily).toMatch(/^["']?Public Sans["']?,/)
   },
 }
 

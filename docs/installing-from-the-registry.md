@@ -1,7 +1,7 @@
 # Installing NSWDS components from the registry
 
 The `@nswds/ui` components are distributed through a [shadcn](https://ui.shadcn.com/) registry
-served at **https://ui.digital.nsw.gov.au/registry**. This guide covers installing them into
+served at **https://registry.design.nsw.gov.au**. This guide covers installing them into
 _your own_ project with the `shadcn` CLI.
 
 > Prefer the npm package? If you don't need the source copied into your repo, you can instead
@@ -32,13 +32,13 @@ Add a `registries` entry to your project's **`components.json`** so the CLI know
   "$schema": "https://ui.shadcn.com/schema.json",
   // ...your existing config...
   "registries": {
-    "@nswds": "https://ui.digital.nsw.gov.au/registry/r/{name}.json",
+    "@nswds": "https://registry.design.nsw.gov.au/r/{name}.json",
   },
 }
 ```
 
 The `{name}` placeholder is required — the CLI substitutes the component name into it. With this
-in place, `@nswds/button` resolves to `https://ui.digital.nsw.gov.au/registry/r/button.json`.
+in place, `@nswds/button` resolves to `https://registry.design.nsw.gov.au/r/button.json`.
 
 The registry is public, so no token or auth headers are needed.
 
@@ -86,7 +86,7 @@ The complete list — with each item's exports and a one-line description — is
 > exported from the npm package.
 
 > Without the namespace configured, the same installs work with the full URL, e.g.
-> `npx shadcn@latest add https://ui.digital.nsw.gov.au/registry/r/button.json`.
+> `npx shadcn@latest add https://registry.design.nsw.gov.au/r/button.json`.
 
 The CLI writes the component source into your project (per your `components.json` aliases) and
 installs each component's runtime dependencies (`@base-ui/react`, `class-variance-authority`,
@@ -116,6 +116,14 @@ Tailwind entry CSS (the file containing `@import "tailwindcss";`), **after** the
 ```
 
 The CLI prints this same list after installing the theme item.
+
+**Fonts.** `preset.css` sets `--font-sans` to the Public Sans stack and `--font-mono` to
+JetBrains Mono, but nothing here loads the font files — load Public Sans yourself (with Next.js,
+`next/font` using `variable: '--font-sans'`, class on `<html>`). Watch the shadcn CLI when it adds
+a font: depending on the project it can write `--font-sans: var(--font-sans)` into your
+`@theme inline` block. That replaces the NSW stack with the font you picked, and it is a
+self-reference that only resolves where the font's variable class is applied — put that class on
+`<html>`, or `--font-sans` is empty at the root.
 
 What each line does:
 

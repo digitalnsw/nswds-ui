@@ -4,9 +4,9 @@
   "title": "Footer — Contact Details",
   "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/footer.json",
+    "https://registry.design.nsw.gov.au/r/icons.json"
   ],
   "files": [
     {
@@ -18,6 +18,6 @@
   ],
   "type": "registry:block",
   "meta": {
-    "nswdsVersion": "9.1.1"
+    "nswdsVersion": "9.1.3"
   }
 }
