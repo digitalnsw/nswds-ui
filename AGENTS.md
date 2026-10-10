@@ -492,8 +492,11 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs`.
-  Today that is the `check:workflows` scanner and the `check:portal-boundary`
-  gate, and it is not belt-and-braces: the scanner's first version silently
+  Today that is the `check:workflows` scanner, the `check:portal-boundary` and
+  `check:theme-parity` gates, and a guard pinning `globals.css`'s `@source`
+  directives to `packages/ui/src` (one outside it leaks every app's classes into
+  every other app's CSS, which no build or visual check can see), and it is not
+  belt-and-braces: the scanner's first version silently
   missed every `- run:` written as a YAML sequence item — the common form —
   while still passing `release.yml`, which happens to use the bare `run:` form,
   and the portal gate's first version passed three shapes that leak because it
