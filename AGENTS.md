@@ -620,7 +620,8 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   so it is invisible from `package.json` — run it by path. It packs the tarball,
   cold-installs it into `fixtures/consumer`, then runs `tsc --noEmit`,
   `vite build`, and asserts that an imported icon reaches the bundle, an
-  unimported one does not (tree-shaking), and the compiled stylesheet shipped.
+  unimported one does not (tree-shaking), the compiled stylesheet shipped, and
+  the NSW font stacks win over the app's own Tailwind defaults.
   Build `@nswds/ui` first. It is not redundant with `check:package`: that
   validates the package's _shape_, this exercises it as a consumer receives it.
   The fixture runs its OWN Tailwind build alongside our stylesheet (see

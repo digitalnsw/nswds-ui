@@ -81,6 +81,22 @@ If you do hit a conflict, a call-site override outranks both halves:
 
 > **Don't reach for a named cascade layer to pin the order.** `@import '@nswds/ui/styles.css' layer(nswds)` looks tidy, but it also layers the `:root` and `[data-theme='dark'], .dark` token blocks the file carries, and layered custom properties lose to any unlayered `:root` — including the ones the bridges above ship. That is the dark-mode failure described in the previous section, with no import order that recovers it.
 
+##### Fonts
+
+Your own build also re-emits Tailwind's default `--font-sans` and `--font-mono` (system stacks) in the same `theme` layer as ours, and after ours, so they win and your app renders in system fonts instead of Public Sans. Point them back at the NSW stacks, which `@nswds/ui/styles.css` ships on `:root`, right after your `@import 'tailwindcss'`:
+
+```css
+@import '@nswds/ui/styles.css';
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
+```
+
+The single-build entry needs none of this; its own theme already carries the NSW stacks.
+
 ### Dark mode
 
 Toggle `class="dark"` or `data-theme="dark"` on a **root element** (for example with [`next-themes`](https://github.com/pacocoursey/next-themes)). Semantic tokens and `dark:` utilities both key off either marker, and both match the element carrying it as well as its descendants.

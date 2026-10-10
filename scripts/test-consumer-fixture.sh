@@ -3,7 +3,8 @@
 # receives it: npm pack → cold install into the fixtures/consumer Vite app →
 # tsc --noEmit → vite build → assert tree-shaking (the imported icon's path
 # data is in the bundle; an unimported icon's is not) → assert the stylesheet
-# is cascade-safe in the two-build configuration the README documents.
+# is cascade-safe and keeps the NSW font stacks in the two-build configuration
+# the README documents.
 #
 # publint/attw validate the package's *shape*; this exercises it.
 set -euo pipefail
@@ -99,6 +100,35 @@ if [ -z "$STYLESHEET" ]; then
 fi
 echo "   $STYLESHEET"
 
+# The brand font stacks must survive the consumer's own Tailwind build. Both
+# halves emit `--font-sans`/`--font-mono` into `@layer theme{:root,:host{…}}` —
+# same layer, same selector — so the LAST declaration in the file is the one
+# that applies. The app's half lands after ours and carries Tailwind's default
+# system stacks unless the app maps the families itself (README "Fonts"), and
+# an empty or self-referencing value is the theme.css cycle this repo shipped
+# from #14 until the fix. Either way text silently renders in system fonts.
+assert_font_stack() { # css-file description
+  local css="$1" desc="$2" prop want last
+  for prop in --font-sans --font-mono; do
+    case "$prop" in
+      --font-sans) want='^(var\(--font-family-sans\)|["'"'"']?Public Sans)' ;;
+      --font-mono) want='^(var\(--font-family-mono\)|["'"'"']?JetBrains Mono)' ;;
+    esac
+    # `|| true`: no match under pipefail would abort before the guard below.
+    last=$(grep -oE -e "${prop}:[^;}]+" "$css" | tail -1 | sed -e "s/^${prop}: *//") || true
+    [ -n "$last" ] || {
+      echo "::error::$desc: no '$prop' declaration found — cannot verify the brand font stack." >&2
+      exit 1
+    }
+    printf '%s' "$last" | grep -qE "$want" || {
+      echo "::error::$desc: the winning '$prop' is '$last', not the NSW stack. Text renders in system fonts." >&2
+      exit 1
+    }
+  done
+}
+echo "── Assert: the NSW font stacks win in the combined stylesheet"
+assert_font_stack "$STYLESHEET" "two-build stylesheet"
+
 # Same invariant the package's own build enforces, but against the stylesheet a
 # consumer actually ends up with: no element a component renders may carry two
 # rules that set one property differently and are separated only by emission
@@ -130,6 +160,9 @@ npx @tailwindcss/cli -i src/app-singlebuild.css -o "$SINGLE" --minify
   echo "::error::single-build output is empty — @nswds/ui/tailwind.css failed to compile." >&2
   exit 1
 }
+
+echo "── Assert: the NSW font stacks win in the single build"
+assert_font_stack "$SINGLE" "single build"
 
 echo "── Assert: the app's own markup was scanned ('justify-evenly' present)"
 grep -qE "\.justify-evenly[{,]" "$SINGLE" || {
@@ -195,4 +228,4 @@ node "$ROOT/packages/ui/scripts/check-cascade-safety.mjs" \
   --css "$SINGLE" \
   --src "$ROOT/packages/ui/src"
 
-echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup, order safety and cascade safety all pass"
+echo "✔ Consumer fixture: two-build AND single-build paths — install, typecheck, build, tree-shaking, de-dup, order safety, cascade safety and font stacks all pass"

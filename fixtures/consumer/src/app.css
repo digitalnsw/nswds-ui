@@ -14,3 +14,12 @@
  */
 @import '@nswds/ui/styles.css';
 @import 'tailwindcss';
+
+/* The app's own build re-emits Tailwind's default --font-sans/--font-mono after
+   ours, in the same `theme` layer, so it would win and text would render in
+   system fonts. Point them back at the raw NSW stacks styles.css ships on
+   :root (README "Fonts"); the fixture script asserts the winning value. */
+@theme {
+  --font-sans: var(--font-family-sans);
+  --font-mono: var(--font-family-mono);
+}
