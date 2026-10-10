@@ -1,5 +1,6 @@
 /**
- * Pins the scope of globals.css's `@source` directives to packages/ui/src.
+ * Pins the scope of globals.css's `@source` directives — and those of the
+ * stylesheets it imports — to packages/ui/src.
  *
  * globals.css is shared by Storybook, apps/web and apps/infographics, so an
  * `@source` reaching outside packages/ui compiles one app's classes into every
@@ -45,10 +46,32 @@ function stripComments(css) {
   return out
 }
 
-/** Every `@source` path in `css`, ignoring commented-out directives. */
+/**
+ * Every source path in `css` — `@source '…'` and `@import '…' source('…')` —
+ * ignoring commented-out directives. `source(none)` is unquoted, so skipped.
+ */
 function sourcePaths(css) {
   const code = stripComments(css)
-  return [...code.matchAll(/@source\s+(?:not\s+)?['"]([^'"]+)['"]/g)].map((m) => m[1])
+  return [
+    ...[...code.matchAll(/@source\s+(?:not\s+)?['"]([^'"]+)['"]/g)].map((m) => m[1]),
+    ...[...code.matchAll(/\bsource\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]),
+  ]
+}
+
+/** `entry` plus every stylesheet it reaches through relative `@import`s. */
+function reachableStylesheets(entry) {
+  const seen = new Set()
+  const queue = [entry]
+  while (queue.length > 0) {
+    const file = queue.shift()
+    if (seen.has(file)) continue
+    seen.add(file)
+    const code = stripComments(readFileSync(file, 'utf8'))
+    for (const m of code.matchAll(/@import\s+['"](\.{1,2}\/[^'"]+)['"]/g)) {
+      queue.push(resolve(dirname(file), m[1]))
+    }
+  }
+  return [...seen]
 }
 
 /** The `@source` paths in `css` whose static prefix resolves outside srcDir. */
@@ -66,6 +89,28 @@ test('globals.css declares no @source outside packages/ui/src', () => {
   // otherwise pass this test while checking nothing.
   assert.deepEqual(sourcePaths(css), ['../**/*.{ts,tsx}', '../**/*.mdx'])
   assert.deepEqual(outOfScope(css, dirname(globalsPath)), [])
+})
+
+// globals.css imports theme.css (which imports nswds-shadcn.css): a source
+// declared in either reaches every app just the same, and theme.css also feeds
+// the published stylesheet through package.css and tailwind.css.
+test('no stylesheet globals.css imports declares a source outside packages/ui/src', () => {
+  const imported = reachableStylesheets(globalsPath).filter((f) => f !== globalsPath)
+  assert.deepEqual(imported.map((f) => relative(dirname(globalsPath), f)).sort(), [
+    'nswds-shadcn.css',
+    'theme.css',
+  ])
+  for (const file of imported) {
+    assert.deepEqual(outOfScope(readFileSync(file, 'utf8'), dirname(file)), [], file)
+  }
+})
+
+test('flags an @import source() outside packages/ui/src', () => {
+  const css = [
+    "@import 'tailwindcss' source(none);",
+    "@import 'tailwindcss' source('../../../../apps');",
+  ].join('\n')
+  assert.deepEqual(outOfScope(css, dirname(globalsPath)), ['../../../../apps'])
 })
 
 test('flags the apps/** source this guards against, ignoring commented-out ones', () => {
