@@ -49,7 +49,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang='en'
+      lang='en-AU'
       data-scroll-behavior='smooth'
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
