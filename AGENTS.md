@@ -1012,8 +1012,9 @@ Output Directory: dist
 
 ### Trigger behaviour
 
-All four projects are Git-integrated. `nswds-ui-web`, `nswds-ui-infographics` and
-`nswds-ui-storybook` auto-deploy on every push to `main`.
+All four projects are Git-integrated. `nswds-ui-web` and `nswds-ui-storybook`
+auto-deploy on every push to `main`. `nswds-ui-infographics` deploys only on pushes
+that can change it — see the two skip layers below.
 
 The **registry** project is gated: `apps/registry/vercel.json` sets an `ignoreCommand`
 that skips the build unless the latest commit is a semantic-release commit
@@ -1038,13 +1039,13 @@ The **infographics** project skips commits that cannot change it, in two layers:
 
 The command fails **open**: Vercel documents only exit `0` (skip) and `1` (build), so
 anything other than a clean "unaffected" — no previous SHA on a branch's first deploy,
-a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is likeliest in
-practice: if the last successful deployment is older than the history
-Vercel clones, turbo assumes everything changed and every commit builds until
-one succeeds, so the skip quietly stops saving builds during busy stretches. A root `package.json`
-change that leaves the lockfile alone is the one case it skips that layer 1 would
-build; to force a deploy, use **Redeploy** with "Use project's Ignore Build Step"
-unchecked.
+a SHA outside the clone, `turbo` missing — is mapped to `1`. The clone case is
+likeliest in practice: if the last successful deployment is older than the history
+Vercel clones, turbo assumes everything changed and every commit builds until one
+succeeds, so the skip quietly stops saving builds during busy stretches. A root
+`package.json` change that leaves the lockfile alone is the one case it skips that
+layer 1 would build; to force a deploy, use **Redeploy** with "Use project's Ignore
+Build Step" unchecked.
 
 ---
 
