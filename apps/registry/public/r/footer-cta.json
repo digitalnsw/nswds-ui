@@ -4,10 +4,10 @@
   "title": "Footer — Call to Action",
   "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-    "https://ui.digital.nsw.gov.au/registry/r/button.json",
-    "https://ui.digital.nsw.gov.au/registry/r/icons.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/footer.json",
+    "https://registry.design.nsw.gov.au/r/button.json",
+    "https://registry.design.nsw.gov.au/r/icons.json"
   ],
   "files": [
     {

@@ -917,47 +917,52 @@ which project's Root Directory is set.
 | `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
 | `nswds-ui-infographics` | `apps/infographics` | `https://infographics.design.nsw.gov.au` | Infographics site |
 | `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
-| `nswds-ui-registry`  | `apps/registry`  | `https://ui.digital.nsw.gov.au/registry` (proxied — see below) | shadcn registry JSON endpoint  |
+| `nswds-ui-registry`  | `apps/registry`  | `https://registry.design.nsw.gov.au` (legacy path proxied — see below) | shadcn registry JSON endpoint  |
 
-Each project serves from a **custom domain**, not its `*.vercel.app` URL — the
-`.vercel.app` hostnames resolve but do not serve these projects
-(`nswds-ui-storybook.vercel.app` returns HTTP 404). Link to the custom domains;
-docs/README.md pointed at the wrong host for Storybook on the strength of the
-`.vercel.app` name.
+Each project serves from a **custom domain**. Link to those, never to a `*.vercel.app`
+name: some do not serve the project at all (`nswds-ui-storybook.vercel.app` returns
+HTTP 404 — docs/README.md once pointed there), and they can be renamed in Vercel without
+notice. The registry's was renamed from `nswds-ui-registry.vercel.app` to
+`nswds-registry.vercel.app`, which broke the web app's `/registry` proxy and failed the
+9.1.1 release verification.
 
 ### The registry's two URLs — `location` vs `origin`
 
-Consumers are told to install from **`https://ui.digital.nsw.gov.au/registry`**, which is
-a path on the **web** project's domain, not the registry project's. `apps/web/next.config.mjs`
-rewrites `/registry/:path*` to the registry deployment. So the registry has two URLs, and
-`registry.config.json` carries both:
+Consumers install from **`https://registry.design.nsw.gov.au`**, the registry project's
+own custom domain. The web app also keeps the legacy path
+`https://ui.digital.nsw.gov.au/registry` working: `apps/web/next.config.mjs` rewrites
+`/registry/:path*` to the registry. That path has to keep resolving because every item
+installed before the move — and the registry JSON deployed before it — carries it in
+`registryDependencies`. `registry.config.json` holds both URLs:
 
-| Field      | Value                                    | Who reads it                                                                                                                 |
-| ---------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `location` | `https://ui.digital.nsw.gov.au/registry` | `rewrite-registry-aliases.mjs` (stamps `registryDependencies`), `sync-registry-location.mjs` (docs), the two workflows below |
-| `origin`   | `https://nswds-ui-registry.vercel.app`   | `apps/web/next.config.mjs` — the rewrite **destination** only                                                                |
+| Field      | Value                                | Who reads it                                                                                                                 |
+| ---------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `location` | `https://registry.design.nsw.gov.au` | `rewrite-registry-aliases.mjs` (stamps `registryDependencies`), `sync-registry-location.mjs` (docs), the two workflows below |
+| `origin`   | `https://registry.design.nsw.gov.au` | `apps/web/next.config.mjs` — the legacy-path rewrite **destination** only                                                    |
 
-**They must never be collapsed back into one value.** The proxy destination has to be the
-registry's own origin: point the rewrite at `location` and `/registry/:path*` resolves to
-`/registry/:path*` on the same host — an infinite proxy loop that takes the docs site down
-with it. `next.config.mjs` reads `origin` and throws at build time if it is missing, and the
-comment there restates why; do not "simplify" it.
+They hold the same value today, but they stay separate fields so the public URL can move
+without touching the proxy. **`origin` must never be a path on the web domain:** pointed
+at `https://ui.digital.nsw.gov.au/registry` (the old `location`), the rewrite resolves
+`/registry/:path*` to `/registry/:path*` on the same host — an infinite proxy loop that
+takes the docs site down with it. `next.config.mjs` reads `origin`, throws at build time
+if it is missing, and restates this. Point `origin` at the registry's custom domain, not
+its `*.vercel.app` name (see above for why).
 
 Change `location` via `REGISTRY_LOCATION` in `.env` + `npm run registry:sync` (it rewrites
 the config, the docs, and the generated JSON together). Change `origin` by hand, and only
-when the registry project's own Vercel URL changes.
+when the registry project's own domain changes.
 
 Two consequences worth knowing:
 
 - **`registry:sync` only touches `location`.** It preserves `origin`, but it also keys its
   doc find-replace off the _old_ `location`, so editing `registry.config.json` by hand and
   then running it will not update the docs — change `.env` and let the script do both.
-- **Release verification now polls through the proxy.** `release.yml` and
-  `release-drift-audit.yml` read `.location`, so they fetch `/r/version.json` via the web
-  app. That is deliberate — it verifies the URL consumers actually hit — but it means a
-  broken web deploy surfaces as a _registry_ drift alert. If that misdirection ever costs
-  real debugging time, switch those two workflows to `.origin` and accept that the public
-  path goes unchecked.
+- **Release verification polls the registry's own domain.** `release.yml` and
+  `release-drift-audit.yml` read `.location`, so they fetch `/r/version.json` from the URL
+  consumers are told to use. No workflow checks the legacy web path, so if `origin` goes
+  stale again, earlier installs break with every check still green. Because `origin` and
+  `location` currently name the same host, a break there also fails release verification
+  — one more reason to keep `origin` on the custom domain.
 
 ### Per-project settings
 
