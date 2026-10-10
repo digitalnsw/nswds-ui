@@ -1,8 +1,14 @@
 /*
  * DEV entry — used by Storybook (aliased in apps/storybook/.storybook/main.ts)
- * and the apps/web sandbox, which import this SOURCE file so their Tailwind
- * builds scan live. Scans broadly across the monorepo so sandbox/storybook
- * pages get their utilities.
+ * and the apps/web and apps/infographics Next apps, which import this SOURCE
+ * file so their Tailwind builds scan live.
+ *
+ * Each app's OWN files are found by Tailwind's automatic source detection,
+ * which scans the build's working directory — the app's folder, since turbo,
+ * Vercel and Storybook all build from there. Do not add an `@source` for
+ * apps/**: every app shares this entry, so that would compile each app's
+ * classes into every other app's CSS (infographics' into the docs site and
+ * Storybook, and so on).
  *
  * The PUBLISHED stylesheet (dist/styles.css) is built from package.css, which
  * scans ONLY packages/ui/src — app-only utility classes must never be frozen
@@ -12,8 +18,6 @@
 @import './theme.css';
 
 /* @source paths are relative to this file (packages/ui/src/styles/globals.css). */
-/* Reach repo-root apps/** by going up 4 levels: styles → src → ui → packages → root. */
-@source '../../../../apps/**/*.{ts,tsx}';
 /* Scan all of packages/ui/src (components, hooks, lib) for utility classes. */
 @source '../**/*.{ts,tsx}';
 /* MDX docs pages (e.g. the Storybook welcome page) also use utility classes. */

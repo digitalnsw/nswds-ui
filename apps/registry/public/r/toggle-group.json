@@ -10,8 +10,8 @@
     "tailwind-merge"
   ],
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/toggle.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/toggle.json"
   ],
   "files": [
     {
@@ -29,6 +29,6 @@
   ],
   "type": "registry:ui",
   "meta": {
-    "nswdsVersion": "9.1.0"
+    "nswdsVersion": "9.1.2"
   }
 }

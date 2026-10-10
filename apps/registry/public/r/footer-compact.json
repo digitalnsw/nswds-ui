@@ -4,9 +4,9 @@
   "title": "Footer — Compact Bar",
   "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
   "registryDependencies": [
-    "https://ui.digital.nsw.gov.au/registry/r/theme.json",
-    "https://ui.digital.nsw.gov.au/registry/r/footer.json",
-    "https://ui.digital.nsw.gov.au/registry/r/logo.json"
+    "https://registry.design.nsw.gov.au/r/theme.json",
+    "https://registry.design.nsw.gov.au/r/footer.json",
+    "https://registry.design.nsw.gov.au/r/logo.json"
   ],
   "files": [
     {
@@ -18,6 +18,6 @@
   ],
   "type": "registry:block",
   "meta": {
-    "nswdsVersion": "9.1.0"
+    "nswdsVersion": "9.1.2"
   }
 }

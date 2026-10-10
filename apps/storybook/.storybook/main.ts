@@ -33,7 +33,8 @@ const config: StorybookConfig = {
     // `@nswds/ui/globals.css` is a workspace-internal specifier that exists
     // ONLY through this alias (the package's exports map ships compiled CSS
     // as `./styles.css`). It points at the SOURCE dev entry so the Vite
-    // Tailwind plugin can scan packages/ui/src (and apps/**) live and emit
+    // Tailwind plugin can scan packages/ui/src (and, via automatic source
+    // detection, apps/storybook itself) live and emit
     // utilities for whatever the stories actually use; the matching tsconfig
     // path in apps/storybook/tsconfig.json keeps typecheck happy.
     const here = dirname(fileURLToPath(import.meta.url))
