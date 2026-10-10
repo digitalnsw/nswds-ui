@@ -136,6 +136,17 @@ test('findCycles reports direct and indirect cycles, and only cycles', () => {
   ])
 })
 
+test('an unused fallback reference is not a cycle; a primary-reference cycle is', () => {
+  // Pinned against Chromium 151 (the engine the Storybook suite and the
+  // consumer fixture's users run): with --base declared, `var(--base,
+  // var(--font-sans))` computes to --base's value, so the self-reference in
+  // the untaken fallback creates no cycle. Mutual primary references do.
+  const css = `:root{--base:"Public Sans", sans-serif;--font-sans:var(--base, var(--font-sans));--a:var(--b, red);--b:var(--a, blue)}`
+  const parsed = parseCss(css)
+  assert.equal(resolveRoot(parsed, '--font-sans').value, '"Public Sans", sans-serif')
+  assert.deepEqual(findCycles(parsed).sort(), ['--a → --b → --a', '--b → --a → --b'])
+})
+
 test('var( inside a quoted string or another identifier is not a reference', () => {
   // `content`-style string values and functions whose name ends in "var" are
   // text, not references: treating them as var() invents false cycles.
