@@ -1,3 +1,9 @@
+## [9.1.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.0...@nswds/ui-v9.1.1) (2026-10-10)
+
+### Bug Fixes
+
+* **ui:** stop the dev stylesheet compiling every app's classes into every app ([#237](https://github.com/digitalnsw/nswds-ui/issues/237)) ([b9ffeb2](https://github.com/digitalnsw/nswds-ui/commit/b9ffeb2b152f6cc407cae9e696dc99b10854b3a0))
+
 ## [9.1.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.0.1...@nswds/ui-v9.1.0) (2026-10-07)
 
 ### Features
