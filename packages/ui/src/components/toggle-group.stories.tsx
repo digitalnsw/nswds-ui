@@ -1,9 +1,13 @@
 /**
  * ToggleGroup — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/ToggleGroup        → this file: Docs, Default, Playground and
- *                                   one story per docs section
- *   Components/ToggleGroup/Tests  → toggle-group.tests.stories.tsx
+ *   Components/ToggleGroup               → this file: Docs, Default, Playground
+ *   Components/ToggleGroup/Features      → toggle-group.features.stories.tsx
+ *   Components/ToggleGroup/Accessibility → toggle-group.accessibility.stories.tsx
+ *   Components/ToggleGroup/Tests         → toggle-group.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A set of related toggles built on the Base UI ToggleGroup primitive — roving
  * focus, arrow-key navigation and the group ARIA come from there. `variant`,
@@ -55,9 +59,9 @@ const alignmentCode = `<ToggleGroup defaultValue={['left']}>
 </ToggleGroup>`
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -81,7 +85,7 @@ function VariantsSection() {
   )
 }
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -107,7 +111,7 @@ function SizesSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -147,7 +151,7 @@ function StatesSection() {
   )
 }
 
-function SingleOrMultipleSection() {
+export function SingleOrMultipleSection() {
   return (
     <ExampleSection
       title='Single or multiple'
@@ -182,7 +186,7 @@ function SingleOrMultipleSection() {
   )
 }
 
-function SpacingSection() {
+export function SpacingSection() {
   return (
     <ExampleSection
       title='Spacing'
@@ -208,7 +212,7 @@ function SpacingSection() {
   )
 }
 
-function OrientationSection() {
+export function OrientationSection() {
   return (
     <ExampleSection
       title='Orientation'
@@ -235,16 +239,32 @@ function OrientationSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
-      description='A view switch above search results: one of two views is always showing, and the labels say which.'
+      description='A view switch above search results: one of two views is always showing, and the labels say which. The group is named with aria-label, so a screen reader announces what the set of buttons is for.'
     >
-      <Example>
+      <Example
+        code={`<ToggleGroup
+  aria-label="Results view"
+  variant="outline"
+  spacing={0}
+  value={view}
+  onValueChange={setView}
+>
+  <ToggleGroupItem value="list"><IconList data-icon="inline-start" />List</ToggleGroupItem>
+  <ToggleGroupItem value="map"><IconMap data-icon="inline-start" />Map</ToggleGroupItem>
+</ToggleGroup>`}
+      >
         <div className='flex w-full max-w-md flex-wrap items-center justify-between gap-4'>
           <p>12 public schools near Wagga Wagga</p>
-          <ToggleGroup variant='outline' spacing={0} defaultValue={['list']}>
+          <ToggleGroup
+            aria-label='Results view'
+            variant='outline'
+            spacing={0}
+            defaultValue={['list']}
+          >
             <ToggleGroupItem value='list'>
               <IconList data-icon='inline-start' />
               List
@@ -305,6 +325,7 @@ const meta = {
   title: 'Components/ToggleGroup',
   component: ToggleGroup,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true },
@@ -407,20 +428,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const SingleOrMultiple: Story = {
-  name: 'Single or multiple',
-  render: () => <SingleOrMultipleSection />,
-}
-
-export const Spacing: Story = { name: 'Spacing', render: () => <SpacingSection /> }
-
-export const Orientation: Story = { name: 'Orientation', render: () => <OrientationSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

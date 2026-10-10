@@ -1,9 +1,13 @@
 /**
  * SiteSearch — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/SiteSearch        → this file: Docs, Default, Playground and
- *                                  one story per docs section
- *   Components/SiteSearch/Tests  → site-search.tests.stories.tsx
+ *   Components/SiteSearch               → this file: Docs, Default, Playground
+ *   Components/SiteSearch/Features      → site-search.features.stories.tsx
+ *   Components/SiteSearch/Accessibility → site-search.accessibility.stories.tsx
+ *   Components/SiteSearch/Tests         → site-search.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Cmd/Ctrl-K command-palette site search: a centred modal panel with a
  * filter-as-you-type input over grouped destinations. Selection is handed to
@@ -82,9 +86,9 @@ const serviceGroups: SiteSearchGroup[] = [
 const noop = () => {}
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function TriggersSection() {
+export function TriggersSection() {
   return (
     <ExampleSection
       title='Triggers'
@@ -124,7 +128,7 @@ function TriggersSection() {
   )
 }
 
-function ResultsSection() {
+export function ResultsSection() {
   return (
     <ExampleSection
       title='Results'
@@ -162,7 +166,7 @@ function ResultsSection() {
   )
 }
 
-function KeyboardShortcutSection() {
+export function KeyboardShortcutSection() {
   return (
     <ExampleSection
       title='Keyboard shortcut'
@@ -213,13 +217,100 @@ function KeyboardShortcutSection() {
   )
 }
 
-function InContextSection() {
+export function LabelsAndMessagesSection() {
+  return (
+    <ExampleSection
+      title='Labels and messages'
+      description={
+        <>
+          <code>label</code> names the panel, the input and the default trigger — say what is being
+          searched, and translate it rather than shipping English. <code>placeholder</code> and{' '}
+          <code>emptyMessage</code> set the field&apos;s hint and the line shown when nothing
+          matches. Anything passed as <code>children</code> sits in a footer under the results, for
+          a hint such as how to close. Open it and search for &ldquo;passport&rdquo;.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch
+  groups={groups}
+  onSelect={onSelect}
+  label="Search Service NSW"
+  placeholder="Search services"
+  emptyMessage="No services match that search. Try another word."
+>
+  Press <Kbd>Esc</Kbd> to close.
+</SiteSearch>`}
+      >
+        <SiteSearch
+          groups={serviceGroups}
+          onSelect={noop}
+          shortcut={false}
+          label='Search Service NSW'
+          placeholder='Search services'
+          emptyMessage='No services match that search. Try another word.'
+          trigger={<Button variant='outline'>Search Service NSW</Button>}
+        >
+          <span>
+            Press <Kbd>Esc</Kbd> to close.
+          </span>
+        </SiteSearch>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AccessibilitySection() {
+  return (
+    <ExampleSection
+      title='Accessibility'
+      description={
+        <>
+          The panel is a Base UI Dialog (focus trap, Escape, backdrop dismissal, focus restore); the
+          search itself is a Base UI Autocomplete rendered inline within it, so the input is
+          announced as a combobox, arrow keys move the highlight while focus stays in the field, and
+          Enter activates the highlighted result. Result rows are at least 44px tall.
+        </>
+      }
+    >
+      <Example
+        code={`<SiteSearch groups={groups} onSelect={onSelect} label="Search Service NSW" />`}
+      >
+        <ExampleCell label='Tab here and press Enter, then use the arrow keys'>
+          <SiteSearch
+            groups={serviceGroups}
+            onSelect={noop}
+            shortcut={false}
+            label='Search Service NSW'
+          />
+        </ExampleCell>
+      </Example>
+      <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+        Name, Role, Value (4.1.2), Keyboard (2.1.1), Focus Order (2.4.3), Status Messages (4.1.3)
+        and Target Size (2.5.8 and 2.5.5) are each asserted in the{' '}
+        <strong className='font-semibold text-foreground'>Accessibility</strong> stories under this
+        component.
+      </p>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='In the header actions of a service site, with the shortcut on. The panel opens centred over the page, whatever the width.'
     >
-      <Example layout='fill' className='max-sm:p-0 sm:p-0'>
+      <Example
+        layout='fill'
+        className='max-sm:p-0 sm:p-0'
+        code={`<Header>
+  <HeaderBrand sitename="Service NSW" />
+  <HeaderActions>
+    <SiteSearch groups={groups} onSelect={onSelect} label="Search Service NSW" />
+  </HeaderActions>
+</Header>`}
+      >
         <Header sticky={false} shadow={false}>
           <HeaderBrand sitename='Service NSW' />
           <HeaderActions>
@@ -250,13 +341,14 @@ function SiteSearchDocs() {
       registry='site-search'
       summary={
         <>
-          A command-palette search over the site map. A trigger, or{' '}
+          A command-palette search over the site map: a trigger (or{' '}
           <KbdGroup>
             <Kbd>⌘</Kbd>
             <Kbd>K</Kbd>
           </KbdGroup>
-          , opens a centred panel whose input filters titled groups of pages as you type. The chosen
-          page goes to <code>onSelect</code>; the component never navigates itself.
+          ) opens a centred modal panel whose input filters titled groups of destinations as you
+          type. Choosing a result calls <code>onSelect</code> with the item — navigation stays in
+          the app (call your router there), keeping the design system framework-free.
         </>
       }
     >
@@ -275,7 +367,9 @@ function SiteSearchDocs() {
       <TriggersSection />
       <ResultsSection />
       <KeyboardShortcutSection />
+      <LabelsAndMessagesSection />
       <InContextSection />
+      <AccessibilitySection />
       <DocsApi />
     </DocsPage>
   )
@@ -287,6 +381,7 @@ const meta = {
   title: 'Components/SiteSearch',
   component: SiteSearch,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -497,14 +592,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Triggers: Story = { name: 'Triggers', render: () => <TriggersSection /> }
-
-export const Results: Story = { name: 'Results', render: () => <ResultsSection /> }
-
-export const KeyboardShortcut: Story = {
-  name: 'Keyboard shortcut',
-  render: () => <KeyboardShortcutSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

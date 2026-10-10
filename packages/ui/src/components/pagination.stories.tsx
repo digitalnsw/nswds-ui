@@ -1,8 +1,13 @@
 /**
- * Pagination — Docs, Default, Playground and one story per docs section.
+ * Pagination — links between the pages of a long list.
  *
- *   Components/Pagination        → this file
- *   Components/Pagination/Tests  → pagination.tests.stories.tsx
+ *   Components/Pagination                → this file: Docs, Default, Playground
+ *   Components/Pagination/Features       → pagination.features.stories.tsx
+ *   Components/Pagination/Accessibility  → pagination.accessibility.stories.tsx
+ *   Components/Pagination/Tests          → pagination.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -43,9 +48,9 @@ function PageLinks({ pages, current }: { pages: number[]; current: number }) {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -83,7 +88,7 @@ function StatesSection() {
   )
 }
 
-function WithEllipsisSection() {
+export function WithEllipsisSection() {
   return (
     <ExampleSection
       title='With ellipsis'
@@ -124,7 +129,7 @@ function WithEllipsisSection() {
   )
 }
 
-function FirstAndLastPagesSection() {
+export function FirstAndLastPagesSection() {
   return (
     <ExampleSection
       title='First and last pages'
@@ -169,13 +174,60 @@ function FirstAndLastPagesSection() {
   )
 }
 
+export function LabelsSection() {
+  return (
+    <ExampleSection
+      title='Previous and next labels'
+      description={
+        <>
+          <code>PaginationPrevious</code> and <code>PaginationNext</code> show “Previous” and “Next”
+          beside a chevron, and are named “Go to previous page” and “Go to next page”, which contain
+          the words on screen. Change the words with <code>text</code>; when you do, pass an{' '}
+          <code>aria-label</code> that contains them too, so speech-input users can say what they
+          see.
+        </>
+      }
+    >
+      <Example
+        code={`<PaginationPrevious href="?page=1" text="Newer" aria-label="Newer results" />
+<PaginationNext href="?page=3" text="Older" aria-label="Older results" />`}
+      >
+        <ExampleCell label='default'>
+          <Pagination aria-label='Search results pages, default labels'>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href='?page=1' />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href='?page=3' />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </ExampleCell>
+        <ExampleCell label='text + aria-label'>
+          <Pagination aria-label='News pages'>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious href='?page=1' text='Newer' aria-label='Newer results' />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext href='?page=3' text='Older' aria-label='Older results' />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
 const RESULTS = [
   'Apply for a Working with Children Check',
   'Renew a Working with Children Check',
   'Update your Working with Children Check details',
 ]
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -186,7 +238,12 @@ function InContextSection() {
         </>
       }
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Pagination aria-label="Search results pages">
+  <PaginationContent>…</PaginationContent>
+</Pagination>`}
+      >
         <div className='max-w-2xl space-y-6'>
           <p className='text-muted-foreground'>Showing 11 to 20 of 42 results</p>
           <ul className='space-y-4'>
@@ -252,6 +309,7 @@ function PaginationDocs() {
       <StatesSection />
       <WithEllipsisSection />
       <FirstAndLastPagesSection />
+      <LabelsSection />
       <InContextSection />
       <DocsApi description='Props of Pagination, the nav landmark. The other parts take the props of the element they render; PaginationLink adds isActive and size.' />
     </DocsPage>
@@ -264,6 +322,7 @@ const meta = {
   title: 'Components/Pagination',
   component: Pagination,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -332,17 +391,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithEllipsis: Story = {
-  name: 'With ellipsis',
-  render: () => <WithEllipsisSection />,
-}
-
-export const FirstAndLastPages: Story = {
-  name: 'First and last pages',
-  render: () => <FirstAndLastPagesSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

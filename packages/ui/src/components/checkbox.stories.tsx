@@ -1,8 +1,13 @@
 /**
- * Checkbox — the docs page, Default, Playground and one story per docs section.
+ * Checkbox — the docs page, Default and Playground.
  *
- *   Components/Checkbox        → this file
- *   Components/Checkbox/Tests  → checkbox.tests.stories.tsx
+ *   Components/Checkbox                → this file
+ *   Components/Checkbox/Features       → checkbox.features.stories.tsx
+ *   Components/Checkbox/Accessibility  → checkbox.accessibility.stories.tsx
+ *   Components/Checkbox/Tests          → checkbox.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -31,7 +36,33 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          Put the checkbox first in a horizontal <code>Field</code>, with a regular-weight{' '}
+          <code>FieldLabel</code> 16px away. Pressing the label toggles it.
+        </>
+      }
+    >
+      <Example
+        code={`<Field orientation="horizontal" className="min-h-11 gap-4">
+  <Checkbox name="terms" />
+  <FieldLabel className="font-normal">Accept terms</FieldLabel>
+</Field>`}
+      >
+        <Field orientation='horizontal' className='min-h-11 gap-4'>
+          <Checkbox />
+          <FieldLabel className='font-normal'>Accept terms</FieldLabel>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
 
 const stateRows = [
   {
@@ -60,7 +91,7 @@ const stateRows = [
   },
 ] as const
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -68,7 +99,9 @@ function StatesSection() {
         <>
           Checked shows a tick, and <code>indeterminate</code> a dash for a parent whose options are
           only partly selected. Disabled greys the control without fading it; invalid takes
-          Input&apos;s 2px danger border, and a danger fill once selected.
+          Input&apos;s 2px danger border, and a danger fill once selected. Use the theme toolbar to
+          preview the selected primary palette in light or dark mode. Invalid controls use the same
+          danger colours as other form elements.
         </>
       }
     >
@@ -85,7 +118,39 @@ function StatesSection() {
   )
 }
 
-function WithFieldSection() {
+export function ValidationSection() {
+  return (
+    <ExampleSection
+      title='Validation'
+      description={
+        <>
+          Set <code>invalid</code> on the <code>Field</code>: the checkbox takes the danger border,
+          and the <code>FieldError</code> is announced with it.
+        </>
+      }
+    >
+      <Example
+        code={`<Field orientation="horizontal" className="gap-4" invalid>
+  <Checkbox />
+  <FieldContent className="pt-1">
+    <FieldLabel className="font-normal">Confirm the information is correct</FieldLabel>
+    <FieldError>Confirm before continuing.</FieldError>
+  </FieldContent>
+</Field>`}
+      >
+        <Field orientation='horizontal' className='gap-4' invalid>
+          <Checkbox />
+          <FieldContent className='pt-1'>
+            <FieldLabel className='font-normal'>Confirm the information is correct</FieldLabel>
+            <FieldError>Confirm before continuing.</FieldError>
+          </FieldContent>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -93,17 +158,18 @@ function WithFieldSection() {
         <>
           Put the checkbox first in a horizontal <code>Field</code>, with a regular-weight label
           16px away. Pressing the label toggles the checkbox. Add a <code>FieldContent</code> for a
-          hint or an error, which are announced with it.
+          hint, which is announced with it. <code>Field disabled</code> disables the checkbox and
+          greys its label.
         </>
       }
     >
       <Example
         layout='stack'
-        code={`<Field orientation="horizontal" className="gap-4" invalid>
-  <Checkbox name="declaration" />
+        code={`<Field orientation="horizontal" className="gap-4">
+  <Checkbox name="reminders" />
   <FieldContent className="pt-1">
-    <FieldLabel className="font-normal">I confirm the information I have given is correct</FieldLabel>
-    <FieldError>Confirm the information is correct to continue.</FieldError>
+    <FieldLabel className="font-normal">Send me appointment reminders</FieldLabel>
+    <FieldDescription>We will text you two days before.</FieldDescription>
   </FieldContent>
 </Field>`}
       >
@@ -119,16 +185,71 @@ function WithFieldSection() {
               <FieldDescription>We will text you two days before.</FieldDescription>
             </FieldContent>
           </Field>
-          <Field orientation='horizontal' className='gap-4' invalid>
-            <Checkbox name='declaration' />
-            <FieldContent className='pt-1'>
-              <FieldLabel className='font-normal'>
-                I confirm the information I have given is correct
-              </FieldLabel>
-              <FieldError>Confirm the information is correct to continue.</FieldError>
-            </FieldContent>
+          <Field orientation='horizontal' className='min-h-11 gap-4' disabled>
+            <Checkbox name='email' defaultChecked />
+            <FieldLabel className='font-normal'>Email is unavailable</FieldLabel>
           </Field>
         </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [checked, setChecked] = useState(false)
+  const [mixed, setMixed] = useState(true)
+  return (
+    <form className='grid gap-6'>
+      <Field orientation='horizontal' className='min-h-11 gap-4'>
+        <Checkbox
+          name='updates'
+          value='email'
+          checked={checked}
+          indeterminate={mixed}
+          onCheckedChange={(value) => {
+            setChecked(value)
+            setMixed(false)
+          }}
+        />
+        <FieldLabel className='font-normal'>Email updates</FieldLabel>
+      </Field>
+      <Field orientation='horizontal' className='min-h-11 gap-4'>
+        <Checkbox defaultChecked readOnly />
+        <FieldLabel className='font-normal'>Read only</FieldLabel>
+      </Field>
+    </form>
+  )
+}
+
+export function ControlledMixedStateSection() {
+  return (
+    <ExampleSection
+      title='Controlled mixed state'
+      description={
+        <>
+          Set indeterminate for a mixed selection. Update checked and indeterminate together in
+          onCheckedChange. Base UI handles focus, Space to toggle and form submission. A{' '}
+          <code>readOnly</code> checkbox keeps its value and cannot be changed.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        code={`const [checked, setChecked] = useState(false)
+const [mixed, setMixed] = useState(true)
+
+<Checkbox
+  name="updates"
+  value="email"
+  checked={checked}
+  indeterminate={mixed}
+  onCheckedChange={(value) => {
+    setChecked(value)
+    setMixed(false)
+  }}
+/>`}
+      >
+        <ControlledExample />
       </Example>
     </ExampleSection>
   )
@@ -175,7 +296,7 @@ function SelectAllExample() {
   )
 }
 
-function SelectAllSection() {
+export function SelectAllSection() {
   return (
     <ExampleSection
       title='Select all'
@@ -202,13 +323,24 @@ function SelectAllSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A multiple-choice question: a legend asks it, a hint says how many to pick, and each option is its own horizontal Field.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<FieldSet>
+  <FieldLegend>Which services do you need help with?</FieldLegend>
+  <FieldDescription>Select all that apply.</FieldDescription>
+  <Field orientation="horizontal" className="min-h-11 gap-4">
+    <Checkbox name="services" value="housing" />
+    <FieldLabel className="font-normal">Housing and homelessness</FieldLabel>
+  </Field>
+  …
+</FieldSet>`}
+      >
         <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
           <FieldGroup>
             <FieldSet>
@@ -248,10 +380,11 @@ function CheckboxDocs() {
       registry='checkbox'
       summary={
         <>
-          Checkboxes let people pick any number of options, or confirm a single statement. The
-          control is 32px with a 44px hit area and a crisp tick in the theme&apos;s ink. Base UI
-          owns keyboard use, form submission and the <code>checkbox</code> role; pair each one with
-          a visible label in a <code>Field</code>.
+          Checkboxes let people select one or more options. Pair each control with a visible label.
+          Use a mixed state when only some options in a group are selected. They also confirm a
+          single statement. The control is 32px with a 44px hit area and a crisp tick in the
+          theme&apos;s ink. Base UI owns keyboard use, form submission and the <code>checkbox</code>{' '}
+          role; pair each one with a visible label in a <code>Field</code>.
         </>
       }
     >
@@ -267,8 +400,11 @@ function CheckboxDocs() {
           'A long list someone filters as they type — use Combobox with multiple.',
         ]}
       />
+      <DefaultSection />
       <StatesSection />
+      <ValidationSection />
       <WithFieldSection />
+      <ControlledMixedStateSection />
       <SelectAllSection />
       <InContextSection />
       <DocsApi />
@@ -282,6 +418,7 @@ const meta = {
   title: 'Components/Checkbox',
   component: Checkbox,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -375,11 +512,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const SelectAll: Story = { name: 'Select all', render: () => <SelectAllSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

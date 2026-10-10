@@ -1,0 +1,242 @@
+/**
+ * LoginForm — Features
+ *
+ * LoginForm is a composed pattern, not a primitive with variants. The stories
+ * in this file demonstrate how the pattern responds at different container
+ * widths, on different surface treatments, and how to extend it with field
+ * errors. Stories that customise the pattern use a hand-rolled render that
+ * copies the LoginForm composition — this doubles as an authoring guide for
+ * consumers extending the pattern in their own codebases.
+ *
+ * The last four stories render the docs page's sections (exported from
+ * login-form.stories.tsx), so each can be opened on its own canvas. The page's
+ * "Default" section is the Default story above.
+ */
+
+import type { Meta, StoryObj } from '@storybook/react-vite'
+
+import { Button } from '../components/button.js'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/card.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '../components/field.js'
+import { Input } from '../components/input.js'
+import { LabeledSeparator } from '../components/labeled-separator.js'
+import { Link } from '../components/link.js'
+import { Separator } from '../components/separator.js'
+import { docsTemplate } from '../components/story-helpers.js'
+import { IconKey, IconLogin, IconMail } from '../icons/index.js'
+import { LoginForm } from './login-form.js'
+import {
+  CustomisingThePatternSection,
+  InContextSection,
+  ReportingAnErrorSection,
+  WidthSection,
+} from './login-form.stories.js'
+
+// ─── Meta ─────────────────────────────────────────────────────────────────────
+
+const meta = {
+  title: 'Patterns/LoginForm/Features',
+  component: LoginForm,
+  parameters: {
+    layout: 'padded',
+  },
+  args: {},
+} satisfies Meta<typeof LoginForm>
+
+export default meta
+
+type Story = StoryObj<typeof meta>
+
+// ─── Stories ──────────────────────────────────────────────────────────────────
+
+export const Default: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'LoginForm rendered in its default max-w-md container — the size most consumers will reach for when dropping the pattern into a sign-in route.',
+          why: 'Establishes the baseline visual for the pattern so design QA can spot regressions against the canonical Card + Field + Input + Button composition.',
+          how: 'Visually compare against the published Figma frame. Confirm the card has a single primary action (single sign-on), the email/password and magic-link methods divided by labeled separators, and a footer with the sign-up link.',
+          caveat:
+            'The form is presentational only — the submit button does not POST anywhere. Wire the form to a server action when copying into a real app.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-md'>
+      <LoginForm />
+    </div>
+  ),
+}
+
+export const Wide: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'LoginForm constrained to max-w-xl instead of the default max-w-md — useful for marketing pages where the form sits inside a roomier hero card.',
+          why: 'Confirms the inner Field and Button layout still reads naturally when the card has more horizontal space; nothing should stretch or grow whitespace inappropriately.',
+          how: 'Verify the inputs expand to fill the wider card and the action buttons remain stacked rather than going side-by-side.',
+          caveat:
+            'Going beyond max-w-xl is not recommended — the form starts to look lonely in a wide card. Use a two-column layout (form + marketing copy) instead.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-xl'>
+      <LoginForm />
+    </div>
+  ),
+}
+
+export const LightCardOnDark: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'LoginForm rendered inside a dark NSW grey-900 container, simulating a sign-in page that uses a branded dark background behind a light card.',
+          why: 'Verifies that the Card primitive — and therefore LoginForm — maintains sufficient surface contrast against an arbitrary dark page background.',
+          how: 'Visually confirm the card still reads as the primary surface, the input borders remain visible, and the single sign-on button does not blend into the page background.',
+          caveat:
+            'Toggling Storybook into dark mode is a different test — that flips the tokens inside the card, not the page around it. This story stresses the page-surface case only.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='flex min-h-[32rem] items-center justify-center bg-grey-900 p-8'>
+      <div className='w-full max-w-md'>
+        <LoginForm />
+      </div>
+    </div>
+  ),
+}
+
+export const WithError: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'A LoginForm with a FieldError on the password field, demonstrating how to extend the pattern when the form returns a validation error.',
+          why: 'LoginForm itself does not handle errors — this story is the authoring guide for consumers who need to add inline validation. The render copies the LoginForm composition wholesale (SSO, email/password, magic link, and the separators between them) and adds the error surface so the diff against login-form.tsx is small.',
+          how: 'Compare this render against packages/ui/src/components/login-form.tsx. The only changes are: the password Input has aria-invalid and aria-describedby, and a FieldError follows the Input.',
+          caveat:
+            'In production code, derive aria-invalid and the FieldError message from your form state library (e.g. react-hook-form, formik, conform). Hardcoding them here is for illustration only.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='flex w-full max-w-md flex-col gap-6'>
+      <Card className='w-full'>
+        <CardHeader>
+          <CardTitle>Login to your account</CardTitle>
+          <CardDescription>Choose how you&apos;d like to sign in</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form>
+            <FieldGroup>
+              {/* 1 — Single sign-on: the recommended first option */}
+              <Field>
+                <Button type='button'>
+                  <IconLogin />
+                  Continue with single sign-on
+                </Button>
+              </Field>
+              <LabeledSeparator>or sign in with email</LabeledSeparator>
+              {/* 2 — Email + password */}
+              <Field>
+                <FieldLabel htmlFor='login-error-email'>Email</FieldLabel>
+                <Input id='login-error-email' type='email' defaultValue='m@example.com' required />
+              </Field>
+              {/*
+               * Mirrors the focus-order pattern from login-form.tsx: the
+               * "Forgot your password?" link is placed AFTER the input in DOM
+               * order (so Tab goes email → password → forgot, not email →
+               * forgot → password) and positioned at the top-right via
+               * absolute positioning. See WCAG 2.4.3 Focus Order.
+               */}
+              <Field className='relative [&>a]:w-auto'>
+                <FieldLabel htmlFor='login-error-password'>Password</FieldLabel>
+                <Input
+                  id='login-error-password'
+                  type='password'
+                  defaultValue='wrong'
+                  aria-invalid='true'
+                  aria-describedby='login-error-password-error'
+                  required
+                />
+                <Link href='#' className='absolute top-0 right-0 text-base'>
+                  Forgot your password?
+                </Link>
+                <FieldError id='login-error-password-error'>Incorrect password</FieldError>
+              </Field>
+              <Field>
+                <Button type='submit' variant='outline' color='primary'>
+                  <IconKey />
+                  Login
+                </Button>
+              </Field>
+              {/* 3 — Magic link: passwordless, sent to the email entered above */}
+              <LabeledSeparator>or</LabeledSeparator>
+              <Field>
+                <Button type='button' variant='outline' color='grey'>
+                  <IconMail />
+                  Email me a magic link instead
+                </Button>
+                <FieldDescription>
+                  We&apos;ll send a password-free sign-in link to the email above.
+                </FieldDescription>
+              </Field>
+              <Separator className='bg-grey-200' />
+              <Field>
+                <FieldDescription className='text-center'>
+                  Don&apos;t have an account? <Link href='#'>Sign up</Link>
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  ),
+}
+
+export const MobileNarrow: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: docsTemplate({
+          what: 'LoginForm constrained to max-w-xs to simulate the layout on a narrow mobile viewport.',
+          why: 'Ensures the card padding, input height, and stacked buttons still hold up at the narrowest realistic width — useful for spotting overflow or cramped spacing before shipping to mobile.',
+          how: 'Confirm the Forgot link does not wrap awkwardly onto its own line, the inputs stay full-width, and the single sign-on button label fits without truncation.',
+          caveat:
+            'The pattern is not responsive on its own — at very narrow widths consider replacing the inline Forgot link with a stacked layout.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-xs'>
+      <LoginForm />
+    </div>
+  ),
+}
+
+// ─── Docs sections ────────────────────────────────────────────────────────────
+
+export const CustomisingThePattern: Story = {
+  name: 'Customising the pattern',
+  render: () => <CustomisingThePatternSection />,
+}
+
+export const ReportingAnError: Story = {
+  name: 'Reporting an error',
+  render: () => <ReportingAnErrorSection />,
+}
+
+export const Width: Story = { render: () => <WidthSection /> }
+
+export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

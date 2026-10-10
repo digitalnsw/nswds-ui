@@ -1,19 +1,24 @@
 /**
  * SignUpForm — the story set, per docs/reference-storybook-standard.md.
  *
- *   Patterns/SignUpForm                → this file: Docs, Default, Playground and
- *                                        one story per docs section
+ *   Patterns/SignUpForm                → this file: Docs, Default, Playground
+ *   Patterns/SignUpForm/Features       → sign-up-form.features.stories.tsx
  *   Patterns/SignUpForm/Accessibility  → sign-up-form.accessibility.stories.tsx
  *
  * SignUpForm is a registry block (Card + Field + Input + Button), the
  * account-creation counterpart to LoginForm. Consumers copy the source and
  * adapt it rather than configure it through props.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Field, FieldDescription, FieldError, FieldLabel } from '../components/field.js'
+import { Header, HeaderBrand } from '../components/header.js'
 import { Input } from '../components/input.js'
+import { Masthead } from '../components/masthead.js'
 import {
   DocsApi,
   DocsPage,
@@ -24,12 +29,12 @@ import {
 import { SignUpForm } from './sign-up-form.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function RegistrationMethodsSection() {
+export function DefaultSection() {
   return (
     <ExampleSection
-      title='Registration methods'
+      title='Default'
       description={
         <>
           Single sign-on with Microsoft Entra ID leads, with solid emphasis, because NSW Government
@@ -46,16 +51,18 @@ function RegistrationMethodsSection() {
   )
 }
 
-function PasswordRulesSection() {
+export function PasswordManagerSection() {
   return (
     <ExampleSection
-      title='Password rules'
+      title='Password manager & accessibility'
       description={
         <>
-          State the rules before someone types, in a <code>FieldDescription</code> inside the
-          password <code>Field</code>: Base UI links it to the input, so a screen reader reads the
-          rules when the field takes focus. <code>autoComplete=&quot;new-password&quot;</code> on
-          both password fields lets a password manager offer a strong generated one.
+          The password field uses <code>autoComplete=&quot;new-password&quot;</code> so password
+          managers offer a generated password, and the requirements hint is linked to the input via{' '}
+          <code>aria-describedby</code> so it is announced to screen readers. Keep both when
+          adapting the source. A <code>FieldDescription</code> inside the password{' '}
+          <code>Field</code> makes that link for you: Base UI wires it up, so a screen reader reads
+          the rules when the field takes focus.
         </>
       }
     >
@@ -82,7 +89,7 @@ function PasswordRulesSection() {
   )
 }
 
-function ReportingAnErrorSection() {
+export function ReportingAnErrorSection() {
   return (
     <ExampleSection
       title='Reporting an error'
@@ -123,15 +130,42 @@ function ReportingAnErrorSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
-      description='A registration page on a subtle page surface, where the white card reads as the one thing to complete.'
+      description={
+        <>
+          The registration page of a grants portal: the masthead and header above, a page heading
+          that says what the account is for, and the form as the one thing to complete. Give the
+          page its own <code>h1</code>: the card&rsquo;s title is styled text, not a heading.
+        </>
+      }
     >
-      <Example surface='subtle'>
-        <div className='w-full max-w-md'>
-          <SignUpForm />
+      <Example
+        layout='fill'
+        className='overflow-hidden p-0'
+        code={`<Masthead />
+<Header sticky={false}>
+  <HeaderBrand sitename="Small Business Grants" />
+</Header>
+<main>
+  <h1>Register for Small Business Grants</h1>
+  <SignUpForm className="w-full max-w-md" />
+</main>`}
+      >
+        <Masthead />
+        <Header sticky={false}>
+          <HeaderBrand sitename='Small Business Grants' />
+        </Header>
+        <div className='space-y-6 bg-background px-6 py-10'>
+          <div className='max-w-md space-y-2'>
+            <p className='text-3xl font-bold tracking-tight'>Register for Small Business Grants</p>
+            <p className='text-base text-muted-foreground'>
+              Create an account to apply for a grant, save your progress and track your application.
+            </p>
+          </div>
+          <SignUpForm className='w-full max-w-md' />
         </div>
       </Example>
     </ExampleSection>
@@ -148,10 +182,10 @@ function SignUpFormDocs() {
       registry='sign-up-form'
       summary={
         <>
-          An account-creation card assembled from Card, Field, Input and Button: single sign-on
-          first, then email and password registration with the password rules stated up front. It
-          pairs with LoginForm&apos;s &ldquo;Sign up&rdquo; link. Copy the source, wire it to your
-          own registration handler, and point the terms links at your service&apos;s own.
+          SignUpForm is a composed pattern that demonstrates how to assemble Card, Field, Input, and
+          Button primitives into an account-creation form. It pairs with LoginForm&apos;s
+          &ldquo;Sign up&rdquo; link. Copy the source, wire the fields to your own registration
+          handler, and adapt the copy and terms links to your service.
         </>
       }
     >
@@ -167,8 +201,8 @@ function SignUpFormDocs() {
           'A one-off enquiry that needs no account — compose Field, Input and Button directly.',
         ]}
       />
-      <RegistrationMethodsSection />
-      <PasswordRulesSection />
+      <DefaultSection />
+      <PasswordManagerSection />
       <ReportingAnErrorSection />
       <InContextSection />
       <DocsApi description='SignUpForm takes the props of a div. Use className to set its width; anything more is a change to the copied source.' />
@@ -182,16 +216,28 @@ const meta = {
   title: 'Patterns/SignUpForm',
   component: SignUpForm,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: SignUpFormDocs },
+    docs: {
+      page: SignUpFormDocs,
+      description: {
+        component:
+          'SignUpForm is a composed account-creation pattern assembling Card, Field, Input, and Button. It is published as a worked example; consumers copy and adapt the source rather than configure it through props.',
+      },
+    },
   },
   args: {
     className: 'w-full max-w-md',
   },
   argTypes: {
-    className: { table: { disable: true } },
+    className: {
+      control: 'text',
+      description:
+        'Additional Tailwind utility classes merged onto the outer wrapper. Use to constrain width or override layout in context.',
+      table: { category: 'Appearance' },
+    },
   },
 } satisfies Meta<typeof SignUpForm>
 
@@ -247,21 +293,10 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {}
-
-export const RegistrationMethods: Story = {
-  name: 'Registration methods',
-  render: () => <RegistrationMethodsSection />,
+export const Playground: Story = {
+  render: (args) => (
+    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
+      <SignUpForm {...args} />
+    </div>
+  ),
 }
-
-export const PasswordRules: Story = {
-  name: 'Password rules',
-  render: () => <PasswordRulesSection />,
-}
-
-export const ReportingAnError: Story = {
-  name: 'Reporting an error',
-  render: () => <ReportingAnErrorSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

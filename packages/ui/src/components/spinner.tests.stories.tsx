@@ -1,8 +1,9 @@
 /**
  * Spinner — Tests
  *
- * Stories that prove the naming paths and the two-tone fill rather than show
- * them. They stay out of the sidebar (`!dev`) but run in the Vitest suite.
+ * The two-tone fill check. It stays out of the sidebar (`!dev`) but runs in
+ * the Vitest suite. The naming-path stories (custom, suppressed and
+ * aria-label override) live in the main file, where they were on main.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -23,60 +24,6 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-export const CustomLabel: Story = {
-  name: 'Custom label',
-  args: { label: 'Loading results' },
-  play: async ({ canvasElement }) => {
-    const status = canvasElement.querySelector('[role="status"]')
-    if (!status) {
-      throw new Error('Could not find element with role="status".')
-    }
-    if (status.textContent?.trim() !== 'Loading results') {
-      throw new Error(
-        `Expected the label prop to drive the accessible name, received "${status.textContent?.trim()}".`,
-      )
-    }
-  },
-}
-
-export const SuppressedLabel: Story = {
-  name: 'Suppressed label',
-  // `label=""` is the documented escape hatch for a Spinner whose busy state is
-  // already conveyed by its surroundings (a Button's aria-busy, a toast). It
-  // must drop role="status" entirely — an empty live region is redundant noise,
-  // not a silent one.
-  args: { label: '' },
-  play: async ({ canvasElement }) => {
-    if (canvasElement.querySelector('[role="status"]')) {
-      throw new Error(
-        'label="" must suppress role="status" rather than leave an empty live region.',
-      )
-    }
-    if (canvasElement.querySelector('.sr-only')) {
-      throw new Error('label="" must render no sr-only text.')
-    }
-  },
-}
-
-export const AriaLabelOverride: Story = {
-  name: 'aria-label override',
-  // Supplying aria-label is still supported — it wins over the contents for the
-  // accessible name. Asserted as an OVERRIDE of the default path above, not as
-  // the component's naming requirement.
-  args: { 'aria-label': 'Loading search results' },
-  play: async ({ canvasElement }) => {
-    const status = canvasElement.querySelector('[role="status"]')
-    if (!status) {
-      throw new Error('Could not find element with role="status".')
-    }
-    if (status.getAttribute('aria-label') !== 'Loading search results') {
-      throw new Error(
-        `Expected the aria-label override to reach the DOM, received "${status.getAttribute('aria-label')}".`,
-      )
-    }
-  },
-}
 
 export const CssCheck: Story = {
   name: 'CSS check — two-tone fill',

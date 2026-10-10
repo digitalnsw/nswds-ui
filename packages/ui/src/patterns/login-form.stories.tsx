@@ -1,13 +1,17 @@
 /**
  * LoginForm — the story set, per docs/reference-storybook-standard.md.
  *
- *   Patterns/LoginForm                → this file: Docs, Default, Playground and
- *                                       one story per docs section
+ *   Patterns/LoginForm                → this file: Docs, Default, Playground
+ *   Patterns/LoginForm/Features       → login-form.features.stories.tsx
  *   Patterns/LoginForm/Accessibility  → login-form.accessibility.stories.tsx
  *
- * LoginForm is a registry block (Card + Field + Input + Button), published as
- * a worked example: consumers copy the source and adapt it rather than
- * configure it through props.
+ * LoginForm is a composed pattern (Card + Field + Input + Button) rather than
+ * a primitive. It is published as a worked example showing how to assemble the
+ * primitives into a sign-in form; consumers are expected to copy and adapt it
+ * rather than treat it as a black-box component.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -19,24 +23,24 @@ import {
   DocsPage,
   DocsUsage,
   Example,
+  ExampleCell,
   ExampleSection,
 } from '../components/story-helpers.js'
 import { LoginForm } from './login-form.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SignInMethodsSection() {
+export function DefaultSection() {
   return (
     <ExampleSection
-      title='Sign-in methods'
+      title='Default'
       description={
         <>
           Three ways in, most recommended first: single sign-on, then email and password, then a
           magic link sent to the same address. A labelled separator divides each method so it reads
           as a distinct alternative, and only single sign-on carries solid emphasis — one primary
-          action per view. Remove the methods your service does not offer by editing the copied
-          source.
+          action per view.
         </>
       }
     >
@@ -47,7 +51,49 @@ function SignInMethodsSection() {
   )
 }
 
-function ReportingAnErrorSection() {
+export function CustomisingThePatternSection() {
+  return (
+    <ExampleSection
+      title='Customising the pattern'
+      description={
+        <>
+          LoginForm exposes only a wrapper <code>className</code> prop on purpose — extending the
+          pattern means copying the component source, not configuring it through props. Treat this
+          file as the reference implementation: add a third-party SSO button, swap the footer link,
+          or wire the form to a server action by editing the copied source directly.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`// components/login-form.tsx — your copy, after npx shadcn@latest add @nswds/login-form
+<form action={signIn}>
+  <FieldGroup>
+    {/* remove the methods your service does not offer */}
+  </FieldGroup>
+</form>`}
+      >
+        <ol className='list-decimal space-y-3 ps-6 text-base leading-relaxed'>
+          <li>
+            Add it with <code>npx shadcn@latest add @nswds/login-form</code>. The source lands in
+            your own <code>components/</code> folder.
+          </li>
+          <li>
+            Remove the sign-in methods your service does not offer, change the copy, and point the
+            &ldquo;Forgot your password?&rdquo; and &ldquo;Sign up&rdquo; links at your own routes.
+          </li>
+          <li>
+            Give the <code>form</code> your own <code>action</code> or submit handler. Keep the{' '}
+            <code>autoComplete</code> tokens and the link-after-input order — the Accessibility
+            stories pin both.
+          </li>
+        </ol>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ReportingAnErrorSection() {
   return (
     <ExampleSection
       title='Reporting an error'
@@ -84,35 +130,52 @@ function ReportingAnErrorSection() {
   )
 }
 
-function WidthSection() {
+export function WidthSection() {
   return (
     <ExampleSection
       title='Width'
       description={
         <>
           The form fills its container, so set the width from outside with <code>className</code>.{' '}
-          <code>max-w-md</code> suits a sign-in page (as above). At phone width, shown here, the
-          methods still stack and every label fits. Past <code>max-w-xl</code> the form looks lost —
-          put a second column of content beside it instead.
+          <code>max-w-md</code> suits a sign-in page (as above). At phone width the methods still
+          stack and every label fits; at <code>max-w-xl</code>, the widest that still reads well,
+          the inputs grow and the actions stay stacked. Past that the form looks lost — put a second
+          column of content beside it instead.
         </>
       }
     >
-      <Example code={`<LoginForm className="w-full max-w-xs" />`} layout='fill'>
-        <LoginForm className='w-full max-w-xs' />
+      <Example code={`<LoginForm className="w-full max-w-xs" />`}>
+        <ExampleCell label='max-w-xs — phone width'>
+          <LoginForm className='w-80' />
+        </ExampleCell>
+      </Example>
+      <Example code={`<LoginForm className="w-full max-w-xl" />`}>
+        <ExampleCell label='max-w-xl — the widest'>
+          <LoginForm className='w-xl max-w-full' />
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A sign-in page on the brand band. The card keeps its own surface, so its fields and actions read the same on a coloured page as on a white one.'
     >
-      <Example surface='brand'>
-        <div className='w-full max-w-md'>
-          <LoginForm />
+      {/* The band is drawn inside a plain panel rather than with surface='brand':
+          that surface repoints --muted-foreground to white for text on the band,
+          and the card inherits it, which would whiten its own muted text. */}
+      <Example
+        layout='fill'
+        className='overflow-hidden p-0'
+        code={`<main className="bg-primary p-8">
+  <LoginForm className="mx-auto w-full max-w-md" />
+</main>`}
+      >
+        <div className='bg-primary p-8'>
+          <LoginForm className='w-full max-w-md' />
         </div>
       </Example>
     </ExampleSection>
@@ -129,10 +192,10 @@ function LoginFormDocs() {
       registry='login-form'
       summary={
         <>
-          A sign-in card assembled from Card, Field, Input and Button: single sign-on first, email
-          and password as the fallback, and a passwordless magic link. It is a starting point to
-          copy and adapt — swap the providers, change the copy and wire the form to your own handler
-          — not a component configured through props.
+          LoginForm is a composed pattern that demonstrates how to assemble Card, Field, Input, and
+          Button primitives into a sign-in form. It is intended as a starting point for
+          customisation, not a black-box component — copy the source, adapt the fields, swap the
+          providers, and wire it to your own form handler.
         </>
       }
     >
@@ -148,7 +211,8 @@ function LoginFormDocs() {
           'Collecting anything other than credentials — compose Field, Input and Button directly.',
         ]}
       />
-      <SignInMethodsSection />
+      <DefaultSection />
+      <CustomisingThePatternSection />
       <ReportingAnErrorSection />
       <WidthSection />
       <InContextSection />
@@ -163,16 +227,28 @@ const meta = {
   title: 'Patterns/LoginForm',
   component: LoginForm,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: LoginFormDocs },
+    docs: {
+      page: LoginFormDocs,
+      description: {
+        component:
+          'LoginForm is a composed sign-in pattern assembling Card, Field, Input, and Button. It is published as a worked example; consumers copy and adapt the source rather than configure it through props.',
+      },
+    },
   },
   args: {
     className: 'w-full max-w-md',
   },
   argTypes: {
-    className: { table: { disable: true } },
+    className: {
+      control: 'text',
+      description:
+        'Additional Tailwind utility classes merged onto the outer wrapper. Use to constrain width or override layout in context.',
+      table: { category: 'Appearance' },
+    },
   },
 } satisfies Meta<typeof LoginForm>
 
@@ -217,18 +293,10 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {}
-
-export const SignInMethods: Story = {
-  name: 'Sign-in methods',
-  render: () => <SignInMethodsSection />,
+export const Playground: Story = {
+  render: (args) => (
+    <div className='w-full max-w-md rounded-sm border border-border bg-background p-6'>
+      <LoginForm {...args} />
+    </div>
+  ),
 }
-
-export const ReportingAnError: Story = {
-  name: 'Reporting an error',
-  render: () => <ReportingAnErrorSection />,
-}
-
-export const Width: Story = { name: 'Width', render: () => <WidthSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

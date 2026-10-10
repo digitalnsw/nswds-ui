@@ -16,9 +16,10 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect } from 'storybook/test'
 
 import { Logo } from './logo.js'
-import { wcagStoryMeta } from './story-helpers.js'
+import { compositeOver, expectContrast, resolveColor, wcagStoryMeta } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Logo/Accessibility',
@@ -48,6 +49,25 @@ function getLogoSvg(canvasElement: HTMLElement): SVGSVGElement {
   const svg = canvasElement.querySelector('svg')
   if (!svg) throw new Error('Could not find the Logo svg element in canvas.')
   return svg
+}
+
+/**
+ * The opaque colour an element is painted on: its own background composited
+ * over each ancestor's until an opaque one is reached.
+ */
+function paintedBackground(element: Element): string {
+  const layers: string[] = []
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    const background = getComputedStyle(node).backgroundColor
+    layers.push(background)
+    if (resolveColor(background).a === 1) {
+      const [base, ...tints] = layers.reverse()
+      let painted = resolveColor(base!)
+      for (const tint of tints) painted = { ...compositeOver(resolveColor(tint), painted), a: 1 }
+      return `rgb(${painted.r} ${painted.g} ${painted.b})`
+    }
+  }
+  throw new Error('No opaque background behind the element.')
 }
 
 function getSrOnlyName(canvasElement: HTMLElement): HTMLSpanElement {
@@ -111,7 +131,7 @@ export const NonTextContrast: Story = {
         story: wcagStoryMeta({
           criteria: '1.4.11',
           why: 'The Logo is essential non-text content. Its visual form must meet a 3:1 contrast ratio against the surface behind it so users with low vision can perceive it.',
-          how: 'Use a contrast checker against each sanctioned pairing below. The full-colour mark must hit 3:1 against the light surfaces; the reversed mark must hit 3:1 against the brand band. Report any cell that falls below 3:1.',
+          how: 'The play() measures the wordmark of each sanctioned pairing below against the tile it sits on: the full-colour mark against the light surfaces, the reversed mark against the brand band, each at 3:1 or better. The (dark) story repeats it in dark mode, where both marks turn white.',
           caveat:
             'Contrast for multi-colour marks is measured against the darkest stroke or shape that carries identity-bearing detail. For the NSW waratah this is the blue wordmark on light surfaces and the white wordmark on the brand band.',
         }),
@@ -138,6 +158,26 @@ export const NonTextContrast: Story = {
       </div>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const svgs = canvasElement.querySelectorAll('svg')
+    await expect(svgs).toHaveLength(3)
+    for (const svg of svgs) {
+      // The first path of the full lockup is the wordmark — the identity-bearing
+      // detail the caveat names.
+      const wordmark = svg.querySelector('path')!
+      const tile = svg.parentElement!
+      expectContrast(getComputedStyle(wordmark).fill, paintedBackground(tile), {
+        minimum: 3,
+        label: `Wordmark, ${tile.querySelector('p')?.textContent ?? 'tile'}`,
+      })
+    }
+  },
+}
+
+export const NonTextContrastDark: Story = {
+  ...NonTextContrast,
+  name: 'Non-text Contrast — 1.4.11 (dark)',
+  globals: { theme: 'dark' },
 }
 
 export const UseOfColour: Story = {
@@ -149,7 +189,7 @@ export const UseOfColour: Story = {
         story: wcagStoryMeta({
           criteria: '1.4.1',
           why: 'The Logo must not rely on colour alone to convey the NSW Government identity. The mark must remain recognisable to users with monochromatic vision and to users viewing the page in forced-colours mode.',
-          how: 'Compare the full-colour and reversed renderings — the silhouette of the waratah and the wordmark shape must remain identifiable in every treatment. The accessible name "NSW Government" reinforces identity for users who cannot perceive the mark visually at all.',
+          how: 'Compare the full-colour and reversed renderings — the silhouette of the waratah and the wordmark shape must remain identifiable in every treatment. The play() asserts both draw exactly the same geometry, path for path, so only the fills differ, and that both carry the accessible name "NSW Government".',
           caveat:
             'Forced-colours mode (e.g. Windows High Contrast) may replace the SVG fills entirely. The sr-only accessible name guarantees the mark continues to communicate its identity even when no fill colour is rendered.',
         }),
@@ -178,4 +218,13 @@ export const UseOfColour: Story = {
       </p>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const [full, reversed] = canvasElement.querySelectorAll('svg')
+    const shapes = (svg: SVGSVGElement) =>
+      [...svg.querySelectorAll('path')].map((path) => path.getAttribute('d'))
+    await expect(shapes(full!)).toEqual(shapes(reversed!))
+    for (const name of canvasElement.querySelectorAll('span.sr-only')) {
+      await expect(name).toHaveTextContent('NSW Government')
+    }
+  },
 }

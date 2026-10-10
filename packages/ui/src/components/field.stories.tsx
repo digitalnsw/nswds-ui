@@ -1,8 +1,12 @@
 /**
- * Field — the docs page, Default, Playground and one story per docs section.
+ * Field — the docs page, Default and Playground.
  *
  *   Components/Field                → this file
+ *   Components/Field/Features       → field.features.stories.tsx
  *   Components/Field/Accessibility  → field.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -37,9 +41,39 @@ import { Switch } from './switch.js'
 const orientations = ['vertical', 'horizontal', 'responsive'] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          A <code>FieldLabel</code>, the control and a <code>FieldDescription</code>, stacked with
+          the form&apos;s standard spacing.
+        </>
+      }
+    >
+      <Example
+        code={`<Field>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
+  <Input id="email" type="email" placeholder="you@example.com" />
+  <FieldDescription>We'll never share your email.</FieldDescription>
+</Field>`}
+      >
+        <div className='w-full max-w-sm'>
+          <Field>
+            <FieldLabel htmlFor='field-docs-default'>Email</FieldLabel>
+            <Input id='field-docs-default' type='email' placeholder='you@example.com' />
+            <FieldDescription>We&apos;ll never share your email.</FieldDescription>
+          </Field>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -84,7 +118,7 @@ function StatesSection() {
   )
 }
 
-function ErrorsSection() {
+export function ErrorsSection() {
   return (
     <ExampleSection
       title='Errors'
@@ -129,61 +163,82 @@ function ErrorsSection() {
   )
 }
 
-function OrientationSection() {
+export function OrientationsSection() {
   return (
     <ExampleSection
-      title='Orientation'
+      title='Orientations'
       description={
         <>
           <code>vertical</code> stacks the label over the control, for text fields.{' '}
           <code>horizontal</code> puts them on one line, for a checkbox or switch.{' '}
           <code>responsive</code> stacks on narrow containers and goes side by side from the{' '}
-          <code>@md</code> container width — it needs a <code>FieldGroup</code> around it.
+          <code>@md</code> container width of the <code>FieldGroup</code> around it, so put one
+          around it.
         </>
       }
     >
-      <Example layout='stack' code={`<Field orientation="vertical">…</Field>`}>
-        <ExampleCell label='vertical'>
-          <div className='w-72'>
-            <Field orientation='vertical'>
-              <FieldLabel>Full name</FieldLabel>
-              <Input autoComplete='name' />
-            </Field>
-          </div>
-        </ExampleCell>
-      </Example>
       <Example layout='stack' code={`<Field orientation="horizontal">…</Field>`}>
-        <ExampleCell label='horizontal'>
-          <Field orientation='horizontal' className='gap-4'>
-            <Checkbox />
-            <FieldContent className='pt-1'>
-              <FieldLabel className='font-normal'>Email me about my application</FieldLabel>
-              <FieldDescription>Updates are sent when your status changes.</FieldDescription>
-            </FieldContent>
-          </Field>
-        </ExampleCell>
+        <div className='grid w-full gap-8'>
+          {orientations.map((orientation) => (
+            <div key={orientation} className='grid gap-3'>
+              <p className='text-base font-semibold'>{orientation}</p>
+              <Field orientation={orientation}>
+                <FieldLabel htmlFor={`field-docs-${orientation}`}>Email</FieldLabel>
+                <Input
+                  id={`field-docs-${orientation}`}
+                  type='email'
+                  placeholder='you@example.com'
+                />
+                <FieldDescription>We&apos;ll never share your email.</FieldDescription>
+              </Field>
+            </div>
+          ))}
+        </div>
       </Example>
       <Example
-        layout='fill'
-        code={`<FieldGroup>
+        layout='stack'
+        code={`<Field orientation="horizontal" className="gap-4">
+  <Checkbox />
+  <FieldContent className="pt-1">
+    <FieldLabel className="font-normal">Email me about my application</FieldLabel>
+    <FieldDescription>Updates are sent when your status changes.</FieldDescription>
+  </FieldContent>
+</Field>
+
+<FieldGroup>
   <Field orientation="responsive">…</Field>
 </FieldGroup>`}
       >
-        <FieldGroup className='max-w-2xl'>
-          <Field orientation='responsive'>
-            <FieldContent>
-              <FieldLabel>Business name</FieldLabel>
-              <FieldDescription>As shown on your ABN registration.</FieldDescription>
-            </FieldContent>
-            <Input autoComplete='organization' />
-          </Field>
-        </FieldGroup>
+        <div className='grid w-full gap-8'>
+          <div className='grid gap-3'>
+            <p className='text-base font-semibold'>horizontal, with a checkbox</p>
+            <Field orientation='horizontal' className='gap-4'>
+              <Checkbox />
+              <FieldContent className='pt-1'>
+                <FieldLabel className='font-normal'>Email me about my application</FieldLabel>
+                <FieldDescription>Updates are sent when your status changes.</FieldDescription>
+              </FieldContent>
+            </Field>
+          </div>
+          <div className='grid gap-3'>
+            <p className='text-base font-semibold'>responsive, inside a FieldGroup</p>
+            <FieldGroup className='max-w-2xl'>
+              <Field orientation='responsive'>
+                <FieldContent>
+                  <FieldLabel>Business name</FieldLabel>
+                  <FieldDescription>As shown on your ABN registration.</FieldDescription>
+                </FieldContent>
+                <Input autoComplete='organization' />
+              </Field>
+            </FieldGroup>
+          </div>
+        </div>
       </Example>
     </ExampleSection>
   )
 }
 
-function GroupingSection() {
+export function GroupingSection() {
   return (
     <ExampleSection
       title='Grouping'
@@ -234,7 +289,7 @@ function GroupingSection() {
   )
 }
 
-function OptionsSection() {
+export function OptionsSection() {
   return (
     <ExampleSection
       title='Options'
@@ -280,13 +335,33 @@ function OptionsSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='One step of an application: a legend for the step, text fields stacked, and a horizontal Field for the setting at the end.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<FieldSet>
+  <FieldLegend>About you</FieldLegend>
+  <FieldGroup>
+    <Field>
+      <FieldLabel>Full name</FieldLabel>
+      <Input autoComplete="name" />
+      <FieldDescription>As it appears on your photo ID.</FieldDescription>
+    </Field>
+    …
+    <Field orientation="horizontal" className="justify-between gap-6">
+      <FieldContent>
+        <FieldLabel>Text me reminders</FieldLabel>
+        <FieldDescription>Two days before your appointment.</FieldDescription>
+      </FieldContent>
+      <Switch defaultChecked />
+    </Field>
+  </FieldGroup>
+</FieldSet>`}
+      >
         <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
           <FieldSet>
             <FieldLegend>About you</FieldLegend>
@@ -340,10 +415,13 @@ function FieldDocs() {
       registry='field'
       summary={
         <>
-          Field puts a form control together with its label, hint and error. It wraps Base UI&apos;s
-          Field, so the label is associated with the control and the hint and error are announced
-          with it — no <code>id</code>, <code>htmlFor</code> or <code>aria-describedby</code> to
-          keep in step. Its companions group fields into sets and sections.
+          Field is a composition wrapper that groups a form control with its label, helper
+          description, and error message. It standardises spacing and orientation so every input in
+          a form shares a consistent vertical rhythm and label-to-control relationship. It wraps
+          Base UI&apos;s Field, so the label is associated with the control and the hint and error
+          are announced with it — no <code>id</code>, <code>htmlFor</code> or{' '}
+          <code>aria-describedby</code> to keep in step. Its companions group fields into sets and
+          sections.
         </>
       }
     >
@@ -359,9 +437,10 @@ function FieldDocs() {
           'Naming a control that sits outside any form layout — Label alone is enough.',
         ]}
       />
+      <DefaultSection />
+      <OrientationsSection />
       <StatesSection />
       <ErrorsSection />
-      <OrientationSection />
       <GroupingSection />
       <OptionsSection />
       <InContextSection />
@@ -376,6 +455,7 @@ const meta = {
   title: 'Components/Field',
   component: Field,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -441,15 +521,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Errors: Story = { name: 'Errors', render: () => <ErrorsSection /> }
-
-export const Orientation: Story = { name: 'Orientation', render: () => <OrientationSection /> }
-
-export const Grouping: Story = { name: 'Grouping', render: () => <GroupingSection /> }
-
-export const Options: Story = { name: 'Options', render: () => <OptionsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,5 +1,5 @@
 /**
- * Button — Tests
+ * Button — Features
  *
  * Theme/variant matrices, size scale, icon sizing, states.
  *
@@ -17,20 +17,12 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type * as React from 'react'
-import { expect, fn } from 'storybook/test'
+import type { ReactNode } from 'react'
+import { expect } from 'storybook/test'
 
-import { IconAdd, IconArrowForward, IconEast, IconSearch } from '../icons/index.js'
+import { IconAdd, IconEast, IconSearch } from '../icons/index.js'
 import { cn } from '../lib/utils.js'
 import { Button, ButtonLink, buttonVariants } from './button.js'
-import { LinkProvider } from './link.js'
-import {
-  bodyClasses,
-  docsTemplate,
-  lowContrastSet,
-  ThemeSurface,
-  titleClasses,
-} from './story-helpers.js'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -41,6 +33,9 @@ const semanticColors = ['danger', 'success', 'warning'] as const
 const colors = [...themeColors, ...semanticColors] as const
 
 type ColorKey = (typeof colors)[number]
+
+const lowContrastColors = ['white', 'secondary'] as const
+const lowContrastSet = new Set<ColorKey>(lowContrastColors)
 
 const forcedFocusClasses = 'outline outline-2 outline-offset-2 outline-(--btn-bg)'
 
@@ -53,9 +48,8 @@ const cellClasses = (variant: (typeof variants)[number]) =>
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
 const meta = {
-  title: 'Components/Button/Tests',
+  title: 'Components/Button/Features',
   component: Button,
-  tags: ['!dev', '!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -69,6 +63,50 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const docsTemplate = ({
+  what,
+  why,
+  how,
+  caveat,
+}: {
+  what: string
+  why: string
+  how: string
+  caveat: string
+}) => `${what}\n\nWhy it matters: ${why}\n\nHow to test: ${how}\n\nCaveats: ${caveat}`
+
+function needsGreySurface(color: ColorKey): boolean {
+  return lowContrastSet.has(color)
+}
+
+function surfaceClasses(color: ColorKey): string {
+  return needsGreySurface(color)
+    ? 'rounded-sm border border-grey-700 bg-grey-800 p-4'
+    : 'rounded-sm border border-border bg-background p-4'
+}
+
+function titleClasses(color: ColorKey): string {
+  return needsGreySurface(color) ? 'text-grey-50' : 'text-foreground'
+}
+
+function bodyClasses(color: ColorKey): string {
+  return needsGreySurface(color) ? 'text-grey-200' : 'text-muted-foreground'
+}
+
+function ThemeSurface({
+  color,
+  children,
+  className,
+}: {
+  color: ColorKey
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div className={`${surfaceClasses(color)}${className ? ` ${className}` : ''}`}>{children}</div>
+  )
+}
 
 function getButton(canvasElement: HTMLElement, name: string) {
   const button = Array.from(canvasElement.querySelectorAll('button')).find(
@@ -116,7 +154,7 @@ function ByVariantMatrix({ rowColors }: { rowColors: readonly ColorKey[] }) {
 }
 
 export const ByVariantTheme: Story = {
-  name: 'By variant — theme',
+  name: 'By Variant - Theme',
   parameters: {
     docs: {
       description: {
@@ -134,7 +172,7 @@ export const ByVariantTheme: Story = {
 }
 
 export const ByVariantSemantic: Story = {
-  name: 'By variant — semantic',
+  name: 'By Variant - Semantic',
   parameters: {
     docs: {
       description: {
@@ -184,9 +222,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                   gridTemplateColumns: `9rem repeat(${standardCols}, minmax(0, 1fr))`,
                 }}
               >
-                <span className='text-base font-semibold text-foreground capitalize'>
-                  {variant}
-                </span>
+                <span className='text-base font-semibold text-foreground capitalize'>{variant}</span>
                 {standard.map((color) => (
                   <Button
                     key={`variant-standard-${variant}-${color}`}
@@ -229,9 +265,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
                     gridTemplateColumns: `9rem repeat(${lowCols}, minmax(0, 1fr))`,
                   }}
                 >
-                  <span className='text-base font-semibold text-grey-100 capitalize'>
-                    {variant}
-                  </span>
+                  <span className='text-base font-semibold text-grey-100 capitalize'>{variant}</span>
                   {lowContrast.map((color) => (
                     <Button
                       key={`variant-low-${variant}-${color}`}
@@ -253,7 +287,7 @@ function ByColourMatrix({ groupColors }: { groupColors: readonly ColorKey[] }) {
 }
 
 export const ByColourTheme: Story = {
-  name: 'By colour — theme',
+  name: 'By Colour - Theme',
   parameters: {
     docs: {
       description: {
@@ -271,7 +305,7 @@ export const ByColourTheme: Story = {
 }
 
 export const ByColourSemantic: Story = {
-  name: 'By colour — semantic',
+  name: 'By Colour - Semantic',
   parameters: {
     docs: {
       description: {
@@ -380,7 +414,7 @@ const iconOnlyGlyphSizes: Record<(typeof scaleSteps)[number], number> = {
 const borderedVariants = variants.filter((variant) => variant !== 'link')
 
 export const IconOnly: Story = {
-  name: 'Icon only',
+  name: 'Icon Only',
   parameters: {
     docs: {
       description: {
@@ -467,9 +501,7 @@ export const IconOnly: Story = {
         data-row='variants'
         className='flex flex-wrap items-center gap-3 rounded-sm border border-border p-3'
       >
-        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>
-          variants
-        </span>
+        <span className='w-16 shrink-0 text-base font-semibold text-muted-foreground'>variants</span>
         {borderedVariants.map((variant) => (
           <Button key={`variant-height-${variant}`} data-probe={variant} variant={variant}>
             {variant}
@@ -559,7 +591,7 @@ export const IconOnly: Story = {
 // ─── Icon composition ─────────────────────────────────────────────────────────
 
 export const WithIcon: Story = {
-  name: 'With icon',
+  name: 'With Icon',
   parameters: {
     docs: {
       description: {
@@ -867,176 +899,5 @@ export const Dark: Story = {
         await expect(inkOf(cell)).not.toBe(seven)
       }
     }
-  },
-}
-
-// ─── Icon slots ───────────────────────────────────────────────────────────────
-
-export const IconSlotForms: Story = {
-  name: 'Icon slot forms',
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'The icon slots take the component (`leadingVisual={IconAdd}`) or an element (`leadingVisual={<IconAdd />}`). Both render the same markup; the element form is the one a React Server Component must use, because a bare icon function cannot cross the RSC boundary into this client component.',
-      },
-    },
-  },
-  render: () => (
-    <div className='flex gap-4'>
-      <Button leadingVisual={IconAdd} trailingVisual={IconArrowForward}>
-        Component form
-      </Button>
-      <Button leadingVisual={<IconAdd />} trailingVisual={<IconArrowForward />}>
-        Element form
-      </Button>
-      {/* A consumer-supplied mark with no baked-in data-slot — the button must
-          stamp one on, or it loses the icon sizing and colour rules. */}
-      <Button leadingVisual={<svg viewBox='0 0 24 24' aria-hidden />}>Bare svg</Button>
-      {/* Forwarding an optional prop that happens to be undefined is idiomatic
-          React and must read as "not specified", not as "override with nothing"
-          — otherwise the stamp is erased and the icon silently loses its sizing
-          and colour rules. */}
-      <Button leadingVisual={<IconAdd data-slot={undefined} />}>Undefined slot</Button>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const iconsIn = (name: string) =>
-      Array.from(getButton(canvasElement, name).querySelectorAll('svg[data-slot="icon"]'))
-
-    const componentForm = iconsIn('Component form')
-    const elementForm = iconsIn('Element form')
-
-    if (componentForm.length !== 2) {
-      throw new Error(`Component form: expected 2 icons, got ${componentForm.length}.`)
-    }
-    if (elementForm.length !== 2) {
-      throw new Error(`Element form: expected 2 icons, got ${elementForm.length}.`)
-    }
-
-    // Same slot, same order, same paths — the two forms are interchangeable.
-    componentForm.forEach((icon, i) => {
-      if (icon.innerHTML !== elementForm[i]!.innerHTML) {
-        throw new Error(`Icon ${i} differs between the component and element forms.`)
-      }
-    })
-
-    if (iconsIn('Bare svg').length !== 1) {
-      throw new Error('An element without its own data-slot should still be stamped with one.')
-    }
-
-    // React 19's cloneElement copies every config key over the element's props
-    // with no undefined-skip, so a `data-slot={undefined}` passed straight into
-    // the clone config erases the stamp instead of deferring to it.
-    if (iconsIn('Undefined slot').length !== 1) {
-      throw new Error('data-slot={undefined} should count as unset and still be stamped.')
-    }
-  },
-}
-
-// ─── ButtonLink ───────────────────────────────────────────────────────────────
-// The behaviour unique to the anchor rendering path: anchors have no
-// `disabled` attribute, so disabled and loading are conveyed with
-// `aria-disabled` and a click guard; and LinkProvider must be honoured.
-
-function getAnchor(canvasElement: HTMLElement) {
-  const anchor = canvasElement.querySelector('a')
-  if (!anchor) throw new Error('ButtonLink did not render an <a> element.')
-  return anchor
-}
-
-export const LinkDefault: Story = {
-  name: 'ButtonLink default',
-  render: () => <ButtonLink href='#'>View documentation</ButtonLink>,
-  play: async ({ canvasElement }) => {
-    const anchor = getAnchor(canvasElement)
-    await expect(anchor).toHaveAttribute('href', '#')
-    // Focusable and exposed as a link, not a button.
-    await expect(anchor).not.toHaveAttribute('role')
-    await expect(anchor.tabIndex).toBe(0)
-  },
-}
-
-export const LinkVariants: Story = {
-  name: 'ButtonLink variants',
-  render: () => (
-    <div className='flex flex-wrap items-center gap-4'>
-      {variants.map((variant) => (
-        <ButtonLink key={variant} href='#' variant={variant} trailingVisual={IconArrowForward}>
-          {variant}
-        </ButtonLink>
-      ))}
-    </div>
-  ),
-}
-
-export const LinkDisabled: Story = {
-  name: 'ButtonLink disabled',
-  render: () => (
-    <ButtonLink href='#' disabled onClick={fn()}>
-      View documentation
-    </ButtonLink>
-  ),
-  play: async ({ canvasElement }) => {
-    const anchor = getAnchor(canvasElement)
-
-    // Anchors can't be disabled natively — assert the full a11y contract.
-    await expect(anchor).toHaveAttribute('aria-disabled', 'true')
-    await expect(anchor).toHaveAttribute('data-disabled')
-    // Removed from the tab order so keyboard users can't reach a dead link.
-    await expect(anchor.tabIndex).toBe(-1)
-
-    // Pointer interaction is blocked outright by `pointer-events: none` —
-    // userEvent.click would (correctly) refuse, which is itself the
-    // assertion for mouse users.
-    await expect(getComputedStyle(anchor).pointerEvents).toBe('none')
-
-    // Programmatic/AT-initiated activation still reaches the element, so the
-    // click guard must swallow it: preventDefault stops navigation. (The
-    // consumer's own onClick firing on aria-disabled elements matches native
-    // anchor behaviour — the guard's job is the navigation.)
-    const hashBefore = window.location.hash
-    anchor.click()
-    await expect(window.location.hash).toBe(hashBefore)
-  },
-}
-
-export const LinkLoading: Story = {
-  name: 'ButtonLink loading',
-  render: () => (
-    <ButtonLink href='#' loading>
-      View documentation
-    </ButtonLink>
-  ),
-  play: async ({ canvasElement }) => {
-    const anchor = getAnchor(canvasElement)
-
-    await expect(anchor).toHaveAttribute('aria-busy', 'true')
-    // Loading implies the disabled contract too.
-    await expect(anchor).toHaveAttribute('aria-disabled', 'true')
-
-    // Spinner is decorative here: hidden from AT with no competing label.
-    const spinner = anchor.querySelector('svg')
-    if (!spinner) throw new Error('Loading ButtonLink did not render a spinner.')
-    await expect(anchor.textContent).not.toContain('Loading')
-  },
-}
-
-export const LinkWithLinkProvider: Story = {
-  name: 'ButtonLink with LinkProvider',
-  render: () => (
-    <LinkProvider
-      component={(props: React.ComponentPropsWithoutRef<'a'>) => (
-        <a data-framework-link='true' {...props} />
-      )}
-    >
-      <ButtonLink href='#'>Provider-routed link</ButtonLink>
-    </LinkProvider>
-  ),
-  play: async ({ canvasElement }) => {
-    const anchor = getAnchor(canvasElement)
-    // The injected framework component must be the rendered element.
-    await expect(anchor).toHaveAttribute('data-framework-link', 'true')
-    await expect(anchor).toHaveAttribute('href', '#')
   },
 }

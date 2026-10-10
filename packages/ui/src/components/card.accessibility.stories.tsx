@@ -20,6 +20,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, userEvent, within } from 'storybook/test'
 
 import { Button } from './button.js'
 import {
@@ -31,7 +32,13 @@ import {
   CardHeader,
   CardTitle,
 } from './card.js'
-import { bodyClasses, ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
+import {
+  bodyClasses,
+  expectContrast,
+  ThemeSurface,
+  titleClasses,
+  wcagStoryMeta,
+} from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -146,6 +153,24 @@ export const ContrastMinimum: Story = {
       ))}
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const cards = canvasElement.querySelectorAll<HTMLElement>('[data-slot="card"]')
+    await expect(cards).toHaveLength(2)
+    for (const card of cards) {
+      // Measured against the card's own surface, which is opaque whatever it sits on.
+      const surface = getComputedStyle(card).backgroundColor
+      for (const slot of ['card-title', 'card-description', 'card-content']) {
+        const part = card.querySelector<HTMLElement>(`[data-slot="${slot}"]`)!
+        expectContrast(getComputedStyle(part).color, surface, { label: slot })
+      }
+    }
+  },
+}
+
+export const ContrastMinimumDark: Story = {
+  ...ContrastMinimum,
+  name: 'Contrast (Minimum) — 1.4.3 (dark)',
+  globals: { theme: 'dark' },
 }
 
 export const NonTextContrast: Story = {
@@ -236,4 +261,26 @@ export const FocusVisible: Story = {
       </CardFooter>
     </Card>
   ),
+  play: async ({ canvasElement }) => {
+    const card = getCard(canvasElement)
+    const bounds = card.getBoundingClientRect()
+    for (const name of ['Edit', 'Primary action', 'Learn more']) {
+      await userEvent.tab()
+      const control = within(card).getByRole('button', { name })
+      await expect(control).toHaveFocus()
+
+      // 2.4.7: a ring is drawn.
+      const style = getComputedStyle(control)
+      await expect(style.outlineStyle).not.toBe('none')
+      const ring = parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset)
+      await expect(ring).toBeGreaterThan(0)
+
+      // 2.4.11: the whole ring sits inside the card, which clips its overflow.
+      const box = control.getBoundingClientRect()
+      await expect(box.left - ring).toBeGreaterThanOrEqual(bounds.left)
+      await expect(box.right + ring).toBeLessThanOrEqual(bounds.right)
+      await expect(box.top - ring).toBeGreaterThanOrEqual(bounds.top)
+      await expect(box.bottom + ring).toBeLessThanOrEqual(bounds.bottom)
+    }
+  },
 }

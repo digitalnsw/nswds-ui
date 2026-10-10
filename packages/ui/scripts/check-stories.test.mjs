@@ -6,9 +6,10 @@
  * so a mistake in it is invisible until the catalogue has drifted again. A
  * gate that stops gating exits 0, which reads exactly like success.
  *
- * The passing cases matter as much as the failing ones: a gate that fails on
- * the shapes the real files use (a `satisfies` meta, a docs page in a named
- * function, proper nouns in a story name) gets switched off.
+ * The passing cases matter as much as the failing ones. The shape is Button's,
+ * so Button's own files — a hand-written page, Title Case story names, no
+ * `!autodocs` on Features or Accessibility — must pass; a gate that fails on
+ * its own reference gets switched off.
  *
  * Run: npm run test:scripts
  */
@@ -16,7 +17,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { checkStoryFile, isSentenceCase, kindOf } from './check-stories.mjs'
+import { checkStoryFile, kindOf, missingSiblings } from './check-stories.mjs'
 
 const messages = (source, path = 'components/widget.stories.tsx', options) =>
   checkStoryFile(source, path, options).map((failure) => failure.message)
@@ -27,8 +28,7 @@ const main = ({
   docs = 'docs: { page: WidgetDocs },',
   layout = "layout: 'padded',",
   stories = `export const Default: Story = {}
-export const Playground: Story = {}
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }`,
+export const Playground: Story = {}`,
   body = '',
 } = {}) => `
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -58,20 +58,44 @@ test('passes a main file that follows the standard', () => {
   assert.deepEqual(messages(main()), [])
 })
 
-test('passes a tests file and an accessibility file', () => {
-  const tests = `const meta = { title: 'Components/Widget/Tests', tags: ['!dev', '!autodocs'] }
-export default meta
-export const CssCheck = { play: async () => {} }`
-  assert.deepEqual(messages(tests, 'components/widget.tests.stories.tsx'), [])
+test('passes Default and Playground in any order, beside other stories', () => {
+  const stories = `export const Default = {}
+export const IconSlotForms = { name: 'Icon Slot Forms' }
+export const Playground = {}`
+  assert.deepEqual(messages(main({ stories })), [])
+})
 
-  const a11y = `const meta = { title: 'Components/Widget/Accessibility', tags: ['!autodocs'] }
+test('passes Button, the reference, with a hand-written page', () => {
+  const button = `const meta = {
+  title: 'Components/Button',
+  tags: ['autodocs'],
+  parameters: { docs: { page: () => <div /> } },
+}
+export default meta
+export const Default = {}
+export const Playground = {}`
+  assert.deepEqual(messages(button, 'components/button.stories.tsx'), [])
+})
+
+test('passes features, accessibility and tests files', () => {
+  const features = `const meta = { title: 'Components/Widget/Features' }
+export default meta
+export const ByVariant = { name: 'By Variant - Theme' }`
+  assert.deepEqual(messages(features, 'components/widget.features.stories.tsx'), [])
+
+  const a11y = `const meta = { title: 'Components/Widget/Accessibility' }
 export default meta
 export const Focus = { name: 'Focus Visible — 2.4.7 / 2.4.11' }
 export const Contrast = { name: 'Contrast (Minimum) — 1.4.3 (dark)' }`
   assert.deepEqual(messages(a11y, 'components/widget.accessibility.stories.tsx'), [])
+
+  const tests = `const meta = { title: 'Components/Widget/Tests', tags: ['!dev', '!autodocs'] }
+export default meta
+export const CssCheck = { play: async () => {} }`
+  assert.deepEqual(messages(tests, 'components/widget.tests.stories.tsx'), [])
 })
 
-test('passes a meta exported directly, and a pattern under Patterns/', () => {
+test('passes a meta exported directly, a pattern, and an EXTRAS file', () => {
   const direct = main().replace(
     /const meta = ([\s\S]*?) satisfies Meta\nexport default meta/,
     'export default $1',
@@ -81,17 +105,13 @@ test('passes a meta exported directly, and a pattern under Patterns/', () => {
     messages(main({ title: 'Patterns/LoginForm' }), 'patterns/login-form.stories.tsx'),
     [],
   )
+  const link = `const meta = { title: 'Components/Button/ButtonLink' }
+export default meta
+export const Default = {}`
+  assert.deepEqual(messages(link, 'components/button-link.stories.tsx'), [])
 })
 
-test('passes proper nouns, acronyms and code in a sentence-case name', () => {
-  const nouns = new Set(['Header'])
-  for (const name of ['Under Header dark', 'CSS check', 'In a Field', 'Right to left (RTL)']) {
-    assert.ok(isSentenceCase(name, new Set([...nouns, 'Field'])), `${name} should be sentence case`)
-  }
-  assert.ok(isSentenceCase('With ButtonLink and iconOnly'))
-})
-
-test('treats a hooks main file as needing only title, names and the floor', () => {
+test('treats a hooks main file as needing only its title and the floor', () => {
   const hook = `const meta = { title: 'Hooks/useThing' }
 export default meta
 export const Basic = { name: 'Basic use' }`
@@ -101,8 +121,8 @@ export const Basic = { name: 'Basic use' }`
 // ─── Shapes that must fail ──────────────────────────────────────────────────
 
 test('fails a story kind the standard does not have', () => {
-  assert.equal(kindOf('widget.features.stories.tsx'), null)
-  assert.match(messages(main(), 'components/widget.features.stories.tsx')[0], /not a story kind/)
+  assert.equal(kindOf('widget.examples.stories.tsx'), null)
+  assert.match(messages(main(), 'components/widget.examples.stories.tsx')[0], /not a story kind/)
 })
 
 test('fails a title that is not Components/<ExportName>', () => {
@@ -112,79 +132,87 @@ test('fails a title that is not Components/<ExportName>', () => {
     messages(main({ title: 'Components/LoginForm' }), 'patterns/login-form.stories.tsx')[0],
     /should be "Patterns\//,
   )
+  const link = `const meta = { title: 'Components/ButtonLink' }
+export default meta`
+  assert.match(
+    messages(link, 'components/button-link.stories.tsx')[0],
+    /Components\/Button\/ButtonLink/,
+  )
 })
 
-test('fails a main file without Default then Playground first', () => {
-  const swapped = main({
-    stories: `export const Playground: Story = {}
-export const Default: Story = {}`,
-  })
-  assert.ok(messages(swapped).some((m) => /Default then Playground/.test(m)))
-})
-
-test('fails an example story with no name, or one in title case', () => {
-  const unnamed = main({
-    stories: `export const Default = {}
-export const Playground = {}
-export const WithIcons = { render: () => null }`,
-  })
-  assert.ok(messages(unnamed).some((m) => /needs a sentence-case `name`/.test(m)))
-
-  const titleCase = main({
-    stories: `export const Default = {}
-export const Playground = {}
-export const WithIcons = { name: 'With Icons' }`,
-  })
-  assert.ok(messages(titleCase).some((m) => /not sentence case/.test(m)))
+test('fails a main file missing Default or Playground', () => {
+  const failures = messages(main({ stories: 'export const Default: Story = {}' }))
+  assert.ok(failures.some((m) => /export a Playground story/.test(m)))
 })
 
 test('fails a main file on the generated autodocs page', () => {
-  const failures = messages(main({ docs: '' }))
-  assert.ok(failures.some((m) => /docs\.page/.test(m)))
-  const untagged = messages(main({ tags: '[]' }))
-  assert.ok(untagged.some((m) => /'autodocs'/.test(m)))
+  assert.ok(messages(main({ docs: '' })).some((m) => /docs\.page/.test(m)))
+  assert.ok(messages(main({ tags: '[]' })).some((m) => /'autodocs'/.test(m)))
 })
 
-test('fails a docs page not built from the kit', () => {
+test('fails a docs page not built from the kit, unless it is the reference', () => {
   const source = main()
     .replace(/<DocsUsage[^>]*\/>/, '')
     .replace('<DocsApi />', '')
   const failures = messages(source)
   assert.ok(failures.some((m) => /<DocsUsage>/.test(m)))
   assert.ok(failures.some((m) => /<DocsApi>/.test(m)))
+  assert.deepEqual(
+    messages(
+      source.replace("'Components/Widget'", "'Components/Button'"),
+      'components/button.stories.tsx',
+    ),
+    [],
+  )
 })
 
-test('fails a tests file that shows in the sidebar, or sits under the wrong title', () => {
+test('fails a sibling file under the wrong title, or with no main file', () => {
+  const misfiled = `const meta = { title: 'Components/Widget' }
+export default meta`
+  assert.ok(
+    messages(misfiled, 'components/widget.features.stories.tsx').some((m) =>
+      /Components\/<Name>\/Features/.test(m),
+    ),
+  )
+  const orphan = `const meta = { title: 'Components/Widget/Accessibility' }
+export default meta`
+  assert.ok(
+    messages(orphan, 'components/widget.accessibility.stories.tsx', {
+      hasMain: () => false,
+    }).some((m) => /no widget\.stories\.tsx/.test(m)),
+  )
+})
+
+test('fails a tests file that shows in the sidebar', () => {
   const visible = `const meta = { title: 'Components/Widget/Tests', tags: ['!autodocs'] }
 export default meta`
   assert.ok(messages(visible, 'components/widget.tests.stories.tsx').some((m) => /'!dev'/.test(m)))
-
-  const misfiled = `const meta = { title: 'Components/Widget', tags: ['!dev', '!autodocs'] }
-export default meta`
-  assert.ok(
-    messages(misfiled, 'components/widget.tests.stories.tsx').some((m) =>
-      /Components\/<Name>\/Tests/.test(m),
-    ),
-  )
-})
-
-test('fails a tests file with no main file beside it', () => {
-  const tests = `const meta = { title: 'Components/Widget/Tests', tags: ['!dev', '!autodocs'] }
-export default meta`
-  assert.ok(
-    messages(tests, 'components/widget.tests.stories.tsx', { hasMain: () => false }).some((m) =>
-      /no widget\.stories\.tsx/.test(m),
-    ),
-  )
 })
 
 test('fails an accessibility story not named for its criterion', () => {
-  const a11y = `const meta = { title: 'Components/Widget/Accessibility', tags: ['!autodocs'] }
+  const a11y = `const meta = { title: 'Components/Widget/Accessibility' }
 export default meta
 export const Numbered = { name: '1.3.1 Info and Relationships' }
 export const Unnamed = {}`
   const failures = messages(a11y, 'components/widget.accessibility.stories.tsx')
   assert.equal(failures.filter((m) => /<WCAG title> — <criterion>/.test(m)).length, 2)
+})
+
+test('fails a component or pattern without Features and Accessibility files', () => {
+  const failures = missingSiblings('components', ['widget.tsx', 'widget.stories.tsx'])
+  assert.equal(failures.length, 2)
+  assert.ok(failures.some((m) => /widget\.features\.stories\.tsx/.test(m)))
+  assert.ok(failures.some((m) => /widget\.accessibility\.stories\.tsx/.test(m)))
+  assert.deepEqual(
+    missingSiblings('components', [
+      'widget.stories.tsx',
+      'widget.features.stories.tsx',
+      'widget.accessibility.stories.tsx',
+      'button-link.stories.tsx',
+    ]),
+    [],
+  )
+  assert.deepEqual(missingSiblings('hooks', ['use-thing.stories.tsx']), [])
 })
 
 test('fails text under the floor and a centred layout, wherever they are', () => {

@@ -2,12 +2,17 @@
  * Drawer — an edge-anchored panel that slides in from any side, built on Vaul.
  * Vaul adds touch-drag dismissal on top of an accessible dialog.
  *
- *   Components/Drawer        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Drawer/Tests  → drawer.tests.stories.tsx
+ *   Components/Drawer                → this file: Docs, Default, Playground
+ *   Components/Drawer/Features       → drawer.features.stories.tsx
+ *   Components/Drawer/Accessibility  → drawer.accessibility.stories.tsx
+ *   Components/Drawer/Tests          → drawer.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 
 import { Button } from './button.js'
@@ -34,9 +39,9 @@ import {
 const directions = ['bottom', 'top', 'right', 'left'] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function DirectionsSection() {
+export function DirectionsSection() {
   return (
     <ExampleSection
       title='Directions'
@@ -53,7 +58,7 @@ function DirectionsSection() {
           <ExampleCell key={direction} label={direction}>
             <Drawer direction={direction}>
               <DrawerTrigger asChild>
-                <Button variant='outline'>Open from the {direction}</Button>
+                <Button variant='outline'>From the {direction}</Button>
               </DrawerTrigger>
               <DrawerContent>
                 <DrawerHeader>
@@ -76,17 +81,155 @@ function DirectionsSection() {
   )
 }
 
-function InContextSection() {
+export function FooterActionsSection() {
   return (
     <ExampleSection
-      title='In context'
-      description='Quick actions for one item in a list, opened from the bottom of a phone screen. A drawer has no close button of its own, so always give it a DrawerClose — not every reader can drag.'
+      title='Footer actions'
+      description={
+        <>
+          <code>DrawerFooter</code> stacks its buttons full width, primary first, so each is an easy
+          thumb target. A drawer has no close button of its own — wrap at least one footer button in{' '}
+          <code>DrawerClose</code>, because not every reader can drag.
+        </>
+      }
     >
       <Example
         code={`<DrawerFooter>
-  <Button>Reschedule</Button>
+  <Button>Confirm</Button>
   <DrawerClose asChild>
     <Button variant="outline">Cancel</Button>
+  </DrawerClose>
+</DrawerFooter>`}
+      >
+        <ExampleCell label='one action'>
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant='outline'>Opening hours</Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Service NSW Parramatta</DrawerTitle>
+                <DrawerDescription>Open Monday to Friday, 8.30am to 5pm.</DrawerDescription>
+              </DrawerHeader>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button variant='outline'>Close</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        </ExampleCell>
+        <ExampleCell label='primary and cancel'>
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button variant='outline'>Share location</Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Share your location?</DrawerTitle>
+                <DrawerDescription>
+                  We use it once to list the service centres nearest to you.
+                </DrawerDescription>
+              </DrawerHeader>
+              <DrawerFooter>
+                <DrawerClose asChild>
+                  <Button>Share location</Button>
+                </DrawerClose>
+                <DrawerClose asChild>
+                  <Button variant='outline'>Not now</Button>
+                </DrawerClose>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+function ControlledExample() {
+  const [open, setOpen] = useState(false)
+  const [reminder, setReminder] = useState<string | null>(null)
+  const choose = (when: string) => {
+    setReminder(when)
+    setOpen(false)
+  }
+  return (
+    <div className='flex flex-col items-start gap-4'>
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerTrigger asChild>
+          <Button variant='outline'>Set a renewal reminder</Button>
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle>When should we remind you?</DrawerTitle>
+            <DrawerDescription>
+              Your registration for ABC12D is due on 14 November.
+            </DrawerDescription>
+          </DrawerHeader>
+          <DrawerFooter>
+            <Button onClick={() => choose('2 weeks before')}>2 weeks before</Button>
+            <Button variant='outline' onClick={() => choose('1 week before')}>
+              1 week before
+            </Button>
+            <DrawerClose asChild>
+              <Button variant='ghost'>Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+      <p className='text-muted-foreground' aria-live='polite'>
+        {reminder ? `We will remind you ${reminder}.` : 'No reminder set.'}
+      </p>
+    </div>
+  )
+}
+
+export function ControlledSection() {
+  return (
+    <ExampleSection
+      title='Controlled'
+      description={
+        <>
+          Pass <code>open</code> and <code>onOpenChange</code> to close the drawer from your own
+          code once a choice has been saved. Dragging, Escape and an outside click still close it
+          through <code>onOpenChange</code>.
+        </>
+      }
+    >
+      <Example
+        code={`const [open, setOpen] = useState(false)
+
+<Drawer open={open} onOpenChange={setOpen}>
+  …
+  <Button onClick={async () => {
+    await saveReminder()
+    setOpen(false)
+  }}>2 weeks before</Button>
+</Drawer>`}
+      >
+        <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Quick actions for one booking in a list, opened from the bottom of a phone screen. The destructive choice sits below the safe one, and Close is always there for readers who cannot drag.'
+    >
+      <Example
+        code={`<DrawerFooter>
+  <DrawerClose asChild>
+    <Button>Reschedule</Button>
+  </DrawerClose>
+  <DrawerClose asChild>
+    <Button variant="outline" color="danger">Cancel booking</Button>
+  </DrawerClose>
+  <DrawerClose asChild>
+    <Button variant="ghost">Close</Button>
   </DrawerClose>
 </DrawerFooter>`}
       >
@@ -163,6 +306,8 @@ function DrawerDocs() {
         ]}
       />
       <DirectionsSection />
+      <FooterActionsSection />
+      <ControlledSection />
       <InContextSection />
       <DocsApi description='Props of the Drawer root (Vaul). Try them live in the Playground story.' />
     </DocsPage>
@@ -175,6 +320,7 @@ const meta = {
   title: 'Components/Drawer',
   component: Drawer,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -262,7 +408,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Directions: Story = { name: 'Directions', render: () => <DirectionsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,8 +1,13 @@
 /**
- * TabNav — Docs, Default, Playground and one story per docs section.
+ * TabNav — Docs, Default and Playground.
  *
- *   Components/TabNav        → this file
- *   Components/TabNav/Tests  → tab-nav.tests.stories.tsx
+ *   Components/TabNav                → this file
+ *   Components/TabNav/Features       → tab-nav.features.stories.tsx
+ *   Components/TabNav/Accessibility  → tab-nav.accessibility.stories.tsx
+ *   Components/TabNav/Tests          → tab-nav.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -57,9 +62,9 @@ function ColourTabs({
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -73,6 +78,7 @@ function VariantsSection() {
     >
       <Example
         layout='stack'
+        className='gap-8'
         code={`<TabNav currentHref={pathname} border={false} aria-label="Colour">…</TabNav>`}
       >
         <ExampleCell label='border (default)'>
@@ -86,7 +92,7 @@ function VariantsSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -101,6 +107,7 @@ function StatesSection() {
     >
       <Example
         layout='stack'
+        className='gap-8'
         code={`<TabNav currentHref="/colour/brand" aria-label="Colour">
   <TabNavLink href="/colour/themes">Colour themes</TabNavLink>
   <TabNavLink href="/colour/brand">Brand palette</TabNavLink>
@@ -117,7 +124,7 @@ function StatesSection() {
   )
 }
 
-function CustomMatchingSection() {
+export function CustomMatchingSection() {
   return (
     <ExampleSection
       title='Custom matching'
@@ -157,7 +164,7 @@ function CustomMatchingSection() {
   )
 }
 
-function OverflowSection() {
+export function OverflowSection() {
   return (
     <ExampleSection
       title='Overflow'
@@ -180,7 +187,7 @@ function OverflowSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -258,6 +265,7 @@ const meta = {
   title: 'Components/TabNav',
   component: TabNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -379,16 +387,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const CustomMatching: Story = {
-  name: 'Custom matching',
-  render: () => <CustomMatchingSection />,
-}
-
-export const Overflow: Story = { name: 'Overflow', render: () => <OverflowSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

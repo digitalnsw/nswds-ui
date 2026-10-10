@@ -1,9 +1,13 @@
 /**
  * Slider — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/Slider        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Slider/Tests  → slider.tests.stories.tsx
+ *   Components/Slider               → this file: Docs, Default, Playground
+ *   Components/Slider/Features      → slider.features.stories.tsx
+ *   Components/Slider/Accessibility → slider.accessibility.stories.tsx
+ *   Components/Slider/Tests         → slider.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -22,9 +26,9 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -39,19 +43,19 @@ function StatesSection() {
         layout='grid'
         code={`<Field>
   <FieldLabel>Search radius</FieldLabel>
-  <Slider defaultValue={25} max={50} disabled />
+  <Slider defaultValue={[25]} max={50} disabled />
 </Field>`}
       >
         <ExampleCell label='default'>
           <Field className='w-64'>
             <FieldLabel>Search radius</FieldLabel>
-            <Slider defaultValue={25} max={50} />
+            <Slider defaultValue={[25]} max={50} />
           </Field>
         </ExampleCell>
         <ExampleCell label='disabled'>
           <Field className='w-64'>
             <FieldLabel>Search radius</FieldLabel>
-            <Slider defaultValue={25} max={50} disabled />
+            <Slider defaultValue={[25]} max={50} disabled />
           </Field>
         </ExampleCell>
       </Example>
@@ -59,7 +63,7 @@ function StatesSection() {
   )
 }
 
-function StepsSection() {
+export function StepsSection() {
   return (
     <ExampleSection
       title='Steps'
@@ -73,19 +77,19 @@ function StepsSection() {
     >
       <Example
         layout='grid'
-        code={`<Slider defaultValue={3} min={1} max={6} step={1} />
-<Slider defaultValue={20} min={5} max={50} step={5} />`}
+        code={`<Slider defaultValue={[3]} min={1} max={6} step={1} />
+<Slider defaultValue={[20]} min={5} max={50} step={5} />`}
       >
         <ExampleCell label='step={1}, 1–6'>
           <Field className='w-64'>
             <FieldLabel>Number of bedrooms</FieldLabel>
-            <Slider defaultValue={3} min={1} max={6} step={1} />
+            <Slider defaultValue={[3]} min={1} max={6} step={1} />
           </Field>
         </ExampleCell>
         <ExampleCell label='step={5}, 5–50'>
           <Field className='w-64'>
             <FieldLabel>Search radius (km)</FieldLabel>
-            <Slider defaultValue={20} min={5} max={50} step={5} />
+            <Slider defaultValue={[20]} min={5} max={50} step={5} />
           </Field>
         </ExampleCell>
       </Example>
@@ -93,7 +97,7 @@ function StepsSection() {
   )
 }
 
-function RangeSection() {
+export function RangeSection() {
   return (
     <ExampleSection
       title='Range'
@@ -128,6 +132,41 @@ function RangeSection() {
   )
 }
 
+export function OrientationSection() {
+  return (
+    <ExampleSection
+      title='Orientation'
+      description={
+        <>
+          <code>orientation=&quot;vertical&quot;</code> runs the track up the page, with the lowest
+          value at the bottom. Give the slider a height — it fills its container, with a 160px
+          minimum. Arrow keys work the same way in both orientations.
+        </>
+      }
+    >
+      <Example
+        code={`<Field className="h-48">
+  <FieldLabel>Volume</FieldLabel>
+  <Slider orientation="vertical" defaultValue={[40]} />
+</Field>`}
+      >
+        <ExampleCell label='horizontal (default)'>
+          <Field className='w-64'>
+            <FieldLabel>Volume</FieldLabel>
+            <Slider defaultValue={[40]} />
+          </Field>
+        </ExampleCell>
+        <ExampleCell label='vertical'>
+          <Field className='h-48 items-center'>
+            <FieldLabel>Volume</FieldLabel>
+            <Slider orientation='vertical' defaultValue={[40]} />
+          </Field>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
 const audFormat = new Intl.NumberFormat('en-AU', {
   style: 'currency',
   currency: 'AUD',
@@ -154,13 +193,23 @@ function RentFilter() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A filter on a rental search. The chosen values are written out beside the label, because the track alone never says exactly what is selected.'
     >
-      <Example>
+      <Example
+        code={`const [rent, setRent] = useState([350, 600])
+
+<Field>
+  <FieldLabel>Weekly rent</FieldLabel>
+  <FieldDescription>
+    {aud.format(rent[0])} to {aud.format(rent[1])} per week
+  </FieldDescription>
+  <Slider value={rent} onValueChange={setRent} min={100} max={1000} step={10} />
+</Field>`}
+      >
         <RentFilter />
       </Example>
     </ExampleSection>
@@ -179,7 +228,8 @@ function SliderDocs() {
         <>
           A slider picks a number, or a range, from a continuous scale by dragging a thumb along a
           track. It takes its name from the surrounding <code>Field</code> — wrap it in one with a{' '}
-          <code>FieldLabel</code>, exactly as you would an Input.
+          <code>FieldLabel</code>, exactly as you would an Input. Pass the value as an array, one
+          entry per thumb.
         </>
       }
     >
@@ -198,6 +248,7 @@ function SliderDocs() {
       <StatesSection />
       <StepsSection />
       <RangeSection />
+      <OrientationSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -210,13 +261,14 @@ const meta = {
   title: 'Components/Slider',
   component: Slider,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
     docs: { page: SliderDocs },
   },
   args: {
-    defaultValue: 56,
+    defaultValue: [56],
     min: 16,
     max: 140,
     step: 1,
@@ -225,13 +277,14 @@ const meta = {
   },
   argTypes: {
     defaultValue: {
-      control: 'number',
-      description: 'The starting value (uncontrolled). An array of two draws a range.',
+      control: 'object',
+      description:
+        'The starting value (uncontrolled), as an array with one entry per thumb — [56] for one, [350, 600] for a range.',
       table: { category: 'Behavior' },
     },
     value: {
-      control: 'number',
-      description: 'The value (controlled). An array of two draws a range.',
+      control: 'object',
+      description: 'The value (controlled), as an array with one entry per thumb.',
       table: { category: 'Behavior' },
     },
     min: {
@@ -344,11 +397,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Steps: Story = { name: 'Steps', render: () => <StepsSection /> }
-
-export const Range: Story = { name: 'Range', render: () => <RangeSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

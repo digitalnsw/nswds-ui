@@ -18,7 +18,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 
 import { Spinner } from './spinner.js'
-import { ThemeSurface, titleClasses, wcagStoryMeta } from './story-helpers.js'
+import {
+  compositeOver,
+  expectContrast,
+  resolveColor,
+  ThemeSurface,
+  titleClasses,
+  wcagStoryMeta,
+} from './story-helpers.js'
 
 // ─── Meta ─────────────────────────────────────────────────────────────────────
 
@@ -98,10 +105,10 @@ export const NonTextContrast: Story = {
       description: {
         story: wcagStoryMeta({
           criteria: '1.4.11',
-          why: 'The spinner is a graphical UI component conveying state. Both the moving arc (fill-primary-800, or fill-white for the white variant) and the static ring (text-grey-400, or text-white/30) must meet 3:1 contrast against the surrounding background, and the arc must be distinguishable from the ring.',
-          how: 'Use a colour-contrast checker on the rendered SVG against each surface below. Verify the moving arc is clearly distinguishable from the static ring and that both are visible against the surface colour.',
+          why: 'The spinner is a graphical object conveying state. The moving arc (fill-primary-800, or fill-white for the white variant) is the part a reader needs to see, so it must meet 3:1 against the surrounding background and stand out from the static ring (text-grey-400, or text-white/30) it travels over.',
+          how: 'Each size on the default background, and the white variant — the one made for them — on a dark surface. The play() measures every arc against its surface and against its track (flattened onto the surface), and requires 3:1 for both.',
           caveat:
-            'Contrast values depend on the active theme; check both light and dark modes. The grey-800 surface (secondary) below models how the spinner is expected to be used on branded dark panels.',
+            'The ring is a faint backdrop, not the indicator: on white it measures about 1.5:1 and is not held to 3:1. Pick the colour to match the surface — primary on light pages, white on the grey-800 and brand panels modelled here.',
         }),
       },
     },
@@ -122,13 +129,31 @@ export const NonTextContrast: Story = {
           On grey-800 surface
         </h4>
         <div className='flex flex-wrap items-end gap-6'>
-          <Spinner size='md' aria-label='Loading' />
-          <Spinner size='lg' aria-label='Loading' />
-          <Spinner size='xl' aria-label='Loading' />
+          <Spinner size='md' color='white' aria-label='Loading' />
+          <Spinner size='lg' color='white' aria-label='Loading' />
+          <Spinner size='xl' color='white' aria-label='Loading' />
         </div>
       </ThemeSurface>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const svgs = canvasElement.querySelectorAll<SVGSVGElement>('[role="status"] svg')
+    await expect(svgs).toHaveLength(6)
+    for (const svg of svgs) {
+      const surface = getComputedStyle(svg.closest<HTMLElement>('.rounded-sm')!).backgroundColor
+      const [track, arc] = Array.from(svg.querySelectorAll('path')).map(
+        (path) => getComputedStyle(path).fill,
+      )
+      // The white variant's track is translucent: flatten it onto the surface.
+      const { r, g, b } = compositeOver(resolveColor(track!), resolveColor(surface))
+      const flatTrack = `rgb(${r} ${g} ${b})`
+
+      // The arc is the indicator: it must stand out from the surface…
+      expectContrast(arc!, surface, { minimum: 3, label: 'Spinner arc against the surface' })
+      // …and from the track it travels over.
+      expectContrast(arc!, flatTrack, { minimum: 3, label: 'Spinner arc against its track' })
+    }
+  },
 }
 
 export const UseOfColour: Story = {
@@ -176,6 +201,19 @@ export const UseOfColour: Story = {
       </section>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const statuses = canvasElement.querySelectorAll<HTMLElement>('[role="status"]')
+    await expect(statuses).toHaveLength(2)
+    for (const status of statuses) {
+      // A non-colour cue for screen readers: the status is named.
+      await expect(status).toHaveAccessibleName('Loading results')
+      // And for sighted readers: the arc moves (motion is not reduced in the test browser).
+      const svg = status.querySelector('svg')!
+      await expect(getComputedStyle(svg).animationName).toBe('spin')
+    }
+    // The recommended pairing also says it in visible text.
+    await expect(canvasElement).toHaveTextContent('Loading results…')
+  },
 }
 
 export const NonTextContent: Story = {

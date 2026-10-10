@@ -66,7 +66,7 @@ function inkOf(element: Element) {
 
 // The solid band is a different pair — white on the -600 or -800 fill — and
 // it clears the floor for every colour, two of them by 0.03. Measured here in
-// light mode for the four colours above; the matrices in the Tests folder
+// light mode for the four colours above; the matrices in the Features folder
 // scope the contrast rule off entirely, so this is the only place a retune of
 // success-600 or warning-600 that drops under 4.5:1 would fail CI.
 const solidBandColors: readonly ColorKey[] = ['tertiary', 'accent', 'success', 'warning']

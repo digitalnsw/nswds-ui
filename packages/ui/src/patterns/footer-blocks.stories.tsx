@@ -1,9 +1,10 @@
 /**
  * FooterBlocks — the story set, per docs/reference-storybook-standard.md.
  *
- *   Patterns/FooterBlocks        → this file: Docs, Default, Playground and one
- *                                  story per docs section
- *   Patterns/FooterBlocks/Tests  → footer-blocks.tests.stories.tsx
+ *   Patterns/FooterBlocks                → this file: Docs, Default, Playground
+ *   Patterns/FooterBlocks/Features       → footer-blocks.features.stories.tsx
+ *   Patterns/FooterBlocks/Accessibility  → footer-blocks.accessibility.stories.tsx
+ *   Patterns/FooterBlocks/Tests          → footer-blocks.tests.stories.tsx (hidden)
  *
  * A recorded GROUP (see scripts/check-stories.mjs): the eight footer-*.tsx
  * blocks are one family chosen between side by side, so they share one page
@@ -15,9 +16,13 @@
  *
  * Default and Playground render FooterSitemap, the default choice for a
  * department site; every block takes the same Footer props.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type * as React from 'react'
 
 import type { FooterColor } from '../components/footer.js'
 
@@ -65,6 +70,43 @@ const footerColors: FooterColor[] = [
   'accent-400',
   'accent-600',
   'accent-800',
+]
+
+/**
+ * The surfaces grouped by the logo colourway each one takes (see
+ * `footerLogoType` in footer.tsx): the masterbrand's order of preference.
+ */
+const colourGroups: ReadonlyArray<{
+  title: string
+  description: React.ReactNode
+  colors: FooterColor[]
+}> = [
+  {
+    title: 'Light surfaces — full-colour logo',
+    description:
+      'White and the 200 and 400 steps. The full-colour mark, which the masterbrand prefers over every other version. White suits most services; a tint marks the footer off from a white page.',
+    colors: [
+      'white',
+      'grey-200',
+      'grey-400',
+      'primary-200',
+      'primary-400',
+      'accent-200',
+      'accent-400',
+    ],
+  },
+  {
+    title: 'Dark surfaces — reversed logo',
+    description:
+      'The 800 steps. The full-colour reversed mark — white wordmark, red waratah — the sanctioned alternative where the primary mark would not read. Prefer these for a coloured footer.',
+    colors: ['primary-800', 'grey-800', 'accent-800'],
+  },
+  {
+    title: 'Mid-tone surfaces — restricted mono logo',
+    description:
+      'The 600 steps. Neither full-colour version reads on them, so the logo falls back to the white mono mark — restricted use, which needs NSW Government Brand Team approval. Use an 800 step instead unless you have it.',
+    colors: ['primary-600', 'grey-600', 'accent-600'],
+  },
 ]
 
 /** The chooser's rows: what each block adds, and how to install it. */
@@ -122,7 +164,7 @@ const blocks = [
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function ChooserSection() {
+export function ChooserSection() {
   return (
     <ExampleSection
       title='Chooser'
@@ -169,8 +211,7 @@ function ChooserSection() {
   )
 }
 
-function ColoursSection() {
-  const shown: FooterColor[] = ['white', 'grey-200', 'primary-800']
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
@@ -178,27 +219,35 @@ function ColoursSection() {
         <>
           Every block takes Footer&apos;s <code>color</code>: white, and the <code>200</code> to{' '}
           <code>800</code> steps of the grey, primary and accent ramps. Links, borders and focus
-          rings derive from the surface, and the logo picks its own colourway — reversed on the{' '}
-          <code>-800</code> steps. Prefer the <code>-800</code> steps for a coloured footer; the{' '}
-          <code>-600</code> steps force the restricted mono logo.
+          rings derive from the surface, and the logo picks its own colourway, so the surfaces fall
+          into three groups by the logo they take. Each is shown on the compact bar, the shortest
+          block.
         </>
       }
     >
-      <Example code={`<FooterCompact color="primary-800" />`} layout='fill'>
-        <div className='space-y-6'>
-          {shown.map((color) => (
-            <div key={color} className='space-y-2'>
-              <p className='text-base text-muted-foreground'>{color}</p>
-              <FooterCompact {...shared} color={color} />
+      {colourGroups.map((group) => (
+        <div key={group.title} className='space-y-3 pt-4'>
+          <h3 className='text-lg font-semibold'>{group.title}</h3>
+          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+            {group.description}
+          </p>
+          <Example code={`<FooterCompact color="${group.colors[0]}" />`} layout='fill'>
+            <div className='grid gap-6 md:grid-cols-2'>
+              {group.colors.map((color) => (
+                <div key={color} className='space-y-2'>
+                  <p className='text-base font-medium text-muted-foreground'>{color}</p>
+                  <FooterCompact {...shared} color={color} />
+                </div>
+              ))}
             </div>
-          ))}
+          </Example>
         </div>
-      </Example>
+      ))}
     </ExampleSection>
   )
 }
 
-function SimpleCentredSection() {
+export function SimpleCentredSection() {
   return (
     <ExampleSection
       title='Simple centred'
@@ -211,7 +260,7 @@ function SimpleCentredSection() {
   )
 }
 
-function CompactBarSection() {
+export function CompactBarSection() {
   return (
     <ExampleSection
       title='Compact bar'
@@ -224,7 +273,7 @@ function CompactBarSection() {
   )
 }
 
-function SiteMapSection() {
+export function SiteMapSection() {
   return (
     <ExampleSection
       title='Site map'
@@ -242,7 +291,7 @@ function SiteMapSection() {
   )
 }
 
-function SiteMapWithBrandSection() {
+export function SiteMapWithBrandSection() {
   return (
     <ExampleSection
       title='Site map with brand'
@@ -263,7 +312,7 @@ function SiteMapWithBrandSection() {
   )
 }
 
-function NewsletterSection() {
+export function NewsletterSection() {
   return (
     <ExampleSection
       title='Newsletter'
@@ -287,7 +336,7 @@ function NewsletterSection() {
   )
 }
 
-function ContactDetailsSection() {
+export function ContactDetailsSection() {
   return (
     <ExampleSection
       title='Contact details'
@@ -309,7 +358,7 @@ function ContactDetailsSection() {
   )
 }
 
-function CallToActionSection() {
+export function CallToActionSection() {
   return (
     <ExampleSection
       title='Call to action'
@@ -330,7 +379,7 @@ function CallToActionSection() {
   )
 }
 
-function CollapsibleSiteMapSection() {
+export function CollapsibleSiteMapSection() {
   return (
     <ExampleSection
       title='Collapsible site map'
@@ -402,6 +451,7 @@ const meta = {
   title: 'Patterns/FooterBlocks',
   component: FooterSitemap,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -488,63 +538,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Chooser: Story = {
-  name: 'Chooser',
-  parameters: { layout: 'padded' },
-  render: () => <ChooserSection />,
-}
-
-export const Colours: Story = {
-  name: 'Colours',
-  parameters: { layout: 'padded' },
-  render: () => <ColoursSection />,
-}
-
-export const SimpleCentred: Story = {
-  name: 'Simple centred',
-  parameters: { layout: 'padded' },
-  render: () => <SimpleCentredSection />,
-}
-
-export const Compact: Story = {
-  name: 'Compact bar',
-  parameters: { layout: 'padded' },
-  render: () => <CompactBarSection />,
-}
-
-export const Sitemap: Story = {
-  name: 'Site map',
-  parameters: { layout: 'padded' },
-  render: () => <SiteMapSection />,
-}
-
-export const SitemapBrand: Story = {
-  name: 'Site map with brand',
-  parameters: { layout: 'padded' },
-  render: () => <SiteMapWithBrandSection />,
-}
-
-export const Newsletter: Story = {
-  name: 'Newsletter',
-  parameters: { layout: 'padded' },
-  render: () => <NewsletterSection />,
-}
-
-export const Contact: Story = {
-  name: 'Contact details',
-  parameters: { layout: 'padded' },
-  render: () => <ContactDetailsSection />,
-}
-
-export const Cta: Story = {
-  name: 'Call to action',
-  parameters: { layout: 'padded' },
-  render: () => <CallToActionSection />,
-}
-
-export const Accordion: Story = {
-  name: 'Collapsible site map',
-  parameters: { layout: 'padded' },
-  render: () => <CollapsibleSiteMapSection />,
-}

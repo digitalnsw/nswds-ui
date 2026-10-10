@@ -3,9 +3,13 @@
  * primitive. Wrap one or more tooltips in a single TooltipProvider to share
  * the open delay.
  *
- *   Components/Tooltip        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/Tooltip/Tests  → tooltip.tests.stories.tsx
+ *   Components/Tooltip                → this file: Docs, Default, Playground
+ *   Components/Tooltip/Features       → tooltip.features.stories.tsx
+ *   Components/Tooltip/Accessibility  → tooltip.accessibility.stories.tsx
+ *   Components/Tooltip/Tests          → tooltip.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -18,8 +22,10 @@ import {
   IconFormatItalic,
   IconFormatUnderlined,
   IconPrint,
+  IconSearch,
 } from '../icons/index.js'
 import { Button } from './button.js'
+import { Kbd, KbdGroup } from './kbd.js'
 import {
   DocsApi,
   DocsPage,
@@ -35,9 +41,9 @@ type Side = NonNullable<ComponentProps<typeof TooltipContent>['side']>
 const sides: Side[] = ['top', 'bottom', 'left', 'right']
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function PlacementSection() {
+export function PlacementSection() {
   return (
     <ExampleSection
       title='Placement'
@@ -80,7 +86,83 @@ const formatting = [
   ['Underline', IconFormatUnderlined],
 ] as const
 
-function InContextSection() {
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          A tooltip opens on hover or keyboard focus after the provider&apos;s delay.{' '}
+          <code>defaultOpen</code> starts it open; <code>disabled</code> stops it opening while the
+          trigger itself stays usable, so the control still needs its own name.
+        </>
+      }
+    >
+      <Example code={`<Tooltip disabled>…</Tooltip>`}>
+        <TooltipProvider>
+          <ExampleCell label='default'>
+            <Tooltip>
+              <TooltipTrigger render={<Button variant='outline'>Save draft</Button>} />
+              <TooltipContent>Saves without submitting</TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+          <ExampleCell label='disabled'>
+            <Tooltip disabled>
+              <TooltipTrigger render={<Button variant='outline'>Save draft</Button>} />
+              <TooltipContent>Saves without submitting</TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithShortcutSection() {
+  return (
+    <ExampleSection
+      title='With a shortcut'
+      description={
+        <>
+          Put a keyboard shortcut after the label with <code>Kbd</code>; the tooltip tightens its
+          end padding around it. Keep the label itself to a few words.
+        </>
+      }
+    >
+      <Example
+        code={`<TooltipContent>
+  Search <KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup>
+</TooltipContent>`}
+      >
+        <TooltipProvider>
+          <ExampleCell label='Kbd in TooltipContent'>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant='outline'
+                    iconOnly
+                    aria-label='Search'
+                    leadingVisual={IconSearch}
+                  />
+                }
+              />
+              <TooltipContent>
+                Search
+                <KbdGroup>
+                  <Kbd>⌘</Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+              </TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -149,6 +231,8 @@ function TooltipDocs() {
         ]}
       />
       <PlacementSection />
+      <StatesSection />
+      <WithShortcutSection />
       <InContextSection />
       <DocsApi description='Props of the Tooltip root, plus the side set on TooltipContent. Try them live in the Playground story.' />
     </DocsPage>
@@ -167,6 +251,7 @@ const meta = {
   title: 'Components/Tooltip',
   component: Tooltip,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -258,7 +343,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Placement: Story = { name: 'Placement', render: () => <PlacementSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

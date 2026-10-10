@@ -175,17 +175,17 @@ if the committed output differs.
 
 ## Step 6: Write a story
 
-Every component's stories follow [the Storybook standard](reference-storybook-standard.md), and
-Button is its reference. Two files:
+Every component's stories follow [the Storybook standard](reference-storybook-standard.md), which
+is Button's shape. Three files:
 
 ```bash
 touch packages/ui/src/components/notice.stories.tsx
-touch packages/ui/src/components/notice.tests.stories.tsx
+touch packages/ui/src/components/notice.features.stories.tsx
+touch packages/ui/src/components/notice.accessibility.stories.tsx
 ```
 
-**The main file** is what a reader sees: a docs page, `Default`, `Playground`, and one example
-story per docs section. Each section is a component that both the docs page and its story render,
-so the two can't drift:
+**The main file** holds the docs page, `Default` and `Playground`. Each docs section is an
+exported component, so the Features file can render it too:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -203,7 +203,7 @@ import {
 
 const tones = ['neutral', 'info'] as const
 
-function TonesSection() {
+export function TonesSection() {
   return (
     <ExampleSection title='Tones' description='Info draws the eye; neutral sits back.'>
       <Example
@@ -237,6 +237,7 @@ const meta = {
   title: 'Components/Notice',
   component: Notice,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: { layout: 'padded', docs: { page: NoticeDocs } },
   args: { children: 'Your return is due 30 September.', onDismiss: fn() },
 } satisfies Meta<typeof Notice>
@@ -252,39 +253,32 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Tones: Story = { name: 'Tones', render: () => <TonesSection /> }
 ```
 
-**The tests file** holds what proves rather than shows. It is hidden from the sidebar but runs in
-the suite like any other story:
+**The Features file** has one story per section:
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
 
 import { Notice } from './notice.js'
+import { TonesSection } from './notice.stories.js'
 
-const meta = {
-  title: 'Components/Notice/Tests',
-  component: Notice,
-  tags: ['!dev', '!autodocs'],
-} satisfies Meta<typeof Notice>
+const meta = { title: 'Components/Notice/Features', component: Notice } satisfies Meta<
+  typeof Notice
+>
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const CssCheck: Story = {
-  args: { children: 'Token check' },
-  play: async ({ canvasElement }) => {
-    const el = canvasElement.querySelector('[data-slot=notice]')!
-    await expect(getComputedStyle(el).padding).not.toBe('0px')
-  },
-}
+export const Tones: Story = { render: () => <TonesSection /> }
 ```
 
-`Default` proves it mounts and is interactive. `CssCheck` asserts a computed style, which proves
-the stylesheet loaded — without it a token-resolution failure looks like a passing test. Check the
-shape with:
+**The Accessibility file** has one story per WCAG 2.2 criterion Notice must meet — here its
+dismiss button's name, keyboard use and contrast — each asserting it in `play()`. Copy the shape
+of `button.accessibility.stories.tsx` and `tooltip.accessibility.stories.tsx`.
+
+A `notice.tests.stories.tsx` (titled `Components/Notice/Tests`, tagged `['!dev', '!autodocs']`)
+holds the `CssCheck` story, which asserts a computed style and so proves the stylesheet loaded —
+without it a token-resolution failure looks like a passing test. Check the shape with:
 
 ```bash
 npm run check:stories -w @nswds/ui
@@ -358,7 +352,8 @@ Conventional Commits — the release pipeline depends on the type:
 ```bash
 git add packages/ui/src/components/notice.tsx \
         packages/ui/src/components/notice.stories.tsx \
-        packages/ui/src/components/notice.tests.stories.tsx \
+        packages/ui/src/components/notice.features.stories.tsx \
+        packages/ui/src/components/notice.accessibility.stories.tsx \
         packages/ui/src/index.ts \
         packages/ui/registry.json \
         apps/registry/public/r/notice.json \

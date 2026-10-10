@@ -1,8 +1,13 @@
 /**
- * OnThisPage — Docs, Default, Playground and one story per docs section.
+ * OnThisPage — Docs, Default and Playground.
  *
- *   Components/OnThisPage        → this file
- *   Components/OnThisPage/Tests  → on-this-page.tests.stories.tsx
+ *   Components/OnThisPage                → this file
+ *   Components/OnThisPage/Features       → on-this-page.features.stories.tsx
+ *   Components/OnThisPage/Accessibility  → on-this-page.accessibility.stories.tsx
+ *   Components/OnThisPage/Tests          → on-this-page.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -41,10 +46,10 @@ function DemoSections() {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page. Their items
+// Each section is one part of the docs page AND one Features story. Their items
 // point at ids that are not on the page, so `activeId` sets the marker.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -57,7 +62,7 @@ function VariantsSection() {
         </>
       }
     >
-      <Example layout='stack' code={`<OnThisPage items={sections} orientation="vertical" />`}>
+      <Example className='gap-12' code={`<OnThisPage items={sections} orientation="vertical" />`}>
         <ExampleCell label='horizontal (default)'>
           <OnThisPage items={ITEMS} activeId='what-you-need' aria-label='On this page, bar' />
         </ExampleCell>
@@ -74,7 +79,7 @@ function VariantsSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -90,6 +95,7 @@ function StatesSection() {
     >
       <Example
         layout='stack'
+        className='gap-8'
         code={`<OnThisPage items={[]} emptyMessage="This page has no sections." />`}
       >
         <ExampleCell label='a section reached'>
@@ -110,7 +116,7 @@ function StatesSection() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSection() {
   return (
     <ExampleSection
       title='Controlled'
@@ -156,7 +162,7 @@ const SCENE = [
   },
 ]
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -240,6 +246,7 @@ const meta = {
   title: 'Components/OnThisPage',
   component: OnThisPage,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -356,27 +363,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = {
-  name: 'Variants',
-  parameters: { layout: 'padded' },
-  render: () => <VariantsSection />,
-}
-
-export const States: Story = {
-  name: 'States',
-  parameters: { layout: 'padded' },
-  render: () => <StatesSection />,
-}
-
-export const Controlled: Story = {
-  name: 'Controlled',
-  parameters: { layout: 'padded' },
-  render: () => <ControlledSection />,
-}
-
-export const InContext: Story = {
-  name: 'In context',
-  parameters: { layout: 'padded' },
-  render: () => <InContextSection />,
-}

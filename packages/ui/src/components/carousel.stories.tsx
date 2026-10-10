@@ -1,11 +1,13 @@
 /**
  * Carousel — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Carousel        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/Carousel/Tests  → carousel.tests.stories.tsx (keyboard model,
- *                                composite widgets in slides, nesting, RTL and
- *                                vertical behaviour, translated labels)
+ *   Components/Carousel                → this file: Docs, Default, Playground
+ *   Components/Carousel/Features       → carousel.features.stories.tsx
+ *   Components/Carousel/Accessibility  → carousel.accessibility.stories.tsx
+ *   Components/Carousel/Tests          → carousel.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A slide carousel built on embla-carousel-react. CarouselContent owns the
  * embla viewport and must wrap the CarouselItems; CarouselPrevious and
@@ -63,7 +65,7 @@ async function waitFor(predicate: () => boolean, message: string, timeout = 2000
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function SlidesPerViewSection() {
+export function SlidesPerViewSection() {
   return (
     <ExampleSection
       title='Slides per view'
@@ -94,7 +96,7 @@ function SlidesPerViewSection() {
   )
 }
 
-function VerticalSection() {
+export function VerticalSection() {
   return (
     <ExampleSection
       title='Vertical'
@@ -129,7 +131,7 @@ function VerticalSection() {
   )
 }
 
-function RightToLeftSection() {
+export function RightToLeftSection() {
   return (
     <ExampleSection
       title='Right to left'
@@ -168,13 +170,57 @@ function RightToLeftSection() {
   )
 }
 
-function InContextSection() {
+export function ControlLabelsSection() {
+  return (
+    <ExampleSection
+      title='Control labels'
+      description={
+        <>
+          Previous and Next are icon-only buttons, so their accessible names — “Previous slide” and
+          “Next slide” — are the only thing a screen reader hears. Pass <code>label</code> to
+          translate them, or to say what the slides are. Pass your own <code>children</code> and the
+          control is named by them instead.
+        </>
+      }
+    >
+      <Example
+        code={`<CarouselPrevious label="Previous service" />
+<CarouselNext label="Next service" />`}
+      >
+        <div className='w-full max-w-lg px-12'>
+          <Carousel>
+            <CarouselContent>
+              {services.map((service) => (
+                <CarouselItem key={service}>
+                  <Slide>{service}</Slide>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious label='Previous service' />
+            <CarouselNext label='Next service' />
+          </Carousel>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Popular services on a landing page, three to a view on wide screens. Every slide is also reachable without the carousel — the full list is one link away.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Carousel>
+  <CarouselContent>
+    <CarouselItem className="basis-full sm:basis-1/3">…</CarouselItem>
+  </CarouselContent>
+  <CarouselPrevious />
+  <CarouselNext />
+</Carousel>`}
+      >
         <div className='max-w-3xl space-y-4 px-12'>
           <p className='text-2xl font-bold'>Popular services</p>
           <Carousel>
@@ -226,6 +272,7 @@ function CarouselDocs() {
       <SlidesPerViewSection />
       <VerticalSection />
       <RightToLeftSection />
+      <ControlLabelsSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -240,6 +287,7 @@ const meta: Meta<typeof Carousel> = {
   title: 'Components/Carousel',
   component: Carousel,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -335,14 +383,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const SlidesPerView: Story = {
-  name: 'Slides per view',
-  render: () => <SlidesPerViewSection />,
-}
-
-export const Vertical: Story = { name: 'Vertical', render: () => <VerticalSection /> }
-
-export const RightToLeft: Story = { name: 'Right to left', render: () => <RightToLeftSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

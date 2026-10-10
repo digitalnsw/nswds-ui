@@ -146,17 +146,19 @@ the build. Self-tested under `test:scripts`.
 ### 11 · `check:stories`
 
 Holds every story file in `packages/ui/src` to
-[the Storybook standard](reference-storybook-standard.md): `<file>.stories.tsx`,
-`.tests.stories.tsx` and `.accessibility.stories.tsx` and no other kind; `Components/<ExportName>`
-titles (`Patterns/…`, `Hooks/…` by directory); a custom docs page built from the kit's `DocsPage`,
-`DocsUsage` and `DocsApi`; `Default` then `Playground` first; a sentence-case `name` on every
-example story; tests tagged `['!dev', '!autodocs']`; accessibility stories named
-`<WCAG title> — <criterion>`; and no `text-xs`, `text-sm` or `layout: 'centered'` anywhere.
+[the Storybook standard](reference-storybook-standard.md), which is Button's shape: a main
+`<file>.stories.tsx` with a custom docs page built from the kit's `DocsPage`, `DocsUsage` and
+`DocsApi` plus `Default` and `Playground`; a `.features.stories.tsx` and an
+`.accessibility.stories.tsx` beside every component and pattern; `Components/<ExportName>` titles
+(`Patterns/…`, `Hooks/…` by directory); accessibility stories named `<WCAG title> — <criterion>`;
+`.tests.stories.tsx` tagged `['!dev', '!autodocs']`; and no `text-xs`, `text-sm` or
+`layout: 'centered'` anywhere.
 
 Nothing else in CI reads a story file for its shape, so before this existed the catalogue drifted
-into three title styles, four spellings of "CSS check" and forty components documented by an
-unlabelled "Variants" dump — all of it linting, typechecking and passing. Its recorded exceptions
-(`GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each carry a reason. Its fixture tests run under
+into three title styles, four spellings of "CSS check", most components with no accessibility
+stories, and forty documented by an unlabelled "Variants" dump — all of it linting, typechecking
+and passing. Its recorded exceptions (`REFERENCE`, `EXTRAS`, `GROUPS`, `GUIDES`,
+`DOCUMENTED_ELSEWHERE`) each carry a reason. Its fixture tests run under
 [script tests](#5--script-tests).
 
 **Fix:** follow the failure's message; Button (`button.stories.tsx`) is the reference.

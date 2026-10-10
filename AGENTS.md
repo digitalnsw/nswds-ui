@@ -408,27 +408,27 @@ indefinitely. `check:registry-resolves` fails on the orphan if you forget.
 
 ### Step 4 — Write a Storybook story
 
-Every component's stories take one shape, defined in
-[docs/reference-storybook-standard.md](docs/reference-storybook-standard.md) and implemented by
-the Button set (`button.stories.tsx`, `button.tests.stories.tsx`,
-`button.accessibility.stories.tsx`). Copy Button, not a neighbour:
+Every component's stories take Button's shape, defined in
+[docs/reference-storybook-standard.md](docs/reference-storybook-standard.md). Button is the
+reference — copy it, not a neighbour:
 
 ```
 packages/ui/src/components/<name>.stories.tsx                Components/<Name>
-packages/ui/src/components/<name>.tests.stories.tsx          Components/<Name>/Tests
+packages/ui/src/components/<name>.features.stories.tsx       Components/<Name>/Features
 packages/ui/src/components/<name>.accessibility.stories.tsx  Components/<Name>/Accessibility
+packages/ui/src/components/<name>.tests.stories.tsx          Components/<Name>/Tests (optional, hidden)
 ```
 
-- **The main file** is what a reader sees: a custom docs page built from the docs kit in
-  `story-helpers.tsx` (`DocsPage`, `DocsUsage`, one `ExampleSection` per example, `DocsApi`),
-  then `Default` (with a `play()` proving it mounted), `Playground`, and one example story per
-  docs section, each named in sentence case and rendering the same section component the page
-  does.
-- **The tests file** holds everything that proves rather than shows — the `CssCheck` story
-  (a computed-style assertion proving globals.css loaded), matrices, dark parity, regressions —
-  tagged `['!dev', '!autodocs']` so it runs in Vitest and Chromatic but stays out of the sidebar.
-- **The accessibility file** has one story per WCAG 2.2 criterion, named
-  `<W3C title> — <number>`.
+- **The main file** holds the docs page, built from the docs kit in `story-helpers.tsx`
+  (`DocsPage`, `DocsUsage`, `ExampleSection`, `Example`, `ExampleCell`, `DocsApi`), which
+  renders exactly like Button's page — plus `Default` (with a `play()` proving it mounted) and
+  `Playground`. Its sections are exported and kept out of the index with
+  `excludeStories: /Section$/`.
+- **The Features file** has one story per docs section, rendering the same section components.
+- **The Accessibility file** has one story per WCAG 2.2 criterion the component must meet, named
+  `<W3C title> — <number>`, each asserting its criterion in `play()`.
+- **The Tests file**, if any, holds the `CssCheck` story (a computed-style assertion proving
+  globals.css loaded) and regressions, tagged `['!dev', '!autodocs']`.
 
 `check:stories` (§5) enforces the shape. Stories live in `packages/ui/src/` but are **excluded
 from the tsup build** (see tsup.config.ts: `name.endsWith('.stories.tsx')` check).
@@ -573,17 +573,16 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   it wraps nothing, and that is the shape every one of these files had before
   the boundary landed.
 - **`check:stories`** (`packages/ui/scripts/check-stories.mjs`) holds every
-  story file to [the Storybook standard](docs/reference-storybook-standard.md):
-  the three-file split, `Components/<ExportName>` titles, a docs page built
-  from the kit, `Default` then `Playground` first, sentence-case story names,
-  WCAG-named accessibility stories, tests hidden from the sidebar, and the
-  16px floor. Nothing else reads a story file for its shape — a file that
-  breaks the standard still lints, typechecks and passes its `play()` — which
-  is how the catalogue drifted into three title styles, four spellings of
-  "CSS check" and forty unlabelled "Variants" dumps before it existed. It
-  parses the TypeScript syntax tree for the same reason the portal gate does,
-  its recorded exceptions (`GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each
-  carry a reason, and it is self-tested under `test:scripts`.
+  story file to [the Storybook standard](docs/reference-storybook-standard.md),
+  which is Button's shape: a main file with a kit-built docs page, `Default`
+  and `Playground`; a Features file and an Accessibility file for every
+  component and pattern; `Components/<ExportName>` titles; WCAG-named
+  accessibility stories; hidden Tests; and the 16px floor. Nothing else reads a
+  story file for its shape — a file that breaks the standard still lints,
+  typechecks and passes its `play()`. It parses the TypeScript syntax tree for
+  the same reason the portal gate does, its recorded exceptions (`REFERENCE`,
+  `EXTRAS`, `GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each carry a reason, and
+  it is self-tested under `test:scripts`.
 - **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
   asserts the shadcn→NSW token map is identical across the two channels that
   ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,

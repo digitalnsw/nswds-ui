@@ -1,8 +1,13 @@
 /**
- * Select — the docs page, Default, Playground and one story per docs section.
+ * Select — the docs page, Default and Playground.
  *
- *   Components/Select        → this file
- *   Components/Select/Tests  → select.tests.stories.tsx
+ *   Components/Select                → this file
+ *   Components/Select/Features       → select.features.stories.tsx
+ *   Components/Select/Accessibility  → select.accessibility.stories.tsx
+ *   Components/Select/Tests          → select.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Built on the Base UI Select primitive: the trigger renders in the canvas, but
  * the option list is PORTALED to document.body, so it must be queried there.
@@ -11,7 +16,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 
-import { Field, FieldDescription, FieldError, FieldLabel } from './field.js'
+import { Button } from './button.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from './field.js'
 import {
   Select,
   SelectContent,
@@ -68,9 +74,9 @@ const centreItems = {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -104,7 +110,7 @@ function VariantsSection() {
   )
 }
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -137,7 +143,7 @@ function SizesSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -185,7 +191,7 @@ function StatesSection() {
   )
 }
 
-function GroupedOptionsSection() {
+export function GroupedOptionsSection() {
   return (
     <ExampleSection
       title='Grouped options'
@@ -228,7 +234,7 @@ function GroupedOptionsSection() {
   )
 }
 
-function WithFieldSection() {
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -284,6 +290,62 @@ function WithFieldSection() {
   )
 }
 
+const enquiryItems = {
+  licence: 'Driver licence or registration',
+  concession: 'Concessions and rebates',
+  business: 'Business licences and permits',
+  other: 'Something else',
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='The first step of a contact form: a Select routes the enquiry to the right team, with a hint saying why it is asked.'
+    >
+      <Example
+        layout='fill'
+        code={`<Field>
+  <FieldLabel>What is your enquiry about?</FieldLabel>
+  <Select name="topic" items={topics}>
+    <SelectTrigger className="w-full">
+      <SelectValue placeholder="Select a topic" />
+    </SelectTrigger>
+    <SelectContent>…</SelectContent>
+  </Select>
+  <FieldDescription>We use this to send your enquiry to the right team.</FieldDescription>
+</Field>`}
+      >
+        <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup>
+            <Field>
+              <FieldLabel>What is your enquiry about?</FieldLabel>
+              <Select name='topic' items={enquiryItems}>
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select a topic' />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(enquiryItems).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FieldDescription>
+                We use this to send your enquiry to the right team.
+              </FieldDescription>
+            </Field>
+            <div>
+              <Button type='submit'>Continue</Button>
+            </div>
+          </FieldGroup>
+        </form>
+      </Example>
+    </ExampleSection>
+  )
+}
+
 // ─── Docs page ────────────────────────────────────────────────────────────────
 
 function SelectDocs() {
@@ -326,6 +388,7 @@ function SelectDocs() {
       <StatesSection />
       <GroupedOptionsSection />
       <WithFieldSection />
+      <InContextSection />
       <DocsApi />
     </DocsPage>
   )
@@ -337,6 +400,7 @@ const meta = {
   title: 'Components/Select',
   component: Select,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -425,16 +489,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const GroupedOptions: Story = {
-  name: 'Grouped options',
-  render: () => <GroupedOptionsSection />,
-}
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }

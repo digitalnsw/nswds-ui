@@ -1,8 +1,13 @@
 /**
- * Textarea — the docs page, Default, Playground and one story per docs section.
+ * Textarea — the docs page, Default and Playground.
  *
- *   Components/Textarea        → this file
- *   Components/Textarea/Tests  → textarea.tests.stories.tsx
+ *   Components/Textarea                → this file
+ *   Components/Textarea/Features       → textarea.features.stories.tsx
+ *   Components/Textarea/Accessibility  → textarea.accessibility.stories.tsx
+ *   Components/Textarea/Tests          → textarea.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * The multi-line sibling of Input. It renders Base UI's Input primitive
  * (which is `Field.Control`) as a `<textarea>`, so it inherits the same Field
@@ -30,13 +35,13 @@ import { Textarea } from './textarea.js'
 const filled = 'The footpath outside 12 King Street has a large crack that people keep tripping on.'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
 // The forced focus ring uses the same token the component paints on
 // :focus-visible, so the specimen shows the real ring without stealing focus.
 const forcedFocus = 'outline outline-2 outline-offset-2 outline-(--input-ring)'
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -88,7 +93,7 @@ function StatesSection() {
   )
 }
 
-function GrowsWithContentSection() {
+export function GrowsWithContentSection() {
   return (
     <ExampleSection
       title='Grows with content'
@@ -119,7 +124,7 @@ function GrowsWithContentSection() {
   )
 }
 
-function WithFieldSection() {
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -153,13 +158,22 @@ function WithFieldSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A report-a-problem step: a short Input for the location and a Textarea for the details.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Field>
+  <FieldLabel>Describe the problem</FieldLabel>
+  <Textarea />
+  <FieldDescription>
+    Include how long it has been there and anything that would help us find it.
+  </FieldDescription>
+</Field>`}
+      >
         <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
           <FieldGroup>
             <Field>
@@ -226,6 +240,7 @@ const meta = {
   title: 'Components/Textarea',
   component: Textarea,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -319,14 +334,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const GrowsWithContent: Story = {
-  name: 'Grows with content',
-  render: () => <GrowsWithContentSection />,
-}
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

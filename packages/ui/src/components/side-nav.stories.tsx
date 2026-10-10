@@ -1,9 +1,13 @@
 /**
  * SideNav — left-rail navigation within a section of a site.
  *
- *   Components/SideNav        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/SideNav/Tests  → side-nav.tests.stories.tsx
+ *   Components/SideNav                → this file: Docs, Default, Playground
+ *   Components/SideNav/Features       → side-nav.features.stories.tsx
+ *   Components/SideNav/Accessibility  → side-nav.accessibility.stories.tsx
+ *   Components/SideNav/Tests          → side-nav.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -67,18 +71,17 @@ const docsNav: SideNavItem[] = [
 const railClassName = 'w-64'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SectionsAndBranchesSection() {
+export function AnatomySection() {
   return (
     <ExampleSection
-      title='Sections and branches'
+      title='Anatomy'
       description={
         <>
-          The tree&apos;s shape decides what renders. A top-level item with <code>links</code> is a
-          heading over an always-visible rail; one without is a plain rail link. Deeper items with{' '}
-          <code>links</code> are collapsible branches, nesting to any depth — they are disclosure
-          buttons, never links, so give destinations to the leaves.
+          A top-level item with <code>links</code> renders as a section heading over a rail; one
+          without renders as a plain rail link. Branch rows are disclosure buttons (Base UI
+          Collapsible), never links — give destinations to leaves. Branches nest to any depth.
         </>
       }
     >
@@ -99,19 +102,30 @@ function SectionsAndBranchesSection() {
 
 <SideNav sections={sections} />`}
       >
-        <div className={railClassName}>
-          <SideNav
-            aria-label='Section navigation, deep nesting'
-            sections={docsNav}
-            currentHref='/docs/components/side-nav'
-          />
-        </div>
+        <ExampleCell label='current page in a branch'>
+          <div className={railClassName}>
+            <SideNav
+              aria-label='Section navigation, anatomy'
+              sections={docsNav}
+              currentHref='/docs/components/button'
+            />
+          </div>
+        </ExampleCell>
+        <ExampleCell label='current page in a nested branch'>
+          <div className={railClassName}>
+            <SideNav
+              aria-label='Section navigation, deep nesting'
+              sections={docsNav}
+              currentHref='/docs/components/side-nav'
+            />
+          </div>
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
 }
 
-function CurrentPageSection() {
+export function CurrentPageSection() {
   return (
     <ExampleSection
       title='Current page'
@@ -172,26 +186,28 @@ function DrawerScene() {
   )
 }
 
-function ClosingADrawerSection() {
+export function DrawerHookSection() {
   return (
     <ExampleSection
-      title='Closing a drawer'
+      title='Drawer hook'
       description={
         <>
-          On a narrow screen the rail can move into a Sheet. <code>onNavigate</code> fires from
-          every leaf link — never from a branch, which only opens and closes — so wire it to close
-          the drawer once the reader has picked a page.
+          <code>onNavigate</code> fires from every leaf link — wire it to close a mobile drawer
+          after the reader picks a destination. It never fires from a branch, which only opens and
+          closes. Open the drawer below and pick a page.
         </>
       }
     >
       <Example code={`<SideNav sections={sections} onNavigate={() => setOpen(false)} />`}>
-        <DrawerScene />
+        <ExampleCell label='SideNav in a Sheet'>
+          <DrawerScene />
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -230,10 +246,11 @@ function SideNavDocs() {
       registry='side-nav'
       summary={
         <>
-          A left rail for moving around within one section of a site: headed groups of links that
-          can nest into collapsible branches, opened onto the page the reader is on. Every link
-          renders through <code>Link</code>, so a framework link set on <code>LinkProvider</code> is
-          used automatically.
+          Left-rail section navigation for documentation-style pages. Sections are headed,
+          always-visible lists; deeper items with children become collapsible branches. Pass the
+          router&rsquo;s pathname as <code>currentHref</code> and the matching link gets{' '}
+          <code>aria-current=&quot;page&quot;</code>, the active rail treatment, and every branch on
+          the path to it starts expanded.
         </>
       }
     >
@@ -249,9 +266,9 @@ function SideNavDocs() {
           'Jumping between headings on one long page — use OnThisPage.',
         ]}
       />
-      <SectionsAndBranchesSection />
+      <AnatomySection />
       <CurrentPageSection />
-      <ClosingADrawerSection />
+      <DrawerHookSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -264,10 +281,17 @@ const meta = {
   title: 'Components/SideNav',
   component: SideNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: SideNavDocs },
+    docs: {
+      page: SideNavDocs,
+      description: {
+        component:
+          'Left-rail section navigation with headed sections, arbitrary collapsible nesting, and auto-expansion of the branch containing the current page.',
+      },
+    },
   },
   args: {
     sections: docsNav,
@@ -437,17 +461,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = { decorators: railWidth }
-
-export const SectionsAndBranches: Story = {
-  name: 'Sections and branches',
-  render: () => <SectionsAndBranchesSection />,
-}
-
-export const CurrentPage: Story = { name: 'Current page', render: () => <CurrentPageSection /> }
-
-export const ClosingADrawer: Story = {
-  name: 'Closing a drawer',
-  render: () => <ClosingADrawerSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,9 +1,13 @@
 /**
  * ExpandableSearch — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/ExpandableSearch        → this file: Docs, Default, Playground
- *                                        and one story per docs section
- *   Components/ExpandableSearch/Tests  → expandable-search.tests.stories.tsx
+ *   Components/ExpandableSearch               → this file: Docs, Default, Playground
+ *   Components/ExpandableSearch/Features      → expandable-search.features.stories.tsx
+ *   Components/ExpandableSearch/Accessibility → expandable-search.accessibility.stories.tsx
+ *   Components/ExpandableSearch/Tests         → expandable-search.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A 48px search chip that expands into a text field on focus or while it
  * holds a value, and submits the query to `onAction`. Every variant's icon,
@@ -41,23 +45,70 @@ const colourSteps = [
 ] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function ColoursSection() {
+const colourGroups = [
+  {
+    title: 'For white and light-grey chrome',
+    description: (
+      <>
+        <code>default</code> is the nswds-app grey chip with a primary-blue icon, for a header on
+        white. <code>white</code> is a white chip with grey ink, for chrome that is already light
+        grey.
+      </>
+    ),
+    variants: ['default', 'white'],
+  },
+  {
+    title: 'Primary',
+    description: (
+      <>
+        The brand blue steps, for a header or footer in the masterbrand colour. The dark steps take
+        white ink, the light steps primary-800 ink.
+      </>
+    ),
+    variants: ['primary-800', 'primary-600', 'primary-400', 'primary-200'],
+  },
+  {
+    title: 'Grey',
+    description: (
+      <>Neutral steps, for grey chrome. Dark steps take white ink, light steps grey-800.</>
+    ),
+    variants: ['grey-800', 'grey-600', 'grey-400', 'grey-200'],
+  },
+  {
+    title: 'Accent',
+    description: (
+      <>
+        The accent (waratah red) steps, for an accent-coloured band. Dark steps take white ink,
+        light steps accent-800.
+      </>
+    ),
+    variants: ['accent-800', 'accent-600', 'accent-400', 'accent-200'],
+  },
+] as const
+
+export function VariantsSection() {
   return (
     <ExampleSection
-      title='Colours'
+      title='Variants'
       description={
         <>
-          <code>variant</code> takes Footer&apos;s thirteen surface names plus <code>default</code>,
-          the grey chip for a white header. Pick the one that matches the chrome the search sits in.
-          The icon, hover halo, placeholder and focus outline all derive from the surface&apos;s
-          ink, and every surface meets WCAG 2.2 AA in light mode and AAA in dark.
+          The footer&rsquo;s thirteen surface names plus <code>default</code> — the nswds-app grey
+          chip with a primary-blue icon, for headers on white. Icon, hover halos, placeholder and
+          the focus outline all derive from each surface&rsquo;s <code>--search-ink</code>, so a
+          variant is one declaration, and every pair meets WCAG 2.2 AA in light mode and AAA in
+          dark.
         </>
       }
     >
-      <Example code={`<ExpandableSearch variant="white">…</ExpandableSearch>`} surface='subtle'>
-        {(['default', 'white'] as const).map((variant) => (
+      <Example
+        className='bg-background'
+        code={`<ExpandableSearch variant="primary-800">
+  <ExpandableSearchField placeholder="Search" />
+</ExpandableSearch>`}
+      >
+        {(['default', 'primary-800', 'grey-800'] as const).map((variant) => (
           <ExampleCell key={variant} label={variant}>
             <ExpandableSearch variant={variant}>
               <ExpandableSearchField placeholder='Search' label={`Search (${variant})`} />
@@ -65,20 +116,38 @@ function ColoursSection() {
           </ExampleCell>
         ))}
       </Example>
-      <Example code={`<ExpandableSearch variant="primary-800">…</ExpandableSearch>`}>
-        {colourSteps.map((variant) => (
-          <ExampleCell key={variant} label={variant}>
-            <ExpandableSearch variant={variant}>
-              <ExpandableSearchField placeholder='Search' label={`Search (${variant})`} />
-            </ExpandableSearch>
-          </ExampleCell>
+      <div className='space-y-10 pt-4'>
+        {colourGroups.map((group) => (
+          <div key={group.title} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>{group.title}</h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {group.description}
+              </p>
+            </div>
+            <Example
+              className='bg-background'
+              code={`<ExpandableSearch variant="${group.variants[0]}">…</ExpandableSearch>`}
+            >
+              {group.variants.map((variant) => (
+                <ExampleCell key={variant} label={variant}>
+                  {/* The white chip is made for light-grey chrome; on the white panel it would vanish. */}
+                  <div className={variant === 'white' ? 'rounded-md bg-muted p-3' : undefined}>
+                    <ExpandableSearch variant={variant}>
+                      <ExpandableSearchField placeholder='Search' label={`Search (${variant})`} />
+                    </ExpandableSearch>
+                  </div>
+                </ExampleCell>
+              ))}
+            </Example>
+          </div>
         ))}
-      </Example>
+      </div>
     </ExampleSection>
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -111,7 +180,7 @@ function StatesSection() {
   )
 }
 
-function LabelsSection() {
+export function LabelsSection() {
   return (
     <ExampleSection
       title='Labels'
@@ -141,7 +210,7 @@ function LabelsSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -167,6 +236,46 @@ function InContextSection() {
   )
 }
 
+export function AccessibilitySection() {
+  return (
+    <ExampleSection
+      title='Accessibility'
+      description={
+        <>
+          The collapsed control is the text input itself, styled as a chip — so the first focus or
+          tap both reveals and focuses the field. It carries a visually-hidden label and{' '}
+          <code>aria-label</code> (&ldquo;Search&rdquo;, overridable), is{' '}
+          <code>type=&quot;search&quot;</code> with <code>enterKeyHint=&quot;search&quot;</code>,
+          and keyboard focus draws a 2px ink outline inside the chip, where contrast with the
+          surface is guaranteed on every variant. Transitions honour{' '}
+          <code>prefers-reduced-motion</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<ExpandableSearch onAction={search}>
+  <ExpandableSearchField label="Search Transport for NSW" />
+</ExpandableSearch>`}
+      >
+        <ExampleCell label='Tab here — focus opens the field and draws the ink outline'>
+          <ExpandableSearch>
+            <ExpandableSearchField
+              label='Search Transport for NSW'
+              placeholder='Search Transport for NSW'
+            />
+          </ExpandableSearch>
+        </ExampleCell>
+      </Example>
+      <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+        Name, Role, Value (4.1.2), Keyboard (2.1.1), Focus Visible (2.4.7), Contrast (1.4.3 and
+        1.4.11, light and dark) and Target Size (2.5.8) are each asserted in the{' '}
+        <strong className='font-semibold text-foreground'>Accessibility</strong> stories under this
+        component.
+      </p>
+    </ExampleSection>
+  )
+}
+
 // ─── Docs page ────────────────────────────────────────────────────────────────
 
 function ExpandableSearchDocs() {
@@ -177,10 +286,11 @@ function ExpandableSearchDocs() {
       registry='expandable-search'
       summary={
         <>
-          A site search for page chrome that takes no room until it is needed: a 48px chip that
-          opens into a text field when it takes focus, and submits the query to{' '}
-          <code>onAction</code>. Compose <code>ExpandableSearchField</code> inside{' '}
-          <code>ExpandableSearch</code>, usually in <code>HeaderActions</code>.
+          A site-search disclosure for page chrome: a 48px chip that expands into a text field the
+          moment it takes focus, and stays open while it holds a value. Enter (or the search button)
+          submits the query to <code>onAction</code>; Escape clears; an empty, blurred field
+          collapses back to the chip. Compose <code>ExpandableSearchField</code> inside{' '}
+          <code>ExpandableSearch</code>, typically within <code>HeaderActions</code>.
         </>
       }
     >
@@ -196,10 +306,11 @@ function ExpandableSearchDocs() {
           'Filtering a list already on the page — use Input.',
         ]}
       />
-      <ColoursSection />
+      <VariantsSection />
       <StatesSection />
       <LabelsSection />
       <InContextSection />
+      <AccessibilitySection />
       <DocsApi />
     </DocsPage>
   )
@@ -211,6 +322,7 @@ const meta = {
   title: 'Components/ExpandableSearch',
   component: ExpandableSearch,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -361,11 +473,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Labels: Story = { name: 'Labels', render: () => <LabelsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

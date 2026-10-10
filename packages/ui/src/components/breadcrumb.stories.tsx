@@ -1,13 +1,17 @@
 /**
- * Breadcrumb — the docs page, Default, Playground and one story per docs
- * section (docs/reference-storybook-standard.md).
+ * Breadcrumb — the docs page, Default and Playground
+ * (docs/reference-storybook-standard.md).
  *
  *   Components/Breadcrumb                → this file
  *   Components/Breadcrumb/Looks/<Look>   → breadcrumb.look-<look>.stories.tsx, one
  *                                          guide page per look (a recorded
  *                                          exception in check-stories.mjs)
- *   Components/Breadcrumb/Tests          → breadcrumb.tests.stories.tsx
+ *   Components/Breadcrumb/Features       → breadcrumb.features.stories.tsx
  *   Components/Breadcrumb/Accessibility  → breadcrumb.accessibility.stories.tsx
+ *   Components/Breadcrumb/Tests          → breadcrumb.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -41,100 +45,50 @@ import {
 const LONG = ['Home', 'Services', 'Licences and permits']
 const LONG_CURRENT = 'Apply for a recreational fishing licence'
 
-const lookDocs: ReadonlyArray<{ look: BreadcrumbLook; name: string; useWhen: string }> = [
+const lookCards: ReadonlyArray<{
+  look: BreadcrumbLook
+  name: string
+  useWhen: string
+  pairs: string
+}> = [
   {
     look: 'default',
     name: 'Default',
-    useWhen: 'Most pages. No chrome of its own; sits in the content column under any Header.',
+    useWhen: 'Most pages. Underlined links above the page heading, with no chrome of its own.',
+    pairs: 'Sits in the content column, under any Header.',
   },
   {
     look: 'rail',
     name: 'Rail',
     useWhen: 'A quiet content page that wants the masterbrand line system to frame the trail.',
+    pairs: 'Sits in the content column, under any Header.',
   },
   {
     look: 'band',
     name: 'Band',
-    useWhen: 'Page chrome: a solid Blue 01 strip that continues Header dark, flush in both modes.',
+    useWhen: 'Page chrome: a solid Blue 01 strip that continues the Header above it.',
+    pairs: 'Pairs with Header dark, flush in light and dark mode.',
   },
   {
     look: 'soft',
     name: 'Soft',
-    useWhen: 'Page chrome that reads as part of a white or light Header but stays quiet.',
+    useWhen: 'Page chrome that should read as part of the Header but stay quiet.',
+    pairs: 'Pairs with Header white or light.',
   },
 ]
 
-/** The Storybook path of a look's own guide page. */
+/** The Storybook path of a look's own docs page, for links from the overview. */
 const lookDocsPath = (look: BreadcrumbLook) =>
   `/?path=/docs/components-breadcrumb-looks-${look}--docs`
 
-/**
- * One look, full width, with its prop value underneath. ExampleCell shrinks to
- * its content, and band and soft are full-bleed strips, so these specimens
- * set their own width. `--bc-inset` gives every look the same inset, so the
- * four trails start level inside the frame rather than at Header's
- * viewport-stepped inset.
- */
-function LookSpecimen({ look }: { look: BreadcrumbLook }) {
-  return (
-    <div className='space-y-3'>
-      <Breadcrumb variant={look} style={{ '--bc-inset': '1rem' } as React.CSSProperties}>
-        <BreadcrumbList>
-          <BreadcrumbSteps labels={['Home', 'Fishing']} current='Apply for a licence' />
-        </BreadcrumbList>
-      </Breadcrumb>
-      <p className='text-base text-muted-foreground'>{look}</p>
-    </div>
-  )
-}
-
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function DefaultSection() {
   return (
     <ExampleSection
-      title='Variants'
-      description={
-        <>
-          The <code>variant</code> is a placement decision: where the trail sits on the page and
-          what it sits under. Links keep the same signature on every look — medium weight and
-          underlined — and the current page is regular weight. Each look has its own guide page with
-          pairing, phone and do-and-don&rsquo;t guidance.
-        </>
-      }
-    >
-      <Example layout='fill' code={`<Breadcrumb variant="band">…</Breadcrumb>`}>
-        <div className='grid gap-8'>
-          {BREADCRUMB_LOOKS.map((look) => (
-            <LookSpecimen key={look} look={look} />
-          ))}
-        </div>
-      </Example>
-      <dl className='grid gap-x-10 gap-y-4 sm:grid-cols-2'>
-        {lookDocs.map(({ look, name, useWhen }) => (
-          <div key={look} className='flex gap-4'>
-            <dt className='w-20 shrink-0 font-semibold'>{look}</dt>
-            <dd className='space-y-1'>
-              <p className='text-muted-foreground'>{useWhen}</p>
-              <p>
-                <Link href={lookDocsPath(look)} target='_top'>
-                  The {name.toLowerCase()} look
-                </Link>
-              </p>
-            </dd>
-          </div>
-        ))}
-      </dl>
-    </ExampleSection>
-  )
-}
-
-function CompositionSection() {
-  return (
-    <ExampleSection
-      title='Composition'
-      description='Plain semantic parts: a labelled nav landmark around an ordered list of steps, ending in the current page as plain text.'
+      title='Default'
+      description='Underlined links in the ink, separated by chevrons, ending in the current page as plain text.'
     >
       <Example
         code={`<Breadcrumb>
@@ -155,98 +109,101 @@ function CompositionSection() {
       >
         <Breadcrumb>
           <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#services'>Services</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Apply online</BreadcrumbPage>
-            </BreadcrumbItem>
+            <BreadcrumbSteps labels={['Home', 'Services']} current='Apply online' />
           </BreadcrumbList>
         </Breadcrumb>
       </Example>
-      <ul className='max-w-[65ch] list-disc space-y-2 ps-5'>
+    </ExampleSection>
+  )
+}
+
+export function ChooseALookSection() {
+  return (
+    <ExampleSection
+      title='Choose a look'
+      description={
+        <>
+          The look is a placement decision: where the trail sits on the page and what it sits under.
+          Each has its own page with guidance, examples in context and code. Set it with{' '}
+          <code>variant</code>.
+        </>
+      }
+    >
+      <Example layout='grid' code={`<Breadcrumb variant="band">…</Breadcrumb>`}>
+        {lookCards.map(({ look, name, useWhen, pairs }) => (
+          <article
+            key={look}
+            className='flex flex-col gap-4 rounded-md border border-border bg-background p-5'
+          >
+            <h3 className='text-xl font-bold'>{name}</h3>
+            <div className='-mx-5'>
+              {/* One inset for every look inside the card: band and soft
+                  otherwise step on the viewport, as wide as the Header's. */}
+              <Breadcrumb
+                variant={look}
+                collapse={false}
+                style={{ '--bc-inset': '1.25rem' } as React.CSSProperties}
+              >
+                <BreadcrumbList>
+                  <BreadcrumbSteps labels={['Home', 'Fishing']} current='Apply' />
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+            <p>{useWhen}</p>
+            <p className='text-muted-foreground'>{pairs}</p>
+            <p className='mt-auto'>
+              <Link href={lookDocsPath(look)} target='_top'>
+                The {name.toLowerCase()} look
+              </Link>
+            </p>
+          </article>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AnatomySection() {
+  return (
+    <ExampleSection
+      title='Anatomy'
+      description='Plain semantic elements: a labelled nav landmark around an ordered list.'
+    >
+      <ul className='max-w-2xl list-disc space-y-2 ps-5'>
         <li>
-          <code>Breadcrumb</code>: the <code>nav</code> landmark, labelled &ldquo;Breadcrumb&rdquo;
-          — give it another <code>aria-label</code> if a page has two trails. Takes{' '}
-          <code>variant</code> and <code>collapse</code>.
+          <code>Breadcrumb</code>: the <code>nav</code> landmark, labelled &ldquo;Breadcrumb&rdquo;.
+          Takes <code>variant</code> and <code>collapse</code>.
         </li>
         <li>
           <code>BreadcrumbList</code> and <code>BreadcrumbItem</code>: the ordered list and its
           steps.
         </li>
         <li>
-          <code>BreadcrumbLink</code>: a step you can follow, with the link signature and the
-          system&rsquo;s 2px offset focus ring.
+          <code>BreadcrumbLink</code>: a step you can follow. Use its <code>render</code> prop for a
+          framework link (see Framework links).
         </li>
         <li>
           <code>BreadcrumbPage</code>: the current page, plain text with{' '}
           <code>aria-current=&quot;page&quot;</code>. Never a link.
         </li>
         <li>
-          <code>BreadcrumbSeparator</code>: marks each boundary and is hidden from assistive
-          technology. Leave it empty and the step after it draws the look&rsquo;s glyph, so a
-          wrapped line starts with its separator.
+          <code>BreadcrumbSeparator</code>: marks each boundary. Leave it empty and the step after
+          it draws the look&rsquo;s glyph, so a wrapped line starts with its separator.
         </li>
         <li>
-          <code>BreadcrumbEllipsis</code>: stands in for steps hidden in a menu (see Hidden steps).
+          <code>BreadcrumbEllipsis</code>: stands in for steps hidden in a menu.
         </li>
       </ul>
-      <p>
-        <Link
-          href='/?path=/story/components-breadcrumb-accessibility--name-role-value'
-          target='_top'
-        >
-          Accessibility stories
-        </Link>
-      </p>
     </ExampleSection>
   )
 }
 
-function CollapseSection() {
+export function OnNarrowScreensSection() {
   return (
     <ExampleSection
-      title='Collapse'
-      description={
-        <>
-          On by default for every look. When the full trail would wrap, it shortens to its first
-          step, a &ldquo;…&rdquo; menu of the steps it hides, and the current page&rsquo;s parent:
-          Home › … › Licences and permits. The site root and the way up stay visible, every hidden
-          step is one tap away, and the reading and tab order match what is seen. A trail that fits
-          stays whole at any width. Turn it off with <code>collapse={'{false}'}</code> to keep the
-          whole trail, which then wraps with each step leading with its separator.
-        </>
-      }
+      title='On narrow screens'
+      description='When the full trail would wrap, it shortens to its first step, a “…” menu of the steps it hides, and the current page’s parent: Home › … › Licences and permits. The site root and the way up stay visible and every hidden step is one tap away. A trail that fits stays whole at any width. These are real stories at 375px, each in its own viewport.'
     >
-      <Example layout='grid' code={`<Breadcrumb collapse={false}>…</Breadcrumb>`}>
-        <ExampleCell label='collapse (default), 375px'>
-          <div style={{ width: 375 }}>
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbSteps labels={LONG} current={LONG_CURRENT} />
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </ExampleCell>
-        <ExampleCell label='collapse={false}, 375px'>
-          <div style={{ width: 375 }}>
-            <Breadcrumb collapse={false}>
-              <BreadcrumbList>
-                <BreadcrumbSteps labels={LONG} current={LONG_CURRENT} />
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-        </ExampleCell>
-      </Example>
-      <p className='max-w-[65ch] text-muted-foreground'>
-        On a real phone, each in its own 375px viewport: a long trail that collapses, and a short
-        one that fits and stays whole.
-      </p>
       <div className='flex flex-wrap gap-6'>
         <PhoneFrame
           storyId='components-breadcrumb-looks-default--phone'
@@ -257,23 +214,39 @@ function CollapseSection() {
           title='Breadcrumb on a phone, short trail'
         />
       </div>
+      <p className='max-w-2xl text-muted-foreground'>
+        Collapse is on by default for every look. Turn it off with <code>collapse={'{false}'}</code>{' '}
+        to keep the whole trail, which then wraps with each step leading with its separator.
+      </p>
+      <Example layout='grid' code={`<Breadcrumb collapse={false}>…</Breadcrumb>`}>
+        <ExampleCell label='collapse (default), 375px wide'>
+          <div style={{ width: 375 }}>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbSteps labels={LONG} current={LONG_CURRENT} />
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='collapse={false}, 375px wide'>
+          <div style={{ width: 375 }}>
+            <Breadcrumb collapse={false}>
+              <BreadcrumbList>
+                <BreadcrumbSteps labels={LONG} current={LONG_CURRENT} />
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+        </ExampleCell>
+      </Example>
     </ExampleSection>
   )
 }
 
-function HiddenStepsSection() {
+export function HiddenStepsSection() {
   return (
     <ExampleSection
       title='Hidden steps'
-      description={
-        <>
-          For a trail that is deep on every screen — more than about five steps — put the middle
-          steps in a menu yourself. Name the trigger by what it reveals, open the menu at{' '}
-          <code>BREADCRUMB_MENU_OFFSET</code> so it clears the trail, and underline its rows like
-          the trail&rsquo;s links. Collapse keeps your menu in the trail. Add your own, too, when
-          the rows must use your framework&rsquo;s link: the menu collapse builds holds plain links.
-        </>
-      }
+      description='For a trail that is deep on every screen, put middle steps in a menu yourself. Name the trigger by what it reveals, and open the menu just clear of the trail.'
     >
       <Example
         code={`<BreadcrumbItem>
@@ -294,22 +267,27 @@ function HiddenStepsSection() {
       >
         <BreadcrumbTrail />
       </Example>
+      <h3 className='text-lg font-semibold'>A menu of your own, or collapse?</h3>
+      <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+        <li>
+          Leave narrow screens to collapse. It measures the trail, and when it would wrap it builds
+          the “…” menu from the steps it hides.
+        </li>
+        <li>
+          Add your own menu when the trail is deep at every width — more than about five steps — or
+          when its rows must use your framework’s link for client-side routing. Collapse keeps your
+          menu in the trail; its own rows are plain links.
+        </li>
+      </ul>
     </ExampleSection>
   )
 }
 
-function FrameworkLinksSection() {
+export function FrameworkLinksSection() {
   return (
     <ExampleSection
       title='Framework links'
-      description={
-        <>
-          Render a step with your framework&rsquo;s link through the <code>render</code> prop; here{' '}
-          <code>NextLink</code> is the default export of <code>next/link</code>. Keep the label as{' '}
-          <code>BreadcrumbLink</code>&rsquo;s child so the step keeps its 44px tap target on touch
-          screens — put the label inside the rendered element instead and it loses it.
-        </>
-      }
+      description='Render a step with your framework’s link through the render prop; here NextLink is the default export of next/link. Keep the label as BreadcrumbLink’s child, as below, so the step keeps its 44px tap target on touch screens.'
     >
       <Example
         code={`<BreadcrumbItem>
@@ -332,20 +310,19 @@ function FrameworkLinksSection() {
           </BreadcrumbList>
         </Breadcrumb>
       </Example>
+      <p className='max-w-2xl text-muted-foreground'>
+        Putting the label inside the rendered element instead (
+        <code>{'render={<NextLink href="/services">Services</NextLink>}'}</code>) works, but the
+        step loses its touch-screen tap target.
+      </p>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+export function WritingTheTrailSection() {
   return (
-    <ExampleSection
-      title='In context'
-      description='The trail sits directly above the page heading and stays secondary to it: a citizen reads the heading first and reaches for the trail only to go up a level.'
-    >
-      <Example layout='fill'>
-        <BreadcrumbScene look='default' header='white' />
-      </Example>
-      <ul className='max-w-[65ch] list-disc space-y-2 ps-5'>
+    <ExampleSection title='Writing the trail'>
+      <ul className='max-w-2xl list-disc space-y-2 ps-5'>
         <li>
           Start with Home and follow the service&rsquo;s structure, not the user&rsquo;s path.
         </li>
@@ -359,8 +336,60 @@ function InContextSection() {
   )
 }
 
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='A service page under a white Header: the trail sits directly above the page heading and stays secondary to it. A citizen reads the heading first and reaches for the trail only to go up a level.'
+    >
+      <Example layout='fill'>
+        <BreadcrumbScene look='default' header='white' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AccessibilitySection() {
+  return (
+    <ExampleSection title='Accessibility'>
+      <ul className='max-w-2xl list-disc space-y-2 ps-5'>
+        <li>
+          A <code>nav</code> landmark labelled &ldquo;Breadcrumb&rdquo;; give it another label if a
+          page has two trails.
+        </li>
+        <li>
+          The current page carries <code>aria-current=&quot;page&quot;</code>. Separators are hidden
+          from assistive technology.
+        </li>
+        <li>
+          Links take the system&rsquo;s 2px offset focus ring, and every link and the ellipsis take
+          a 44px tap target on touch screens (a link keeps it when its label is its child).
+        </li>
+        <li>
+          A collapsed trail is a shorter list — Home, a button named &ldquo;Show 2 more
+          pages&rdquo;, and the parent — in the order it is seen, so tab order and reading order
+          match. The current page drops out; the page heading names it.
+        </li>
+      </ul>
+      <p>
+        <Link
+          href='/?path=/story/components-breadcrumb-accessibility--name-role-value'
+          target='_top'
+        >
+          Accessibility stories
+        </Link>
+      </p>
+    </ExampleSection>
+  )
+}
+
 // ─── Docs page ────────────────────────────────────────────────────────────────
 
+/**
+ * The Breadcrumb overview docs page: what it is, the four looks with links to
+ * their pages, anatomy, narrow-screen collapse, hidden steps, framework links,
+ * writing the trail and accessibility.
+ */
 function BreadcrumbDocs() {
   return (
     <DocsPage
@@ -379,8 +408,8 @@ function BreadcrumbDocs() {
       summary={
         <>
           A breadcrumb shows where a page sits in its service and gives a way back up. It is
-          secondary to the page heading on every <strong>look</strong>, and on narrow screens it{' '}
-          <strong>collapses</strong> rather than wrapping, keeping Home and the way up in view.
+          secondary to the page heading: a citizen should read the heading first and reach for the
+          trail only when they want to go up a level.
         </>
       }
     >
@@ -396,12 +425,15 @@ function BreadcrumbDocs() {
           'Going back one step in a task — use a Link such as “Back”.',
         ]}
       />
-      <VariantsSection />
-      <CompositionSection />
-      <CollapseSection />
+      <DefaultSection />
+      <ChooseALookSection />
+      <AnatomySection />
+      <OnNarrowScreensSection />
       <HiddenStepsSection />
       <FrameworkLinksSection />
+      <WritingTheTrailSection />
       <InContextSection />
+      <AccessibilitySection />
       <DocsApi />
     </DocsPage>
   )
@@ -413,17 +445,21 @@ const meta = {
   title: 'Components/Breadcrumb',
   component: Breadcrumb,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: BreadcrumbDocs },
+    docs: {
+      page: BreadcrumbDocs,
+      description: { component: 'Shows where a page sits in its service, and the way back up.' },
+    },
   },
   args: { variant: 'default', collapse: true },
   argTypes: {
     variant: {
       control: 'inline-radio',
       options: BREADCRUMB_LOOKS,
-      description: 'The look. Each has its own guide page under Looks.',
+      description: 'The look. Each has its own page under Looks.',
       table: { category: 'Appearance' },
     },
     collapse: {
@@ -478,19 +514,12 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Composition: Story = { name: 'Composition', render: () => <CompositionSection /> }
-
-export const Collapse: Story = { name: 'Collapse', render: () => <CollapseSection /> }
-
-export const HiddenSteps: Story = { name: 'Hidden steps', render: () => <HiddenStepsSection /> }
-
-export const FrameworkLinks: Story = {
-  name: 'Framework links',
-  render: () => <FrameworkLinksSection />,
+export const Playground: Story = {
+  name: 'Playground',
+  parameters: { controls: { expanded: false, sort: 'requiredFirst' } },
+  render: (args) => (
+    <div className='w-full max-w-3xl'>
+      <BreadcrumbTrail variant={args.variant ?? 'default'} collapse={args.collapse} />
+    </div>
+  ),
 }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

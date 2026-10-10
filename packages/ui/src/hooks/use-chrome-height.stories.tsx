@@ -2,13 +2,17 @@
  * useChromeHeight — the story set, per docs/reference-storybook-standard.md.
  *
  *   Hooks/useChromeHeight        → this file: Docs, Default and one story per
- *                                  docs section
- *   Hooks/useChromeHeight/Tests  → use-chrome-height.tests.stories.tsx
+ *                                  docs example (a hook has no Features or
+ *                                  Accessibility folder)
+ *   Hooks/useChromeHeight/Tests  → use-chrome-height.tests.stories.tsx (hidden)
  *
  * The hook has no rendered surface of its own: what it does is only visible in
  * what it lets OTHER components do — anchor targets clearing a sticky header,
  * and `OnThisPage` putting its scroll-spy line in the right place. Those
  * compositions are the documentation.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the stories below render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -108,7 +112,7 @@ function ScrollFrame({ children }: { children: React.ReactNode }) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function MeasuringTheChromeSection() {
+export function MeasuringTheChromeSection() {
   return (
     <ExampleSection
       title='Measuring the chrome'
@@ -138,7 +142,7 @@ function MeasuringTheChromeSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -161,6 +165,130 @@ function InContextSection() {
           <StickyChromeDemo showReadout={false} idPrefix='context' />
         </ScrollFrame>
       </Example>
+    </ExampleSection>
+  )
+}
+
+const behaviour: ReadonlyArray<readonly [string, React.ReactNode]> = [
+  [
+    'Destructure the result',
+    <>
+      Write <code>const {'{ ref, height }'} = useChromeHeight()</code>. Holding the result as one
+      object and reading <code>chrome.height</code> fails React Compiler&rsquo;s &ldquo;Cannot
+      access refs during render&rdquo; lint, because the object carries a <code>ref</code>.
+    </>,
+  ],
+  [
+    'Zero until after mount',
+    <>
+      The height is measured in an effect, so the server render and the first client render agree.
+      Give the property a fallback in CSS — <code>var(--site-chrome-height, 0px)</code> — for that
+      first paint.
+    </>,
+  ],
+  [
+    'Removed on unmount',
+    <>
+      When the chrome element goes away the property is removed, so no stale offset is left for
+      whatever renders next.
+    </>,
+  ],
+  [
+    'Safe to share a property',
+    <>
+      Two instances may publish the same property — a sticky header and a sticky sub-nav, say. It is
+      cleared only when the last of them unmounts, and while any remain a survivor republishes.
+    </>,
+  ],
+]
+
+export function BehaviourSection() {
+  return (
+    <ExampleSection
+      title='Behaviour'
+      description='What the hook does around the measurement, and the one way to call it that the React Compiler lint accepts.'
+    >
+      <dl className='grid gap-x-10 gap-y-6 sm:grid-cols-2'>
+        {behaviour.map(([term, detail]) => (
+          <div key={term} className='space-y-1'>
+            <dt className='text-lg font-semibold'>{term}</dt>
+            <dd className='text-base leading-relaxed text-muted-foreground'>{detail}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+const api: ReadonlyArray<readonly [string, string, string, React.ReactNode]> = [
+  [
+    'property',
+    'Option',
+    "string | null — default '--chrome-height'",
+    <>
+      The custom property to publish the height to, on <code>&lt;html&gt;</code>. Pass{' '}
+      <code>null</code> to publish nothing and use the returned number only.
+    </>,
+  ],
+  [
+    'ref',
+    'Returns',
+    'RefCallback<T>',
+    'Attach to the element whose height is tracked. A callback ref, so the observer follows the element if it is swapped or remounted.',
+  ],
+  [
+    'height',
+    'Returns',
+    'number',
+    'The live border-box height in CSS pixels, unaffected by transforms. 0 until the first measurement.',
+  ],
+]
+
+export function ApiSection() {
+  return (
+    <ExampleSection
+      title='API'
+      description={
+        <>
+          <code>useChromeHeight&lt;T extends HTMLElement&gt;(options?)</code> takes one option and
+          returns two values.
+        </>
+      }
+    >
+      <div className='overflow-x-auto'>
+        <table className='w-full text-left text-base'>
+          <thead>
+            <tr className='border-b border-foreground/10'>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Name
+              </th>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Kind
+              </th>
+              <th scope='col' className='py-3 pe-6 font-semibold'>
+                Type
+              </th>
+              <th scope='col' className='py-3 font-semibold'>
+                Description
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {api.map(([name, kind, type, description]) => (
+              <tr key={name} className='border-b border-foreground/10 align-top'>
+                <th scope='row' className='py-3 pe-6 font-semibold'>
+                  <code>{name}</code>
+                </th>
+                <td className='py-3 pe-6 text-muted-foreground'>{kind}</td>
+                <td className='py-3 pe-6'>
+                  <code>{type}</code>
+                </td>
+                <td className='py-3 text-muted-foreground'>{description}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </ExampleSection>
   )
 }
@@ -197,7 +325,9 @@ function UseChromeHeightDocs() {
         ]}
       />
       <MeasuringTheChromeSection />
+      <BehaviourSection />
       <InContextSection />
+      <ApiSection />
     </DocsPage>
   )
 }
@@ -207,6 +337,7 @@ function UseChromeHeightDocs() {
 const meta = {
   title: 'Hooks/useChromeHeight',
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     docs: { page: UseChromeHeightDocs },
@@ -265,5 +396,7 @@ export const MeasuringTheChrome: Story = {
   name: 'Measuring the chrome',
   render: () => <MeasuringTheChromeSection />,
 }
+
+export const Behaviour: Story = { render: () => <BehaviourSection /> }
 
 export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -3,9 +3,13 @@
  * preview-card primitive. Use it for link previews and other supplementary
  * content that should not steal focus.
  *
- *   Components/HoverCard        → this file: Docs, Default, Playground and one
- *                                 story per docs section
- *   Components/HoverCard/Tests  → hover-card.tests.stories.tsx
+ *   Components/HoverCard                → this file: Docs, Default, Playground
+ *   Components/HoverCard/Features       → hover-card.features.stories.tsx
+ *   Components/HoverCard/Accessibility  → hover-card.accessibility.stories.tsx
+ *   Components/HoverCard/Tests          → hover-card.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -24,8 +28,10 @@ import {
 } from './story-helpers.js'
 
 type Side = NonNullable<ComponentProps<typeof HoverCardContent>['side']>
+type Align = NonNullable<ComponentProps<typeof HoverCardContent>['align']>
 
 const sides: Side[] = ['bottom', 'top', 'left', 'right']
+const aligns: Align[] = ['start', 'center', 'end']
 
 /** The preview every example shows: what a reader will find behind the link. */
 function AgencyPreview() {
@@ -41,9 +47,9 @@ function AgencyPreview() {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function PlacementSection() {
+export function PlacementSection() {
   return (
     <ExampleSection
       title='Placement'
@@ -71,7 +77,72 @@ function PlacementSection() {
   )
 }
 
-function InContextSection() {
+export function AlignmentSection() {
+  return (
+    <ExampleSection
+      title='Alignment'
+      description={
+        <>
+          <code>align</code> lines the card up with the start, centre or end of the trigger along
+          the side it opens from. Use <code>start</code> for a link at the beginning of a line so
+          the card reads down from where the reader&apos;s eye already is.
+        </>
+      }
+    >
+      <Example code={`<HoverCardContent align="start">…</HoverCardContent>`}>
+        {aligns.map((align) => (
+          <ExampleCell key={align} label={`align="${align}"`}>
+            <HoverCard>
+              <HoverCardTrigger render={<Link href='#' />}>Service NSW ({align})</HoverCardTrigger>
+              <HoverCardContent align={align}>
+                <AgencyPreview />
+              </HoverCardContent>
+            </HoverCard>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function DelaySection() {
+  return (
+    <ExampleSection
+      title='Delay'
+      description={
+        <>
+          A card opens 600ms after the pointer settles on the link and closes 300ms after it leaves,
+          so a pointer passing over running text does not flash cards open. <code>delay</code> and{' '}
+          <code>closeDelay</code> on <code>HoverCardTrigger</code> change them. Keep the close
+          delay: it is what lets a reader move the pointer onto the card.
+        </>
+      }
+    >
+      <Example code={`<HoverCardTrigger delay={200} closeDelay={300} render={<Link href="…" />}>`}>
+        <ExampleCell label='default (600ms)'>
+          <HoverCard>
+            <HoverCardTrigger render={<Link href='#' />}>Service NSW</HoverCardTrigger>
+            <HoverCardContent>
+              <AgencyPreview />
+            </HoverCardContent>
+          </HoverCard>
+        </ExampleCell>
+        <ExampleCell label='delay={200}'>
+          <HoverCard>
+            <HoverCardTrigger delay={200} render={<Link href='#' />}>
+              Service NSW (quick)
+            </HoverCardTrigger>
+            <HoverCardContent>
+              <AgencyPreview />
+            </HoverCardContent>
+          </HoverCard>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -127,6 +198,8 @@ function HoverCardDocs() {
         ]}
       />
       <PlacementSection />
+      <AlignmentSection />
+      <DelaySection />
       <InContextSection />
       <DocsApi description='Props of the HoverCard root, plus the side set on HoverCardContent. Try them live in the Playground story.' />
     </DocsPage>
@@ -145,6 +218,7 @@ const meta = {
   title: 'Components/HoverCard',
   component: HoverCard,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -211,7 +285,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Placement: Story = { name: 'Placement', render: () => <PlacementSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

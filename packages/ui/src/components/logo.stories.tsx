@@ -1,15 +1,18 @@
 /**
  * Logo — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Logo                → this file: Docs, Default, Playground and
- *                                    one story per docs section
- *   Components/Logo/Tests          → logo.tests.stories.tsx
+ *   Components/Logo                → this file: Docs, Default, Playground
+ *   Components/Logo/Features       → logo.features.stories.tsx
  *   Components/Logo/Accessibility  → logo.accessibility.stories.tsx
+ *   Components/Logo/Tests          → logo.tests.stories.tsx (hidden)
  *
- * Every example shows a pairing the masterbrand sanctions (DESIGN.md, The
- * Fixed-Mark Rule): full colour on light surfaces, full colour reversed on the
- * `-800` brand band. The mono marks are restricted use and need NSW Government
- * Brand Team approval, so they are documented but never shown as an example.
+ * Every example follows DESIGN.md's Fixed-Mark Rule: full colour on light
+ * surfaces, full colour reversed on the `-800` brand band, and the mono marks
+ * only under "Restricted use", labelled as needing NSW Government Brand Team
+ * approval — mono-white on the `-600` surface Footer falls back to it on.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -24,6 +27,106 @@ import {
   ExampleSection,
 } from './story-helpers.js'
 
+// The solid -800 brand band the reversed mark is sanctioned on, deepening to
+// -950 in dark mode with the rest of the band family (AGENTS.md §3).
+const band = 'bg-primary-800 dark:bg-primary-950'
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story. Default,
+// Variants and Accessible name are the sections this page has always had, in
+// their order.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          Full colour — blue wordmark, red waratah — is the preferred mark and the out-of-the-box{' '}
+          <code>logoType</code>. It goes on every light surface, and turns white in dark mode on its
+          own.
+        </>
+      }
+    >
+      <Example code={`<Logo className="h-16 w-auto" />`}>
+        <Logo className='h-16 w-auto' />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function VariantsSection() {
+  return (
+    <ExampleSection
+      title='Variants'
+      description={
+        <>
+          The mark is painted from fixed brand values and never inherits a colour, so choose the{' '}
+          <code>logoType</code> against the surface behind it, in the masterbrand’s order of
+          preference: full colour first, full colour reversed where full colour is illegible, and
+          mono only as a last resort.
+        </>
+      }
+    >
+      <div className='space-y-10'>
+        <div className='space-y-4'>
+          <div className='space-y-1'>
+            <h3 className='text-lg font-semibold'>Sanctioned</h3>
+            <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+              <code>default</code> on every light surface, including a muted section.{' '}
+              <code>reversed</code> — white wordmark, red waratah — on the solid <code>-800</code>{' '}
+              brand band, where the blue wordmark would vanish into its own colour.
+            </p>
+          </div>
+          <Example code={`<Logo className="h-16 w-auto" />`}>
+            <ExampleCell label='default'>
+              <Logo logoType='default' className='h-16 w-auto' />
+            </ExampleCell>
+          </Example>
+          <Example
+            surface='brand'
+            className={band}
+            code={`<Logo logoType="reversed" className="h-16 w-auto" />`}
+          >
+            <ExampleCell label='reversed, on the -800 brand band'>
+              <Logo logoType='reversed' className='h-16 w-auto' />
+            </ExampleCell>
+          </Example>
+        </div>
+
+        <div className='space-y-4'>
+          <div className='space-y-1'>
+            <h3 className='text-lg font-semibold'>Restricted use</h3>
+            <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+              The mono marks are restricted use only and need NSW Government Brand Team approval
+              before they are used — never a default for dark surfaces. <code>mono-white</code> is
+              for the mid-tone <code>-600</code> surfaces, where neither sanctioned mark keeps its
+              waratah; Footer falls back to it there and warns in development.{' '}
+              <code>mono-black</code> is the one-colour black mark; no surface in this system
+              selects it.
+            </p>
+          </div>
+          <Example
+            code={`// Only with NSW Government Brand Team approval
+<Logo logoType="mono-white" className="h-16 w-auto" />`}
+          >
+            <ExampleCell label='mono-white, on a -600 surface · restricted'>
+              <div className='rounded-md bg-primary-600 p-4'>
+                <Logo logoType='mono-white' className='h-16 w-auto' />
+              </div>
+            </ExampleCell>
+            <ExampleCell label='mono-black · restricted'>
+              <div className='rounded-md bg-background p-4 ring-1 ring-foreground/10'>
+                <Logo logoType='mono-black' className='h-16 w-auto' />
+              </div>
+            </ExampleCell>
+          </Example>
+        </div>
+      </div>
+    </ExampleSection>
+  )
+}
+
 const sizes = [
   ['h-8', '32px'],
   ['h-12', '48px'],
@@ -31,10 +134,7 @@ const sizes = [
   ['h-24', '96px'],
 ] as const
 
-// ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
-
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -56,41 +156,7 @@ function SizesSection() {
   )
 }
 
-function ColoursSection() {
-  return (
-    <ExampleSection
-      title='Colours'
-      description={
-        <>
-          The mark is painted from fixed brand values, so choose its colourway against the surface
-          behind it. Full colour (<code>default</code>) goes on every light surface and turns white
-          in dark mode on its own. Full colour reversed (<code>reversed</code>) is for the solid{' '}
-          <code>-800</code> brand band. <code>mono-white</code> and <code>mono-black</code> are
-          restricted use and need NSW Government Brand Team approval — they are not a default for
-          dark surfaces.
-        </>
-      }
-    >
-      <Example code={`<Logo className="h-16 w-auto" />`}>
-        <ExampleCell label='default'>
-          <Logo className='h-16 w-auto' />
-        </ExampleCell>
-      </Example>
-      <Example surface='subtle'>
-        <ExampleCell label='default, on a muted section'>
-          <Logo className='h-16 w-auto' />
-        </ExampleCell>
-      </Example>
-      <Example surface='brand' code={`<Logo logoType="reversed" className="h-16 w-auto" />`}>
-        <ExampleCell label={<span className='text-white'>reversed, on the brand band</span>}>
-          <Logo logoType='reversed' className='h-16 w-auto' />
-        </ExampleCell>
-      </Example>
-    </ExampleSection>
-  )
-}
-
-function WordmarkSection() {
+export function WordmarkSection() {
   return (
     <ExampleSection
       title='Wordmark'
@@ -114,17 +180,50 @@ function WordmarkSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
-      description='The reversed mark on a brand band, growing from 32px on a phone to 64px on a wide screen. In a product, Header places the mark for you.'
+      description='The reversed mark on the brand band, growing from 32px on a phone to 64px on a wide screen. In a product, Header places the mark for you.'
     >
-      <Example layout='fill' surface='brand'>
+      <Example
+        layout='fill'
+        surface='brand'
+        className={band}
+        code={`<div className="flex items-center gap-6 bg-primary-800">
+  <Logo logoType="reversed" className="h-8 w-auto md:h-12 lg:h-16" />
+  <span>Department of Education</span>
+</div>`}
+      >
         <div className='flex items-center gap-6'>
           <Logo logoType='reversed' className='h-8 w-auto md:h-12 lg:h-16' />
           <span className='text-lg font-semibold text-white'>Department of Education</span>
         </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AccessibleNameSection() {
+  return (
+    <ExampleSection
+      title='Accessible name'
+      description={
+        <>
+          The Logo renders a visually hidden &quot;NSW Government&quot; label immediately before the
+          SVG so screen readers announce the mark by name. The SVG itself is decorative (
+          <code>aria-hidden=&quot;true&quot;</code>) so assistive tech is not read the path data.
+        </>
+      }
+    >
+      <Example
+        code={`<!-- What <Logo /> renders -->
+<span class="sr-only">NSW Government</span>
+<svg viewBox="0 0 259 280" aria-hidden="true">…</svg>`}
+      >
+        <ExampleCell label='announced as “NSW Government”'>
+          <Logo className='h-16 w-auto' />
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
@@ -140,9 +239,9 @@ function LogoDocs() {
       registry='logo'
       summary={
         <>
-          The NSW Government waratah lockup as an inline SVG. The mark does not inherit colour: pick
-          its <strong>colourway</strong> to suit the surface behind it — full colour on light
-          surfaces, reversed on the brand band.
+          The NSW Government waratah lockup. Use it as the primary brand mark on agency websites,
+          applications, and digital products. Choose the variant that gives the strongest contrast
+          against the surface behind the mark.
         </>
       }
     >
@@ -158,10 +257,12 @@ function LogoDocs() {
           'A decorative flourish or a bullet — use an icon, and keep the mark for identity.',
         ]}
       />
+      <DefaultSection />
+      <VariantsSection />
       <SizesSection />
-      <ColoursSection />
       <WordmarkSection />
       <InContextSection />
+      <AccessibleNameSection />
       <DocsApi />
     </DocsPage>
   )
@@ -173,6 +274,7 @@ const meta = {
   title: 'Components/Logo',
   component: Logo,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -227,12 +329,20 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Wordmark: Story = { name: 'Wordmark', render: () => <WordmarkSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
+export const Playground: Story = {
+  render: (args) => {
+    // Each colourway on the surface it is chosen for (the Fixed-Mark Rule):
+    // reversed on the -800 band, the restricted mono-white on a -600 surface.
+    const surface =
+      args.logoType === 'reversed'
+        ? 'bg-primary-800 dark:bg-primary-950'
+        : args.logoType === 'mono-white'
+          ? 'bg-primary-600'
+          : 'bg-background ring-1 ring-foreground/10'
+    return (
+      <div className={`w-full max-w-xl rounded-md p-6 ${surface}`}>
+        <Logo {...args} />
+      </div>
+    )
+  },
+}

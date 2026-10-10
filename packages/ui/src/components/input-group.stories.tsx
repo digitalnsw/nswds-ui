@@ -1,9 +1,13 @@
 /**
  * InputGroup — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/InputGroup        → this file: Docs, Default, Playground and
- *                                  one story per docs section
- *   Components/InputGroup/Tests  → input-group.tests.stories.tsx
+ *   Components/InputGroup               → this file: Docs, Default, Playground
+ *   Components/InputGroup/Features      → input-group.features.stories.tsx
+ *   Components/InputGroup/Accessibility → input-group.accessibility.stories.tsx
+ *   Components/InputGroup/Tests         → input-group.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -38,9 +42,9 @@ function Width({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -49,7 +53,9 @@ function StatesSection() {
           The group takes its state from the control inside it. <code>aria-invalid</code> on the
           input draws the danger border round the whole group; <code>disabled</code> fades the
           group&apos;s border and the input, while affixes stay readable because they still carry
-          information.
+          information. <code>data-disabled=&quot;true&quot;</code> on the group styles only its
+          chrome — set <code>disabled</code> on each control yourself, and any action beside them
+          stays usable.
         </>
       }
     >
@@ -84,11 +90,37 @@ function StatesSection() {
           </ExampleCell>
         ))}
       </Example>
+      <Example
+        layout='stack'
+        code={`<InputGroup data-disabled="true">
+  <InputGroupTextarea aria-label="Comments" disabled />
+  <InputGroupAddon align="block-end">
+    <InputGroupText>Locked during review</InputGroupText>
+    <InputGroupButton>Request a change</InputGroupButton>
+  </InputGroupAddon>
+</InputGroup>`}
+      >
+        <ExampleCell label='data-disabled on the group, action still enabled'>
+          <div className='w-md max-w-full'>
+            <InputGroup data-disabled='true'>
+              <InputGroupTextarea
+                aria-label='Comments'
+                disabled
+                defaultValue='Applicant has supplied two forms of ID.'
+              />
+              <InputGroupAddon align='block-end'>
+                <InputGroupText>Locked during review</InputGroupText>
+                <InputGroupButton>Request a change</InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+        </ExampleCell>
+      </Example>
     </ExampleSection>
   )
 }
 
-function WithIconsSection() {
+export function WithIconsSection() {
   return (
     <ExampleSection
       title='With icons'
@@ -125,7 +157,7 @@ function WithIconsSection() {
   )
 }
 
-function AddonsSection() {
+export function AddonsSection() {
   return (
     <ExampleSection
       title='Addons'
@@ -201,7 +233,7 @@ function AddonsSection() {
   )
 }
 
-function InlineButtonsSection() {
+export function InlineButtonsSection() {
   return (
     <ExampleSection
       title='Inline buttons'
@@ -237,6 +269,16 @@ function InlineButtonsSection() {
             </InputGroup>
           </div>
         </ExampleCell>
+        <ExampleCell label='sm with a label'>
+          <div className='w-80'>
+            <InputGroup>
+              <InputGroupInput aria-label='Promo code' defaultValue='SPRING25' />
+              <InputGroupAddon align='inline-end'>
+                <InputGroupButton size='sm'>Apply</InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+        </ExampleCell>
         <ExampleCell label='icon-xs'>
           <div className='w-80'>
             <InputGroup>
@@ -252,12 +294,34 @@ function InlineButtonsSection() {
             </InputGroup>
           </div>
         </ExampleCell>
+        <ExampleCell label='icon-sm'>
+          <div className='w-80'>
+            <InputGroup>
+              <InputGroupAddon>
+                <IconSearch />
+              </InputGroupAddon>
+              <InputGroupInput
+                aria-label='Search services (icon-sm)'
+                defaultValue='Birth certificate'
+              />
+              <InputGroupAddon align='inline-end'>
+                <InputGroupButton
+                  size='icon-sm'
+                  variant='ghost'
+                  aria-label='Clear search (icon-sm)'
+                >
+                  <IconClose />
+                </InputGroupButton>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
 }
 
-function AttachedActionSection() {
+export function AttachedActionSection() {
   return (
     <ExampleSection
       title='Attached action'
@@ -295,13 +359,23 @@ function AttachedActionSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Finding a local council by postcode. The label and hint come from Field, exactly as for a bare Input, and the attached action submits the search.'
     >
-      <Example>
+      <Example
+        code={`<Field>
+  <FieldLabel>Find your local council</FieldLabel>
+  <FieldDescription>Enter a NSW postcode or suburb.</FieldDescription>
+  <InputGroup>
+    <InputGroupAddon><IconSearch /></InputGroupAddon>
+    <InputGroupInput autoComplete="postal-code" placeholder="For example, 2150" />
+    <InputGroupAction type="submit">Search</InputGroupAction>
+  </InputGroup>
+</Field>`}
+      >
         <Width>
           <Field>
             <FieldLabel>Find your local council</FieldLabel>
@@ -382,6 +456,7 @@ const meta = {
   title: 'Components/InputGroup',
   component: InputGroup,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true },
@@ -440,21 +515,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
-
-export const Addons: Story = { name: 'Addons', render: () => <AddonsSection /> }
-
-export const InlineButtons: Story = {
-  name: 'Inline buttons',
-  render: () => <InlineButtonsSection />,
-}
-
-export const AttachedAction: Story = {
-  name: 'Attached action',
-  render: () => <AttachedActionSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

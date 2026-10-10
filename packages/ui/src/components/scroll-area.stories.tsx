@@ -1,9 +1,13 @@
 /**
  * ScrollArea — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/ScrollArea        → this file: Docs, Default, Playground and
- *                                  one story per docs section
- *   Components/ScrollArea/Tests  → scroll-area.tests.stories.tsx
+ *   Components/ScrollArea                → this file: Docs, Default, Playground
+ *   Components/ScrollArea/Features       → scroll-area.features.stories.tsx
+ *   Components/ScrollArea/Accessibility  → scroll-area.accessibility.stories.tsx
+ *   Components/ScrollArea/Tests          → scroll-area.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -73,7 +77,7 @@ function CentreList() {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function ScrollDirectionSection() {
+export function ScrollDirectionSection() {
   return (
     <ExampleSection
       title='Scroll direction'
@@ -114,13 +118,51 @@ function ScrollDirectionSection() {
   )
 }
 
-function InContextSection() {
+export function KeyboardSection() {
+  return (
+    <ExampleSection
+      title='Keyboard'
+      description={
+        <>
+          While its content overflows, the viewport is a Tab stop: focus it and the arrow keys, Page
+          Up / Page Down and Space scroll it, with a ring to show where focus is. When everything
+          fits, it drops out of the tab order so keyboard users are not stopped on a box with
+          nothing to scroll.
+        </>
+      }
+    >
+      <Example code={`<ScrollArea className="h-48">…</ScrollArea>`}>
+        <ExampleCell label='overflows — a Tab stop'>
+          <ScrollArea className={`h-40 w-56 ${frame}`}>
+            <CentreList />
+          </ScrollArea>
+        </ExampleCell>
+        <ExampleCell label='fits — skipped'>
+          <ScrollArea className={`h-40 w-56 ${frame}`}>
+            <ul className='p-4'>
+              <li>Albury</li>
+              <li>Armidale</li>
+            </ul>
+          </ScrollArea>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Terms a person must read before they agree, held to a fixed height so the confirmation stays in view. Native scrolling and keyboard behaviour are untouched; only the scrollbar is restyled.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<p>Terms and conditions</p>
+<ScrollArea className="h-56 rounded-md border">
+  <div className="p-4">…</div>
+</ScrollArea>`}
+      >
         <div className='max-w-md space-y-3'>
           <p className='font-semibold'>Terms and conditions</p>
           <ScrollArea className={`h-56 ${frame}`}>
@@ -178,6 +220,7 @@ function ScrollAreaDocs() {
         ]}
       />
       <ScrollDirectionSection />
+      <KeyboardSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -190,6 +233,7 @@ const meta = {
   title: 'Components/ScrollArea',
   component: ScrollArea,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -227,10 +271,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const ScrollDirection: Story = {
-  name: 'Scroll direction',
-  render: () => <ScrollDirectionSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

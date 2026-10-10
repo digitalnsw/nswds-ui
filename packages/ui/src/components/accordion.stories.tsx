@@ -1,9 +1,13 @@
 /**
  * Accordion — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Accordion        → this file: Docs, Default, Playground and one
- *                                 story per docs section
- *   Components/Accordion/Tests  → accordion.tests.stories.tsx
+ *   Components/Accordion                → this file: Docs, Default, Playground
+ *   Components/Accordion/Features       → accordion.features.stories.tsx
+ *   Components/Accordion/Accessibility  → accordion.accessibility.stories.tsx
+ *   Components/Accordion/Tests          → accordion.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Base UI owns the open/close state, ARIA (aria-expanded / aria-controls) and
  * keyboard handling; the component only styles the trigger and panel.
@@ -46,33 +50,53 @@ function LicenceQuestions({ variant }: { variant?: AccordionVariant }) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function VariantsSection() {
+const variantDocs = [
+  ['default', 'Hairlines between items. The quiet default for a few questions inside a page.'],
+  [
+    'accent',
+    'A waratah-red rule slides in beside the open item, so it is clear at a glance which one is expanded.',
+  ],
+  [
+    'band',
+    'Every heading sits on a grey band, for FAQ and support pages that need strong grouping.',
+  ],
+] as const satisfies ReadonlyArray<readonly [AccordionVariant, string]>
+
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
-      description={
-        <>
-          <code>default</code> separates items with hairlines. <code>accent</code> slides a
-          waratah-red rule in beside the open item, so it is clear which one is expanded.{' '}
-          <code>band</code> sets every heading on a grey band, for FAQ and support pages that need
-          strong grouping.
-        </>
-      }
+      description='The variant sets how strongly items are grouped and how loudly the open one is marked. All three share the same trigger, chevron and panel.'
     >
-      <Example code={`<Accordion>…</Accordion>`}>
-        <LicenceQuestions />
-      </Example>
-      <Example code={`<Accordion variant="accent">…</Accordion>`}>
-        <LicenceQuestions variant='accent' />
-      </Example>
-      <Example code={`<Accordion variant="band">…</Accordion>`}>
-        <LicenceQuestions variant='band' />
-      </Example>
+      <div className='space-y-10'>
+        {variantDocs.map(([variant, description]) => (
+          <div key={variant} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>
+                <code>{variant}</code>
+              </h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {description}
+              </p>
+            </div>
+            <Example
+              layout='fill'
+              code={
+                variant === 'default'
+                  ? `<Accordion>…</Accordion>`
+                  : `<Accordion variant="${variant}">…</Accordion>`
+              }
+            >
+              <LicenceQuestions variant={variant} />
+            </Example>
+          </div>
+        ))}
+      </div>
     </ExampleSection>
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -104,7 +128,7 @@ function StatesSection() {
   )
 }
 
-function MultipleOpenSection() {
+export function MultipleOpenSection() {
   return (
     <ExampleSection
       title='Multiple open'
@@ -115,7 +139,10 @@ function MultipleOpenSection() {
         </>
       }
     >
-      <Example code={`<Accordion multiple defaultValue={['before', 'after']}>…</Accordion>`}>
+      <Example
+        layout='fill'
+        code={`<Accordion multiple defaultValue={['before', 'after']}>…</Accordion>`}
+      >
         <Accordion multiple defaultValue={['before', 'after']} className='max-w-md'>
           <AccordionItem value='before'>
             <AccordionTrigger>Before you apply</AccordionTrigger>
@@ -131,13 +158,21 @@ function MultipleOpenSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Frequently asked questions at the end of a service page. Panels hold rich content, and links inside them take the accordion’s link styling.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Accordion>
+  <AccordionItem value="lost">
+    <AccordionTrigger>What if I lose my licence card?</AccordionTrigger>
+    <AccordionContent>…</AccordionContent>
+  </AccordionItem>
+</Accordion>`}
+      >
         <div className='max-w-xl space-y-4'>
           <p className='text-2xl font-bold'>Frequently asked questions</p>
           <Accordion>
@@ -214,6 +249,7 @@ const meta = {
   title: 'Components/Accordion',
   component: Accordion,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -307,11 +343,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const MultipleOpen: Story = { name: 'Multiple open', render: () => <MultipleOpenSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

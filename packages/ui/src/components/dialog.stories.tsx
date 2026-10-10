@@ -3,9 +3,13 @@
  * owns the focus trap, scroll lock, focus return and Escape / outside-click
  * dismissal.
  *
- *   Components/Dialog        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Dialog/Tests  → dialog.tests.stories.tsx
+ *   Components/Dialog                → this file: Docs, Default, Playground
+ *   Components/Dialog/Features       → dialog.features.stories.tsx
+ *   Components/Dialog/Accessibility  → dialog.accessibility.stories.tsx
+ *   Components/Dialog/Tests          → dialog.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -71,9 +75,9 @@ function ContactDialog({ variant, trigger }: { variant?: DialogVariant; trigger:
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -104,7 +108,7 @@ function VariantsSection() {
   )
 }
 
-function CloseButtonSection() {
+export function CloseButtonSection() {
   return (
     <ExampleSection
       title='Close button'
@@ -153,7 +157,7 @@ function CloseButtonSection() {
   )
 }
 
-function LongContentSection() {
+export function LongContentSection() {
   return (
     <ExampleSection
       title='Long content'
@@ -232,7 +236,7 @@ function ControlledExample() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSection() {
   return (
     <ExampleSection
       title='Controlled'
@@ -262,13 +266,32 @@ function ControlledSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A summary of the details a service holds, with each change made in a dialog so the reader never leaves the page.'
     >
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<Dialog>
+  <DialogTrigger render={<Button variant="outline" size="sm" />}>Change postal address</DialogTrigger>
+  <DialogContent>
+    <form onSubmit={save}>
+      <DialogHeader>
+        <DialogTitle>Change postal address</DialogTitle>
+        <DialogDescription>We send renewal notices to this address.</DialogDescription>
+      </DialogHeader>
+      …
+      <DialogFooter>
+        <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+        <DialogClose render={<Button />}>Save address</DialogClose>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>`}
+      >
         <div className='max-w-md space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
           <h3 className='text-xl font-semibold'>Your details</h3>
           <dl className='space-y-3'>
@@ -368,6 +391,7 @@ const meta = {
   title: 'Components/Dialog',
   component: Dialog,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -469,13 +493,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const CloseButton: Story = { name: 'Close button', render: () => <CloseButtonSection /> }
-
-export const LongContent: Story = { name: 'Long content', render: () => <LongContentSection /> }
-
-export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

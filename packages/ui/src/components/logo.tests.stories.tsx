@@ -1,11 +1,11 @@
 /**
  * Logo — Tests
  *
- * Regression coverage for every `logoType` and both wordmarks. The colourway
- * matrix renders all four types for visual review — including the restricted
- * mono marks, which the docs page deliberately never shows as an example (see
- * DESIGN.md, The Fixed-Mark Rule). Each type sits on the surface it resolves
- * against: light types on the page, light-on-dark types on the brand band.
+ * Regression coverage for every `logoType`. The colourway matrix renders all
+ * four types for visual review, each on the surface it is chosen for (DESIGN.md,
+ * The Fixed-Mark Rule): light types on the page, reversed on the -800 brand
+ * band, the restricted mono-white on a -600 surface. The wordmark check lives
+ * in logo.features.stories.tsx (Wordmark), where it has always been.
  *
  * The Logo has no `data-slot`, so assertions query the SVG and the sr-only
  * accessible-name span directly.
@@ -33,6 +33,8 @@ type Story = StoryObj<typeof meta>
 
 const pageTile = 'space-y-3 rounded-md bg-background p-6 ring-1 ring-foreground/10'
 const bandTile = 'space-y-3 rounded-md bg-primary-800 p-6 text-white dark:bg-primary-950'
+// The -600 surface the restricted mono-white mark is chosen for (Footer's fallback).
+const midTile = 'space-y-3 rounded-md bg-primary-600 p-6 text-white'
 
 export const AllLogoTypes: Story = {
   name: 'All logo types',
@@ -50,7 +52,7 @@ export const AllLogoTypes: Story = {
         <Logo logoType='reversed' className='h-16 w-auto' />
         <p className='text-base'>reversed</p>
       </div>
-      <div className={bandTile}>
+      <div className={midTile}>
         <Logo logoType='mono-white' className='h-16 w-auto' />
         <p className='text-base'>mono-white</p>
       </div>
@@ -71,43 +73,6 @@ export const AllLogoTypes: Story = {
       if (span.textContent !== 'NSW Government') {
         throw new Error(
           `Expected accessible name "NSW Government", received "${span.textContent}".`,
-        )
-      }
-    }
-  },
-}
-
-export const Wordmark: Story = {
-  name: 'Wordmark',
-  render: () => (
-    <div className='flex flex-wrap items-end gap-8'>
-      <div className={pageTile}>
-        <Logo className='h-20 w-auto' />
-        <p className='text-base text-muted-foreground'>full (default)</p>
-      </div>
-      <div className={pageTile}>
-        <Logo wordmark='nsw' className='h-20 w-auto' />
-        <p className='text-base text-muted-foreground'>nsw</p>
-      </div>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const svgs = canvasElement.querySelectorAll('svg')
-    const nsw = [...svgs].find((s) => s.getAttribute('viewBox') === '0 0 259 247')
-    if (!nsw) {
-      throw new Error('Expected an nsw-wordmark Logo with viewBox "0 0 259 247".')
-    }
-    // The full mark draws four paths; the nsw mark drops the "Government" row,
-    // so it must draw exactly three.
-    const pathCount = nsw.querySelectorAll('path').length
-    if (pathCount !== 3) {
-      throw new Error(`Expected the nsw wordmark to draw 3 paths, found ${pathCount}.`)
-    }
-    const srOnly = canvasElement.querySelectorAll('span.sr-only')
-    for (const span of srOnly) {
-      if (span.textContent !== 'NSW Government') {
-        throw new Error(
-          `Expected every Logo accessible name to stay "NSW Government", received "${span.textContent}".`,
         )
       }
     }

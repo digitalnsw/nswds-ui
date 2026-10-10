@@ -1,9 +1,13 @@
 /**
  * Section — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Section        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/Section/Tests  → section.tests.stories.tsx
+ *   Components/Section                → this file: Docs, Default, Playground
+ *   Components/Section/Features       → section.features.stories.tsx
+ *   Components/Section/Accessibility  → section.accessibility.stories.tsx
+ *   Components/Section/Tests          → section.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -33,7 +37,7 @@ function Band({ label }: { label: string }) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function SpacingSection() {
+export function SpacingSection() {
   return (
     <ExampleSection
       title='Spacing'
@@ -71,7 +75,7 @@ function SpacingSection() {
   )
 }
 
-function DividerSection() {
+export function DividerSection() {
   return (
     <ExampleSection
       title='Divider'
@@ -94,7 +98,7 @@ function DividerSection() {
   )
 }
 
-function NamingSection() {
+export function NamingSection() {
   return (
     <ExampleSection
       title='Naming the section'
@@ -128,13 +132,21 @@ function NamingSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Stacked sections make the vertical rhythm of a service page. Each one is named by its own heading.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Section spacing="tight" divider labelledBy="overview-heading">
+  <Container size="narrow">
+    <h2 id="overview-heading">Apply for a Working with Children Check</h2>
+  </Container>
+</Section>
+<Section spacing="tight" labelledBy="cost-heading">…</Section>`}
+      >
         <Section spacing='tight' divider labelledBy='context-overview-heading'>
           <Container size='narrow'>
             <p id='context-overview-heading' className='text-2xl font-bold'>
@@ -203,6 +215,7 @@ const meta = {
   title: 'Components/Section',
   component: Section,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -284,14 +297,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Spacing: Story = { name: 'Spacing', render: () => <SpacingSection /> }
-
-export const Divider: Story = { name: 'Divider', render: () => <DividerSection /> }
-
-export const NamingTheSection: Story = {
-  name: 'Naming the section',
-  render: () => <NamingSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

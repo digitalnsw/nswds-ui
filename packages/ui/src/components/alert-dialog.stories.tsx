@@ -3,9 +3,13 @@
  * alert-dialog primitive (`role="alertdialog"`, no outside-click dismissal;
  * Escape still closes it, as Cancel).
  *
- *   Components/AlertDialog        → this file: Docs, Default, Playground and
- *                                   one story per docs section
- *   Components/AlertDialog/Tests  → alert-dialog.tests.stories.tsx
+ *   Components/AlertDialog                → this file: Docs, Default, Playground
+ *   Components/AlertDialog/Features       → alert-dialog.features.stories.tsx
+ *   Components/AlertDialog/Accessibility  → alert-dialog.accessibility.stories.tsx
+ *   Components/AlertDialog/Tests          → alert-dialog.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -103,9 +107,9 @@ function ConfirmDialog({
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -143,7 +147,7 @@ function VariantsSection() {
   )
 }
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -179,7 +183,7 @@ function SizesSection() {
   )
 }
 
-function WithIconsSection() {
+export function WithIconsSection() {
   return (
     <ExampleSection
       title='With icons'
@@ -215,7 +219,7 @@ function WithIconsSection() {
   )
 }
 
-function DestructiveActionsSection() {
+export function DestructiveActionsSection() {
   return (
     <ExampleSection
       title='Destructive actions'
@@ -318,7 +322,7 @@ function ControlledExample() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSection() {
   return (
     <ExampleSection
       title='Controlled'
@@ -344,6 +348,95 @@ function ControlledSection() {
 </AlertDialog>`}
       >
         <ControlledExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+const savedVehicles = [
+  ['Toyota Corolla', 'ABC12D'],
+  ['Mazda CX-5', 'XYZ34E'],
+] as const
+
+function SavedVehiclesExample() {
+  const [vehicles, setVehicles] = useState<ReadonlyArray<readonly [string, string]>>(savedVehicles)
+  const [removing, setRemoving] = useState<string | null>(null)
+  return (
+    <div className='w-full max-w-md space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
+      <p className='text-xl font-semibold'>Your vehicles</p>
+      {vehicles.length === 0 ? (
+        <p className='text-muted-foreground'>You have no vehicles on your account.</p>
+      ) : (
+        <ul className='divide-y divide-border'>
+          {vehicles.map(([model, plate]) => (
+            <li key={plate} className='flex items-center justify-between gap-4 py-3'>
+              <div>
+                <p className='font-semibold'>{model}</p>
+                <p className='text-muted-foreground'>Registration {plate}</p>
+              </div>
+              <AlertDialog
+                open={removing === plate}
+                onOpenChange={(open) => setRemoving(open ? plate : null)}
+              >
+                <AlertDialogTrigger render={<Button variant='outline' color='danger' />}>
+                  Remove<span className='sr-only'> {model}</span>
+                </AlertDialogTrigger>
+                <AlertDialogContent variant='rule'>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove {model} from your account?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Registration renewal reminders for {plate} will stop. You can add the vehicle
+                      again at any time.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Keep vehicle</AlertDialogCancel>
+                    <AlertDialogAction
+                      color='danger'
+                      onClick={() => {
+                        setVehicles((list) => list.filter(([, p]) => p !== plate))
+                        setRemoving(null)
+                      }}
+                    >
+                      Remove vehicle
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          Removing a vehicle from an online account. Each Remove button names its vehicle for screen
+          readers, the question repeats it, and the safe choice comes first — it is also what Escape
+          does.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<AlertDialogContent variant="rule">
+  <AlertDialogHeader>
+    <AlertDialogTitle>Remove Toyota Corolla from your account?</AlertDialogTitle>
+    <AlertDialogDescription>…</AlertDialogDescription>
+  </AlertDialogHeader>
+  <AlertDialogFooter>
+    <AlertDialogCancel>Keep vehicle</AlertDialogCancel>
+    <AlertDialogAction color="danger" onClick={remove}>Remove vehicle</AlertDialogAction>
+  </AlertDialogFooter>
+</AlertDialogContent>`}
+      >
+        <SavedVehiclesExample />
       </Example>
     </ExampleSection>
   )
@@ -394,6 +487,7 @@ function AlertDialogDocs() {
       <WithIconsSection />
       <DestructiveActionsSection />
       <ControlledSection />
+      <InContextSection />
       <DocsApi description='Props of the AlertDialog root, plus the look and size set on AlertDialogContent. Try them live in the Playground story.' />
     </DocsPage>
   )
@@ -414,6 +508,7 @@ const meta = {
   title: 'Components/AlertDialog',
   component: AlertDialog,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -514,16 +609,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
-
-export const DestructiveActions: Story = {
-  name: 'Destructive actions',
-  render: () => <DestructiveActionsSection />,
-}
-
-export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }

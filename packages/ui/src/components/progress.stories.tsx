@@ -1,9 +1,13 @@
 /**
- * Progress — follows docs/reference-storybook-standard.md.
+ * Progress — a determinate progress bar.
  *
- *   Components/Progress        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/Progress/Tests  → progress.tests.stories.tsx
+ *   Components/Progress                → this file: Docs, Default, Playground
+ *   Components/Progress/Features       → progress.features.stories.tsx
+ *   Components/Progress/Accessibility  → progress.accessibility.stories.tsx
+ *   Components/Progress/Tests          → progress.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A determinate progress bar on the Base UI progress primitive. The Root
  * (`data-slot="progress"`) carries `role="progressbar"` and the ARIA value
@@ -13,22 +17,35 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ReactNode } from 'react'
 import { expect } from 'storybook/test'
 
 import { Progress, ProgressLabel, ProgressValue } from './progress.js'
-import {
-  DocsApi,
-  DocsPage,
-  DocsUsage,
-  Example,
-  ExampleCell,
-  ExampleSection,
-} from './story-helpers.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+
+/**
+ * A full-width specimen with its label above it. A bar fills its column, so
+ * Button's centred cell would collapse it.
+ */
+function Specimen({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className='w-full max-w-xl space-y-2'>
+      <p className='text-base font-medium tracking-wide text-muted-foreground'>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+const stateDocs = [
+  [0, 'Not started — the empty track shows there is work to come.'],
+  [40, 'Under way — the indicator fills to the share that is done.'],
+  [100, 'Complete — replace the bar with a confirmation once the reader has seen it fill.'],
+] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -39,18 +56,22 @@ function StatesSection() {
         </>
       }
     >
-      <Example layout='stack' code={`<Progress value={40} aria-label="Upload progress" />`}>
-        {[0, 40, 100].map((value) => (
-          <ExampleCell key={value} label={`value={${value}}`}>
-            <Progress value={value} aria-label='Upload progress' className='w-80 max-w-full' />
-          </ExampleCell>
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<Progress value={40} aria-label="Upload progress" />`}
+      >
+        {stateDocs.map(([value, description]) => (
+          <Specimen key={value} label={`value={${value}} — ${description}`}>
+            <Progress value={value} aria-label='Upload progress' />
+          </Specimen>
         ))}
       </Example>
     </ExampleSection>
   )
 }
 
-function WithALabelSection() {
+export function WithALabelSection() {
   return (
     <ExampleSection
       title='With a label'
@@ -79,13 +100,49 @@ function WithALabelSection() {
   )
 }
 
-function InContextSection() {
+export function RangeAndFormatSection() {
+  return (
+    <ExampleSection
+      title='Range and format'
+      description={
+        <>
+          When the work is counted in things rather than percent, set <code>max</code> and show the
+          count: <code>ProgressValue</code> takes a function of the formatted and raw value. Pass{' '}
+          <code>getAriaValueText</code> with the same words so a screen reader hears “3 of 5 files”,
+          not “60%”.
+        </>
+      }
+    >
+      <Example
+        code={`<Progress value={3} max={5} getAriaValueText={(_, value) => \`\${value} of 5 files\`}>
+  <ProgressLabel>Uploading supporting documents</ProgressLabel>
+  <ProgressValue>{(_, value) => \`\${value} of 5 files\`}</ProgressValue>
+</Progress>`}
+      >
+        <div className='w-full max-w-md'>
+          <Progress value={3} max={5} getAriaValueText={(_, value) => `${value} of 5 files`}>
+            <ProgressLabel>Uploading supporting documents</ProgressLabel>
+            <ProgressValue>{(_, value) => `${value} of 5 files`}</ProgressValue>
+          </Progress>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='An upload in a form, with the file name in the label so the reader knows what is moving.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Progress value={35}>
+  <ProgressLabel>Uploading passport.pdf</ProgressLabel>
+  <ProgressValue />
+</Progress>`}
+      >
         <div className='max-w-md space-y-4'>
           <p className='text-xl font-semibold'>Upload proof of identity</p>
           <p className='text-muted-foreground'>PDF, JPG or PNG, up to 10MB.</p>
@@ -128,6 +185,7 @@ function ProgressDocs() {
       />
       <StatesSection />
       <WithALabelSection />
+      <RangeAndFormatSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -140,6 +198,7 @@ const meta = {
   title: 'Components/Progress',
   component: Progress,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -192,9 +251,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithALabel: Story = { name: 'With a label', render: () => <WithALabelSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

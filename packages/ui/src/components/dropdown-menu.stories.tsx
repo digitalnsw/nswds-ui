@@ -2,9 +2,13 @@
  * DropdownMenu — a menu of actions opened from a trigger, on the Base UI menu
  * primitive. Base UI owns roving focus, typeahead, submenus and dismissal.
  *
- *   Components/DropdownMenu        → this file: Docs, Default, Playground and
- *                                    one story per docs section
- *   Components/DropdownMenu/Tests  → dropdown-menu.tests.stories.tsx
+ *   Components/DropdownMenu                → this file: Docs, Default, Playground
+ *   Components/DropdownMenu/Features       → dropdown-menu.features.stories.tsx
+ *   Components/DropdownMenu/Accessibility  → dropdown-menu.accessibility.stories.tsx
+ *   Components/DropdownMenu/Tests          → dropdown-menu.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -73,9 +77,9 @@ function AccountMenu({ variant, trigger }: { variant?: DropdownMenuVariant; trig
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -107,7 +111,7 @@ function VariantsSection() {
   )
 }
 
-function WithIconsSection() {
+export function WithIconsSection() {
   return (
     <ExampleSection
       title='With icons'
@@ -155,7 +159,7 @@ function WithIconsSection() {
   )
 }
 
-function GroupsAndLabelsSection() {
+export function GroupsAndLabelsSection() {
   return (
     <ExampleSection
       title='Groups and labels'
@@ -226,7 +230,7 @@ function CheckboxesAndRadiosMenu() {
   )
 }
 
-function CheckboxesAndRadiosSection() {
+export function CheckboxesAndRadiosSection() {
   return (
     <ExampleSection
       title='Checkboxes and radios'
@@ -252,7 +256,7 @@ function CheckboxesAndRadiosSection() {
   )
 }
 
-function SubmenusSection() {
+export function SubmenusSection() {
   return (
     <ExampleSection
       title='Submenus'
@@ -293,7 +297,7 @@ function SubmenusSection() {
   )
 }
 
-function LinksSection() {
+export function LinksSection() {
   return (
     <ExampleSection
       title='Links'
@@ -319,7 +323,7 @@ function LinksSection() {
   )
 }
 
-function DestructiveAndDisabledSection() {
+export function DestructiveAndDisabledSection() {
   return (
     <ExampleSection
       title='Destructive and disabled items'
@@ -354,13 +358,34 @@ function DestructiveAndDisabledSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A “More actions” menu at the end of a list row, opened from an icon-only button with an aria-label. The menu is never narrower than 192px, so it does not shrink to the button.'
     >
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<DropdownMenu>
+  <DropdownMenuTrigger
+    render={
+      <Button
+        variant="ghost"
+        iconOnly
+        aria-label="More actions for Working with Children Check"
+        leadingVisual={IconMoreHoriz}
+      />
+    }
+  />
+  <DropdownMenuContent align="end">
+    <DropdownMenuItem>Continue application</DropdownMenuItem>
+    <DropdownMenuItem>Download a copy</DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem variant="destructive">Delete draft</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>`}
+      >
         <div className='flex max-w-md items-center justify-between gap-4 rounded-md bg-background py-3 ps-6 pe-3 ring-1 ring-foreground/10'>
           <div>
             <p className='font-semibold'>Working with Children Check</p>
@@ -459,6 +484,7 @@ const meta = {
   title: 'Components/DropdownMenu',
   component: DropdownMenu,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -597,28 +623,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
-
-export const GroupsAndLabels: Story = {
-  name: 'Groups and labels',
-  render: () => <GroupsAndLabelsSection />,
-}
-
-export const CheckboxesAndRadios: Story = {
-  name: 'Checkboxes and radios',
-  render: () => <CheckboxesAndRadiosSection />,
-}
-
-export const Submenus: Story = { name: 'Submenus', render: () => <SubmenusSection /> }
-
-export const Links: Story = { name: 'Links', render: () => <LinksSection /> }
-
-export const DestructiveAndDisabledItems: Story = {
-  name: 'Destructive and disabled items',
-  render: () => <DestructiveAndDisabledSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

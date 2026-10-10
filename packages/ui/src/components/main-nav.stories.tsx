@@ -1,9 +1,13 @@
 /**
  * MainNav — the site's primary navigation bar, with mega panels.
  *
- *   Components/MainNav        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/MainNav/Tests  → main-nav.tests.stories.tsx
+ *   Components/MainNav                → this file: Docs, Default, Playground
+ *   Components/MainNav/Features       → main-nav.features.stories.tsx
+ *   Components/MainNav/Accessibility  → main-nav.accessibility.stories.tsx
+ *   Components/MainNav/Tests          → main-nav.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * NavigationMenu (navigation-menu.tsx) is the internal Base UI wrapper MainNav
  * is built on; it has no story set of its own, and these stories cover it.
@@ -64,13 +68,29 @@ const demoNavigation: MainNavItem[] = [
   },
 ]
 
-const colourFamilies: ReadonlyArray<{ name: string; colours: readonly MainNavColor[] }> = [
+const colourFamilies: ReadonlyArray<{
+  name: string
+  description: string
+  colours: readonly MainNavColor[]
+}> = [
   {
-    name: 'white and primary',
+    name: 'White and primary',
+    description:
+      'The default white bar, then the four steps of the theme’s primary colour, from the deep brand band to a pale tint. These follow the active masterbrand theme.',
     colours: ['white', 'primary-800', 'primary-600', 'primary-400', 'primary-200'],
   },
-  { name: 'grey', colours: ['grey-800', 'grey-600', 'grey-400', 'grey-200'] },
-  { name: 'accent', colours: ['accent-800', 'accent-600', 'accent-400', 'accent-200'] },
+  {
+    name: 'Grey',
+    description:
+      'Neutral bars, for a service whose Header already carries the brand colour or that wants quieter chrome.',
+    colours: ['grey-800', 'grey-600', 'grey-400', 'grey-200'],
+  },
+  {
+    name: 'Accent',
+    description:
+      'The four steps of the theme’s accent colour, for a service that leads with its accent rather than its primary.',
+    colours: ['accent-800', 'accent-600', 'accent-400', 'accent-200'],
+  },
 ]
 
 /**
@@ -90,9 +110,9 @@ function LabelledBar({
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function PanelsAndLinksSection() {
+export function PanelsAndLinksSection() {
   return (
     <ExampleSection
       title='Panels and links'
@@ -128,41 +148,51 @@ function PanelsAndLinksSection() {
   )
 }
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
       description={
         <>
-          Thirteen surfaces, in the Footer&apos;s vocabulary and with its dark-mode deepening, so a
-          service themes its chrome with one word. Every light pair meets WCAG 2.2 AA and every dark
-          pair AAA. Panels always open on the popover surface, whatever the bar&apos;s colour.
+          Thirteen surfaces — the Footer&rsquo;s exact vocabulary and dark-mode deepening, so a
+          service themes its whole chrome with one word. Every light pair is WCAG 2.2 AA (eleven are
+          AAA) and every dark pair is AAA. Panels always render on the house popover surface with
+          the family&rsquo;s accent ink.
         </>
       }
     >
-      {colourFamilies.map(({ name, colours }, index) => (
-        <Example
-          key={name}
-          layout='fill'
-          className='space-y-6'
-          code={index === 0 ? `<MainNav navigation={navigation} color="primary-800" />` : undefined}
-        >
-          {colours.map((color) => (
-            <LabelledBar
-              key={color}
-              label={color}
-              id={`main-nav-colour-${color}`}
-              color={color}
-              navigation={demoNavigation}
-            />
-          ))}
-        </Example>
-      ))}
+      <div className='space-y-10'>
+        {colourFamilies.map(({ name, description, colours }) => (
+          <div key={name} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>{name}</h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {description}
+              </p>
+            </div>
+            <Example
+              layout='fill'
+              className='space-y-6'
+              code={`<MainNav navigation={navigation} color="${colours.find((c) => c !== 'white')}" />`}
+            >
+              {colours.map((color) => (
+                <LabelledBar
+                  key={color}
+                  label={color}
+                  id={`main-nav-colour-${color}`}
+                  color={color}
+                  navigation={demoNavigation}
+                />
+              ))}
+            </Example>
+          </div>
+        ))}
+      </div>
     </ExampleSection>
   )
 }
 
-function BordersSection() {
+export function BordersSection() {
   return (
     <ExampleSection
       title='Borders'
@@ -195,7 +225,7 @@ function BordersSection() {
   )
 }
 
-function ContainersSection() {
+export function ContainersSection() {
   return (
     <ExampleSection
       title='Containers'
@@ -240,16 +270,18 @@ function ContainersSection() {
   )
 }
 
-function CurrentPageSection() {
+export function CurrentPageSection() {
   return (
     <ExampleSection
       title='Current page'
       description={
         <>
-          Pass the router&apos;s pathname as <code>currentHref</code>. The matching link announces{' '}
-          <code>aria-current=&quot;page&quot;</code>, and the top-level item it belongs to carries
-          the underline — a plain link directly, or the trigger whose panel holds the page (open
-          Quit support in the second bar to see the marked link).
+          There is no router coupling: pass <code>currentHref</code> and the exact matching link
+          announces <code>aria-current=&quot;page&quot;</code> while its top-level item carries the
+          underline. Under a sticky <code>Header</code>, set <code>--main-nav-top</code> to the
+          header height and pass <code>sticky</code> — see the Sticky story. The underline goes on a
+          plain link directly, or on the trigger whose panel holds the page: open Quit support in
+          the second bar to see the marked link.
         </>
       }
     >
@@ -321,7 +353,7 @@ function StickyScene() {
   )
 }
 
-function StickySection() {
+export function StickySection() {
   return (
     <ExampleSection
       title='Sticky'
@@ -349,7 +381,7 @@ function StickySection() {
   )
 }
 
-function RightToLeftSection() {
+export function RightToLeftSection() {
   return (
     <ExampleSection
       title='Right to left'
@@ -379,7 +411,7 @@ function RightToLeftSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -420,10 +452,12 @@ function MainNavDocs() {
       registry='main-nav'
       summary={
         <>
-          The site&apos;s primary navigation bar, below the Header. Top-level items open mega panels
-          of the section&apos;s pages or link straight to a page, and the bar marks where the reader
-          is. Every link renders through <code>Link</code>, so a framework link set on{' '}
-          <code>LinkProvider</code> is used automatically.
+          The site&rsquo;s primary navigation bar. Items with <code>links</code> open mega panels —
+          a featured lead link above a bordered grid of section links, spanning the nav&rsquo;s full
+          width — and items without them render as plain links styled like the triggers. Everything
+          is driven by the <code>navigation</code> data prop; every anchor renders through{' '}
+          <code>Link</code>, so a framework link injected via <code>LinkProvider</code> is used
+          automatically.
         </>
       }
     >
@@ -458,10 +492,17 @@ const meta = {
   title: 'Components/MainNav',
   component: MainNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: MainNavDocs },
+    docs: {
+      page: MainNavDocs,
+      description: {
+        component:
+          'Full-width site navigation bar with mega-menu panels, in the Footer’s thirteen surface colours. Data-driven; Base UI navigation-menu underneath via the NavigationMenu component.',
+      },
+    },
   },
   // Room in the canvas for the panel, which portals out of the bar.
   decorators: [
@@ -714,23 +755,6 @@ export const Default: Story = {
   },
 }
 
-export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const PanelsAndLinks: Story = {
-  name: 'Panels and links',
-  render: () => <PanelsAndLinksSection />,
+export const Playground: Story = {
+  parameters: { controls: { expanded: false, sort: 'requiredFirst' } },
 }
-
-export const Borders: Story = { name: 'Borders', render: () => <BordersSection /> }
-
-export const Containers: Story = { name: 'Containers', render: () => <ContainersSection /> }
-
-export const CurrentPage: Story = { name: 'Current page', render: () => <CurrentPageSection /> }
-
-export const Sticky: Story = { name: 'Sticky', render: () => <StickySection /> }
-
-export const RightToLeft: Story = { name: 'Right to left', render: () => <RightToLeftSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

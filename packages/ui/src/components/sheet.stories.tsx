@@ -2,9 +2,13 @@
  * Sheet — an edge-anchored dialog that slides in from any side, on the Base UI
  * dialog primitive. Base UI owns the focus trap, scroll lock, and dismissal.
  *
- *   Components/Sheet        → this file: Docs, Default, Playground and one
- *                             story per docs section
- *   Components/Sheet/Tests  → sheet.tests.stories.tsx
+ *   Components/Sheet                → this file: Docs, Default, Playground
+ *   Components/Sheet/Features       → sheet.features.stories.tsx
+ *   Components/Sheet/Accessibility  → sheet.accessibility.stories.tsx
+ *   Components/Sheet/Tests          → sheet.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -38,17 +42,12 @@ import {
 
 type Side = 'top' | 'right' | 'bottom' | 'left'
 
-const sides: ReadonlyArray<readonly [Side, string]> = [
-  ['right', 'the default'],
-  ['left', 'navigation'],
-  ['top', 'announcements'],
-  ['bottom', 'short actions on a phone'],
-]
+const sides: Side[] = ['right', 'left', 'top', 'bottom']
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SidesSection() {
+export function SidesSection() {
   return (
     <ExampleSection
       title='Sides'
@@ -56,18 +55,17 @@ function SidesSection() {
         <>
           <code>side</code> on <code>SheetContent</code> sets the edge it slides in from. Left and
           right sheets take three quarters of a phone screen and 384px from <code>sm</code> up; top
-          and bottom sheets span the width and size to their content. In a right-to-left page, left
-          and right follow the reading direction.
+          and bottom sheets span the width and size to their content. Right is the default; left suits
+          navigation, top an announcement, and bottom short actions on a phone. In a right-to-left
+          page, left and right follow the reading direction.
         </>
       }
     >
       <Example code={`<SheetContent side="left">…</SheetContent>`}>
-        {sides.map(([side, use]) => (
-          <ExampleCell key={side} label={`${side} — ${use}`}>
+        {sides.map((side) => (
+          <ExampleCell key={side} label={`side="${side}"`}>
             <Sheet>
-              <SheetTrigger render={<Button variant='outline' />}>
-                Open from the {side}
-              </SheetTrigger>
+              <SheetTrigger render={<Button variant='outline' />}>From the {side}</SheetTrigger>
               <SheetContent side={side}>
                 <SheetHeader>
                   <SheetTitle>Your saved services</SheetTitle>
@@ -82,7 +80,7 @@ function SidesSection() {
   )
 }
 
-function CloseButtonSection() {
+export function CloseButtonSection() {
   return (
     <ExampleSection
       title='Close button'
@@ -154,7 +152,7 @@ function InitialFocusExample() {
   )
 }
 
-function InitialFocusSection() {
+export function InitialFocusSection() {
   return (
     <ExampleSection
       title='Initial focus'
@@ -179,13 +177,32 @@ function InitialFocusSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Filters for a list of results, kept in a sheet so the list keeps the width of the page.'
     >
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<Sheet>
+  <SheetTrigger render={<Button variant="outline" size="sm" />}>Filter</SheetTrigger>
+  <SheetContent>
+    <form className="flex flex-1 flex-col">
+      <SheetHeader>
+        <SheetTitle>Filter grants</SheetTitle>
+        <SheetDescription>Show only the grants you are eligible for.</SheetDescription>
+      </SheetHeader>
+      <fieldset>…</fieldset>
+      <SheetFooter>
+        <SheetClose render={<Button />}>Show results</SheetClose>
+        <SheetClose render={<Button variant="outline" />}>Cancel</SheetClose>
+      </SheetFooter>
+    </form>
+  </SheetContent>
+</Sheet>`}
+      >
         <div className='max-w-md space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
           <div className='flex items-center justify-between gap-4'>
             <h3 className='text-xl font-semibold'>24 grants found</h3>
@@ -280,6 +297,7 @@ const meta = {
   title: 'Components/Sheet',
   component: Sheet,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -370,11 +388,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sides: Story = { name: 'Sides', render: () => <SidesSection /> }
-
-export const CloseButton: Story = { name: 'Close button', render: () => <CloseButtonSection /> }
-
-export const InitialFocus: Story = { name: 'Initial focus', render: () => <InitialFocusSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

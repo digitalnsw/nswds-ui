@@ -1,9 +1,13 @@
 /**
  * IconBrands — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/IconBrands        → this file: Docs, Default, Playground and
- *                                  one story per docs section
- *   Components/IconBrands/Tests  → icon-brands.tests.stories.tsx
+ *   Components/IconBrands                → this file: Docs, Default, Playground
+ *   Components/IconBrands/Features       → icon-brands.features.stories.tsx
+ *   Components/IconBrands/Accessibility  → icon-brands.accessibility.stories.tsx
+ *   Components/IconBrands/Tests          → icon-brands.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * The six third-party brand marks, which the generated Material Symbols set
  * does not contain (a GROUP in check-stories.mjs: they live in
@@ -72,7 +76,7 @@ function SocialRow() {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
@@ -89,8 +93,13 @@ function ColoursSection() {
           <BrandIcons.IconLinkedIn aria-hidden='true' className='size-8 text-foreground' />
         </ExampleCell>
       </Example>
-      <Example surface='brand'>
-        <ExampleCell label={<span className='text-white'>on the brand band</span>}>
+      <Example
+        surface='brand'
+        code={`<div className="bg-primary text-primary-foreground">
+  <IconLinkedIn className="size-8" aria-hidden="true" />
+</div>`}
+      >
+        <ExampleCell label='on the brand band'>
           <BrandIcons.IconLinkedIn aria-hidden='true' className='size-8' />
         </ExampleCell>
       </Example>
@@ -98,7 +107,7 @@ function ColoursSection() {
   )
 }
 
-function MarksSection() {
+export function MarksSection() {
   return (
     <ExampleSection
       title='Marks'
@@ -124,7 +133,7 @@ function MarksSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -144,7 +153,10 @@ function InContextSection() {
       >
         <SocialRow />
       </Example>
-      <Example surface='brand'>
+      <Example
+        surface='brand'
+        code={`<FooterSocialLink href="https://x.com/NSWGovernment" label="Follow us on X" icon={IconX} />`}
+      >
         <SocialRow />
       </Example>
     </ExampleSection>
@@ -194,6 +206,7 @@ const meta = {
   title: 'Components/IconBrands',
   component: BrandIcons.IconLinkedIn,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -239,9 +252,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Marks: Story = { name: 'Marks', render: () => <MarksSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

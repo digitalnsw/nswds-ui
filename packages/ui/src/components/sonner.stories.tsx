@@ -3,9 +3,13 @@
  * with NSWDS status icons. Mount one Toaster near the app root and fire toasts
  * with the `toast()` helper from the `sonner` package.
  *
- *   Components/Toaster        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/Toaster/Tests  → sonner.tests.stories.tsx
+ *   Components/Toaster                → this file: Docs, Default, Playground
+ *   Components/Toaster/Features       → sonner.features.stories.tsx
+ *   Components/Toaster/Accessibility  → sonner.accessibility.stories.tsx
+ *   Components/Toaster/Tests          → sonner.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Each section mounts its own Toaster with an `id` and fires its toasts with a
  * matching `toasterId`, so the docs page (which renders every section at once)
@@ -17,6 +21,8 @@ import { toast } from 'sonner'
 import { expect, within } from 'storybook/test'
 
 import { Button } from './button.js'
+import { Input } from './input.js'
+import { Label } from './label.js'
 import { Toaster } from './sonner.js'
 import {
   DocsApi,
@@ -28,9 +34,9 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function ToastTypesSection() {
+export function ToastTypesSection() {
   const toasterId = 'toast-types'
   const types = [
     ['success', 'Save draft', () => toast.success('Your draft has been saved', { toasterId })],
@@ -76,7 +82,7 @@ function ToastTypesSection() {
   )
 }
 
-function DescriptionAndActionSection() {
+export function DescriptionAndActionSection() {
   const toasterId = 'description-and-action'
   return (
     <ExampleSection
@@ -128,7 +134,7 @@ function DescriptionAndActionSection() {
   )
 }
 
-function PromisesSection() {
+export function PromisesSection() {
   const toasterId = 'promises'
   return (
     <ExampleSection
@@ -166,6 +172,105 @@ function PromisesSection() {
   )
 }
 
+export function ClosingAndDurationSection() {
+  const toasterId = 'closing-and-duration'
+  return (
+    <ExampleSection
+      title='Closing and duration'
+      description={
+        <>
+          A toast closes itself after <code>duration</code> — 4 seconds by default — and pauses
+          while the pointer is over the toasts. <code>closeButton</code> on <code>Toaster</code>{' '}
+          adds a close button to every toast. A toast the reader must act on, like one with Undo,
+          should stay until it is dismissed: give it <code>duration: Infinity</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<Toaster closeButton />
+
+toast('Draft deleted', {
+  duration: Infinity,
+  action: { label: 'Undo', onClick: () => restoreDraft() },
+})`}
+      >
+        <ExampleCell label='default duration'>
+          <Button
+            variant='outline'
+            onClick={() => toast('Your password has been changed', { toasterId })}
+          >
+            Change password
+          </Button>
+        </ExampleCell>
+        <ExampleCell label='duration: Infinity'>
+          <Button
+            variant='outline'
+            onClick={() =>
+              toast('Draft deleted', {
+                description: 'Working with Children Check application',
+                duration: Infinity,
+                action: { label: 'Undo', onClick: () => {} },
+                toasterId,
+              })
+            }
+          >
+            Delete draft
+          </Button>
+        </ExampleCell>
+      </Example>
+      <Toaster id={toasterId} closeButton />
+    </ExampleSection>
+  )
+}
+
+function UpdateEmailForm({ toasterId }: { toasterId: string }) {
+  return (
+    <form
+      className='grid w-full max-w-sm gap-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'
+      onSubmit={(event) => {
+        event.preventDefault()
+        toast.success('Email address updated', {
+          description: 'We sent a confirmation to your new address.',
+          toasterId,
+        })
+      }}
+    >
+      <p className='text-xl font-semibold'>Contact details</p>
+      <div className='grid gap-2'>
+        <Label htmlFor='toast-email'>Email address</Label>
+        <Input id='toast-email' type='email' defaultValue='alex.citizen@example.com' />
+      </div>
+      <Button type='submit' className='justify-self-start'>
+        Save email
+      </Button>
+    </form>
+  )
+}
+
+export function InContextSection() {
+  const toasterId = 'in-context'
+  return (
+    <ExampleSection
+      title='In context'
+      description='Saving a contact detail. The page stays where it is and the toast confirms the save; if the save failed, the error would go next to the field instead, where the reader can fix it.'
+    >
+      <Example
+        layout='fill'
+        code={`<form onSubmit={async (event) => {
+  event.preventDefault()
+  await saveEmail()
+  toast.success('Email address updated', {
+    description: 'We sent a confirmation to your new address.',
+  })
+}}>…</form>`}
+      >
+        <UpdateEmailForm toasterId={toasterId} />
+      </Example>
+      <Toaster id={toasterId} />
+    </ExampleSection>
+  )
+}
+
 // ─── Docs page ────────────────────────────────────────────────────────────────
 
 function ToasterDocs() {
@@ -179,7 +284,7 @@ function ToasterDocs() {
           A brief message that confirms something has happened, shown at the edge of the screen and
           gone after a few seconds. Mount one <code>Toaster</code> near the root of the app, then
           call <code>toast()</code> from the <code>sonner</code> package anywhere. It takes the NSW
-          tokens and status icons, and follows the light or dark theme.
+          tokens and status icons, and takes its light or dark theme from next-themes.
         </>
       }
     >
@@ -198,6 +303,8 @@ function ToasterDocs() {
       <ToastTypesSection />
       <DescriptionAndActionSection />
       <PromisesSection />
+      <ClosingAndDurationSection />
+      <InContextSection />
       <DocsApi description='Props of Toaster, which are sonner’s own. className, style, icons and toastOptions are merged with the NSW defaults, not replaced. Try them live in the Playground story.' />
     </DocsPage>
   )
@@ -209,6 +316,7 @@ const meta = {
   title: 'Components/Toaster',
   component: Toaster,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -317,12 +425,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const ToastTypes: Story = { name: 'Toast types', render: () => <ToastTypesSection /> }
-
-export const DescriptionAndAction: Story = {
-  name: 'Description and action',
-  render: () => <DescriptionAndActionSection />,
-}
-
-export const Promises: Story = { name: 'Promises', render: () => <PromisesSection /> }

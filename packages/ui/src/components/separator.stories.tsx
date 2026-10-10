@@ -2,9 +2,12 @@
  * Separator — the story set for docs/reference-storybook-standard.md.
  *
  *   Components/Separator                → this file: Docs, Default, Playground
- *                                         and one story per docs section
- *   Components/Separator/Tests          → separator.tests.stories.tsx
+ *   Components/Separator/Features       → separator.features.stories.tsx
  *   Components/Separator/Accessibility  → separator.accessibility.stories.tsx
+ *   Components/Separator/Tests          → separator.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -21,41 +24,71 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story. Horizontal
+// and Vertical are the sections this page has always had, in their order.
 
-function OrientationSection() {
+export function HorizontalSection() {
   return (
     <ExampleSection
-      title='Orientation'
+      title='Horizontal'
       description={
         <>
-          A horizontal separator fills the width of its container. A vertical one fills the height
-          of a flex or grid row, so its parent needs a height — or <code>items-stretch</code> — for
-          it to show.
+          The default. A horizontal separator is one pixel tall and fills the width of its
+          container, so it needs a parent with a width — a block, or a flex column.
         </>
       }
     >
-      <Example layout='grid' code={`<Separator orientation="vertical" />`}>
-        <ExampleCell label='horizontal'>
-          <div className='w-64 space-y-3'>
-            <p>Personal details</p>
-            <Separator />
-            <p>Contact details</p>
-          </div>
-        </ExampleCell>
-        <ExampleCell label='vertical'>
-          <div className='flex h-8 items-stretch gap-4'>
-            <span className='flex items-center'>Licences</span>
-            <Separator orientation='vertical' />
-            <span className='flex items-center'>Permits</span>
-          </div>
-        </ExampleCell>
+      <Example
+        layout='fill'
+        code={`<p>Section one</p>
+<Separator />
+<p>Section two</p>`}
+      >
+        <div className='w-full max-w-md space-y-3 rounded-sm border border-border bg-background p-4'>
+          <p className='text-foreground'>Section one</p>
+          <Separator />
+          <p className='text-foreground'>Section two</p>
+          <Separator />
+          <p className='text-foreground'>Section three</p>
+        </div>
       </Example>
     </ExampleSection>
   )
 }
 
-function DecorativeSection() {
+export function VerticalSection() {
+  return (
+    <ExampleSection
+      title='Vertical'
+      description={
+        <>
+          <code>orientation=&quot;vertical&quot;</code> draws a one-pixel column that stretches to
+          the height of its flex or grid row, so the row needs a height — or{' '}
+          <code>items-stretch</code> — for it to show.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<div className="flex h-12 items-stretch gap-3">
+  <span>Home</span>
+  <Separator orientation="vertical" />
+  <span>About</span>
+</div>`}
+      >
+        <div className='flex h-12 items-stretch gap-3 rounded-sm border border-border bg-background px-4'>
+          <span className='flex items-center text-foreground'>Home</span>
+          <Separator orientation='vertical' />
+          <span className='flex items-center text-foreground'>About</span>
+          <Separator orientation='vertical' />
+          <span className='flex items-center text-foreground'>Contact</span>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function DecorativeSection() {
   return (
     <ExampleSection
       title='Decorative'
@@ -80,7 +113,7 @@ function DecorativeSection() {
           <div className='w-64 space-y-3'>
             <p className='font-semibold'>Payment</p>
             <Separator decorative />
-            <p>Pay the $95 application fee by card.</p>
+            <p>Pay the $95 fee by card.</p>
           </div>
         </ExampleCell>
       </Example>
@@ -88,14 +121,21 @@ function DecorativeSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
-      description='Horizontal separators split the sections of an application summary; vertical ones divide a row of footer links.'
+      description='Horizontal separators split the sections of an application summary; decorative vertical ones divide a row of footer links, which the nav landmark already groups.'
     >
-      <Example layout='fill'>
-        <div className='max-w-md space-y-4 rounded-md p-6 ring-1 ring-foreground/10'>
+      <Example
+        layout='fill'
+        code={`<p>Applicant</p>
+<Separator />
+<p>Licence</p>
+<Separator />
+<p>Fee</p>`}
+      >
+        <div className='max-w-md space-y-4 rounded-md bg-background p-6 ring-1 ring-foreground/10'>
           <div className='space-y-1'>
             <p className='font-semibold'>Applicant</p>
             <p className='text-muted-foreground'>Alex Nguyen, Parramatta NSW 2150</p>
@@ -112,7 +152,14 @@ function InContextSection() {
           </div>
         </div>
       </Example>
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<nav aria-label="Legal" className="flex h-7 items-stretch gap-4">
+  <Link href="/privacy">Privacy</Link>
+  <Separator orientation="vertical" decorative />
+  <Link href="/copyright">Copyright</Link>
+</nav>`}
+      >
         <nav aria-label='Legal' className='flex h-7 flex-wrap items-stretch gap-4'>
           <Link href='#privacy' className='self-center'>
             Privacy
@@ -141,8 +188,9 @@ function SeparatorDocs() {
       registry='separator'
       summary={
         <>
-          A one-pixel rule, horizontal or vertical, that splits related content into groups — the
-          hairline the system draws in place of a shadow. It is announced as a boundary unless
+          A thin horizontal or vertical divider that visually splits related groups of content. Use
+          it to organise sections inside menus, toolbars, cards, and lists where added whitespace
+          alone would not make the boundary clear enough. It is announced as a boundary unless
           marked <strong>decorative</strong>.
         </>
       }
@@ -159,7 +207,8 @@ function SeparatorDocs() {
           'Grouping form fields under a heading — use FieldSet.',
         ]}
       />
-      <OrientationSection />
+      <HorizontalSection />
+      <VerticalSection />
       <DecorativeSection />
       <InContextSection />
       <DocsApi />
@@ -173,6 +222,7 @@ const meta = {
   title: 'Components/Separator',
   component: Separator,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -221,9 +271,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Orientation: Story = { name: 'Orientation', render: () => <OrientationSection /> }
-
-export const Decorative: Story = { name: 'Decorative', render: () => <DecorativeSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

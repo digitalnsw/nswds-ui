@@ -1,10 +1,13 @@
 /**
  * Link — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Link                → this file: Docs, Default, Playground and
- *                                    one story per docs section
- *   Components/Link/Tests          → link.tests.stories.tsx
+ *   Components/Link                → this file: Docs, Default, Playground
+ *   Components/Link/Features       → link.features.stories.tsx
  *   Components/Link/Accessibility  → link.accessibility.stories.tsx
+ *   Components/Link/Tests          → link.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -37,35 +40,109 @@ const FrameworkLink = forwardRef<HTMLAnchorElement, ComponentPropsWithoutRef<'a'
 )
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story. The first
+// five are the sections this page has always had, in their original order.
 
-function VariantsSection() {
+const variantDocs = [
+  ['primary', 'The default. Every light surface — body copy, cards, lists.'],
+  ['secondary', 'A softer ink for dark surfaces, where primary would lose contrast.'],
+  ['white', 'Full-strength ink for coloured and image backgrounds.'],
+  ['unstyled', 'No treatment at all, for components such as Button that bring their own.'],
+] as const
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description='A primary link — the out-of-the-box configuration. Underlined at rest, with the halo on hover.'
+    >
+      <Example code={`<Link href="/about">About NSW Government</Link>`}>
+        <Link href='#about'>About NSW Government</Link>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
       description={
         <>
-          The variant sets the link ink for the surface behind it. <code>primary</code> is for every
-          light surface; <code>secondary</code> and <code>white</code> are for the solid brand band
-          and other dark surfaces, where the primary ink would lose contrast. <code>unstyled</code>{' '}
-          drops every treatment, for components such as Button that supply their own.
+          Three built-in colour variants. Defaults to <code>primary</code>. Use{' '}
+          <code>secondary</code> on dark surfaces where <code>primary</code> would lose contrast,
+          and <code>white</code> on coloured / image backgrounds.
         </>
       }
     >
-      <Example code={`<Link href="/about">About NSW Government</Link>`}>
+      <Example code={`<Link href="/about">Primary</Link>`}>
         <ExampleCell label='primary'>
-          <Link href='#about'>About NSW Government</Link>
-        </ExampleCell>
-      </Example>
-      <Example surface='brand' code={`<Link href="/about" variant="white">…</Link>`}>
-        <ExampleCell label={<span className='text-white'>secondary</span>}>
-          <Link href='#about' variant='secondary'>
-            About NSW Government
+          <Link href='#primary' variant='primary'>
+            Primary
           </Link>
         </ExampleCell>
-        <ExampleCell label={<span className='text-white'>white</span>}>
-          <Link href='#about' variant='white'>
-            About NSW Government
+      </Example>
+      <Example
+        surface='brand'
+        code={`<Link href="/about" variant="secondary">Secondary</Link>
+<Link href="/about" variant="white">White</Link>`}
+      >
+        <ExampleCell label='secondary'>
+          <Link href='#secondary' variant='secondary'>
+            Secondary
+          </Link>
+        </ExampleCell>
+        <ExampleCell label='white'>
+          <Link href='#white' variant='white'>
+            White
+          </Link>
+        </ExampleCell>
+      </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
+        {variantDocs.map(([name, description]) => (
+          <div key={name} className='flex gap-3 text-base'>
+            <dt className='w-24 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+export function ExternalSection() {
+  return (
+    <ExampleSection
+      title='External'
+      description={
+        <>
+          A link to another website opens in a new tab and says so. <code>ExternalLink</code> does
+          all of it for you: <code>target=&quot;_blank&quot;</code>,{' '}
+          <code>rel=&quot;noopener noreferrer&quot;</code>, a trailing open-in-new icon, and “(opens
+          in a new tab)” for screen reader users. Pass <code>icon={'{null}'}</code> to hide the
+          icon, or <code>newTabLabel=&quot;&quot;</code> when the link text already says so — as the
+          hand-written link on the right does.
+        </>
+      }
+    >
+      <Example
+        code={`<ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>
+
+<Link href="https://www.nsw.gov.au" target="_blank" rel="noopener noreferrer">
+  nsw.gov.au (opens in a new tab)
+</Link>`}
+      >
+        <ExampleCell label='ExternalLink'>
+          <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
+        </ExampleCell>
+        <ExampleCell label='icon={null}'>
+          <ExternalLink href='https://www.service.nsw.gov.au' icon={null}>
+            Service NSW
+          </ExternalLink>
+        </ExampleCell>
+        <ExampleCell label='Link with target="_blank"'>
+          <Link href='https://www.nsw.gov.au' target='_blank' rel='noopener noreferrer'>
+            nsw.gov.au (opens in a new tab)
           </Link>
         </ExampleCell>
       </Example>
@@ -73,7 +150,65 @@ function VariantsSection() {
   )
 }
 
-function StatesSection() {
+export function RenderedAsAButtonSection() {
+  return (
+    <ExampleSection
+      title='Rendered as a button'
+      description={
+        <>
+          Use <code>as</code> to render Link as a different element while keeping the same props
+          pipeline. Reach for it when an action reads as a link inline but acts on the page, such as
+          opening a dialog. Anchor-only props like <code>href</code> are dropped, so attach an{' '}
+          <code>onClick</code>.
+        </>
+      }
+    >
+      <Example code={`<Link as="button" onClick={openContactDialog}>Contact us</Link>`}>
+        <ExampleCell label='as="button"'>
+          <Link as='button' href='#contact'>
+            Contact us
+          </Link>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithLinkProviderSection() {
+  return (
+    <ExampleSection
+      title='With LinkProvider'
+      description={
+        <>
+          Wrap a subtree with <code>LinkProvider</code> to inject a framework Link (e.g.{' '}
+          <code>next/link</code>) without changing consumer call sites. Passing <code>as</code> on
+          one link still overrides the provider.
+        </>
+      }
+    >
+      <Example
+        // The quoted specifier is interpolated, not written inline:
+        // check:optimize-deps reads any quoted specifier after "from" as an import.
+        code={`import NextLink from ${"'next/link'"}
+
+<LinkProvider component={NextLink}>
+  <Link href="/services">Services</Link>
+</LinkProvider>`}
+      >
+        <ExampleCell label='inside LinkProvider'>
+          <LinkProvider component={FrameworkLink}>
+            <Link href='#services'>Services</Link>
+          </LinkProvider>
+        </ExampleCell>
+        <ExampleCell label='outside — a plain <a>'>
+          <Link href='#news'>Latest news</Link>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -103,97 +238,19 @@ function StatesSection() {
   )
 }
 
-function ExternalLinksSection() {
-  return (
-    <ExampleSection
-      title='External links'
-      description={
-        <>
-          <code>ExternalLink</code> opens in a new tab with{' '}
-          <code>rel=&quot;noopener noreferrer&quot;</code>, adds a trailing open-in-new icon, and
-          tells screen reader users “(opens in a new tab)”. Pass <code>icon={'{null}'}</code> to
-          hide the icon, or <code>newTabLabel=&quot;&quot;</code> when the link text already says
-          so.
-        </>
-      }
-    >
-      <Example code={`<ExternalLink href="https://www.nsw.gov.au">nsw.gov.au</ExternalLink>`}>
-        <ExampleCell label='ExternalLink'>
-          <ExternalLink href='https://www.nsw.gov.au'>nsw.gov.au</ExternalLink>
-        </ExampleCell>
-        <ExampleCell label='icon={null}'>
-          <ExternalLink href='https://www.service.nsw.gov.au' icon={null}>
-            Service NSW
-          </ExternalLink>
-        </ExampleCell>
-      </Example>
-    </ExampleSection>
-  )
-}
-
-function AsAButtonSection() {
-  return (
-    <ExampleSection
-      title='As a button'
-      description={
-        <>
-          <code>as</code> swaps the rendered element and keeps the styling. Use it for an action
-          that reads as a link inline but does something on the page, such as opening a dialog.
-          Anchor-only props like <code>href</code> are dropped, so attach an <code>onClick</code>.
-        </>
-      }
-    >
-      <Example code={`<Link as="button" onClick={openContactDialog}>Contact us</Link>`}>
-        <Link as='button' href='#contact'>
-          Contact us
-        </Link>
-      </Example>
-    </ExampleSection>
-  )
-}
-
-function WithLinkProviderSection() {
-  return (
-    <ExampleSection
-      title='With LinkProvider'
-      description={
-        <>
-          Wrap the app once in <code>LinkProvider</code> to route every <code>Link</code> through a
-          framework link such as <code>next/link</code>, without touching each call site. Passing{' '}
-          <code>as</code> on one link still overrides the provider.
-        </>
-      }
-    >
-      <Example
-        layout='stack'
-        // The quoted specifier is interpolated, not written inline:
-        // check:optimize-deps reads any quoted specifier after "from" as an import.
-        code={`import NextLink from ${"'next/link'"}
-
-<LinkProvider component={NextLink}>
-  <Link href="/services">Browse services</Link>
-</LinkProvider>`}
-      >
-        <ExampleCell label='inside LinkProvider'>
-          <LinkProvider component={FrameworkLink}>
-            <Link href='#services'>Browse services</Link>
-          </LinkProvider>
-        </ExampleCell>
-        <ExampleCell label='outside — a plain <a>'>
-          <Link href='#news'>Latest news</Link>
-        </ExampleCell>
-      </Example>
-    </ExampleSection>
-  )
-}
-
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Links sit flush in running text. The halo extends past the line box without shifting the words around it, and a link that wraps gets a halo on each line.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<p>
+  Find your nearest <Link href="/centres">service centre</Link> or browse the full{' '}
+  <Link href="/a-z">A to Z of NSW Government services</Link>.
+</p>`}
+      >
         <div className='max-w-prose space-y-4 text-base/7 text-foreground'>
           <p>
             Find your nearest <Link href='#centres'>service centre</Link> or browse the full{' '}
@@ -221,9 +278,13 @@ function LinkDocs() {
       registry='link'
       summary={
         <>
-          Links take people to another page or resource. They are always underlined, carry the
-          system’s halo on hover, and render a plain anchor unless a framework link is supplied
-          through <strong>LinkProvider</strong>.
+          Link is a polymorphic anchor wrapper. It renders an <code>{'<a>'}</code> by default, or
+          any element you pass via <code>as</code>, or a framework link supplied through{' '}
+          <code>LinkProvider</code>. Built-in styling is applied automatically — underline, hover
+          halo, focus ring, and one of three colour variants via the <code>variant</code> prop
+          (defaults to <code>primary</code>; <code>secondary</code> and <code>white</code> are
+          intended for dark surfaces). Pass <code>className</code> to layer one-off overrides on
+          top.
         </>
       }
     >
@@ -239,11 +300,12 @@ function LinkDocs() {
           'Promoting a destination with a title and summary — use LinkCard.',
         ]}
       />
+      <DefaultSection />
       <VariantsSection />
-      <StatesSection />
-      <ExternalLinksSection />
-      <AsAButtonSection />
+      <ExternalSection />
+      <RenderedAsAButtonSection />
       <WithLinkProviderSection />
+      <StatesSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -256,6 +318,7 @@ const meta = {
   title: 'Components/Link',
   component: Link,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -332,21 +395,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const ExternalLinks: Story = {
-  name: 'External links',
-  render: () => <ExternalLinksSection />,
-}
-
-export const AsAButton: Story = { name: 'As a button', render: () => <AsAButtonSection /> }
-
-export const WithLinkProvider: Story = {
-  name: 'With LinkProvider',
-  render: () => <WithLinkProviderSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

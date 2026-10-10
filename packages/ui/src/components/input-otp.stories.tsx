@@ -1,13 +1,17 @@
 /**
  * InputOTP — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/InputOTP        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/InputOTP/Tests  → input-otp.tests.stories.tsx
+ *   Components/InputOTP               → this file: Docs, Default, Playground
+ *   Components/InputOTP/Features      → input-otp.features.stories.tsx
+ *   Components/InputOTP/Accessibility → input-otp.accessibility.stories.tsx
+ *   Components/InputOTP/Tests         → input-otp.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { REGEXP_ONLY_DIGITS } from 'input-otp'
+import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp'
 import { expect, userEvent } from 'storybook/test'
 
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from './input-otp.js'
@@ -33,9 +37,9 @@ function Slots({ count, from = 0, invalid }: { count: number; from?: number; inv
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -68,7 +72,7 @@ function StatesSection() {
   )
 }
 
-function GroupingSection() {
+export function GroupingSection() {
   return (
     <ExampleSection
       title='Grouping'
@@ -118,7 +122,43 @@ function GroupingSection() {
   )
 }
 
-function InContextSection() {
+export function PatternSection() {
+  return (
+    <ExampleSection
+      title='Pattern'
+      description={
+        <>
+          <code>pattern</code> is a regular expression every typed or pasted character must match;
+          anything else is refused before it reaches a slot. <code>input-otp</code> exports the
+          common ones. A digits-only pattern also brings up the number keypad on a phone.
+        </>
+      }
+    >
+      <Example
+        code={`import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from 'input-otp'
+
+<InputOTP maxLength={6} pattern={REGEXP_ONLY_DIGITS}>…</InputOTP>`}
+      >
+        <ExampleCell label='REGEXP_ONLY_DIGITS'>
+          <InputOTP maxLength={6} aria-label='Code, digits only' pattern={REGEXP_ONLY_DIGITS}>
+            <Slots count={6} />
+          </InputOTP>
+        </ExampleCell>
+        <ExampleCell label='REGEXP_ONLY_DIGITS_AND_CHARS'>
+          <InputOTP
+            maxLength={6}
+            aria-label='Code, letters and digits'
+            pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+          >
+            <Slots count={6} />
+          </InputOTP>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -130,7 +170,13 @@ function InContextSection() {
         </>
       }
     >
-      <Example>
+      <Example
+        code={`<Label htmlFor="otp">Enter your verification code</Label>
+<p id="otp-hint">We sent a 6 digit code to the mobile number ending in 123.</p>
+<InputOTP id="otp" aria-describedby="otp-hint" maxLength={6} pattern={REGEXP_ONLY_DIGITS}>
+  …
+</InputOTP>`}
+      >
         <div className='w-full max-w-md space-y-3'>
           <Label htmlFor='otp-in-context'>Enter your verification code</Label>
           <p id='otp-in-context-hint' className='text-muted-foreground'>
@@ -182,6 +228,7 @@ function InputOTPDocs() {
       />
       <StatesSection />
       <GroupingSection />
+      <PatternSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -194,6 +241,7 @@ const meta = {
   title: 'Components/InputOTP',
   component: InputOTP,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true },
@@ -280,9 +328,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Grouping: Story = { name: 'Grouping', render: () => <GroupingSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

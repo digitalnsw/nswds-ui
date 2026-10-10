@@ -1,10 +1,14 @@
 /**
- * Spinner — follows docs/reference-storybook-standard.md.
+ * Spinner — a busy-state indicator for work in flight.
  *
  *   Components/Spinner                → this file: Docs, Default, Playground
- *                                       and one story per docs section
- *   Components/Spinner/Tests          → spinner.tests.stories.tsx
+ *                                       and the label-naming stories
+ *   Components/Spinner/Features       → spinner.features.stories.tsx
  *   Components/Spinner/Accessibility  → spinner.accessibility.stories.tsx
+ *   Components/Spinner/Tests          → spinner.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -24,9 +28,29 @@ const sizes = ['xs', 'sm', 'md', 'lg', 'xl'] as const
 const colors = ['primary', 'accent', 'white', 'current'] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SizesSection() {
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          A medium <code>primary</code> spinner, named &ldquo;Loading&rdquo; for screen readers with
+          no props at all.
+        </>
+      }
+    >
+      <Example code={`<Spinner />`}>
+        <ExampleCell label='md · primary'>
+          <Spinner />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -41,7 +65,7 @@ function SizesSection() {
       <Example code={`<Spinner size="lg" />`}>
         {sizes.map((size) => (
           <ExampleCell key={size} label={size}>
-            <Spinner size={size} />
+            <Spinner size={size} label={`Loading (${size})`} />
           </ExampleCell>
         ))}
       </Example>
@@ -49,7 +73,7 @@ function SizesSection() {
   )
 }
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
@@ -78,20 +102,29 @@ function ColoursSection() {
   )
 }
 
-function LabelsSection() {
+export function UsageSection() {
   return (
     <ExampleSection
-      title='Labels'
+      title='Usage'
       description={
         <>
-          A spinner names itself: <code>label</code> defaults to &ldquo;Loading&rdquo; and renders
-          as visually hidden text inside a <code>role=&quot;status&quot;</code> region, so it is
-          announced politely when it appears. Say what is loading where you can. Pass an empty{' '}
-          <code>label</code> when the surroundings already say it — that drops the live region
-          rather than leaving an empty one.
+          A Spinner is named out of the box: <code>label</code> defaults to &quot;Loading&quot; and
+          renders as visually-hidden text inside a <code>role=&quot;status&quot;</code> region, so
+          assistive tech announces it politely when the spinner appears. Set <code>label</code> to
+          describe what is loading, or to an empty string when the surroundings already convey the
+          busy state — that drops the live region rather than leaving an empty one.
         </>
       }
     >
+      <Example
+        code={`<Spinner label="Loading results" />
+<span>Loading results…</span>`}
+      >
+        <div className='flex items-center gap-3'>
+          <Spinner label='Loading results' />
+          <span className='text-base text-foreground'>Loading results…</span>
+        </div>
+      </Example>
       <Example code={`<Spinner label="Loading your applications" />`}>
         <ExampleCell label='default — “Loading”'>
           <Spinner />
@@ -107,7 +140,7 @@ function LabelsSection() {
   )
 }
 
-function InAButtonSection() {
+export function InAButtonSection() {
   return (
     <ExampleSection
       title='In a button'
@@ -132,13 +165,18 @@ function InAButtonSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A region loading its content, with the spinner centred in a placeholder sized like what will arrive.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<div className="flex h-48 items-center justify-center">
+  <Spinner size="lg" label="Loading your applications" />
+</div>`}
+      >
         <div className='space-y-4'>
           <p className='text-2xl font-semibold'>Your applications</p>
           <div className='flex h-48 items-center justify-center rounded-md ring-1 ring-foreground/10'>
@@ -160,9 +198,9 @@ function SpinnerDocs() {
       registry='spinner'
       summary={
         <>
-          A busy indicator for work in flight — loading a region, submitting a form, waiting on a
-          response. It announces itself politely to screen readers with no wiring, and only spins
-          when the reader has not asked for reduced motion.
+          Spinner is a busy-state indicator for in-flight asynchronous work. Use it to communicate
+          that the page or a region is loading content, submitting a form, or otherwise waiting on a
+          response before the result can be shown.
         </>
       }
     >
@@ -178,9 +216,10 @@ function SpinnerDocs() {
           'Content with a known shape is loading — use Skeleton, so the layout does not jump.',
         ]}
       />
+      <DefaultSection />
       <SizesSection />
+      <UsageSection />
       <ColoursSection />
-      <LabelsSection />
       <InAButtonSection />
       <InContextSection />
       <DocsApi />
@@ -194,10 +233,17 @@ const meta = {
   title: 'Components/Spinner',
   component: Spinner,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: SpinnerDocs },
+    docs: {
+      page: SpinnerDocs,
+      description: {
+        component:
+          'Spinner is a compact busy-state indicator for in-flight asynchronous work. It announces loading politely via role="status", naming itself from the `label` prop (default "Loading") rendered as visually-hidden text — no consumer wiring required.',
+      },
+    },
   },
   // No `aria-label` here. It used to be a meta-level arg, which made every
   // story — including the docs examples — look as though a consumer must supply
@@ -281,14 +327,58 @@ export const Default: Story = {
   },
 }
 
+export const CustomLabel: Story = {
+  name: 'Custom label',
+  args: { label: 'Loading results' },
+  play: async ({ canvasElement }) => {
+    const status = canvasElement.querySelector('[role="status"]')
+    if (!status) {
+      throw new Error('Could not find element with role="status".')
+    }
+    if (status.textContent?.trim() !== 'Loading results') {
+      throw new Error(
+        `Expected the label prop to drive the accessible name, received "${status.textContent?.trim()}".`,
+      )
+    }
+  },
+}
+
+export const SuppressedLabel: Story = {
+  name: 'Suppressed label',
+  // `label=""` is the documented escape hatch for a Spinner whose busy state is
+  // already conveyed by its surroundings (a Button's aria-busy, a toast). It
+  // must drop role="status" entirely — an empty live region is redundant noise,
+  // not a silent one.
+  args: { label: '' },
+  play: async ({ canvasElement }) => {
+    if (canvasElement.querySelector('[role="status"]')) {
+      throw new Error(
+        'label="" must suppress role="status" rather than leave an empty live region.',
+      )
+    }
+    if (canvasElement.querySelector('.sr-only')) {
+      throw new Error('label="" must render no sr-only text.')
+    }
+  },
+}
+
+export const AriaLabelOverride: Story = {
+  name: 'aria-label override',
+  // Supplying aria-label is still supported — it wins over the contents for the
+  // accessible name. Asserted as an OVERRIDE of the default path above, not as
+  // the component's naming requirement.
+  args: { 'aria-label': 'Loading search results' },
+  play: async ({ canvasElement }) => {
+    const status = canvasElement.querySelector('[role="status"]')
+    if (!status) {
+      throw new Error('Could not find element with role="status".')
+    }
+    if (status.getAttribute('aria-label') !== 'Loading search results') {
+      throw new Error(
+        `Expected the aria-label override to reach the DOM, received "${status.getAttribute('aria-label')}".`,
+      )
+    }
+  },
+}
+
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Labels: Story = { name: 'Labels', render: () => <LabelsSection /> }
-
-export const InAButton: Story = { name: 'In a button', render: () => <InAButtonSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

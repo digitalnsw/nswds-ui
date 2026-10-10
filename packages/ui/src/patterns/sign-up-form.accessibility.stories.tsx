@@ -5,6 +5,7 @@
  * criteria are those of a form pattern as a whole. Covered here:
  *
  *   1.3.1 Info and Relationships          (A)  — LabelAssociation
+ *   1.3.5 Identify Input Purpose          (AA) — IdentifyInputPurpose
  *   3.3.2 Labels or Instructions          (A)  — LabelsAndInstructions
  *   4.1.2 Name, Role, Value               (A)  — NameRoleValue
  *
@@ -15,6 +16,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 
 import { wcagStoryMeta } from '../components/story-helpers.js'
 import { SignUpForm } from './sign-up-form.js'
@@ -179,6 +181,44 @@ export const NameRoleValue: Story = {
       throw new Error(
         `WCAG 4.1.2: submit button accessible name should contain "Create account", got "${submitName}".`,
       )
+    }
+  },
+}
+
+// ─── 1.3.5 — Identify Input Purpose ───────────────────────────────────────────
+
+const purposes = [
+  ['Full name', 'name'],
+  ['Email', 'email'],
+  ['Password', 'new-password'],
+  ['Confirm password', 'new-password'],
+] as const
+
+export const IdentifyInputPurpose: Story = {
+  name: 'Identify Input Purpose — 1.3.5',
+  parameters: {
+    wcag: ['1.3.5'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.3.5',
+          why: 'Inputs that collect information about the reader must say what they collect in a way software can read, so browsers can fill in a name and email and a password manager can offer a strong new password.',
+          how: 'Inspect the four inputs: name, email, and new-password on both password fields. The play() finds each by its visible label and asserts its autocomplete token.',
+          caveat:
+            'new-password on BOTH password fields is deliberate — it is what tells a manager to generate and save one password, rather than offer a saved one. axe cannot catch a missing token, because its autocomplete-valid rule only checks values that are present.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='w-full max-w-md'>
+      <SignUpForm />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    for (const [label, token] of purposes) {
+      await expect(canvas.getByLabelText(label)).toHaveAttribute('autocomplete', token)
     }
   },
 }

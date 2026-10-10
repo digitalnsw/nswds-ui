@@ -1,12 +1,20 @@
 /**
- * NativeSelect — the docs page, Default, Playground and one story per docs section.
+ * NativeSelect — the docs page, Default and Playground.
  *
- *   Components/NativeSelect        → this file
- *   Components/NativeSelect/Tests  → native-select.tests.stories.tsx
+ *   Components/NativeSelect                → this file
+ *   Components/NativeSelect/Features       → native-select.features.stories.tsx
+ *   Components/NativeSelect/Accessibility  → native-select.accessibility.stories.tsx
+ *   Components/NativeSelect/Tests          → native-select.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
+
+import { Button } from './button.js'
+import { Input } from './input.js'
 
 import { Label } from './label.js'
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from './native-select.js'
@@ -31,9 +39,9 @@ function StateOptions() {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -63,7 +71,7 @@ function VariantsSection() {
   )
 }
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -92,18 +100,25 @@ function SizesSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
       description={
         <>
-          Invalid takes Input&apos;s 2px danger border; set <code>aria-invalid</code>. Disabled
-          fades the whole control, chevron included.
+          The default field shifts to the sunken surface on hover and draws Input&apos;s 2px ring on
+          focus. Invalid takes Input&apos;s 2px danger border; set <code>aria-invalid</code>.
+          Disabled fades the whole control, chevron included.
         </>
       }
     >
       <Example code={`<NativeSelect aria-invalid>…</NativeSelect>`}>
+        <ExampleCell label='default'>
+          <NativeSelect aria-label='State or territory (default)' defaultValue='' className='w-72'>
+            <NativeSelectOption value=''>Select a state or territory</NativeSelectOption>
+            <StateOptions />
+          </NativeSelect>
+        </ExampleCell>
         <ExampleCell label='invalid'>
           <NativeSelect aria-label='State or territory (invalid)' aria-invalid className='w-72'>
             <NativeSelectOption value=''>Select a state or territory</NativeSelectOption>
@@ -125,7 +140,7 @@ function StatesSection() {
   )
 }
 
-function OptionGroupsSection() {
+export function OptionGroupsSection() {
   return (
     <ExampleSection
       title='Option groups'
@@ -162,7 +177,7 @@ function OptionGroupsSection() {
   )
 }
 
-function WithALabelSection() {
+export function WithALabelSection() {
   return (
     <ExampleSection
       title='With a label'
@@ -193,6 +208,49 @@ function WithALabelSection() {
             <StateOptions />
           </NativeSelect>
         </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='An address step on a phone-first form: the state is a NativeSelect, so people on a phone get the platform picker, and it sits level with the Input beside it.'
+    >
+      <Example
+        layout='fill'
+        code={`<Label htmlFor="suburb">Suburb or town</Label>
+<Input id="suburb" autoComplete="address-level2" />
+
+<Label htmlFor="state">State or territory</Label>
+<NativeSelect id="state" name="state" autoComplete="address-level1" defaultValue="nsw">
+  <NativeSelectOption value="nsw">New South Wales</NativeSelectOption>
+  …
+</NativeSelect>`}
+      >
+        <form className='grid max-w-md gap-6' onSubmit={(event) => event.preventDefault()}>
+          <div className='grid gap-2'>
+            <Label htmlFor='native-select-context-suburb'>Suburb or town</Label>
+            <Input id='native-select-context-suburb' autoComplete='address-level2' />
+          </div>
+          <div className='grid gap-2'>
+            <Label htmlFor='native-select-context-state'>State or territory</Label>
+            <NativeSelect
+              id='native-select-context-state'
+              name='state'
+              autoComplete='address-level1'
+              defaultValue='nsw'
+              className='w-full'
+            >
+              <StateOptions />
+            </NativeSelect>
+          </div>
+          <div>
+            <Button type='submit'>Continue</Button>
+          </div>
+        </form>
       </Example>
     </ExampleSection>
   )
@@ -231,6 +289,7 @@ function NativeSelectDocs() {
       <StatesSection />
       <OptionGroupsSection />
       <WithALabelSection />
+      <InContextSection />
       <DocsApi />
     </DocsPage>
   )
@@ -242,6 +301,7 @@ const meta = {
   title: 'Components/NativeSelect',
   component: NativeSelect,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -340,16 +400,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const OptionGroups: Story = {
-  name: 'Option groups',
-  render: () => <OptionGroupsSection />,
-}
-
-export const WithALabel: Story = { name: 'With a label', render: () => <WithALabelSection /> }

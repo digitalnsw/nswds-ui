@@ -1,8 +1,13 @@
 /**
- * RadioGroup — the docs page, Default, Playground and one story per docs section.
+ * RadioGroup — the docs page, Default and Playground.
  *
- *   Components/RadioGroup        → this file
- *   Components/RadioGroup/Tests  → radio-group.tests.stories.tsx
+ *   Components/RadioGroup                → this file
+ *   Components/RadioGroup/Features       → radio-group.features.stories.tsx
+ *   Components/RadioGroup/Accessibility  → radio-group.accessibility.stories.tsx
+ *   Components/RadioGroup/Tests          → radio-group.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -50,7 +55,43 @@ function TopicOptions(props: ComponentProps<typeof RadioGroup>) {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          One <code>Field</code> for the question: its <code>FieldLabel</code> names the group. Wrap
+          each option and its own <code>FieldLabel</code> in <code>FieldItem</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<Field>
+  <FieldLabel>Topic</FieldLabel>
+  <RadioGroup name="topic">
+    <FieldItem className="flex min-h-11 items-center gap-4">
+      <RadioGroupItem value="government" />
+      <FieldLabel className="font-normal">NSW Government</FieldLabel>
+    </FieldItem>
+    <FieldItem className="flex min-h-11 items-center gap-4">
+      <RadioGroupItem value="business" />
+      <FieldLabel className="font-normal">Business and Economy</FieldLabel>
+    </FieldItem>
+  </RadioGroup>
+</Field>`}
+      >
+        <Field className='max-w-md'>
+          <FieldLabel>Topic</FieldLabel>
+          <FieldDescription>Select the closest match.</FieldDescription>
+          <TopicOptions />
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
 
 const stateRows = [
   { code: `<RadioGroupItem value="email" />`, label: '', group: {} },
@@ -58,7 +99,7 @@ const stateRows = [
   { code: `<RadioGroupItem value="email" aria-invalid />`, label: 'invalid', group: {} },
 ] as const
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -66,7 +107,9 @@ function StatesSection() {
         <>
           The selected option shows a solid dot in the theme&apos;s ink. Disable one item, the whole
           group, or the surrounding <code>Field</code>; an invalid group takes Input&apos;s 2px
-          danger border and a danger dot.
+          danger border and a danger dot. The selected dot follows the primary palette in light and
+          dark mode. Invalid controls use the same danger colours as Checkbox and Input. Use the
+          theme toolbar to preview them.
         </>
       }
     >
@@ -96,52 +139,74 @@ function StatesSection() {
   )
 }
 
-function WithFieldSection() {
+export function ValidationSection() {
+  return (
+    <ExampleSection
+      title='Validation'
+      description={
+        <>
+          Set <code>invalid</code> on the <code>Field</code>: every option takes the danger
+          treatment, and the <code>FieldError</code> is announced with the group.
+        </>
+      }
+    >
+      <Example
+        code={`<Field invalid>
+  <FieldLabel>Preferred topic</FieldLabel>
+  <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
+  <RadioGroup defaultValue="business">…</RadioGroup>
+  <FieldError>Select an available option to continue.</FieldError>
+</Field>`}
+      >
+        <Field className='max-w-md' invalid>
+          <FieldLabel>Preferred topic</FieldLabel>
+          <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
+          <TopicOptions defaultValue='business' />
+          <FieldError>Select an available option to continue.</FieldError>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
       description={
         <>
           The group is one question, so it takes one <code>Field</code>: the <code>FieldLabel</code>{' '}
-          names the group, and <code>Field invalid</code> or <code>disabled</code> reaches every
-          option. Wrap each option in <code>FieldItem</code> so its own label is associated with it.
+          names the group, and <code>Field disabled</code> — like <code>invalid</code>, above —
+          reaches every option. Wrap each option in <code>FieldItem</code> so its own label is
+          associated with it.
         </>
       }
     >
       <Example
         layout='stack'
-        code={`<Field invalid>
-  <FieldLabel>Preferred topic</FieldLabel>
-  <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
-  <RadioGroup>
+        code={`<Field disabled>
+  <FieldLabel>Topic</FieldLabel>
+  <FieldDescription>Fixed for this type of enquiry.</FieldDescription>
+  <RadioGroup defaultValue="government">
     <FieldItem className="flex min-h-11 items-center gap-4">
       <RadioGroupItem value="government" />
       <FieldLabel className="font-normal">NSW Government</FieldLabel>
     </FieldItem>
     …
   </RadioGroup>
-  <FieldError>Select a topic to continue.</FieldError>
 </Field>`}
       >
-        <div className='grid w-full max-w-md gap-10'>
-          <Field invalid>
-            <FieldLabel>Preferred topic</FieldLabel>
-            <FieldDescription>Choose the topic that best matches your enquiry.</FieldDescription>
-            <TopicOptions />
-            <FieldError>Select a topic to continue.</FieldError>
-          </Field>
-          <Field disabled>
-            <FieldLabel>Topic</FieldLabel>
-            <FieldDescription>Fixed for this type of enquiry.</FieldDescription>
-            <TopicOptions defaultValue='government' />
-          </Field>
-        </div>
+        <Field className='max-w-md' disabled>
+          <FieldLabel>Topic</FieldLabel>
+          <FieldDescription>Fixed for this type of enquiry.</FieldDescription>
+          <TopicOptions defaultValue='government' />
+        </Field>
       </Example>
     </ExampleSection>
   )
 }
 
-function OptionsWithHintsSection() {
+export function OptionsWithHintsSection() {
   return (
     <ExampleSection
       title='Options with hints'
@@ -201,15 +266,14 @@ function ControlledExample() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSelectionSection() {
   return (
     <ExampleSection
-      title='Controlled'
+      title='Controlled selection'
       description={
         <>
-          Pass <code>value</code> and <code>onValueChange</code> to drive the selection from your
-          own state — here, to update the hint. Set <code>name</code> so the selected value is
-          submitted with the form.
+          Pass value and onValueChange to control selection. Set name to include the selected value
+          when the form is submitted. Here the controlled value also updates the hint.
         </>
       }
     >
@@ -225,13 +289,25 @@ function ControlledSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='One question on a page: the label asks it, the options answer it, and the form moves on.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Field>
+  <FieldLabel>Have you held a NSW driver licence before?</FieldLabel>
+  <RadioGroup name="previous-licence">
+    <FieldItem className="flex min-h-11 items-center gap-4">
+      <RadioGroupItem value="yes" />
+      <FieldLabel className="font-normal">Yes</FieldLabel>
+    </FieldItem>
+    …
+  </RadioGroup>
+</Field>`}
+      >
         <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
           <FieldGroup>
             <Field>
@@ -268,10 +344,10 @@ function RadioGroupDocs() {
       registry='radio-group'
       summary={
         <>
-          Radio buttons let people choose exactly one option from a short list. Each is a 32px
+          Radio buttons let people select one option from a list. Give the group a label and provide
+          a visible label for every option. Use arrow keys to move between options. Each is a 32px
           circle with a 44px hit area and a solid dot when selected. Base UI owns single selection,
-          arrow-key movement and form submission; give the group a label in a <code>Field</code> and
-          every option a visible label of its own.
+          arrow-key movement and form submission.
         </>
       }
     >
@@ -287,10 +363,12 @@ function RadioGroupDocs() {
           'The choice switches a view straight away — use Tabs or ToggleGroup.',
         ]}
       />
+      <DefaultSection />
       <StatesSection />
+      <ValidationSection />
       <WithFieldSection />
       <OptionsWithHintsSection />
-      <ControlledSection />
+      <ControlledSelectionSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -303,6 +381,7 @@ const meta = {
   title: 'Components/RadioGroup',
   component: RadioGroup,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -389,16 +468,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const OptionsWithHints: Story = {
-  name: 'Options with hints',
-  render: () => <OptionsWithHintsSection />,
-}
-
-export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

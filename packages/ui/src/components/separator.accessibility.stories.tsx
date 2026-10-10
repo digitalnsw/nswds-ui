@@ -16,6 +16,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 
 import { Separator } from './separator.js'
 import { wcagStoryMeta } from './story-helpers.js'
@@ -153,4 +154,48 @@ export const NonTextContrast: Story = {
       </section>
     </div>
   ),
+}
+
+export const NameRoleValue: Story = {
+  name: 'Name, Role, Value — 4.1.2',
+  parameters: {
+    wcag: ['4.1.2'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '4.1.2',
+          why: 'A semantic separator is a (non-focusable) widget role, and its orientation is part of what it tells assistive technology. A decorative one must expose nothing at all — an `aria-orientation` left on a `role="none"` element is an invalid attribute that axe reports.',
+          how: 'The play() reads both orientations: the semantic separators carry role="separator" with the matching aria-orientation, and the decorative one carries role="none" with no aria-orientation.',
+          caveat:
+            'Passing role="none" or role="presentation" yourself is treated the same as `decorative`, so the attribute is dropped either way.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='space-y-6'>
+      <div className='w-80 space-y-3'>
+        <p>Personal details</p>
+        <Separator data-testid='horizontal' />
+        <p>Contact details</p>
+      </div>
+      <div className='flex h-12 items-stretch gap-3'>
+        <span className='flex items-center'>Licences</span>
+        <Separator orientation='vertical' data-testid='vertical' />
+        <span className='flex items-center'>Permits</span>
+        <Separator orientation='vertical' decorative data-testid='decorative' />
+        <span className='flex items-center'>Fees</span>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [horizontal, vertical] = within(canvasElement).getAllByRole('separator')
+    await expect(horizontal).toHaveAttribute('aria-orientation', 'horizontal')
+    await expect(vertical).toHaveAttribute('aria-orientation', 'vertical')
+
+    const decorative = getSeparatorByTestId(canvasElement, 'decorative')
+    await expect(decorative).toHaveAttribute('role', 'none')
+    await expect(decorative).not.toHaveAttribute('aria-orientation')
+    await expect(within(canvasElement).getAllByRole('separator')).toHaveLength(2)
+  },
 }

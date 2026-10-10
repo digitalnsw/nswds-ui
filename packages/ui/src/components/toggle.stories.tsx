@@ -1,9 +1,13 @@
 /**
  * Toggle — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/Toggle        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Toggle/Tests  → toggle.tests.stories.tsx
+ *   Components/Toggle               → this file: Docs, Default, Playground
+ *   Components/Toggle/Features      → toggle.features.stories.tsx
+ *   Components/Toggle/Accessibility → toggle.accessibility.stories.tsx
+ *   Components/Toggle/Tests         → toggle.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A two-state pressable button built on the Base UI Toggle primitive — the
  * pressed state (`aria-pressed` / `data-state`), keyboard handling and focus
@@ -29,9 +33,9 @@ import {
 import { Toggle } from './toggle.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function VariantsSection() {
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -56,14 +60,15 @@ function VariantsSection() {
   )
 }
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
       description={
         <>
-          Three steps — <code>sm</code>, <code>default</code> and <code>lg</code>. Match the size of
-          the controls the toggle sits beside.
+          Three steps — <code>sm</code>, <code>default</code> and <code>lg</code>, 24, 28 and 32px
+          tall. Match the size of the controls the toggle sits beside; every step clears the 24px
+          minimum target size.
         </>
       }
     >
@@ -80,7 +85,7 @@ function SizesSection() {
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -113,7 +118,7 @@ function StatesSection() {
   )
 }
 
-function WithIconsSection() {
+export function WithIconsSection() {
   return (
     <ExampleSection
       title='With icons'
@@ -149,13 +154,19 @@ function WithIconsSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Independent toggles in a formatting toolbar, each turning its own setting on or off, and a single filter beside the results it narrows. When only one of a set can be on, use ToggleGroup instead.'
     >
-      <Example>
+      <Example
+        code={`<div className="flex gap-1 rounded-sm border border-border p-1">
+  <Toggle aria-label="Bold"><IconFormatBold /></Toggle>
+  <Toggle aria-label="Italic"><IconFormatItalic /></Toggle>
+  <Toggle aria-label="Underline"><IconFormatUnderlined /></Toggle>
+</div>`}
+      >
         <div className='w-full max-w-md space-y-2'>
           <p className='font-semibold'>Describe the issue</p>
           <div className='flex gap-1 rounded-sm border border-border p-1'>
@@ -171,7 +182,12 @@ function InContextSection() {
           </div>
         </div>
       </Example>
-      <Example>
+      <Example
+        code={`<Toggle variant="outline" onPressedChange={setOpenNow}>
+  <IconSchedule data-icon="inline-start" />
+  Open now
+</Toggle>`}
+      >
         <div className='flex w-full max-w-md flex-wrap items-center justify-between gap-4'>
           <p>24 Service NSW centres near Parramatta</p>
           <Toggle variant='outline'>
@@ -227,6 +243,7 @@ const meta = {
   title: 'Components/Toggle',
   component: Toggle,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true },
@@ -310,13 +327,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithIcons: Story = { name: 'With icons', render: () => <WithIconsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,8 +1,13 @@
 /**
- * Switch — the docs page, Default, Playground and one story per docs section.
+ * Switch — the docs page, Default and Playground.
  *
- *   Components/Switch        → this file
- *   Components/Switch/Tests  → switch.tests.stories.tsx
+ *   Components/Switch                → this file
+ *   Components/Switch/Features       → switch.features.stories.tsx
+ *   Components/Switch/Accessibility  → switch.accessibility.stories.tsx
+ *   Components/Switch/Tests          → switch.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * An on/off toggle built on the Base UI Switch primitive — the `switch` role,
  * keyboard toggling and focus come from there. We style the track and thumb,
@@ -24,9 +29,35 @@ import {
 import { Switch } from './switch.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SizesSection() {
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          A leading switch in a horizontal <code>Field</code>, 16px from a regular-weight label.
+          Pressing the label toggles it.
+        </>
+      }
+    >
+      <Example
+        code={`<Field orientation="horizontal" className="min-h-11 gap-4">
+  <Switch name="updates" />
+  <FieldLabel className="font-normal">Email updates</FieldLabel>
+</Field>`}
+      >
+        <Field orientation='horizontal' className='min-h-11 gap-4'>
+          <Switch />
+          <FieldLabel className='font-normal'>Email updates</FieldLabel>
+        </Field>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -57,33 +88,45 @@ const stateRows = [
   { code: `<Switch aria-invalid />`, prefix: 'invalid', props: { 'aria-invalid': true } },
 ] as const
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
-      description='Off is a hollow ring; on fills the track and turns the thumb solid with a tick, so the state reads by shape as well as colour and side. Disabled greys the switch without fading it; invalid takes Input’s 2px danger edge, and a danger fill when on.'
+      description={
+        <>
+          Off is a hollow ring; on fills the track and turns the thumb solid with a tick, so the
+          state reads by shape as well as colour and side. Disabled greys the switch without fading
+          it; invalid takes Input&apos;s 2px danger edge, and a danger fill when on. Use the theme
+          toolbar to preview the selected primary palette in light or dark mode. Invalid switches
+          use the same danger colours as other form elements. The small size is 24px tall and keeps
+          the 44px hit area.
+        </>
+      }
     >
       {stateRows.map(({ code, prefix, props }) => (
         <Example key={code} code={code}>
-          {(['off', 'on'] as const).map((state) => {
-            const label = prefix ? `${prefix} ${state}` : state
-            return (
-              <ExampleCell key={state} label={label}>
-                <Switch
-                  aria-label={`Email updates, ${label}`}
-                  defaultChecked={state === 'on'}
-                  {...props}
-                />
-              </ExampleCell>
-            )
-          })}
+          {(['default', 'sm'] as const).flatMap((size) =>
+            (['off', 'on'] as const).map((state) => {
+              const label = [prefix, size === 'sm' ? 'sm' : '', state].filter(Boolean).join(' ')
+              return (
+                <ExampleCell key={`${size} ${state}`} label={label}>
+                  <Switch
+                    size={size}
+                    aria-label={`Email updates, ${label}`}
+                    defaultChecked={state === 'on'}
+                    {...props}
+                  />
+                </ExampleCell>
+              )
+            }),
+          )}
         </Example>
       ))}
     </ExampleSection>
   )
 }
 
-function WithFieldSection() {
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -154,13 +197,22 @@ function SettingsList() {
   )
 }
 
-function InContextSection() {
+export function InASettingsListSection() {
   return (
     <ExampleSection
-      title='In context'
-      description='A settings list: the label and description lead and the switch trails. Each change applies straight away, so there is no Save button. Pressing the label toggles the switch; the description is not part of the target.'
+      title='In a settings list'
+      description='Put the label and description first and the switch at the end of the row. Pressing the label toggles the switch as well as the switch itself; the description is not part of the target. Each change applies straight away, so there is no Save button.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Field orientation="horizontal" className="justify-between gap-6 py-5">
+  <FieldContent>
+    <FieldLabel>Email updates</FieldLabel>
+    <FieldDescription>Get an email when your application status changes.</FieldDescription>
+  </FieldContent>
+  <Switch defaultChecked />
+</Field>`}
+      >
         <SettingsList />
       </Example>
     </ExampleSection>
@@ -177,10 +229,11 @@ function SwitchDocs() {
       registry='switch'
       summary={
         <>
-          A switch turns a single setting on or off, and the change applies straight away. The thumb
-          is a hollow ring when off and a solid thumb with a tick when on, so the state reads by
-          shape as well as colour. Base UI owns the <code>switch</code> role, keyboard toggling and
-          form submission.
+          A switch turns a single setting on or off, and the change applies straight away. For a
+          choice that is only sent with a form, or one someone must agree to, use a checkbox. The
+          thumb is a hollow ring when off and a solid thumb with a tick when on, so the state reads
+          by shape as well as colour. Base UI owns the <code>switch</code> role, keyboard toggling
+          and form submission.
         </>
       }
     >
@@ -196,10 +249,11 @@ function SwitchDocs() {
           'Choosing between two named options — use RadioGroup or ToggleGroup.',
         ]}
       />
+      <DefaultSection />
       <SizesSection />
       <StatesSection />
       <WithFieldSection />
-      <InContextSection />
+      <InASettingsListSection />
       <DocsApi />
     </DocsPage>
   )
@@ -211,6 +265,7 @@ const meta = {
   title: 'Components/Switch',
   component: Switch,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -306,11 +361,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

@@ -1,14 +1,25 @@
 /**
  * Kbd — the story set, per docs/reference-storybook-standard.md.
  *
- *   Components/Kbd        → this file: Docs, Default, Playground and one
- *                           story per docs section
- *   Components/Kbd/Tests  → kbd.tests.stories.tsx
+ *   Components/Kbd                → this file: Docs, Default, Playground
+ *   Components/Kbd/Features       → kbd.features.stories.tsx
+ *   Components/Kbd/Accessibility  → kbd.accessibility.stories.tsx
+ *   Components/Kbd/Tests          → kbd.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 
+import {
+  IconKeyboardArrowDown,
+  IconKeyboardArrowUp,
+  IconKeyboardReturn,
+  IconSearch,
+} from '../icons/index.js'
+import { Button } from './button.js'
 import { Kbd, KbdGroup } from './kbd.js'
 import {
   DocsApi,
@@ -18,18 +29,20 @@ import {
   ExampleCell,
   ExampleSection,
 } from './story-helpers.js'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SingleKeysSection() {
+export function SingleKeysSection() {
   return (
     <ExampleSection
       title='Single keys'
       description={
         <>
           One <code>Kbd</code> per key. Write the key as it is printed on the keyboard — a word for
-          named keys, the character for the rest.
+          named keys like Esc and Enter, the character for letters and punctuation, and the symbol
+          macOS prints for its modifier keys.
         </>
       }
     >
@@ -37,13 +50,13 @@ function SingleKeysSection() {
         <ExampleCell label='named key'>
           <Kbd>Esc</Kbd>
         </ExampleCell>
-        <ExampleCell label='named key'>
-          <Kbd>Enter</Kbd>
+        <ExampleCell label='letter'>
+          <Kbd>K</Kbd>
         </ExampleCell>
         <ExampleCell label='character'>
           <Kbd>/</Kbd>
         </ExampleCell>
-        <ExampleCell label='symbol'>
+        <ExampleCell label='symbol (macOS Command)'>
           <Kbd>⌘</Kbd>
         </ExampleCell>
       </Example>
@@ -51,7 +64,7 @@ function SingleKeysSection() {
   )
 }
 
-function KeyCombinationsSection() {
+export function KeyCombinationsSection() {
   return (
     <ExampleSection
       title='Key combinations'
@@ -92,13 +105,113 @@ function KeyCombinationsSection() {
   )
 }
 
-function InContextSection() {
+export function WithIconsSection() {
+  return (
+    <ExampleSection
+      title='With icons'
+      description={
+        <>
+          For keys printed as a glyph — the arrows, Return — put the icon inside the{' '}
+          <code>Kbd</code>; it is sized to the key. The icon says nothing to a screen reader, so
+          hide it and add the key&apos;s name in visually hidden text.
+        </>
+      }
+    >
+      <Example
+        code={`<Kbd>
+  <IconKeyboardArrowUp aria-hidden="true" />
+  <span className="sr-only">Up arrow</span>
+</Kbd>`}
+      >
+        {(
+          [
+            ['Up arrow', IconKeyboardArrowUp],
+            ['Down arrow', IconKeyboardArrowDown],
+            ['Return', IconKeyboardReturn],
+          ] as const
+        ).map(([name, Icon]) => (
+          <ExampleCell key={name} label={name}>
+            <Kbd>
+              <Icon aria-hidden='true' />
+              <span className='sr-only'>{name}</span>
+            </Kbd>
+          </ExampleCell>
+        ))}
+        <ExampleCell label='icon and word'>
+          <Kbd>
+            <IconKeyboardReturn aria-hidden='true' />
+            Enter
+          </Kbd>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InATooltipSection() {
+  return (
+    <ExampleSection
+      title='In a tooltip'
+      description={
+        <>
+          Inside <code>TooltipContent</code> a key takes the tooltip&apos;s inverted colours — a
+          translucent chip in the tooltip&apos;s text colour — so the shortcut reads as part of the
+          label rather than a grey patch on it. Nothing to set: it follows from where it sits.
+        </>
+      }
+    >
+      <Example
+        code={`<TooltipContent>
+  Search <KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup>
+</TooltipContent>`}
+      >
+        <TooltipProvider>
+          <ExampleCell label='on the page'>
+            <KbdGroup>
+              <Kbd>⌘</Kbd>
+              <Kbd>K</Kbd>
+            </KbdGroup>
+          </ExampleCell>
+          <ExampleCell label='in a tooltip (hover or focus the button)'>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant='outline'
+                    iconOnly
+                    aria-label='Search'
+                    leadingVisual={IconSearch}
+                  />
+                }
+              />
+              <TooltipContent>
+                Search
+                <KbdGroup>
+                  <Kbd>⌘</Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+              </TooltipContent>
+            </Tooltip>
+          </ExampleCell>
+        </TooltipProvider>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Keys sit inline in running text, at the reading size of the sentence around them.'
     >
-      <Example layout='stack'>
+      <Example
+        layout='stack'
+        code={`<p>
+  Press <Kbd>/</Kbd> to search Service NSW from any page, then <Kbd>Enter</Kbd> to see
+  the results.
+</p>`}
+      >
         <p className='max-w-prose text-base'>
           Press <Kbd>/</Kbd> to search Service NSW from any page, then <Kbd>Enter</Kbd> to see the
           results.
@@ -146,6 +259,8 @@ function KbdDocs() {
       />
       <SingleKeysSection />
       <KeyCombinationsSection />
+      <WithIconsSection />
+      <InATooltipSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -158,6 +273,7 @@ const meta = {
   title: 'Components/Kbd',
   component: Kbd,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true },
@@ -194,12 +310,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const SingleKeys: Story = { name: 'Single keys', render: () => <SingleKeysSection /> }
-
-export const KeyCombinations: Story = {
-  name: 'Key combinations',
-  render: () => <KeyCombinationsSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

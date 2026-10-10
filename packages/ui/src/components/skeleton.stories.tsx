@@ -1,9 +1,13 @@
 /**
- * Skeleton — follows docs/reference-storybook-standard.md.
+ * Skeleton — a placeholder block shaped like the content that will replace it.
  *
- *   Components/Skeleton        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/Skeleton/Tests  → skeleton.tests.stories.tsx
+ *   Components/Skeleton                → this file: Docs, Default, Playground
+ *   Components/Skeleton/Features       → skeleton.features.stories.tsx
+ *   Components/Skeleton/Accessibility  → skeleton.accessibility.stories.tsx
+ *   Components/Skeleton/Tests          → skeleton.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -21,10 +25,16 @@ import {
 
 const looks = ['default', 'band', 'rule'] as const
 
-// ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+const lookDocs: ReadonlyArray<readonly [(typeof looks)[number], string]> = [
+  ['default', 'A filled block with 8px corners, for cards, Dialog and most pages.'],
+  ['band', 'A square-cornered band, inside the band look of Dialog and DropdownMenu.'],
+  ['rule', 'An outline with no fill, inside the rule look — and in forced colours.'],
+]
 
-function VariantsSection() {
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
@@ -47,11 +57,19 @@ function VariantsSection() {
           </ExampleCell>
         ))}
       </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-3'>
+        {lookDocs.map(([name, desc]) => (
+          <div key={name} className='space-y-1 text-base'>
+            <dt className='font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
     </ExampleSection>
   )
 }
 
-function ShapesSection() {
+export function ShapesSection() {
   return (
     <ExampleSection
       title='Shapes'
@@ -72,7 +90,39 @@ function ShapesSection() {
   )
 }
 
-function AnnouncingTheWaitSection() {
+export function ListsSection() {
+  return (
+    <ExampleSection
+      title='Lists'
+      description='Repeat one row shape for a list that is loading. Match the number of rows to what usually arrives, so the page grows little when the real rows land.'
+    >
+      <Example
+        layout='fill'
+        code={`<ul aria-busy="true">
+  <li><Skeleton className="size-10 rounded-full" /><Skeleton className="h-4 w-56" /></li>
+  …
+</ul>`}
+      >
+        <div aria-busy='true' className='max-w-md'>
+          <span className='sr-only'>Loading your applications</span>
+          <ul className='divide-y divide-border'>
+            {[0, 1, 2].map((row) => (
+              <li key={row} className='flex items-center gap-4 py-4'>
+                <Skeleton className='size-10 shrink-0 rounded-full' />
+                <div className='flex flex-1 flex-col gap-2'>
+                  <Skeleton className='h-4 w-56 max-w-full' />
+                  <Skeleton className='h-4 w-32' />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function AnnouncingTheWaitSection() {
   return (
     <ExampleSection
       title='Announcing the wait'
@@ -105,13 +155,21 @@ function AnnouncingTheWaitSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A news card and a form field, loading. Each block stands where the real content will land.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<div aria-busy="true">
+  <span className="sr-only">Loading</span>
+  <Skeleton className="aspect-video w-full" />
+  <Skeleton className="h-6 w-3/4" />
+  …
+</div>`}
+      >
         <div aria-busy='true' className='flex max-w-sm flex-col gap-8'>
           <span className='sr-only'>Loading</span>
           <div className='flex flex-col gap-3'>
@@ -159,6 +217,7 @@ function SkeletonDocs() {
       />
       <VariantsSection />
       <ShapesSection />
+      <ListsSection />
       <AnnouncingTheWaitSection />
       <InContextSection />
       <DocsApi />
@@ -172,6 +231,7 @@ const meta = {
   title: 'Components/Skeleton',
   component: Skeleton,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -203,14 +263,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const Shapes: Story = { name: 'Shapes', render: () => <ShapesSection /> }
-
-export const AnnouncingTheWait: Story = {
-  name: 'Announcing the wait',
-  render: () => <AnnouncingTheWaitSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

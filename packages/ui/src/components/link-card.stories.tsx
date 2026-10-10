@@ -1,27 +1,39 @@
 /**
- * LinkCard — follows docs/reference-storybook-standard.md.
+ * LinkCard — a card whose whole surface is one link.
  *
- *   Components/LinkCard        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/LinkCard/Tests  → link-card.tests.stories.tsx
+ *   Components/LinkCard                → this file: Docs, Default, Playground
+ *   Components/LinkCard/Features       → link-card.features.stories.tsx
+ *   Components/LinkCard/Accessibility  → link-card.accessibility.stories.tsx
+ *   Components/LinkCard/Tests          → link-card.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ReactNode } from 'react'
 
+import { Badge } from './badge.js'
 import { LinkCard } from './link-card.js'
-import {
-  DocsApi,
-  DocsPage,
-  DocsUsage,
-  Example,
-  ExampleCell,
-  ExampleSection,
-} from './story-helpers.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+
+/**
+ * A specimen with its label above it. Cards fill their column, so Button's
+ * centred cell would shrink them to their text.
+ */
+function Specimen({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className='flex flex-col gap-2'>
+      <p className='text-base font-medium tracking-wide text-muted-foreground'>{label}</p>
+      <div className='flex-1'>{children}</div>
+    </div>
+  )
+}
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function ContentSection() {
+export function ContentSection() {
   return (
     <ExampleSection
       title='Content'
@@ -39,30 +51,30 @@ function ContentSection() {
         code={`<LinkCard href="/fishing-licence" label="Licences" title="Get a fishing licence"
   description="Buy a recreational fishing licence online." />`}
       >
-        <ExampleCell label='label, title and description'>
+        <Specimen label='label, title and description'>
           <LinkCard
             href='#fishing-licence'
             label='Licences'
             title='Get a fishing licence'
             description='Buy a recreational fishing licence online.'
           />
-        </ExampleCell>
-        <ExampleCell label='title and description'>
+        </Specimen>
+        <Specimen label='title and description'>
           <LinkCard
             href='#fishing-rules'
             title='Fishing rules'
             description='Bag and size limits for every species.'
           />
-        </ExampleCell>
-        <ExampleCell label='title only'>
+        </Specimen>
+        <Specimen label='title only'>
           <LinkCard href='#fishing-closures' title='Fishing closures' />
-        </ExampleCell>
+        </Specimen>
       </Example>
     </ExampleSection>
   )
 }
 
-function ExternalLinksSection() {
+export function ExternalLinksSection() {
   return (
     <ExampleSection
       title='External links'
@@ -78,33 +90,89 @@ function ExternalLinksSection() {
         surface='subtle'
         code={`<LinkCard external href="https://www.service.nsw.gov.au" title="Service NSW" />`}
       >
-        <ExampleCell label='internal'>
+        <Specimen label='internal'>
           <LinkCard
             href='#help'
             title='Help with your application'
             description='Answers to common questions.'
           />
-        </ExampleCell>
-        <ExampleCell label='external'>
+        </Specimen>
+        <Specimen label='external'>
           <LinkCard
             href='https://www.service.nsw.gov.au'
             external
             title='Service NSW'
             description='Transactions and services across NSW Government.'
           />
-        </ExampleCell>
+        </Specimen>
       </Example>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+export function ExtraContentSection() {
+  return (
+    <ExampleSection
+      title='Extra content'
+      description={
+        <>
+          Children render under the description, above the corner arrow — a status, a date or a
+          short fact. They must not be interactive: the whole card is already the link, and a button
+          or second link inside it would sit under the stretched anchor.
+        </>
+      }
+    >
+      <Example
+        layout='grid'
+        surface='subtle'
+        code={`<LinkCard href="/grants/community-gardens" title="Community garden grants"
+  description="Funding to create and improve shared gardens.">
+  <Badge color="success" dot>Open</Badge>
+</LinkCard>`}
+      >
+        <Specimen label='a status Badge'>
+          <LinkCard
+            href='#community-gardens'
+            label='Grants'
+            title='Community garden grants'
+            description='Funding to create and improve shared gardens.'
+          >
+            <div>
+              <Badge color='success' dot>
+                Open
+              </Badge>
+            </div>
+          </LinkCard>
+        </Specimen>
+        <Specimen label='a closing date'>
+          <LinkCard
+            href='#sport-facilities'
+            label='Grants'
+            title='Local sport facilities'
+            description='Upgrade change rooms, lighting and playing surfaces.'
+          >
+            <p className='text-muted-foreground'>Closes 30 June 2027</p>
+          </LinkCard>
+        </Specimen>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A grid of related destinations. Each card stretches to the tallest in its row.'
     >
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+  <LinkCard href="/births" label="Life events" title="Register a birth" description="…" />
+  …
+</div>`}
+      >
         <div className='grid gap-6 sm:grid-cols-2 lg:grid-cols-3'>
           <LinkCard
             href='#births'
@@ -161,6 +229,7 @@ function LinkCardDocs() {
       />
       <ContentSection />
       <ExternalLinksSection />
+      <ExtraContentSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -173,6 +242,7 @@ const meta = {
   title: 'Components/LinkCard',
   component: LinkCard,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -261,9 +331,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Content: Story = { name: 'Content', render: () => <ContentSection /> }
-
-export const External: Story = { name: 'External links', render: () => <ExternalLinksSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

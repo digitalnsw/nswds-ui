@@ -1,24 +1,21 @@
 /**
- * DescriptionList — follows docs/reference-storybook-standard.md.
+ * DescriptionList — a <dl> of terms and their details.
  *
- *   Components/DescriptionList        → this file: Docs, Default, Playground
- *                                       and one story per docs section
- *   Components/DescriptionList/Tests  → description-list.tests.stories.tsx
+ *   Components/DescriptionList                → this file: Docs, Default, Playground
+ *   Components/DescriptionList/Features       → description-list.features.stories.tsx
+ *   Components/DescriptionList/Accessibility  → description-list.accessibility.stories.tsx
+ *   Components/DescriptionList/Tests          → description-list.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Fragment } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 import { Card, CardContent, CardHeader, CardTitle } from './card.js'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from './description-list.js'
-import {
-  DocsApi,
-  DocsPage,
-  DocsUsage,
-  Example,
-  ExampleCell,
-  ExampleSection,
-} from './story-helpers.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
 const FACTS = [
   { term: 'Reference number', detail: 'WWC-2210-4471' },
@@ -40,15 +37,49 @@ function Facts() {
   )
 }
 
+/**
+ * A full-width specimen with its label above it. A list fills its column, so
+ * Button's centred cell would shrink it to its text.
+ */
+function Specimen({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className='w-full space-y-2'>
+      <p className='text-base font-medium tracking-wide text-muted-foreground'>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+const layouts = [
+  {
+    layout: 'stacked',
+    title: 'stacked',
+    description:
+      'The default. Each term sits above its detail in one column, so a long term is never truncated. Use it in narrow columns and on small screens.',
+  },
+  {
+    layout: 'columns',
+    title: 'columns',
+    description:
+      'Terms and details side by side from sm up, for a summary that is scanned down the left. It stacks again on narrow screens.',
+  },
+  {
+    layout: 'inline',
+    title: 'inline',
+    description:
+      'Facts in a row that wraps, like the strip of key facts under a page banner. Keep each detail short.',
+  },
+] as const
+
 const pairCode = `  <div>
     <DescriptionTerm>Reference number</DescriptionTerm>
     <DescriptionDetails>WWC-2210-4471</DescriptionDetails>
   </div>`
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function LayoutsSection() {
+export function LayoutsSection() {
   return (
     <ExampleSection
       title='Layouts'
@@ -61,26 +92,35 @@ function LayoutsSection() {
         </>
       }
     >
-      <Example code={`<DescriptionList>\n${pairCode}\n</DescriptionList>`}>
-        <DescriptionList>
-          <Facts />
-        </DescriptionList>
-      </Example>
-      <Example layout='fill' code={`<DescriptionList layout="columns">…</DescriptionList>`}>
-        <DescriptionList layout='columns'>
-          <Facts />
-        </DescriptionList>
-      </Example>
-      <Example layout='fill' code={`<DescriptionList layout="inline">…</DescriptionList>`}>
-        <DescriptionList layout='inline'>
-          <Facts />
-        </DescriptionList>
-      </Example>
+      <div className='space-y-10'>
+        {layouts.map(({ layout, title, description }) => (
+          <div key={layout} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>{title}</h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {description}
+              </p>
+            </div>
+            <Example
+              layout='fill'
+              code={
+                layout === 'stacked'
+                  ? `<DescriptionList>\n${pairCode}\n</DescriptionList>`
+                  : `<DescriptionList layout="${layout}">…</DescriptionList>`
+              }
+            >
+              <DescriptionList layout={layout}>
+                <Facts />
+              </DescriptionList>
+            </Example>
+          </div>
+        ))}
+      </div>
     </ExampleSection>
   )
 }
 
-function GroupingPairsSection() {
+export function GroupingPairsSection() {
   return (
     <ExampleSection
       title='Grouping pairs'
@@ -95,14 +135,15 @@ function GroupingPairsSection() {
     >
       <Example
         layout='stack'
+        className='gap-8'
         code={`<DescriptionList layout="inline">\n${pairCode}\n</DescriptionList>`}
       >
-        <ExampleCell label='each pair wrapped in a div'>
+        <Specimen label='each pair wrapped in a div'>
           <DescriptionList layout='inline'>
             <Facts />
           </DescriptionList>
-        </ExampleCell>
-        <ExampleCell label='not wrapped — terms and details come apart'>
+        </Specimen>
+        <Specimen label='not wrapped — terms and details come apart'>
           <DescriptionList layout='inline'>
             {FACTS.map(({ term, detail }) => (
               <Fragment key={term}>
@@ -111,16 +152,71 @@ function GroupingPairsSection() {
               </Fragment>
             ))}
           </DescriptionList>
-        </ExampleCell>
+        </Specimen>
       </Example>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+const longFacts = [
+  {
+    term: 'Organisation receiving the grant',
+    detail: 'Riverina Community Gardens Incorporated (ABN 12 345 678 901)',
+  },
+  {
+    term: 'Purpose',
+    detail:
+      'Building raised garden beds and an accessible path so residents who use wheelchairs can take part.',
+  },
+]
+
+export function LongContentSection() {
+  return (
+    <ExampleSection
+      title='Long content'
+      description={
+        <>
+          Terms and details wrap rather than truncate in every layout. In <code>columns</code> the
+          term column takes the width it needs, so keep terms short and let the detail carry the
+          length.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<DescriptionList layout="columns">…</DescriptionList>`}
+      >
+        {(['stacked', 'columns'] as const).map((layout) => (
+          <Specimen key={layout} label={layout}>
+            <DescriptionList layout={layout}>
+              {longFacts.map(({ term, detail }) => (
+                <div key={term}>
+                  <DescriptionTerm>{term}</DescriptionTerm>
+                  <DescriptionDetails>{detail}</DescriptionDetails>
+                </div>
+              ))}
+            </DescriptionList>
+          </Specimen>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection title='In context' description='The summary of an application, inside a Card.'>
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<Card>
+  <CardHeader><CardTitle>Working with Children Check</CardTitle></CardHeader>
+  <CardContent>
+    <DescriptionList layout="columns">…</DescriptionList>
+  </CardContent>
+</Card>`}
+      >
         <Card className='max-w-xl'>
           <CardHeader>
             <CardTitle>Working with Children Check</CardTitle>
@@ -166,6 +262,7 @@ function DescriptionListDocs() {
       />
       <LayoutsSection />
       <GroupingPairsSection />
+      <LongContentSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -178,6 +275,7 @@ const meta = {
   title: 'Components/DescriptionList',
   component: DescriptionList,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -241,12 +339,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Layouts: Story = { name: 'Layouts', render: () => <LayoutsSection /> }
-
-export const GroupingPairs: Story = {
-  name: 'Grouping pairs',
-  render: () => <GroupingPairsSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

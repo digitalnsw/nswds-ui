@@ -1,9 +1,14 @@
 /**
  * Footer — the end-of-page contentinfo landmark.
  *
- *   Components/Footer        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Footer/Tests  → footer.tests.stories.tsx
+ *   Components/Footer                → this file: Docs, Default, Playground
+ *   Components/Footer/Features       → footer.features.stories.tsx
+ *   Components/Footer/Accessibility  → footer.accessibility.stories.tsx
+ *   Components/Footer/Tests          → footer.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples. Every
+ * Footer on the docs page takes its own id, so each specimen is addressable.
  *
  * The eight composed footer blocks (FooterSitemap, FooterNewsletter, …) are a
  * separate pattern group: Patterns/FooterBlocks.
@@ -105,10 +110,12 @@ function Strip({ label, children }: { label: React.ReactNode; children: React.Re
 type FooterColor = (typeof footerColors)[number]
 
 /** One surface, trimmed to the rows that carry its colours. */
-function ColourSpecimen({ color, label }: { color: FooterColor; label?: string }) {
+function ColourSpecimen({ color, dark = false }: { color: FooterColor; dark?: boolean }) {
+  const name = color === 'white' ? 'white (default)' : color
   return (
-    <Strip label={label ?? (color === 'white' ? 'white (default)' : color)}>
+    <Strip label={dark ? `${name} — dark mode` : name}>
       <Footer
+        id={`footer-colour-${dark ? 'dark-' : ''}${color}`}
         color={color}
         department={department}
         legalLinks={legalLinks}
@@ -121,54 +128,106 @@ function ColourSpecimen({ color, label }: { color: FooterColor; label?: string }
   )
 }
 
-const colourFamilies: ReadonlyArray<ReadonlyArray<FooterColor>> = [
-  ['primary-800', 'primary-600', 'primary-400', 'primary-200'],
-  ['grey-800', 'grey-600', 'grey-400', 'grey-200'],
-  ['accent-800', 'accent-600', 'accent-400', 'accent-200'],
-  ['white'],
+const colourFamilies: ReadonlyArray<{
+  title: string
+  description: React.ReactNode
+  colors: ReadonlyArray<FooterColor>
+}> = [
+  {
+    title: 'Blue',
+    description: (
+      <>
+        The masterbrand blue. <code>primary-800</code> is the deepest and takes the reversed logo;{' '}
+        <code>primary-600</code> is AA-only; the lighter two carry blue ink instead of white.
+      </>
+    ),
+    colors: ['primary-800', 'primary-600', 'primary-400', 'primary-200'],
+  },
+  {
+    title: 'Grey',
+    description: (
+      <>
+        Neutral surfaces, for a footer that should recede. <code>grey-800</code> takes the reversed
+        logo; the lighter two carry grey ink.
+      </>
+    ),
+    colors: ['grey-800', 'grey-600', 'grey-400', 'grey-200'],
+  },
+  {
+    title: 'Red',
+    description: (
+      <>
+        The masterbrand red, for a service whose brand leads with it. <code>accent-600</code> is
+        AA-only; prefer <code>accent-800</code> for a service held to AAA.
+      </>
+    ),
+    colors: ['accent-800', 'accent-600', 'accent-400', 'accent-200'],
+  },
+  {
+    title: 'White',
+    description: (
+      <>
+        The default: a plain page-coloured footer. Keep its top rule (<code>topBorder</code>, on by
+        default) so it still reads as the end of the page; the specimens here leave it off. It
+        deepens to <code>grey-900</code> in dark mode.
+      </>
+    ),
+    colors: ['white'],
+  },
 ]
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
       description={
         <>
-          Thirteen surfaces, named for their light-mode tone. Links, rules, halos and focus rings
-          all derive from the surface&apos;s one <code>--footer-ink</code>, so nothing is restated
-          per colour. All thirteen clear WCAG 2.2 AA in light mode and AAA in dark;{' '}
-          <code>primary-600</code> and <code>accent-600</code> are AA-only, so a service held to AAA
-          takes the <code>-800</code> step. Every surface deepens in dark mode.
+          All thirteen surfaces clear WCAG 2.2 AA (4.5:1) for the footer&rsquo;s smallest text;
+          eleven also clear AAA (7:1). The two AA-only pairs are <code>primary-600</code> (4.57:1)
+          and <code>accent-600</code> (5.18:1) — prefer the <code>-800</code> steps for a service
+          held to AAA. Link, border and hover colours all derive from the surface&rsquo;s{' '}
+          <code>--footer-ink</code>, so a new surface only needs that one token. Each colour is
+          named for its light-mode tone and deepens in dark mode, where all thirteen clear AAA.
         </>
       }
     >
-      {colourFamilies.map((family, index) => (
-        <Example
-          key={family[0]}
-          layout='fill'
-          code={index === 0 ? `<Footer color="primary-800" … />` : undefined}
-        >
-          <div className='space-y-6'>
-            {family.map((color) => (
-              <ColourSpecimen key={color} color={color} />
-            ))}
+      <div className='space-y-10'>
+        {colourFamilies.map((family, index) => (
+          <div key={family.title} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>{family.title}</h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {family.description}
+              </p>
+            </div>
+            <Example
+              layout='fill'
+              code={index === 0 ? `<Footer color="primary-800" … />` : undefined}
+            >
+              <div className='space-y-6'>
+                {family.colors.map((color) => (
+                  <ColourSpecimen key={color} color={color} />
+                ))}
+              </div>
+            </Example>
+            <Example layout='fill' surface='dark'>
+              <div className='space-y-6'>
+                {family.colors.map((color) => (
+                  <ColourSpecimen key={color} color={color} dark />
+                ))}
+              </div>
+            </Example>
           </div>
-        </Example>
-      ))}
-      <Example layout='fill' surface='dark'>
-        <div className='space-y-6'>
-          {(['white', 'grey-200', 'primary-800', 'accent-400'] as const).map((color) => (
-            <ColourSpecimen key={color} color={color} label={`${color} — dark mode`} />
-          ))}
-        </div>
-      </Example>
+        ))}
+      </div>
     </ExampleSection>
   )
 }
 
-function AcknowledgementSection() {
+export function AcknowledgementSection() {
   return (
     <ExampleSection
       title='Acknowledgement of Country'
@@ -187,10 +246,11 @@ function AcknowledgementSection() {
       >
         <div className='space-y-6'>
           <Strip label='default wording'>
-            <Footer color='grey-200' legalLinks={[]} smallPrint={false} />
+            <Footer id='footer-ack-default' color='grey-200' legalLinks={[]} smallPrint={false} />
           </Strip>
           <Strip label='agreed wording'>
             <Footer
+              id='footer-ack-agreed'
               color='grey-200'
               legalLinks={[]}
               smallPrint={false}
@@ -203,7 +263,7 @@ function AcknowledgementSection() {
   )
 }
 
-function SiteMapSection() {
+export function SiteMapSection() {
   return (
     <ExampleSection
       title='Site map'
@@ -226,6 +286,7 @@ function SiteMapSection() {
 </Footer>`}
       >
         <Footer
+          id='footer-site-map'
           color='grey-200'
           department={department}
           legalLinks={legalLinks}
@@ -243,7 +304,7 @@ function SiteMapSection() {
   )
 }
 
-function SocialLinksSection() {
+export function SocialLinksSection() {
   return (
     <ExampleSection
       title='Social links'
@@ -269,6 +330,7 @@ function SocialLinksSection() {
 />`}
       >
         <Footer
+          id='footer-social'
           color='white'
           department={department}
           socialLinks={socialLinks}
@@ -281,7 +343,7 @@ function SocialLinksSection() {
   )
 }
 
-function WithTheLogoSection() {
+export function WithTheLogoSection() {
   return (
     <ExampleSection
       title='With the logo'
@@ -305,6 +367,7 @@ function WithTheLogoSection() {
           {(['white', 'primary-800', 'grey-800'] as const).map((color) => (
             <Strip key={color} label={`${color} → ${footerLogoType(color)}`}>
               <Footer
+                id={`footer-logo-${color}`}
                 color={color}
                 department={department}
                 year={year}
@@ -321,7 +384,7 @@ function WithTheLogoSection() {
   )
 }
 
-function CompositionSection() {
+export function CompositionSection() {
   return (
     <ExampleSection
       title='Composition'
@@ -329,9 +392,11 @@ function CompositionSection() {
         <>
           For a layout the props do not cover, compose <code>FooterAcknowledgement</code>,{' '}
           <code>FooterLegalLinks</code>, <code>FooterSmallPrint</code> and{' '}
-          <code>FooterSocialLink</code> yourself. They all read the <code>--footer-*</code> tokens,
-          so wrap them in a <code>Footer</code> with the colour you want, switch its own rows off,
-          and the parts follow.
+          <code>FooterSocialLink</code> directly — they all read the same <code>--footer-*</code>{' '}
+          tokens, so pass a colour to the wrapping <code>Footer</code> (or set{' '}
+          <code>--footer-ink</code> yourself) and the parts follow. Switch the wrapping
+          Footer&apos;s own rows off with <code>acknowledgement=&#123;false&#125;</code> and{' '}
+          <code>smallPrint=&#123;false&#125;</code>.
         </>
       }
     >
@@ -344,7 +409,12 @@ function CompositionSection() {
   <FooterSmallPrint department="Department of Primary Industries" />
 </Footer>`}
       >
-        <Footer color='primary-800' acknowledgement={false} smallPrint={false}>
+        <Footer
+          id='footer-composition'
+          color='primary-800'
+          acknowledgement={false}
+          smallPrint={false}
+        >
           <div className='grid gap-8 py-4 sm:grid-cols-3'>
             <div>
               <h2 className='text-base font-bold'>Contact us</h2>
@@ -378,7 +448,7 @@ function CompositionSection() {
   )
 }
 
-function ContainersSection() {
+export function ContainersSection() {
   return (
     <ExampleSection
       title='Containers'
@@ -396,6 +466,7 @@ function ContainersSection() {
           {(['fluid', 'contained'] as const).map((container) => (
             <Strip key={container} label={container}>
               <Footer
+                id={`footer-container-${container}`}
                 color='grey-200'
                 container={container}
                 department={department}
@@ -412,13 +483,19 @@ function ContainersSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='The last thing on every page, rendered once in a shared layout: the logo and site map above the acknowledgement, legal links and small print.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Footer color="primary-800" department="…" legalLinks={legalLinks} socialLinks={socialLinks}>
+  <Logo logoType={footerLogoType('primary-800')} />
+  <FooterNav>…</FooterNav>
+</Footer>`}
+      >
         <div className='overflow-hidden ring-1 ring-foreground/10'>
           <div className='space-y-2 bg-background px-6 py-8 text-foreground'>
             <p className='text-2xl font-bold'>Apply for a recreational fishing licence</p>
@@ -427,6 +504,7 @@ function InContextSection() {
             </p>
           </div>
           <Footer
+            id='footer-in-context'
             color='primary-800'
             department={department}
             legalLinks={legalLinks}
@@ -470,10 +548,11 @@ function FooterDocs() {
       registry='footer'
       summary={
         <>
-          The page&apos;s <code>contentinfo</code> landmark: acknowledgement of Country, supporting
-          links, the agency that owns the service, and the social channels it runs. Render it once
-          in a shared layout so every page ends the same way. It is the one region allowed to be
-          dense — people come here looking for something specific.
+          The footer closes every page with acknowledgement of Country, supporting links, service
+          ownership and any social channels the team actively maintains. Render it once in a shared
+          layout, not per page. It is a <code>contentinfo</code> landmark, so there should be
+          exactly one per page. It is the one region allowed to be dense — people come here looking
+          for something specific.
         </>
       }
     >
@@ -508,6 +587,7 @@ const meta = {
   title: 'Components/Footer',
   component: Footer,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -635,22 +715,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Acknowledgement: Story = {
-  name: 'Acknowledgement of Country',
-  render: () => <AcknowledgementSection />,
-}
-
-export const SiteMap: Story = { name: 'Site map', render: () => <SiteMapSection /> }
-
-export const SocialLinks: Story = { name: 'Social links', render: () => <SocialLinksSection /> }
-
-export const WithTheLogo: Story = { name: 'With the logo', render: () => <WithTheLogoSection /> }
-
-export const Composed: Story = { name: 'Composition', render: () => <CompositionSection /> }
-
-export const Contained: Story = { name: 'Containers', render: () => <ContainersSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

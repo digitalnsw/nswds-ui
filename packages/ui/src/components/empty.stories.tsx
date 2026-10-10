@@ -1,9 +1,13 @@
 /**
- * Empty — follows docs/reference-storybook-standard.md.
+ * Empty — what a list, table or search shows when it has nothing to show.
  *
- *   Components/Empty        → this file: Docs, Default, Playground and one
- *                             story per docs section
- *   Components/Empty/Tests  → empty.tests.stories.tsx
+ *   Components/Empty                → this file: Docs, Default, Playground
+ *   Components/Empty/Features       → empty.features.stories.tsx
+ *   Components/Empty/Accessibility  → empty.accessibility.stories.tsx
+ *   Components/Empty/Tests          → empty.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -30,9 +34,9 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function MediaSection() {
+export function MediaSection() {
   return (
     <ExampleSection
       title='Media'
@@ -75,7 +79,51 @@ function MediaSection() {
   )
 }
 
-function WaysForwardSection() {
+const surfaces = [
+  ['border', 'A dashed outline — the dashed style is already set, so add only border.'],
+  ['bg-muted', 'A muted fill, for a section of a dashboard or a card.'],
+  ['none', 'No frame, where the surrounding layout already contains it.'],
+] as const
+
+export function SurfacesSection() {
+  return (
+    <ExampleSection
+      title='Surfaces'
+      description={
+        <>
+          Empty draws no frame of its own. Give it one with a class: <code>border</code> for a
+          dashed outline or <code>bg-muted</code> for a fill — or none where it already sits inside
+          a frame.
+        </>
+      }
+    >
+      <Example layout='grid' code={`<Empty className="border">…</Empty>`}>
+        {surfaces.map(([surface]) => (
+          <ExampleCell key={surface} label={`className="${surface === 'none' ? '' : surface}"`}>
+            <Empty className={surface === 'none' ? undefined : surface}>
+              <EmptyHeader>
+                <EmptyMedia variant='icon'>
+                  <IconFolderOpen aria-hidden='true' />
+                </EmptyMedia>
+                <EmptyTitle>No saved forms</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          </ExampleCell>
+        ))}
+      </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-3'>
+        {surfaces.map(([name, desc]) => (
+          <div key={name} className='space-y-1 text-base'>
+            <dt className='font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
+    </ExampleSection>
+  )
+}
+
+export function WaysForwardSection() {
   return (
     <ExampleSection
       title='Ways forward'
@@ -122,7 +170,7 @@ function WaysForwardSection() {
   )
 }
 
-function HeadingsSection() {
+export function HeadingsSection() {
   return (
     <ExampleSection
       title='Headings'
@@ -156,13 +204,23 @@ function HeadingsSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A dashboard section with nothing in it yet, on a muted surface instead of a dashed outline.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Empty className="bg-muted">
+  <EmptyHeader>
+    <EmptyMedia variant="icon"><IconFolderOpen aria-hidden="true" /></EmptyMedia>
+    <EmptyTitle>You have no licences linked to your account</EmptyTitle>
+    <EmptyDescription>…</EmptyDescription>
+  </EmptyHeader>
+  <EmptyContent><Button>Link a licence</Button></EmptyContent>
+</Empty>`}
+      >
         <div className='space-y-4'>
           <p className='text-2xl font-semibold'>Your licences</p>
           <Empty className='bg-muted'>
@@ -222,6 +280,7 @@ function EmptyDocs() {
         ]}
       />
       <MediaSection />
+      <SurfacesSection />
       <WaysForwardSection />
       <HeadingsSection />
       <InContextSection />
@@ -236,6 +295,7 @@ const meta = {
   title: 'Components/Empty',
   component: Empty,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -287,11 +347,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Media: Story = { name: 'Media', render: () => <MediaSection /> }
-
-export const WaysForward: Story = { name: 'Ways forward', render: () => <WaysForwardSection /> }
-
-export const Headings: Story = { name: 'Headings', render: () => <HeadingsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

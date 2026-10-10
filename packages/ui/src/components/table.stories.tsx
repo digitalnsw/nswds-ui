@@ -1,10 +1,13 @@
 /**
- * Table — follows docs/reference-storybook-standard.md.
+ * Table — a styled data table over native table elements.
  *
- *   Components/Table                → this file: Docs, Default, Playground and
- *                                     one story per docs section
- *   Components/Table/Tests          → table.tests.stories.tsx
+ *   Components/Table                → this file: Docs, Default, Playground
+ *   Components/Table/Features       → table.features.stories.tsx
  *   Components/Table/Accessibility  → table.accessibility.stories.tsx
+ *   Components/Table/Tests          → table.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * A styled data table built from native table elements. The parts map onto the
  * corresponding HTML elements (table, thead, tbody, tfoot, tr, th, td, caption)
@@ -13,7 +16,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor } from 'storybook/test'
+import { expect } from 'storybook/test'
 
 import { Badge } from './badge.js'
 import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
@@ -62,9 +65,9 @@ function ServiceRows() {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function CompositionSection() {
+export function CompositionSection() {
   return (
     <ExampleSection
       title='Composition'
@@ -107,6 +110,120 @@ function CompositionSection() {
   )
 }
 
+const namingExamples = [
+  {
+    label: 'TableCaption',
+    note: 'The default. The caption is visible, names the table and names its scroll region.',
+    props: {},
+    caption: 'Driver licence fees',
+    code: `<Table>
+  <TableCaption>Driver licence fees</TableCaption>
+  …
+</Table>`,
+  },
+  {
+    label: 'aria-label',
+    note: 'For a table whose purpose is already clear from the page and needs no visible caption.',
+    props: { 'aria-label': 'Boat licence fees' },
+    caption: undefined,
+    code: `<Table aria-label="Boat licence fees">…</Table>`,
+  },
+] as const
+
+export function NamingSection() {
+  return (
+    <ExampleSection
+      title='Naming'
+      description={
+        <>
+          Every table needs a name. A <code>TableCaption</code> gives it one everyone can see.
+          Without one, pass <code>aria-label</code>, or <code>aria-labelledby</code> pointing at a
+          heading already on the page — either takes precedence over a caption, and either also
+          names the scroll region.
+        </>
+      }
+    >
+      {namingExamples.map((example) => (
+        <div key={example.label} className='space-y-3'>
+          <h3 className='text-lg font-semibold'>{example.label}</h3>
+          <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+            {example.note}
+          </p>
+          <Example layout='fill' code={example.code}>
+            <Table {...example.props}>
+              {example.caption ? <TableCaption>{example.caption}</TableCaption> : null}
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Licence</TableHead>
+                  <TableHead>Term</TableHead>
+                  <TableHead>Fee</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow>
+                  <TableCell>
+                    {example.caption ? 'Class C (car)' : 'General boat licence'}
+                  </TableCell>
+                  <TableCell>5 years</TableCell>
+                  <TableCell>{example.caption ? '$186' : '$163'}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </Example>
+        </div>
+      ))}
+    </ExampleSection>
+  )
+}
+
+export function RowStatesSection() {
+  return (
+    <ExampleSection
+      title='Row states'
+      description={
+        <>
+          Rows tint on hover to help the eye follow a line across. Set{' '}
+          <code>data-state=&quot;selected&quot;</code> on a <code>TableRow</code> to hold that tint
+          for a selected row, and a row containing an expanded control (
+          <code>aria-expanded=&quot;true&quot;</code>) tints the same way. The tint is a cue only —
+          say what is selected in the row itself too.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<TableRow data-state="selected">
+  <TableCell>Business name registration</TableCell>
+  …
+</TableRow>`}
+      >
+        <Table>
+          <TableCaption>Services in your basket</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Service</TableHead>
+              <TableHead>Agency</TableHead>
+              <TableHead>State</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Driver licence</TableCell>
+              <TableCell>Transport for NSW</TableCell>
+              <TableCell>Not selected</TableCell>
+            </TableRow>
+            <TableRow data-state='selected'>
+              <TableCell>Business name registration</TableCell>
+              <TableCell>Service NSW</TableCell>
+              <TableCell>Selected</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </Example>
+    </ExampleSection>
+  )
+}
+
 const feeRows = [
   {
     licence: 'Recreational fishing — 1 year',
@@ -122,7 +239,7 @@ const feeRows = [
   },
 ]
 
-function ScrollingSection() {
+export function ScrollingSection() {
   return (
     <ExampleSection
       title='Scrolling'
@@ -166,13 +283,20 @@ function ScrollingSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A list of a person’s applications, with each status as a Badge.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Table>
+  <TableCaption>Applications started in the last 12 months</TableCaption>
+  …
+  <TableCell><Badge color="warning" dot>In review</Badge></TableCell>
+</Table>`}
+      >
         <div className='space-y-4'>
           <p className='text-2xl font-semibold'>Your applications</p>
           <Table>
@@ -249,6 +373,8 @@ function TableDocs() {
         ]}
       />
       <CompositionSection />
+      <NamingSection />
+      <RowStatesSection />
       <ScrollingSection />
       <InContextSection />
       <DocsApi />
@@ -262,10 +388,17 @@ const meta = {
   title: 'Components/Table',
   component: Table,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: TableDocs },
+    docs: {
+      page: TableDocs,
+      description: {
+        component:
+          'A styled data table over native table elements. Compose TableHeader / TableBody / TableFooter with TableRow, TableHead and TableCell; TableCaption provides an accessible description. A table wider than its column scrolls horizontally, and while it overflows the scroll container becomes a focusable region named by the caption, so keyboard users can reach the clipped columns; a table that fits gains no tab stop.',
+      },
+    },
   },
   args: {
     children: <ServiceRows />,
@@ -317,18 +450,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Composition: Story = { name: 'Composition', render: () => <CompositionSection /> }
-
-export const Scrolling: Story = {
-  name: 'Scrolling',
-  render: () => <ScrollingSection />,
-  // The container turns focusable from a ResizeObserver callback, a frame
-  // after mount; wait for it so the end-of-play axe pass sees the region.
-  play: async ({ canvasElement }) => {
-    const container = canvasElement.querySelector('[data-slot="table-container"]')
-    await waitFor(() => expect(container).toHaveAttribute('tabindex', '0'))
-  },
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

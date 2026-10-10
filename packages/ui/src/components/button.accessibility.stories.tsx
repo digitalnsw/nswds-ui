@@ -128,7 +128,6 @@ const WCAG_CRITERIA: Record<string, WcagCriterion> = {
 const meta = {
   title: 'Components/Button/Accessibility',
   component: Button,
-  tags: ['!autodocs'],
   parameters: {
     layout: 'padded',
   },
@@ -531,7 +530,7 @@ export const LabelInName: Story = {
 }
 
 export const TargetSizeMinimum: Story = {
-  name: 'Target Size (Minimum) — 2.5.8',
+  name: 'Target Size — 2.5.8',
   parameters: {
     wcag: ['2.5.8'],
     docs: {
@@ -562,7 +561,7 @@ export const TargetSizeMinimum: Story = {
 }
 
 export const TapTarget: Story = {
-  name: 'Target Size (Enhanced) — 2.5.5',
+  name: 'Target Size Enhanced — 2.5.5',
   parameters: {
     wcag: ['2.5.5'],
     docs: {

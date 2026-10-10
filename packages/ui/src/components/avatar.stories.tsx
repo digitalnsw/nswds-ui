@@ -1,9 +1,13 @@
 /**
- * Avatar — follows docs/reference-storybook-standard.md.
+ * Avatar — a small circular image of a person, with initials as a fallback.
  *
- *   Components/Avatar        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Avatar/Tests  → avatar.tests.stories.tsx
+ *   Components/Avatar                → this file: Docs, Default, Playground
+ *   Components/Avatar/Features       → avatar.features.stories.tsx
+ *   Components/Avatar/Accessibility  → avatar.accessibility.stories.tsx
+ *   Components/Avatar/Tests          → avatar.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Built on the Base UI avatar primitive. `AvatarImage` loads a real image and
  * falls back to `AvatarFallback` when the source is missing or fails. These
@@ -14,7 +18,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 
-import { Avatar, AvatarBadge, AvatarFallback, AvatarGroup, AvatarGroupCount } from './avatar.js'
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarGroup,
+  AvatarGroupCount,
+  AvatarImage,
+} from './avatar.js'
 import {
   DocsApi,
   DocsPage,
@@ -26,10 +37,18 @@ import {
 
 const sizes = ['sm', 'default', 'lg'] as const
 
-// ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+const sizePx = { sm: '24px', default: '32px', lg: '40px' } as const
 
-function SizesSection() {
+const sizeDocs: ReadonlyArray<readonly [(typeof sizes)[number], string]> = [
+  ['sm', 'Dense lists and inline beside small text.'],
+  ['default', 'Comments, rows and menus — most places.'],
+  ['lg', 'Beside a name and a role, such as an assigned officer.'],
+]
+
+// ─── Sections ─────────────────────────────────────────────────────────────────
+// Each section is one part of the docs page AND one Features story.
+
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -42,18 +61,26 @@ function SizesSection() {
     >
       <Example code={`<Avatar size="lg">…</Avatar>`}>
         {sizes.map((size) => (
-          <ExampleCell key={size} label={size}>
+          <ExampleCell key={size} label={`${size} · ${sizePx[size]}`}>
             <Avatar size={size}>
               <AvatarFallback>JC</AvatarFallback>
             </Avatar>
           </ExampleCell>
         ))}
       </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-3'>
+        {sizeDocs.map(([name, desc]) => (
+          <div key={name} className='flex gap-3 text-base'>
+            <dt className='w-16 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
     </ExampleSection>
   )
 }
 
-function ImageAndFallbackSection() {
+export function ImageAndFallbackSection() {
   return (
     <ExampleSection
       title='Image and fallback'
@@ -71,9 +98,16 @@ function ImageAndFallbackSection() {
   <AvatarFallback>JC</AvatarFallback>
 </Avatar>`}
       >
-        <ExampleCell label='initials'>
+        <ExampleCell label='no image — initials'>
           <Avatar size='lg'>
             <AvatarFallback>JC</AvatarFallback>
+          </Avatar>
+        </ExampleCell>
+        <ExampleCell label='image fails — initials'>
+          <Avatar size='lg'>
+            {/* An empty data URL never decodes, so the fallback shows without a network request. */}
+            <AvatarImage src='data:,' alt='Priya Sharma' />
+            <AvatarFallback>PS</AvatarFallback>
           </Avatar>
         </ExampleCell>
       </Example>
@@ -81,7 +115,7 @@ function ImageAndFallbackSection() {
   )
 }
 
-function StatusBadgeSection() {
+export function StatusBadgeSection() {
   return (
     <ExampleSection
       title='Status badge'
@@ -111,14 +145,15 @@ function StatusBadgeSection() {
   )
 }
 
-function GroupsSection() {
+export function GroupsSection() {
   return (
     <ExampleSection
       title='Groups'
       description={
         <>
-          <code>AvatarGroup</code> overlaps a set of avatars; <code>AvatarGroupCount</code> ends the
-          row with how many more there are.
+          <code>AvatarGroup</code> overlaps a set of avatars, ringing each in the page colour so
+          they stay distinct; <code>AvatarGroupCount</code> ends the row with how many more there
+          are, and matches the size of the avatars in the group.
         </>
       }
     >
@@ -129,37 +164,46 @@ function GroupsSection() {
   <AvatarGroupCount>+5</AvatarGroupCount>
 </AvatarGroup>`}
       >
-        <AvatarGroup>
-          <Avatar>
-            <AvatarFallback>JC</AvatarFallback>
-          </Avatar>
-          <Avatar>
-            <AvatarFallback>PS</AvatarFallback>
-          </Avatar>
-          <Avatar>
-            <AvatarFallback>MN</AvatarFallback>
-          </Avatar>
-          <AvatarGroupCount>+5</AvatarGroupCount>
-        </AvatarGroup>
+        {sizes.map((size) => (
+          <ExampleCell key={size} label={size}>
+            <AvatarGroup>
+              {['JC', 'PS', 'MN'].map((initials) => (
+                <Avatar key={initials} size={size}>
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              ))}
+              <AvatarGroupCount>+5</AvatarGroupCount>
+            </AvatarGroup>
+          </ExampleCell>
+        ))}
       </Example>
     </ExampleSection>
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
-      description='The case officer assigned to an application, with their name and role beside the avatar.'
+      description='The case officer assigned to an application, with their name, role and availability beside the avatar — the avatar never carries the information alone.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Avatar size="lg">
+  <AvatarImage src={officer.photo} alt="" />
+  <AvatarFallback>PS</AvatarFallback>
+  <AvatarBadge />
+</Avatar>
+<p>Priya Sharma</p>`}
+      >
         <div className='flex items-center gap-4'>
           <Avatar size='lg'>
             <AvatarFallback>PS</AvatarFallback>
+            <AvatarBadge />
           </Avatar>
           <div>
             <p className='font-semibold'>Priya Sharma</p>
-            <p className='text-muted-foreground'>Case officer, Housing Assistance</p>
+            <p className='text-muted-foreground'>Case officer, Housing Assistance · Available</p>
           </div>
         </div>
       </Example>
@@ -217,6 +261,7 @@ const meta = {
   title: 'Components/Avatar',
   component: Avatar,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -262,16 +307,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const ImageAndFallback: Story = {
-  name: 'Image and fallback',
-  render: () => <ImageAndFallbackSection />,
-}
-
-export const StatusBadge: Story = { name: 'Status badge', render: () => <StatusBadgeSection /> }
-
-export const Groups: Story = { name: 'Groups', render: () => <GroupsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

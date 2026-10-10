@@ -1,9 +1,13 @@
 /**
  * Tabs — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Tabs        → this file: Docs, Default, Playground and one
- *                            story per docs section
- *   Components/Tabs/Tests  → tabs.tests.stories.tsx
+ *   Components/Tabs                → this file: Docs, Default, Playground
+ *   Components/Tabs/Features       → tabs.features.stories.tsx
+ *   Components/Tabs/Accessibility  → tabs.accessibility.stories.tsx
+ *   Components/Tabs/Tests          → tabs.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Base UI owns the roving-tabindex keyboard model, ARIA and active-panel
  * switching; the component styles the list, triggers and panels. Each
@@ -43,43 +47,68 @@ function LicenceTabs({ variant }: { variant: ListVariant }) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function VariantsSection() {
+const variantDocs = [
+  ['default', 'A compact segmented control: the active tab is a raised chip on a muted track.'],
+  ['line', 'Tabs along a full-width rule, the active one underlined in the primary colour.'],
+  [
+    'fullwidth',
+    'Equal columns across the whole bar, each with its own rule. Scrolls rather than clips when the labels stop fitting.',
+  ],
+  [
+    'bordered',
+    'The equal columns inside a bordered box, divided by hairlines — for a bar that has to stand apart from the page.',
+  ],
+] as const satisfies ReadonlyArray<readonly [ListVariant, string]>
+
+export function VariantsSection() {
   return (
     <ExampleSection
       title='Variants'
       description={
         <>
-          Set <code>variant</code> on <code>TabsList</code>; each trigger picks it up.{' '}
-          <code>default</code> is a compact segmented control; <code>line</code> underlines the
-          active tab on a full-width rule; <code>fullwidth</code> and <code>bordered</code> split
-          the bar into equal columns, and scroll rather than clip when the labels stop fitting.
+          Set <code>variant</code> on <code>TabsList</code>; each trigger picks it up. The variant
+          sets how the bar is drawn — the behaviour, keyboard support and panels are the same for
+          all four.
         </>
       }
     >
-      <Example code={`<TabsList>…</TabsList>`}>
-        <LicenceTabs variant='default' />
-      </Example>
-      <Example code={`<TabsList variant="line">…</TabsList>`}>
-        <LicenceTabs variant='line' />
-      </Example>
-      <Example code={`<TabsList variant="fullwidth">…</TabsList>`}>
-        <LicenceTabs variant='fullwidth' />
-      </Example>
-      <Example code={`<TabsList variant="bordered">…</TabsList>`}>
-        <LicenceTabs variant='bordered' />
-      </Example>
+      <div className='space-y-10'>
+        {variantDocs.map(([variant, description]) => (
+          <div key={variant} className='space-y-4'>
+            <div className='space-y-1'>
+              <h3 className='text-lg font-semibold'>
+                <code>{variant}</code>
+              </h3>
+              <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>
+                {description}
+              </p>
+            </div>
+            <Example
+              layout='fill'
+              code={
+                variant === 'default'
+                  ? `<TabsList>…</TabsList>`
+                  : `<TabsList variant="${variant}">…</TabsList>`
+              }
+            >
+              <LicenceTabs variant={variant} />
+            </Example>
+          </div>
+        ))}
+      </div>
     </ExampleSection>
   )
 }
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
       description={
         <>
-          A <code>disabled</code> trigger stays in the bar but cannot be selected, and the arrow
-          keys skip it. Prefer leaving out a tab that will never apply.
+          A <code>disabled</code> trigger stays in the bar but cannot be selected. The arrow keys
+          still stop on it, so a screen reader user learns it exists and hears that it is
+          unavailable. Prefer leaving out a tab that will never apply.
         </>
       }
     >
@@ -107,7 +136,7 @@ function StatesSection() {
   )
 }
 
-function VerticalSection() {
+export function VerticalSection() {
   return (
     <ExampleSection
       title='Vertical'
@@ -141,13 +170,23 @@ function VerticalSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Account settings split across a bordered bar. Each panel is a self-contained task, so nobody needs to see two at once.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Tabs defaultValue="details">
+  <TabsList variant="bordered">
+    <TabsTrigger value="details">My details</TabsTrigger>
+    <TabsTrigger value="licences">Licences</TabsTrigger>
+  </TabsList>
+  <TabsContent value="details">…</TabsContent>
+  <TabsContent value="licences">…</TabsContent>
+</Tabs>`}
+      >
         <div className='max-w-2xl space-y-4'>
           <p className='text-2xl font-bold'>Account settings</p>
           <Tabs defaultValue='details'>
@@ -216,6 +255,7 @@ const meta = {
   title: 'Components/Tabs',
   component: Tabs,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -298,11 +338,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Variants: Story = { name: 'Variants', render: () => <VariantsSection /> }
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Vertical: Story = { name: 'Vertical', render: () => <VerticalSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

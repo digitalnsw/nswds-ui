@@ -1,9 +1,13 @@
 /**
  * LabeledSeparator — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/LabeledSeparator        → this file: Docs, Default, Playground
- *                                        and one story per docs section
- *   Components/LabeledSeparator/Tests  → labeled-separator.tests.stories.tsx
+ *   Components/LabeledSeparator                → this file: Docs, Default, Playground
+ *   Components/LabeledSeparator/Features       → labeled-separator.features.stories.tsx
+ *   Components/LabeledSeparator/Accessibility  → labeled-separator.accessibility.stories.tsx
+ *   Components/LabeledSeparator/Tests          → labeled-separator.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -24,7 +28,7 @@ import {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function LabelsSection() {
+export function LabelsSection() {
   return (
     <ExampleSection
       title='Labels'
@@ -47,13 +51,47 @@ function LabelsSection() {
   )
 }
 
-function InContextSection() {
+const widths = [
+  ['w-48', '192px'],
+  ['w-80', '320px'],
+  ['w-[28rem]', '448px'],
+] as const
+
+export function WidthSection() {
+  return (
+    <ExampleSection
+      title='Width'
+      description={
+        <>
+          The label keeps its natural width and the two rules share whatever is left, so the
+          separator fills its container. Size it with the container — usually the column of a form —
+          rather than on the separator itself.
+        </>
+      }
+    >
+      <Example layout='stack' code={`<div className="max-w-sm">\n  <LabeledSeparator />\n</div>`}>
+        {widths.map(([className, pixels]) => (
+          <ExampleCell key={className} label={pixels}>
+            <LabeledSeparator className={className} />
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='The “or” rule between two ways to sign in. The label carries the meaning; the two rules either side are decorative.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Button block>Continue with MyServiceNSW Account</Button>
+<LabeledSeparator />
+<Field>…email address…</Field>`}
+      >
         <div className='max-w-sm space-y-6'>
           <Button block>Continue with MyServiceNSW Account</Button>
           <LabeledSeparator />
@@ -99,6 +137,7 @@ function LabeledSeparatorDocs() {
         ]}
       />
       <LabelsSection />
+      <WidthSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -111,6 +150,7 @@ const meta = {
   title: 'Components/LabeledSeparator',
   component: LabeledSeparator,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -163,7 +203,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Labels: Story = { name: 'Labels', render: () => <LabelsSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

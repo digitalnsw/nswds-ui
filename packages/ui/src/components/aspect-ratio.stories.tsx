@@ -1,9 +1,13 @@
 /**
  * AspectRatio — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/AspectRatio        → this file: Docs, Default, Playground and
- *                                   one story per docs section
- *   Components/AspectRatio/Tests  → aspect-ratio.tests.stories.tsx
+ *   Components/AspectRatio                → this file: Docs, Default, Playground
+ *   Components/AspectRatio/Features       → aspect-ratio.features.stories.tsx
+ *   Components/AspectRatio/Accessibility  → aspect-ratio.accessibility.stories.tsx
+ *   Components/AspectRatio/Tests          → aspect-ratio.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -37,7 +41,7 @@ function Placeholder({ children }: { children: ReactNode }) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function RatiosSection() {
+export function RatiosSection() {
   return (
     <ExampleSection
       title='Ratios'
@@ -62,13 +66,49 @@ function RatiosSection() {
   )
 }
 
-function InContextSection() {
+const widths = [
+  ['w-40', '160px wide'],
+  ['w-64', '256px wide'],
+  ['w-96', '384px wide'],
+] as const
+
+export function WidthSection() {
+  return (
+    <ExampleSection
+      title='Width'
+      description={
+        <>
+          The box takes its width from the container and works out its own height, so size it with a
+          width — a class, or the column it sits in — and never set a height on it. Each frame below
+          is 16:9.
+        </>
+      }
+    >
+      <Example code={`<AspectRatio ratio={16 / 9} className="w-64">…</AspectRatio>`}>
+        {widths.map(([className, label]) => (
+          <ExampleCell key={className} label={label}>
+            <AspectRatio ratio={16 / 9} className={className}>
+              <Placeholder>16 / 9</Placeholder>
+            </AspectRatio>
+          </ExampleCell>
+        ))}
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A 16:9 frame holds a video’s place before it loads, so the text below it does not jump when it arrives.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<AspectRatio ratio={16 / 9}>
+  <iframe src="…" title="How to apply for a Working with Children Check" className="size-full" />
+</AspectRatio>`}
+      >
         <div className='max-w-md space-y-3'>
           <AspectRatio ratio={16 / 9}>
             <Placeholder>Video</Placeholder>
@@ -109,6 +149,7 @@ function AspectRatioDocs() {
         ]}
       />
       <RatiosSection />
+      <WidthSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -121,6 +162,7 @@ const meta = {
   title: 'Components/AspectRatio',
   component: AspectRatio,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -164,7 +206,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Ratios: Story = { name: 'Ratios', render: () => <RatiosSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

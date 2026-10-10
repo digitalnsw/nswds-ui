@@ -1,9 +1,13 @@
 /**
  * Header — the top-of-page banner landmark.
  *
- *   Components/Header        → this file: Docs, Default, Playground and one
- *                              story per docs section
- *   Components/Header/Tests  → header.tests.stories.tsx
+ *   Components/Header                → this file: Docs, Default, Playground
+ *   Components/Header/Features       → header.features.stories.tsx
+ *   Components/Header/Accessibility  → header.accessibility.stories.tsx
+ *   Components/Header/Tests          → header.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -79,14 +83,14 @@ const sitename = 'Department of Primary Industries'
 // id="nsw-header", valid once per page) and sticky={false}, so the specimens
 // stack instead of pinning to the top of the docs page.
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
       description={
         <>
-          The same four words as <code>Masthead</code> and <code>SkipLinks</code>, so one word
-          themes the whole top of the page. Every pair is WCAG 2.2 AAA in both themes. On{' '}
+          Four surfaces, sharing the Masthead&rsquo;s vocabulary so one word themes the whole page
+          chrome. Every text/background pair is WCAG 2.2 AAA, in both light and dark mode. On{' '}
           <code>dark</code> and <code>grey</code> the brand switches itself to the reversed logo and
           a white version badge — the NSW logo never inherits a colour, so the surface decides it.
           All four deepen in dark mode.
@@ -119,7 +123,7 @@ function ColoursSection() {
   )
 }
 
-function BrandSection() {
+export function BrandSection() {
   return (
     <ExampleSection
       title='Brand'
@@ -169,7 +173,7 @@ function BrandSection() {
   )
 }
 
-function WithActionsSection() {
+export function WithActionsSection() {
   return (
     <ExampleSection
       title='With actions'
@@ -232,38 +236,32 @@ function WithActionsSection() {
   )
 }
 
-function BorderAndShadowSection() {
+export function ScrollStateSection() {
   return (
     <ExampleSection
-      title='Border and shadow'
+      title='Scroll state'
       description={
         <>
-          A sticky header (the default) draws a hairline in its own ink and, once the page scrolls,
-          gains <code>data-scrolled</code> and a light shadow. Style your own scrolled state with
-          the same attribute. Turn either off when the header sits on a band of the same colour.
+          A sticky header exposes <code>data-scrolled</code> once the page has moved off the top.
+          The built-in <code>shadow</code> treatment keys off it; style your own scrolled state with
+          the same attribute.
         </>
       }
     >
       <Example
         layout='fill'
-        code={`<Header border={false} shadow={false}>…</Header>
-<Header className="data-scrolled:border-transparent">…</Header>`}
+        code={`<Header className="data-scrolled:border-transparent">…</Header>`}
       >
         <div className='space-y-6'>
           <Strip label='at the top of the page'>
-            <Header id='header-edge-top' sticky={false}>
+            <Header id='header-scroll-top' sticky={false}>
               <HeaderBrand sitename={sitename} />
             </Header>
           </Strip>
-          <Strip label='scrolled'>
+          <Strip label='data-scrolled'>
             {/* data-scrolled pinned on for the specimen; a real header sets it
                 itself as the page scrolls. */}
-            <Header id='header-edge-scrolled' sticky={false} data-scrolled=''>
-              <HeaderBrand sitename={sitename} />
-            </Header>
-          </Strip>
-          <Strip label='border={false}'>
-            <Header id='header-edge-none' sticky={false} border={false}>
+            <Header id='header-scroll-scrolled' sticky={false} data-scrolled=''>
               <HeaderBrand sitename={sitename} />
             </Header>
           </Strip>
@@ -273,7 +271,42 @@ function BorderAndShadowSection() {
   )
 }
 
-function ContainersSection() {
+export function BorderAndShadowSection() {
+  return (
+    <ExampleSection
+      title='Border and shadow'
+      description={
+        <>
+          By default the header draws a hairline along its bottom edge in its own ink, and a light
+          shadow once it is scrolled. Turn either off when the header sits on a band of the same
+          colour, or when something directly below it draws its own edge.
+        </>
+      }
+    >
+      <Example layout='fill' code={`<Header border={false} shadow={false}>…</Header>`}>
+        <div className='space-y-6'>
+          <Strip label='border (default)'>
+            <Header id='header-edge-border' sticky={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='border={false}'>
+            <Header id='header-edge-none' sticky={false} border={false}>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+          <Strip label='scrolled, shadow={false}'>
+            <Header id='header-edge-no-shadow' sticky={false} shadow={false} data-scrolled=''>
+              <HeaderBrand sitename={sitename} />
+            </Header>
+          </Strip>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ContainersSection() {
   return (
     <ExampleSection
       title='Containers'
@@ -320,13 +353,21 @@ function ContainersSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='SkipLinks, Masthead and Header stack in that order at the top of every page. Click inside the frame and press Tab to reveal the skip links above the masthead.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<SkipLinks />
+<Masthead />
+<Header>
+  <HeaderBrand sitename="Department of Primary Industries" version="2.1.0" />
+  <HeaderActions>…</HeaderActions>
+</Header>`}
+      >
         {/* SkipLinks is `fixed` to the viewport; `absolute` keeps it inside
             this frame instead of the top of the docs page. */}
         <div className='relative overflow-hidden ring-1 ring-foreground/10'>
@@ -367,10 +408,10 @@ function HeaderDocs() {
       registry='header'
       summary={
         <>
-          The page&apos;s <code>banner</code> landmark: the NSW Government logo, the service name
-          and the controls that belong on every page. It sits directly below the{' '}
-          <code>Masthead</code>, with <code>SkipLinks</code> before both. Compose the row from{' '}
-          <code>HeaderBrand</code> and <code>HeaderActions</code>.
+          The header carries the NSW Government brand, the service name and the controls that belong
+          to every page. It sits directly below the Masthead, with SkipLinks rendered before both.
+          Compose the row from <code>HeaderBrand</code> and <code>HeaderActions</code>. It is the
+          page&apos;s <code>banner</code> landmark, so render it once.
         </>
       }
     >
@@ -389,6 +430,7 @@ function HeaderDocs() {
       <ColoursSection />
       <BrandSection />
       <WithActionsSection />
+      <ScrollStateSection />
       <BorderAndShadowSection />
       <ContainersSection />
       <InContextSection />
@@ -403,6 +445,7 @@ const meta = {
   title: 'Components/Header',
   component: Header,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -543,18 +586,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Brand: Story = { name: 'Brand', render: () => <BrandSection /> }
-
-export const Actions: Story = { name: 'With actions', render: () => <WithActionsSection /> }
-
-export const BorderAndShadow: Story = {
-  name: 'Border and shadow',
-  render: () => <BorderAndShadowSection />,
-}
-
-export const Containers: Story = { name: 'Containers', render: () => <ContainersSection /> }
-
-export const PageChrome: Story = { name: 'In context', render: () => <InContextSection /> }

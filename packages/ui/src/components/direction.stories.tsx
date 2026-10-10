@@ -1,9 +1,13 @@
 /**
  * DirectionProvider — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/DirectionProvider        → this file: Docs, Default, Playground
- *                                         and one story per docs section
- *   Components/DirectionProvider/Tests  → direction.tests.stories.tsx
+ *   Components/DirectionProvider                → this file: Docs, Default, Playground
+ *   Components/DirectionProvider/Features       → direction.features.stories.tsx
+ *   Components/DirectionProvider/Accessibility  → direction.accessibility.stories.tsx
+ *   Components/DirectionProvider/Tests          → direction.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * DirectionProvider supplies the LTR/RTL direction as REACT CONTEXT, read by
  * direction-aware components via useDirection. It renders no DOM element of its
@@ -25,6 +29,7 @@ import {
   ExampleCell,
   ExampleSection,
 } from './story-helpers.js'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs.js'
 
 /** Reads the ambient direction and writes it into the DOM so a play() can assert it. */
 function DirReadout() {
@@ -45,7 +50,7 @@ function StartPadded() {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function ReadingTheDirectionSection() {
+export function ReadingTheDirectionSection() {
   return (
     <ExampleSection
       title='Reading the direction'
@@ -77,7 +82,7 @@ function ReadingTheDirectionSection() {
   )
 }
 
-function RightToLeftSection() {
+export function RightToLeftSection() {
   return (
     <ExampleSection
       title='Right to left'
@@ -113,6 +118,52 @@ function RightToLeftSection() {
   )
 }
 
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description={
+        <>
+          Licence information in Arabic, one of the community languages NSW Government services
+          publish in. <code>dir=&quot;rtl&quot;</code> mirrors the bar so the first tab sits on the
+          right; the provider tells Tabs to swap its arrow keys to match, so Left moves to the next
+          tab.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<div dir="rtl" lang="ar">
+  <DirectionProvider direction="rtl">
+    <Tabs defaultValue="eligibility">…</Tabs>
+  </DirectionProvider>
+</div>`}
+      >
+        <div dir='rtl' lang='ar' className='max-w-xl'>
+          <DirectionProvider direction='rtl'>
+            <Tabs defaultValue='eligibility'>
+              <TabsList variant='line'>
+                <TabsTrigger value='eligibility'>الأهلية</TabsTrigger>
+                <TabsTrigger value='apply'>كيفية التقديم</TabsTrigger>
+                <TabsTrigger value='fees'>الرسوم</TabsTrigger>
+              </TabsList>
+              <TabsContent value='eligibility' className='pt-2 text-base'>
+                يجب أن يكون عمرك 18 عامًا أو أكثر وأن تقيم في نيو ساوث ويلز.
+              </TabsContent>
+              <TabsContent value='apply' className='pt-2 text-base'>
+                قدّم طلبك عبر الإنترنت.
+              </TabsContent>
+              <TabsContent value='fees' className='pt-2 text-base'>
+                تعتمد الرسوم على مدة الترخيص.
+              </TabsContent>
+            </Tabs>
+          </DirectionProvider>
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
 // ─── Docs page ────────────────────────────────────────────────────────────────
 
 function DirectionDocs() {
@@ -143,6 +194,7 @@ function DirectionDocs() {
       />
       <ReadingTheDirectionSection />
       <RightToLeftSection />
+      <InContextSection />
       <DocsApi />
     </DocsPage>
   )
@@ -154,6 +206,7 @@ const meta = {
   title: 'Components/DirectionProvider',
   component: DirectionProvider,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -194,10 +247,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const ReadingTheDirection: Story = {
-  name: 'Reading the direction',
-  render: () => <ReadingTheDirectionSection />,
-}
-
-export const RightToLeft: Story = { name: 'Right to left', render: () => <RightToLeftSection /> }

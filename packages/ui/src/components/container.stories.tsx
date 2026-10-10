@@ -1,12 +1,17 @@
 /**
  * Container — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Container        → this file: Docs, Default, Playground and one
- *                                 story per docs section
- *   Components/Container/Tests  → container.tests.stories.tsx
+ *   Components/Container                → this file: Docs, Default, Playground
+ *   Components/Container/Features       → container.features.stories.tsx
+ *   Components/Container/Accessibility  → container.accessibility.stories.tsx
+ *   Components/Container/Tests          → container.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type * as React from 'react'
 
 import { Container } from './container.js'
 import { Section } from './section.js'
@@ -22,7 +27,7 @@ const sizeDocs = [
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -59,13 +64,55 @@ function SizesSection() {
   )
 }
 
-function InContextSection() {
+export function CustomWidthSection() {
+  return (
+    <ExampleSection
+      title='Custom maximum width'
+      description={
+        <>
+          Every size reads <code>--container-max-width</code> before its own cap, so a shell can set
+          a column width once — through <code>style</code>, a utility class or a stylesheet — and
+          every Container under it follows without changing <code>size</code>. The padding ramp
+          funnels through <code>--container-padding-x</code> the same way.
+        </>
+      }
+    >
+      <Example
+        layout='stack'
+        className='items-stretch'
+        code={`<Container size="contained" style={{ '--container-max-width': '40rem' }}>…</Container>`}
+      >
+        <Container size='contained' className='bg-foreground/5'>
+          <div className='bg-background py-3 ring-1 ring-foreground/10'>
+            <code className='px-3'>contained — up to 75rem</code>
+          </div>
+        </Container>
+        <Container
+          size='contained'
+          className='bg-foreground/5'
+          style={{ '--container-max-width': '40rem' } as React.CSSProperties}
+        >
+          <div className='bg-background py-3 ring-1 ring-foreground/10'>
+            <code className='px-3'>contained, --container-max-width: 40rem</code>
+          </div>
+        </Container>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Container sets the width and side padding; Section sets the space above and below. Together they make one band of a page.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Section spacing="tight" aria-label="About the rebate">
+  <Container size="narrow">…</Container>
+</Section>`}
+      >
         <Section spacing='tight' aria-label='About the rebate'>
           <Container size='narrow'>
             <p className='text-2xl font-bold'>Seniors Energy Rebate</p>
@@ -109,6 +156,7 @@ function ContainerDocs() {
         ]}
       />
       <SizesSection />
+      <CustomWidthSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -121,6 +169,7 @@ const meta = {
   title: 'Components/Container',
   component: Container,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -179,7 +228,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

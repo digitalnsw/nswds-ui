@@ -1,16 +1,19 @@
 /**
  * Icons — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Icons  → this file: Docs, Default, Playground and one story
- *                       per docs section, the searchable gallery last
+ *   Components/Icons                → this file: Docs, Default, Playground
+ *   Components/Icons/Features       → icons.features.stories.tsx
+ *   Components/Icons/Accessibility  → icons.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Documents the generated Material Symbols set in src/icons/ (a GROUP in
  * check-stories.mjs: there is no icons.tsx component file). The brand marks
  * are documented apart, in icon-brands.stories.tsx.
  *
- * The npm import line is written out in the docs page itself rather than via
- * DocsPage's `npm` prop: that prop always prints `from '@nswds/ui'`, and the
- * icons ship from the `@nswds/ui/icons` subpath, not the root barrel.
+ * The icons ship from the `@nswds/ui/icons` subpath, not the root barrel, so
+ * DocsPage is given `from` for the install line.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -57,7 +60,7 @@ function normalise(value: string) {
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function SizesSection() {
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -79,43 +82,116 @@ function SizesSection() {
   )
 }
 
-function ColoursSection() {
+function ColourGroup({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className='space-y-4'>
+      <div className='space-y-1'>
+        <h3 className='text-lg font-semibold'>{title}</h3>
+        <p className='max-w-2xl text-base leading-relaxed text-muted-foreground'>{description}</p>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
       description={
         <>
           Every icon paints with <code>currentColor</code>, so it takes the text colour around it.
-          Colour it with a semantic text token, never a palette colour, and pair a status colour
-          with words that say the same thing.
+          Colour it with a semantic text token, never a palette colour. Icons fall into three roles.
         </>
       }
     >
-      <Example code={`<IconError className="size-6 text-(--danger-text)" aria-hidden="true" />`}>
-        <ExampleCell label='text-foreground'>
-          <IconSearch aria-hidden='true' className='size-8 text-foreground' />
-        </ExampleCell>
-        <ExampleCell label='text-primary'>
-          <IconDownload aria-hidden='true' className='size-8 text-primary' />
-        </ExampleCell>
-        <ExampleCell label='text-muted-foreground'>
-          <IconSearch aria-hidden='true' className='size-8 text-muted-foreground' />
-        </ExampleCell>
-        <ExampleCell label='--success-text'>
-          <IconCheckCircle aria-hidden='true' className='size-8 text-(--success-text)' />
-        </ExampleCell>
-        <ExampleCell label='--warning-text'>
-          <IconWarning aria-hidden='true' className='size-8 text-(--warning-text)' />
-        </ExampleCell>
-        <ExampleCell label='--danger-text'>
-          <IconError aria-hidden='true' className='size-8 text-(--danger-text)' />
-        </ExampleCell>
-      </Example>
+      <div className='space-y-10'>
+        <ColourGroup
+          title='Text colours'
+          description={
+            <>
+              Most icons sit in running text or a control and take its colour: leave them to
+              inherit, or use <code>text-foreground</code>, <code>text-primary</code> for an icon
+              that is itself a link or action, or <code>text-muted-foreground</code> for a secondary
+              detail.
+            </>
+          }
+        >
+          <Example code={`<IconDownload className="size-6 text-primary" aria-hidden="true" />`}>
+            <ExampleCell label='text-foreground'>
+              <IconSearch aria-hidden='true' className='size-8 text-foreground' />
+            </ExampleCell>
+            <ExampleCell label='text-primary'>
+              <IconDownload aria-hidden='true' className='size-8 text-primary' />
+            </ExampleCell>
+            <ExampleCell label='text-muted-foreground'>
+              <IconSearch aria-hidden='true' className='size-8 text-muted-foreground' />
+            </ExampleCell>
+          </Example>
+        </ColourGroup>
+
+        <ColourGroup
+          title='Status colours'
+          description={
+            <>
+              Success, warning and danger carry a fixed meaning. Colour alone does not tell everyone
+              which one they are looking at, so always pair a status icon with words that say the
+              same thing.
+            </>
+          }
+        >
+          <Example
+            code={`<IconError className="size-6 text-(--danger-text)" aria-hidden="true" />`}
+          >
+            <ExampleCell label='--success-text'>
+              <IconCheckCircle aria-hidden='true' className='size-8 text-(--success-text)' />
+            </ExampleCell>
+            <ExampleCell label='--warning-text'>
+              <IconWarning aria-hidden='true' className='size-8 text-(--warning-text)' />
+            </ExampleCell>
+            <ExampleCell label='--danger-text'>
+              <IconError aria-hidden='true' className='size-8 text-(--danger-text)' />
+            </ExampleCell>
+          </Example>
+        </ColourGroup>
+
+        <ColourGroup
+          title='On dark surfaces'
+          description={
+            <>
+              On the brand band and other dark surfaces an icon takes the surface’s own ink — white
+              here — by inheriting it. Shown on the primary band.
+            </>
+          }
+        >
+          <Example
+            surface='brand'
+            code={`<div className="bg-primary text-primary-foreground">
+  <IconDownload className="size-6" aria-hidden="true" />
+</div>`}
+          >
+            <ExampleCell label='IconDownload, inherited'>
+              <IconDownload aria-hidden='true' className='size-8' />
+            </ExampleCell>
+            <ExampleCell label='IconSearch, inherited'>
+              <IconSearch aria-hidden='true' className='size-8' />
+            </ExampleCell>
+          </Example>
+        </ColourGroup>
+      </div>
     </ExampleSection>
   )
 }
 
-function AccessibleNamesSection() {
+export function AccessibleNamesSection() {
   return (
     <ExampleSection
       title='Accessible names'
@@ -150,7 +226,7 @@ function AccessibleNamesSection() {
   )
 }
 
-function ImportingSection() {
+export function ImportingSection() {
   return (
     <ExampleSection
       title='Importing'
@@ -227,7 +303,7 @@ function IconGallery() {
   )
 }
 
-function GallerySection() {
+export function GallerySection() {
   return (
     <ExampleSection
       title='Gallery'
@@ -285,6 +361,7 @@ const meta = {
   title: 'Components/Icons',
   component: IconSearch,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -343,31 +420,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const AccessibleNames: Story = {
-  name: 'Accessible names',
-  render: () => <AccessibleNamesSection />,
-}
-
-export const Importing: Story = { name: 'Importing', render: () => <ImportingSection /> }
-
-export const Gallery: Story = {
-  name: 'Gallery',
-  parameters: {
-    // Skip the axe a11y scan for the gallery. It renders the full ~3,900-icon
-    // set, and running axe across that DOM tree blows the 15s Vitest timeout
-    // on CI runners. a11y for individual icons is the responsibility of the
-    // components that *use* them — the other stories here cover the pattern.
-    a11y: { test: 'off' },
-    // Exclude from Chromatic for the same reason: the full grid exceeds
-    // Chromatic's 25,000,000px capture limit (and a searchable catalogue isn't
-    // a visual-regression target — icons are snapshotted via the components
-    // that use them).
-    chromatic: { disableSnapshot: true },
-  },
-  render: () => <GallerySection />,
-}

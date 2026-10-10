@@ -1,9 +1,13 @@
 /**
  * Collapsible — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/Collapsible        → this file: Docs, Default, Playground and
- *                                   one story per docs section
- *   Components/Collapsible/Tests  → collapsible.tests.stories.tsx
+ *   Components/Collapsible                → this file: Docs, Default, Playground
+ *   Components/Collapsible/Features       → collapsible.features.stories.tsx
+ *   Components/Collapsible/Accessibility  → collapsible.accessibility.stories.tsx
+ *   Components/Collapsible/Tests          → collapsible.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Base UI owns the disclosure ARIA wiring (aria-expanded / aria-controls) and
  * keyboard handling; the stories only style the trigger and panel.
@@ -24,7 +28,7 @@ import {
 } from './story-helpers.js'
 
 const triggerClasses =
-  'group flex w-full items-center justify-between gap-4 rounded-sm px-3 py-2 text-start font-semibold text-primary hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
+  'group flex w-full items-center justify-between gap-4 rounded-sm px-3 py-2 text-start font-semibold text-primary hover:bg-foreground/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50'
 const panelClasses = 'px-3 pt-2 pb-3 text-foreground'
 
 function Chevron() {
@@ -36,9 +40,17 @@ function Chevron() {
   )
 }
 
-function Disclosure({ defaultOpen, label }: { defaultOpen?: boolean; label: string }) {
+function Disclosure({
+  defaultOpen,
+  disabled,
+  label,
+}: {
+  defaultOpen?: boolean
+  disabled?: boolean
+  label: string
+}) {
   return (
-    <Collapsible defaultOpen={defaultOpen} className='w-80'>
+    <Collapsible defaultOpen={defaultOpen} disabled={disabled} className='w-60'>
       <CollapsibleTrigger className={triggerClasses}>
         {label}
         <Chevron />
@@ -53,18 +65,20 @@ function Disclosure({ defaultOpen, label }: { defaultOpen?: boolean; label: stri
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
       description={
         <>
           A collapsible starts closed. Pass <code>defaultOpen</code> to start it open when most
-          people will need what is inside. The panel only mounts while open.
+          people will need what is inside. The panel only mounts while open. <code>disabled</code>{' '}
+          stops the trigger toggling it, in whichever state it is in.
         </>
       }
     >
       <Example
+        className='items-start'
         code={`<Collapsible defaultOpen>
   <CollapsibleTrigger>What to bring</CollapsibleTrigger>
   <CollapsibleContent>…</CollapsibleContent>
@@ -75,6 +89,9 @@ function StatesSection() {
         </ExampleCell>
         <ExampleCell label='defaultOpen'>
           <Disclosure label='What to bring' defaultOpen />
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <Disclosure label='What to bring' disabled />
         </ExampleCell>
       </Example>
     </ExampleSection>
@@ -99,7 +116,7 @@ function ControlledExample() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSection() {
   return (
     <ExampleSection
       title='Controlled'
@@ -121,13 +138,46 @@ function ControlledSection() {
   )
 }
 
-function InContextSection() {
+export function StylingSection() {
+  return (
+    <ExampleSection
+      title='Styling'
+      description={
+        <>
+          Collapsible ships no styles: Base UI supplies the behaviour and the ARIA, and the trigger
+          and panel take your classes. Style the open state from <code>data-panel-open</code> on the
+          trigger — the chevron below turns with <code>group-data-[panel-open]:rotate-180</code> —
+          and give the trigger a visible focus outline, because nothing else will.
+        </>
+      }
+    >
+      <Example
+        code={`<CollapsibleTrigger className="group flex w-full justify-between focus-visible:outline-2 focus-visible:outline-ring">
+  Opening hours
+  <IconExpandMore aria-hidden="true" className="group-data-[panel-open]:rotate-180" />
+</CollapsibleTrigger>`}
+      >
+        <ExampleCell label='styled trigger and panel'>
+          <Disclosure label='Opening hours' defaultOpen />
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Optional detail tucked under an application summary, so the summary stays short for the people who do not need it.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<Collapsible>
+  <CollapsibleTrigger>Who is exempt from the fee</CollapsibleTrigger>
+  <CollapsibleContent>You do not need to pay if …</CollapsibleContent>
+</Collapsible>`}
+      >
         <div className='max-w-md space-y-3 rounded-md p-6 ring-1 ring-foreground/10'>
           <p className='font-semibold'>Recreational fishing licence</p>
           <p className='text-muted-foreground'>3 years · $85.00</p>
@@ -177,6 +227,7 @@ function CollapsibleDocs() {
       />
       <StatesSection />
       <ControlledSection />
+      <StylingSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -189,6 +240,7 @@ const meta = {
   title: 'Components/Collapsible',
   component: Collapsible,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -253,9 +305,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

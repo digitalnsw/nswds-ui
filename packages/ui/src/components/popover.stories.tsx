@@ -2,13 +2,17 @@
  * Popover — a floating panel anchored to a trigger, on the Base UI popover
  * primitive. Base UI handles focus management, positioning, and dismissal.
  *
- *   Components/Popover        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/Popover/Tests  → popover.tests.stories.tsx
+ *   Components/Popover                → this file: Docs, Default, Playground
+ *   Components/Popover/Features       → popover.features.stories.tsx
+ *   Components/Popover/Accessibility  → popover.accessibility.stories.tsx
+ *   Components/Popover/Tests          → popover.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ComponentProps } from 'react'
+import { type ComponentProps, useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 
 import { IconHelp } from '../icons/index.js'
@@ -54,9 +58,9 @@ function HoursPopover({ side, align, trigger }: { side?: Side; align?: Align; tr
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function PlacementSection() {
+export function PlacementSection() {
   return (
     <ExampleSection
       title='Placement'
@@ -86,7 +90,75 @@ function PlacementSection() {
   )
 }
 
-function InContextSection() {
+function ReminderPopover() {
+  const [open, setOpen] = useState(false)
+  const [email, setEmail] = useState<string | null>(null)
+  return (
+    <div className='flex flex-col items-start gap-4'>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger render={<Button variant='outline' />}>Email me a reminder</PopoverTrigger>
+        <PopoverContent align='start'>
+          <form
+            className='grid gap-4'
+            onSubmit={(event) => {
+              event.preventDefault()
+              const data = new FormData(event.currentTarget)
+              setEmail(String(data.get('reminder-email')))
+              setOpen(false)
+            }}
+          >
+            <PopoverHeader>
+              <PopoverTitle>Email me a reminder</PopoverTitle>
+              <PopoverDescription>
+                We will email you a week before applications close.
+              </PopoverDescription>
+            </PopoverHeader>
+            <div className='grid gap-2'>
+              <Label htmlFor='reminder-email'>Email address</Label>
+              <Input id='reminder-email' name='reminder-email' type='email' required />
+            </div>
+            <Button type='submit'>Send reminder</Button>
+          </form>
+        </PopoverContent>
+      </Popover>
+      <p className='text-muted-foreground' aria-live='polite'>
+        {email ? `Reminder set for ${email}.` : 'No reminder set.'}
+      </p>
+    </div>
+  )
+}
+
+export function WithAFormSection() {
+  return (
+    <ExampleSection
+      title='With a form'
+      description={
+        <>
+          A popover can hold a field or two and a button — a quick setting tied to the control that
+          opens it. Control <code>open</code> to close it once the form is submitted. Anything
+          longer belongs in a Dialog or Sheet.
+        </>
+      }
+    >
+      <Example
+        code={`const [open, setOpen] = useState(false)
+
+<Popover open={open} onOpenChange={setOpen}>
+  <PopoverTrigger render={<Button variant="outline" />}>Email me a reminder</PopoverTrigger>
+  <PopoverContent align="start">
+    <form onSubmit={(event) => { event.preventDefault(); save(); setOpen(false) }}>
+      …
+    </form>
+  </PopoverContent>
+</Popover>`}
+      >
+        <ReminderPopover />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -166,6 +238,7 @@ function PopoverDocs() {
         ]}
       />
       <PlacementSection />
+      <WithAFormSection />
       <InContextSection />
       <DocsApi description='Props of the Popover root, plus the placement set on PopoverContent. Try them live in the Playground story.' />
     </DocsPage>
@@ -184,6 +257,7 @@ const meta = {
   title: 'Components/Popover',
   component: Popover,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -273,7 +347,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Placement: Story = { name: 'Placement', render: () => <PlacementSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

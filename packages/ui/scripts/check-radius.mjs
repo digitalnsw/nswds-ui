@@ -70,7 +70,10 @@ for (const root of ROOTS) {
     process.exit(1)
   }
   for (const name of entries) {
-    if (!name.endsWith('.tsx') || name.endsWith('.stories.tsx')) continue
+    // story-helpers.tsx is Storybook docs chrome, not a component — the build
+    // and check:drift skip it by name too. Its panels follow Button's docs page.
+    if (!name.endsWith('.tsx') || name.endsWith('.stories.tsx') || name === 'story-helpers.tsx')
+      continue
     const path = join(root, name)
     const source = readFileSync(path, 'utf8')
 

@@ -13,6 +13,12 @@
  *   - 2.4.7 Focus Visible   (the focused region shows the house outline)
  *   - 4.1.2 Name, Role, Value (the focus stop has a role and a name)
  *
+ * and two that hold for the table itself:
+ *
+ *   - 1.3.1 Info and Relationships (header cells, rows and the caption reach
+ *                                   assistive technology as table structure)
+ *   - 1.4.3 Contrast (Minimum)     (cell, header, caption and footer text)
+ *
  * Every story here also runs the suite's axe pass. The overflowing stories
  * fail `scrollable-region-focusable` on a container that cannot take focus,
  * which is the defect these stories exist to pin.
@@ -20,14 +26,15 @@
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import type { ComponentProps, ReactNode } from 'react'
-import { expect, userEvent, waitFor } from 'storybook/test'
+import { expect, userEvent, waitFor, within } from 'storybook/test'
 
-import { wcagStoryMeta } from './story-helpers.js'
+import { compositeOver, expectContrast, resolveColor, wcagStoryMeta } from './story-helpers.js'
 import {
   Table,
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -364,4 +371,124 @@ export const FocusVisible: Story = {
       )
     }
   },
+}
+
+// ─── 1.3.1 — Info and Relationships ───────────────────────────────────────────
+
+function FeesTable() {
+  return (
+    <Table>
+      <TableCaption>NSW Government services and fees</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Service</TableHead>
+          <TableHead>Agency</TableHead>
+          <TableHead>Fee</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {serviceRows.map((row) => (
+          <TableRow key={row.service}>
+            <TableCell>{row.service}</TableCell>
+            <TableCell>{row.agency}</TableCell>
+            <TableCell>{row.fee}</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell>Total</TableCell>
+          <TableCell />
+          <TableCell>$230</TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
+  )
+}
+
+export const InfoAndRelationships: Story = {
+  name: 'Info and Relationships — 1.3.1',
+  parameters: {
+    wcag: ['1.3.1'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.3.1',
+          why: 'A screen reader announces each cell with its column header and position only if the grid is real table markup. A table built from styled divs reads as a run of unrelated text.',
+          how: 'A captioned table with a header row, body rows and a footer. The play() reads it through the accessibility tree: one table named by its caption, three column headers, and every body cell sitting in a row under them.',
+          caveat:
+            'The parts are the native elements, so the structure comes from the platform. Row headers need the consumer to render a TableHead with scope="row" in the body; this table has none.',
+        }),
+      },
+    },
+  },
+  render: () => <FeesTable />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const table = canvas.getByRole('table', { name: 'NSW Government services and fees' })
+    const headers = within(table).getAllByRole('columnheader')
+    await expect(headers.map((header) => header.textContent)).toEqual(['Service', 'Agency', 'Fee'])
+
+    // Header row + body rows + footer row.
+    await expect(within(table).getAllByRole('row')).toHaveLength(serviceRows.length + 2)
+    await expect(within(table).getAllByRole('cell', { name: 'Driver licence' })).toHaveLength(1)
+    const cells = within(table).getAllByRole('cell')
+    await expect(cells).toHaveLength((serviceRows.length + 1) * headers.length)
+  },
+}
+
+// ─── 1.4.3 — Contrast (Minimum) ───────────────────────────────────────────────
+
+/** The opaque colour an element is painted on (the footer row is a translucent tint). */
+function paintedBackground(element: Element): string {
+  const layers: string[] = []
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    const background = getComputedStyle(node).backgroundColor
+    layers.push(background)
+    if (resolveColor(background).a === 1) {
+      const [base, ...tints] = layers.reverse()
+      let painted = resolveColor(base!)
+      for (const tint of tints) painted = { ...compositeOver(resolveColor(tint), painted), a: 1 }
+      return `rgb(${painted.r} ${painted.g} ${painted.b})`
+    }
+  }
+  throw new Error('No opaque background behind the element.')
+}
+
+const contrastStory: Story = {
+  parameters: {
+    wcag: ['1.4.3'],
+    docs: {
+      description: {
+        story: wcagStoryMeta({
+          criteria: '1.4.3',
+          why: 'Table text is set small and read in long runs, and the caption and footer sit on muted ink and a tinted row — the places contrast is most likely to slip.',
+          how: 'A captioned table with a footer, on the page. The play() measures a header, a body cell, the caption and a footer cell against what each is painted on, compositing the footer’s tint over the page.',
+          caveat:
+            'Hover and selected rows add a further 50% muted tint; they are measured through the footer, which uses the same tint.',
+        }),
+      },
+    },
+  },
+  render: () => (
+    <div className='bg-background p-6'>
+      <FeesTable />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const parts = ['table-head', 'table-cell', 'table-caption', 'table-footer'] as const
+    for (const slot of parts) {
+      const part = canvasElement.querySelector<HTMLElement>(`[data-slot="${slot}"]`)!
+      const text = slot === 'table-footer' ? part.querySelector<HTMLElement>('td')! : part
+      expectContrast(getComputedStyle(text).color, paintedBackground(text), { label: slot })
+    }
+  },
+}
+
+export const ContrastMinimum: Story = { ...contrastStory, name: 'Contrast (Minimum) — 1.4.3' }
+
+export const ContrastMinimumDark: Story = {
+  ...contrastStory,
+  name: 'Contrast (Minimum) — 1.4.3 (dark)',
+  globals: { theme: 'dark' },
 }

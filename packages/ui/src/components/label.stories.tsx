@@ -1,8 +1,12 @@
 /**
- * Label — the docs page, Default, Playground and one story per docs section.
+ * Label — the docs page, Default and Playground.
  *
  *   Components/Label                → this file
+ *   Components/Label/Features       → label.features.stories.tsx
  *   Components/Label/Accessibility  → label.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -21,17 +25,43 @@ import {
 } from './story-helpers.js'
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatesSection() {
+export function DefaultSection() {
   return (
     <ExampleSection
-      title='States'
+      title='Default'
       description={
         <>
-          A label dims with its control. It follows an ancestor marked <code>group</code> with{' '}
-          <code>data-disabled=&quot;true&quot;</code> — the pattern <code>Field</code> uses — or a
-          disabled <code>peer</code> control placed before it.
+          Medium-weight text in the foreground ink, set above its control. <code>htmlFor</code>{' '}
+          points it at the control&apos;s <code>id</code>.
+        </>
+      }
+    >
+      <Example
+        code={`<Label htmlFor="email">Email address</Label>
+<Input id="email" type="email" />`}
+      >
+        <div className='grid w-full max-w-sm gap-2'>
+          <Label htmlFor='label-docs-email'>Email address</Label>
+          <Input id='label-docs-email' type='email' />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function DisabledStateSection() {
+  return (
+    <ExampleSection
+      title='Disabled state'
+      description={
+        <>
+          The Label primitive dims to 50% opacity whenever an ancestor with <code>group</code> +{' '}
+          <code>{'data-disabled="true"'}</code> is present — the canonical pattern used by{' '}
+          <code>Field</code>. (Label also dims when a peer input is disabled, but that requires the
+          input to appear before the label in DOM order; see the Disabled feature story for that
+          pattern.)
         </>
       }
     >
@@ -50,8 +80,8 @@ function StatesSection() {
         </ExampleCell>
         <ExampleCell label='disabled'>
           <div data-disabled='true' className='group grid w-72 gap-2'>
-            <Label htmlFor='label-states-disabled'>Licence number</Label>
-            <Input id='label-states-disabled' disabled defaultValue='12345678' />
+            <Label htmlFor='label-docs-disabled'>Disabled field label</Label>
+            <Input id='label-docs-disabled' disabled />
           </div>
         </ExampleCell>
       </Example>
@@ -59,7 +89,41 @@ function StatesSection() {
   )
 }
 
-function NamingAControlSection() {
+export function RequiredIndicatorSection() {
+  return (
+    <ExampleSection
+      title='Required indicator'
+      description={
+        <>
+          A trailing asterisk in the danger colour marks a required field. It is decorative, so it
+          carries <code>aria-hidden</code>; the input&apos;s native <code>required</code> attribute
+          is what assistive technology announces. If most questions are required, mark the optional
+          ones instead — see Optional fields.
+        </>
+      }
+    >
+      <Example
+        code={`<Label htmlFor="full-name">
+  Full name
+  <span aria-hidden="true" className="text-danger-600">*</span>
+</Label>
+<Input id="full-name" required />`}
+      >
+        <div className='grid w-full max-w-sm gap-2'>
+          <Label htmlFor='label-docs-required'>
+            Full name
+            <span aria-hidden='true' className='text-danger-600'>
+              *
+            </span>
+          </Label>
+          <Input id='label-docs-required' required autoComplete='name' />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function NamingAControlSection() {
   return (
     <ExampleSection
       title='Naming a control'
@@ -99,7 +163,7 @@ function NamingAControlSection() {
   )
 }
 
-function OptionalFieldsSection() {
+export function OptionalFieldsSection() {
   return (
     <ExampleSection
       title='Optional fields'
@@ -120,7 +184,7 @@ function OptionalFieldsSection() {
   )
 }
 
-function LongLabelsSection() {
+export function LongLabelsSection() {
   return (
     <ExampleSection
       title='Long labels'
@@ -150,10 +214,11 @@ function LabelDocs() {
       registry='label'
       summary={
         <>
-          Label names a form control. Point it at the control with <code>htmlFor</code>, or wrap the
-          control in it, and the text becomes the control&apos;s accessible name. Inside a{' '}
-          <code>Field</code>, use <code>FieldLabel</code> — it renders this Label and does the
-          association for you.
+          Label is a small text element that names an interactive form control. It pairs with an
+          input via <code>htmlFor</code> so the field has an accessible name, and inherits disabled
+          styling from a sibling or ancestor control. Wrapping the control in the label names it
+          too. Inside a <code>Field</code>, use <code>FieldLabel</code> — it renders this Label and
+          does the association for you.
         </>
       }
     >
@@ -169,7 +234,9 @@ function LabelDocs() {
           'A heading for a section of a form — use a heading, or FieldLegend.',
         ]}
       />
-      <StatesSection />
+      <DefaultSection />
+      <DisabledStateSection />
+      <RequiredIndicatorSection />
       <NamingAControlSection />
       <OptionalFieldsSection />
       <LongLabelsSection />
@@ -184,6 +251,7 @@ const meta = {
   title: 'Components/Label',
   component: Label,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -235,17 +303,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const NamingAControl: Story = {
-  name: 'Naming a control',
-  render: () => <NamingAControlSection />,
-}
-
-export const OptionalFields: Story = {
-  name: 'Optional fields',
-  render: () => <OptionalFieldsSection />,
-}
-
-export const LongLabels: Story = { name: 'Long labels', render: () => <LongLabelsSection /> }

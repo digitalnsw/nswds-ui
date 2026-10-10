@@ -1,28 +1,47 @@
 /**
- * Callout — follows docs/reference-storybook-standard.md.
+ * Callout — a bordered notice for static page content.
  *
- *   Components/Callout        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Components/Callout/Tests  → callout.tests.stories.tsx
+ *   Components/Callout                → this file: Docs, Default, Playground
+ *   Components/Callout/Features       → callout.features.stories.tsx
+ *   Components/Callout/Accessibility  → callout.accessibility.stories.tsx
+ *   Components/Callout/Tests          → callout.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState, type ReactNode } from 'react'
 
 import { IconSchedule } from '../icons/index.js'
+import { Button } from './button.js'
 import { Alert, Callout } from './callout.js'
-import {
-  DocsApi,
-  DocsPage,
-  DocsUsage,
-  Example,
-  ExampleCell,
-  ExampleSection,
-} from './story-helpers.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+
+/**
+ * A full-width specimen with its label above it. Callouts fill their column,
+ * so Button's centred cell would shrink them to their text.
+ */
+function Specimen({ label, children }: { label: ReactNode; children: ReactNode }) {
+  return (
+    <div className='w-full space-y-2'>
+      <p className='text-base font-medium tracking-wide text-muted-foreground'>{label}</p>
+      {children}
+    </div>
+  )
+}
+
+const statusDocs = [
+  ['info', 'Something a reader needs to know, with no judgement attached.'],
+  ['success', 'An outcome has gone the way the reader wanted.'],
+  ['warning', 'Something may get in the reader’s way, such as an outage or a deadline.'],
+  ['danger', 'Something has gone wrong and the reader has to act.'],
+] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function StatusSection() {
+export function StatusSection() {
   return (
     <ExampleSection
       title='Status'
@@ -34,33 +53,45 @@ function StatusSection() {
         </>
       }
     >
-      <Example layout='stack' code={`<Callout status="warning" title="Planned outage">…</Callout>`}>
-        <ExampleCell label='info'>
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<Callout status="warning" title="Planned outage">…</Callout>`}
+      >
+        <Specimen label='info'>
           <Callout status='info' title='You will need your licence number'>
             It is printed on the front of your licence card.
           </Callout>
-        </ExampleCell>
-        <ExampleCell label='success'>
+        </Specimen>
+        <Specimen label='success'>
           <Callout status='success' title='Your application has been approved'>
             We will email your certificate within 2 working days.
           </Callout>
-        </ExampleCell>
-        <ExampleCell label='warning'>
+        </Specimen>
+        <Specimen label='warning'>
           <Callout status='warning' title='Planned outage'>
             This service will be unavailable on Sunday between 2am and 4am.
           </Callout>
-        </ExampleCell>
-        <ExampleCell label='danger'>
+        </Specimen>
+        <Specimen label='danger'>
           <Callout status='danger' title='We could not process your payment'>
             Your card was declined. Check your card details or use another card.
           </Callout>
-        </ExampleCell>
+        </Specimen>
       </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
+        {statusDocs.map(([name, desc]) => (
+          <div key={name} className='flex gap-3 text-base'>
+            <dt className='w-20 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
     </ExampleSection>
   )
 }
 
-function ContentSection() {
+export function ContentSection() {
   return (
     <ExampleSection
       title='Content'
@@ -71,21 +102,25 @@ function ContentSection() {
         </>
       }
     >
-      <Example layout='stack' code={`<Callout>Applications close at 5pm on 30 June.</Callout>`}>
-        <ExampleCell label='title and body'>
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<Callout>Applications close at 5pm on 30 June.</Callout>`}
+      >
+        <Specimen label='title and body'>
           <Callout title='Applications close soon'>
             Submit your application by 5pm on 30 June.
           </Callout>
-        </ExampleCell>
-        <ExampleCell label='body only'>
+        </Specimen>
+        <Specimen label='body only'>
           <Callout>Applications close at 5pm on 30 June.</Callout>
-        </ExampleCell>
+        </Specimen>
       </Example>
     </ExampleSection>
   )
 }
 
-function IconsSection() {
+export function IconsSection() {
   return (
     <ExampleSection
       title='Icons'
@@ -96,21 +131,25 @@ function IconsSection() {
         </>
       }
     >
-      <Example layout='stack' code={`<Callout icon={IconSchedule} title="…">…</Callout>`}>
-        <ExampleCell label='icon={IconSchedule}'>
+      <Example
+        layout='stack'
+        className='gap-8'
+        code={`<Callout icon={IconSchedule} title="…">…</Callout>`}
+      >
+        <Specimen label='icon={IconSchedule}'>
           <Callout icon={IconSchedule} title='Opening hours'>
             Service centres are open 8:30am to 5pm, Monday to Friday.
           </Callout>
-        </ExampleCell>
-        <ExampleCell label='icon={null}'>
+        </Specimen>
+        <Specimen label='icon={null}'>
           <Callout icon={null}>Bring photo identification to your appointment.</Callout>
-        </ExampleCell>
+        </Specimen>
       </Example>
     </ExampleSection>
   )
 }
 
-function AsAlertSection() {
+export function AsAlertSection() {
   return (
     <ExampleSection
       title='As Alert'
@@ -124,7 +163,7 @@ function AsAlertSection() {
         </>
       }
     >
-      <Example code={`<Alert status="warning" title="Planned outage">…</Alert>`}>
+      <Example layout='fill' code={`<Alert status="warning" title="Planned outage">…</Alert>`}>
         <Alert status='warning' title='Planned outage'>
           This service will be unavailable on Sunday between 2am and 4am.
         </Alert>
@@ -133,13 +172,62 @@ function AsAlertSection() {
   )
 }
 
-function InContextSection() {
+function AnnouncedExample() {
+  const [saved, setSaved] = useState(false)
+  return (
+    <div className='w-full space-y-4'>
+      <Button variant='outline' onClick={() => setSaved(true)}>
+        Save draft
+      </Button>
+      {/* The live region is on the page before the callout arrives, so the
+          arrival is announced; Callout itself stays silent. */}
+      <div role='status'>
+        {saved ? (
+          <Callout status='success' title='Draft saved'>
+            You can come back and finish your application within 30 days.
+          </Callout>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+export function AnnouncingSection() {
+  return (
+    <ExampleSection
+      title='Announcing a callout'
+      description={
+        <>
+          A callout that is part of the page must not announce itself, so Callout has no live
+          region. When you show one in response to an action and it does need announcing, wrap it in
+          your own <code>role=&quot;status&quot;</code> region that is already on the page — or use
+          Toaster, which does this for you.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<div role="status">
+  {saved ? <Callout status="success" title="Draft saved">…</Callout> : null}
+</div>`}
+      >
+        <AnnouncedExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A callout sits in the flow of the page, beside the content it is about.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<p>You will need proof of identity and a recent photo to apply online.</p>
+<Callout status="info" title="Applying for someone else?">…</Callout>`}
+      >
         <div className='max-w-prose space-y-4'>
           <p className='text-2xl font-semibold'>Before you start</p>
           <p>You will need proof of identity and a recent photo to apply online.</p>
@@ -186,6 +274,7 @@ function CalloutDocs() {
       <ContentSection />
       <IconsSection />
       <AsAlertSection />
+      <AnnouncingSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -198,6 +287,7 @@ const meta = {
   title: 'Components/Callout',
   component: Callout,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -277,13 +367,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Status: Story = { name: 'Status', render: () => <StatusSection /> }
-
-export const Content: Story = { name: 'Content', render: () => <ContentSection /> }
-
-export const Icons: Story = { name: 'Icons', render: () => <IconsSection /> }
-
-export const AsAlert: Story = { name: 'As Alert', render: () => <AsAlertSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

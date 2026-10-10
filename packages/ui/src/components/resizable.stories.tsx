@@ -1,10 +1,13 @@
 /**
  * ResizablePanelGroup — the story set for docs/reference-storybook-standard.md.
  *
- *   Components/ResizablePanelGroup        → this file: Docs, Default,
- *                                           Playground and one story per
- *                                           docs section
- *   Components/ResizablePanelGroup/Tests  → resizable.tests.stories.tsx
+ *   Components/ResizablePanelGroup                → this file: Docs, Default, Playground
+ *   Components/ResizablePanelGroup/Features       → resizable.features.stories.tsx
+ *   Components/ResizablePanelGroup/Accessibility  → resizable.accessibility.stories.tsx
+ *   Components/ResizablePanelGroup/Tests          → resizable.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Panel content is kept short so the panels do not become scrollable regions:
  * react-resizable-panels v4 gives each panel `overflow: auto`, and an
@@ -31,7 +34,7 @@ const plainPanel = 'flex items-center justify-center p-4'
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function OrientationSection() {
+export function OrientationSection() {
   return (
     <ExampleSection
       title='Orientation'
@@ -79,7 +82,7 @@ function OrientationSection() {
   )
 }
 
-function HandleSection() {
+export function HandleSection() {
   return (
     <ExampleSection
       title='Handle'
@@ -119,20 +122,58 @@ function HandleSection() {
   )
 }
 
-function InContextSection() {
+export function SizeLimitsSection() {
+  return (
+    <ExampleSection
+      title='Size limits'
+      description={
+        <>
+          <code>minSize</code> and <code>maxSize</code> on a panel stop the divider short, so
+          neither side can be dragged — or arrowed — out of use. Write them as a share of the group,
+          such as <code>&quot;30%&quot;</code>. Set a limit whenever a panel holds something that
+          stops working when squeezed, like a form or a table.
+        </>
+      }
+    >
+      <Example
+        layout='fill'
+        code={`<ResizablePanel defaultSize="50%" minSize="30%" maxSize="70%">…</ResizablePanel>`}
+      >
+        <ResizablePanelGroup orientation='horizontal' className={`h-32 max-w-xl ${frame}`}>
+          <ResizablePanel defaultSize='50%' minSize='30%' maxSize='70%' className={tintedPanel}>
+            30% to 70%
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize='50%' className={plainPanel}>
+            The rest
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A caseworker’s queue beside the selected case. Dragging the divider trades list width for detail.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<ResizablePanelGroup orientation="horizontal">
+  <ResizablePanel defaultSize="40%" minSize="25%">…</ResizablePanel>
+  <ResizableHandle withHandle aria-label="Resize the application list" />
+  <ResizablePanel defaultSize="60%" minSize="30%">…</ResizablePanel>
+</ResizablePanelGroup>`}
+      >
         <ResizablePanelGroup orientation='horizontal' className={`h-56 max-w-2xl ${frame}`}>
           <ResizablePanel defaultSize='40%' minSize='25%' className='space-y-2 p-4'>
             <p className='font-semibold'>Applications</p>
             <p className='text-muted-foreground'>Sam Taylor — new</p>
             <p className='text-muted-foreground'>Priya Shah — in review</p>
           </ResizablePanel>
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle aria-label='Resize the application list' />
           <ResizablePanel defaultSize='60%' minSize='30%' className='space-y-2 p-4'>
             <p className='font-semibold'>Priya Shah</p>
             <p className='text-muted-foreground'>Recreational fishing licence, 3 years</p>
@@ -173,6 +214,7 @@ function ResizableDocs() {
       />
       <OrientationSection />
       <HandleSection />
+      <SizeLimitsSection />
       <InContextSection />
       <DocsApi />
     </DocsPage>
@@ -185,6 +227,7 @@ const meta = {
   title: 'Components/ResizablePanelGroup',
   component: ResizablePanelGroup,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -239,9 +282,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Orientation: Story = { name: 'Orientation', render: () => <OrientationSection /> }
-
-export const Handle: Story = { name: 'Handle', render: () => <HandleSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

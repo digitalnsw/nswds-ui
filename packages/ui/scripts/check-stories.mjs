@@ -11,25 +11,31 @@
  * nothing else in CI reads a story file for its SHAPE. A written standard
  * with nothing holding it decays the same way, so this holds it.
  *
- * THE RULES, per story file, by kind:
+ * THE SHAPE is Button's (button.stories.tsx, button.features.stories.tsx,
+ * button.accessibility.stories.tsx) — the story set the rest were brought up to:
  *
  *   main           <file>.stories.tsx — title `Components/<Name>` (or
  *                  `Patterns/…`, `Hooks/…`, matching its directory); tagged
- *                  `autodocs` with a custom `docs.page` built from DocsPage,
- *                  DocsUsage and DocsApi; exports `Default` then `Playground`
- *                  first; every other export names itself in sentence case.
- *   tests          <file>.tests.stories.tsx — title `<main title>/Tests`,
- *                  tagged `!dev` and `!autodocs`, beside a main file.
+ *                  `autodocs` with a custom `docs.page` built from the docs kit
+ *                  (DocsPage, DocsUsage, DocsApi — Button, the REFERENCE the
+ *                  kit reproduces, is exempt); exports `Default` and `Playground`.
+ *   features       <file>.features.stories.tsx — title `<main title>/Features`.
+ *                  Every component and pattern has one.
  *   accessibility  <file>.accessibility.stories.tsx — title
- *                  `<main title>/Accessibility`, tagged `!autodocs`, every
+ *                  `<main title>/Accessibility`, every
  *                  story named `<WCAG title> — <criterion>[ / <criterion>]`.
+ *                  Every component and pattern has one.
+ *   tests          <file>.tests.stories.tsx — optional; title
+ *                  `<main title>/Tests`, tagged `!dev` and `!autodocs`.
  *
  * and, for every kind: no `layout: 'centered'` (examples start top-left, as
  * on a page), and no text under the 16px floor (`text-xs`, `text-sm`).
  *
  * Hooks have no component to document, so `Hooks/…` main files keep only the
- * title, naming and floor rules. Any other suffix (`.features`, `.look-…`) is
- * a fourth kind the standard does not have, unless it is a GUIDE below.
+ * title and floor rules and need no Features or Accessibility file. Any other
+ * suffix (`.look-…`) is a kind the standard does not have, unless it is a
+ * GUIDE below; EXTRAS lists the main-kind files that file under another
+ * component.
  *
  * WHY IT PARSES. Titles, tags and story names live in object literals that
  * Prettier is free to reflow, and a regex reading `title: '…'` also reads one
@@ -79,7 +85,23 @@ export const DOCUMENTED_ELSEWHERE = new Map([
 ])
 
 /**
- * Story files outside the three kinds: per-look guide pages that each read
+ * The story set the docs kit reproduces. Its page is written out by hand, so
+ * it is the one main file exempt from building its page from the kit.
+ */
+export const REFERENCE = new Set(['components/button'])
+
+/**
+ * Main-kind story files that file under another component's folder, with the
+ * title they must carry. Add an entry only with a reason.
+ */
+export const EXTRAS = new Map([
+  // ButtonLink is exported from button.tsx, and its stories sit inside
+  // Button's folder as they always have.
+  ['components/button-link', 'Components/Button/ButtonLink'],
+])
+
+/**
+ * Story files outside the four kinds: per-look guide pages that each read
  * as their own docs page. Matched on the file name; add only with a reason.
  */
 export const GUIDES = [
@@ -95,6 +117,7 @@ const CRITERION = /^\S.* — \d+\.\d+\.\d+( \/ \d+\.\d+\.\d+)*( \(dark\))?$/
 export function kindOf(fileName) {
   if (fileName.endsWith('.tests.stories.tsx')) return 'tests'
   if (fileName.endsWith('.accessibility.stories.tsx')) return 'accessibility'
+  if (fileName.endsWith('.features.stories.tsx')) return 'features'
   if (GUIDES.some((guide) => guide.test(fileName))) return 'guide'
   if (/^[a-z0-9-]+\.stories\.tsx$/.test(fileName)) return 'main'
   return null
@@ -171,33 +194,11 @@ function exportedStories(sourceFile) {
 }
 
 /**
- * Sentence case: the first word is capitalised and no later word is, unless
- * it is a proper noun — a component or other name in `properNouns`, an
- * acronym (`CSS`, `RTL`), or a word with an inner capital or digit
- * (`ButtonLink`, `iconOnly`, `2.5.8`).
- */
-export function isSentenceCase(name, properNouns = new Set()) {
-  const words = name.split(/[\s—–/(),:]+/).filter(Boolean)
-  if (words.length === 0) return false
-  if (!/^[A-Z0-9]/.test(words[0])) return false
-  return words.slice(1).every((raw) => {
-    const word = raw.replace(/^['"“‘]|['"”’.!?]$/g, '')
-    if (!/^[A-Z][a-z]/.test(word)) return true
-    if (/[A-Z]/.test(word.slice(1)) || /\d/.test(word)) return true
-    return properNouns.has(word) || properNouns.has(word.replace(/['’]s$/, ''))
-  })
-}
-
-/**
  * Checks one story file. `relPath` is relative to src/ (`components/x.stories.tsx`);
- * `hasMain(base)` tells it whether the main file a tests or accessibility
- * file belongs to exists; `properNouns` are the words a name may capitalise. Returns one failure per broken rule.
+ * `hasMain(base)` tells it whether the main file a features, tests or
+ * accessibility file belongs to exists. Returns one failure per broken rule.
  */
-export function checkStoryFile(
-  source,
-  relPath,
-  { properNouns = new Set(), hasMain = () => true } = {},
-) {
+export function checkStoryFile(source, relPath, { hasMain = () => true } = {}) {
   const failures = []
   const fail = (line, message) => failures.push({ line, message })
   const fileName = basename(relPath)
@@ -221,7 +222,7 @@ export function checkStoryFile(
   if (!kind) {
     fail(
       1,
-      `"${fileName}" is not a story kind the standard has — use <file>.stories.tsx, <file>.tests.stories.tsx or <file>.accessibility.stories.tsx`,
+      `"${fileName}" is not a story kind the standard has — use <file>.stories.tsx, .features.stories.tsx, .accessibility.stories.tsx or .tests.stories.tsx`,
     )
     return failures
   }
@@ -263,8 +264,8 @@ export function checkStoryFile(
   const base = fileName.split('.')[0]
   const stories = exportedStories(sourceFile)
 
-  if (kind === 'tests' || kind === 'accessibility') {
-    const folder = kind === 'tests' ? 'Tests' : 'Accessibility'
+  if (kind === 'tests' || kind === 'accessibility' || kind === 'features') {
+    const folder = { tests: 'Tests', accessibility: 'Accessibility', features: 'Features' }[kind]
     const segments = title.split('/')
     if (segments.length !== 3 || segments[0] !== root || segments[2] !== folder) {
       fail(metaLine, `title "${title}" should be "${root}/<Name>/${folder}"`)
@@ -272,7 +273,8 @@ export function checkStoryFile(
     if (!hasMain(base)) {
       fail(1, `${folder.toLowerCase()} file with no ${base}.stories.tsx beside it`)
     }
-    const required = kind === 'tests' ? ['!dev', '!autodocs'] : ['!autodocs']
+    // Tests stay out of the sidebar; Features and Accessibility are for readers.
+    const required = kind === 'tests' ? ['!dev', '!autodocs'] : []
     for (const tag of required) {
       if (!tags.includes(tag)) fail(metaLine, `meta tags must include '${tag}'`)
     }
@@ -291,7 +293,12 @@ export function checkStoryFile(
   }
 
   // ── Main files and guides ─────────────────────────────────────────────────
+  const key = `${directory}/${base}`
   const segments = title.split('/')
+  if (kind === 'main' && EXTRAS.has(key)) {
+    if (title !== EXTRAS.get(key)) fail(metaLine, `title "${title}" should be "${EXTRAS.get(key)}"`)
+    return failures
+  }
   if (kind === 'main') {
     if (segments.length !== 2 || segments[0] !== root) {
       fail(metaLine, `title "${title}" should be "${root}/<Name>"`)
@@ -300,38 +307,18 @@ export function checkStoryFile(
     }
   }
 
-  for (const story of stories) {
-    if (story.id === 'Default' || story.id === 'Playground') continue
-    const name = stringValue(property(story.object, 'name'))
-    if (!name) {
-      fail(
-        story.line,
-        `story ${story.id} needs a sentence-case \`name\` matching its section title`,
-      )
-    } else if (!isSentenceCase(name, properNouns)) {
-      fail(story.line, `story name "${name}" is not sentence case`)
-    }
-  }
-
   if (kind === 'guide' || root === 'Hooks') return failures
 
-  if (stories[0]?.id !== 'Default' || stories[1]?.id !== 'Playground') {
-    fail(
-      stories[0]?.line ?? 1,
-      `the first two stories must be Default then Playground, got ${
-        stories
-          .slice(0, 2)
-          .map((story) => story.id)
-          .join(', ') || 'none'
-      }`,
-    )
+  const ids = new Set(stories.map((story) => story.id))
+  for (const required of ['Default', 'Playground']) {
+    if (!ids.has(required)) fail(stories[0]?.line ?? 1, `main file must export a ${required} story`)
   }
   if (!tags.includes('autodocs')) fail(metaLine, "meta tags must include 'autodocs'")
   const docs = property(property(meta, 'parameters'), 'docs')
   if (!property(docs, 'page')) {
     fail(metaLine, 'meta needs parameters.docs.page — a DocsPage, not the generated autodocs page')
   }
-  for (const block of ['DocsPage', 'DocsUsage', 'DocsApi']) {
+  for (const block of REFERENCE.has(key) ? [] : ['DocsPage', 'DocsUsage', 'DocsApi']) {
     if (!new RegExp(`<${block}\\b`).test(source)) {
       fail(metaLine, `the docs page must render <${block}> from story-helpers`)
     }
@@ -339,50 +326,30 @@ export function checkStoryFile(
   return failures
 }
 
-/** Names a story may capitalise mid-sentence: every exported PascalCase identifier, and a few more. */
-function collectProperNouns(srcDir) {
-  const nouns = new Set([
-    'NSW',
-    'Government',
-    'Australia',
-    'Australian',
-    'English',
-    'Arabic',
-    'Chinese',
-    'Escape',
-    'Enter',
-    'Space',
-    'Tab',
-    'Home',
-    'End',
-    'Shift',
-    'Storybook',
-    'Tailwind',
-    'React',
-    'Base',
-    'UI',
-    'WCAG',
-    'Country',
-    'Sydney',
-  ])
-  for (const directory of ['components', 'patterns', 'hooks', 'lib']) {
-    const path = join(srcDir, directory)
-    if (!existsSync(path)) continue
-    for (const name of readdirSync(path)) {
-      if (!/\.tsx?$/.test(name) || name.includes('.stories.')) continue
-      const source = readFileSync(join(path, name), 'utf8')
-      for (const match of source.matchAll(/\b(?:function|const|class)\s+([A-Z][A-Za-z0-9]*)/g)) {
-        nouns.add(match[1])
+/**
+ * Every documented component and pattern carries Button's two folders: a
+ * Features file and an Accessibility file beside its main story file. Hooks
+ * and EXTRAS do not. `names` is the directory listing.
+ */
+export function missingSiblings(directory, names) {
+  if (directory === 'hooks') return []
+  const failures = []
+  for (const name of names) {
+    if (kindOf(name) !== 'main') continue
+    const base = name.replace(/\.stories\.tsx$/, '')
+    if (EXTRAS.has(`${directory}/${base}`)) continue
+    for (const sibling of ['features', 'accessibility']) {
+      if (!names.includes(`${base}.${sibling}.stories.tsx`)) {
+        failures.push(`src/${directory}/${name}:1: has no ${base}.${sibling}.stories.tsx`)
       }
     }
   }
-  return nouns
+  return failures
 }
 
 function main() {
   const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const srcDir = join(packageRoot, 'src')
-  const properNouns = collectProperNouns(srcDir)
   const failures = []
   let checked = 0
 
@@ -406,20 +373,22 @@ function main() {
         failures.push(`src/${directory}/${name}:1: has no ${source[1]}.stories.tsx`)
       }
     }
+    for (const failure of missingSiblings(directory, names)) failures.push(failure)
     for (const name of names) {
       const relName = `${directory}/${name}`
       if (name.includes('.stories.')) {
         if (kindOf(name) === 'main') {
           const base = name.replace(/\.stories\.tsx$/, '')
           const hasSource = names.includes(`${base}.tsx`) || names.includes(`${base}.ts`)
-          if (!hasSource && !GROUPS.has(`${directory}/${base}`)) {
+          const known = GROUPS.has(`${directory}/${base}`) || EXTRAS.has(`${directory}/${base}`)
+          if (!hasSource && !known) {
             failures.push(
               `src/${relName}:1: documents no ${base}.tsx — add it to GROUPS with a reason, or rename it`,
             )
           }
         }
         const source = readFileSync(join(path, name), 'utf8')
-        for (const { line, message } of checkStoryFile(source, relName, { properNouns, hasMain })) {
+        for (const { line, message } of checkStoryFile(source, relName, { hasMain })) {
           failures.push(`src/${relName}:${line}: ${message}`)
         }
         checked++

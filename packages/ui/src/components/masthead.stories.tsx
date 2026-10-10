@@ -1,9 +1,10 @@
 /**
  * Masthead — the "A NSW Government website" strip.
  *
- *   Components/Masthead        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/Masthead/Tests  → masthead.tests.stories.tsx
+ *   Components/Masthead                → this file: Docs, Default, Playground
+ *   Components/Masthead/Features       → masthead.features.stories.tsx
+ *   Components/Masthead/Accessibility  → masthead.accessibility.stories.tsx
+ *   Components/Masthead/Tests          → masthead.tests.stories.tsx (hidden)
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -41,7 +42,7 @@ function Strip({ label, children }: { label: React.ReactNode; children: React.Re
 // Every Masthead on the docs page takes its own id: the component defaults to
 // id="nsw-masthead", which is only valid once per page.
 
-function ColoursSection() {
+export function ColoursSection() {
   return (
     <ExampleSection
       title='Colours'
@@ -85,31 +86,40 @@ function ColoursSection() {
   )
 }
 
-function ContainersSection() {
+export function ContainersSection() {
   return (
     <ExampleSection
       title='Containers'
       description={
         <>
-          <code>fluid</code> (the default) runs the message from the page edge;{' '}
-          <code>contained</code> centres it in a 1200px column, to line up with a contained{' '}
-          <code>Header</code>. Retune either with <code>--masthead-max-width</code> and{' '}
-          <code>--masthead-padding-x</code>.
+          <code>fluid</code> spans the full width (nswds-app parity); <code>contained</code> centres
+          the content in a 1200px column (legacy nsw-container parity), to line up with a contained{' '}
+          <code>Header</code>. Fine-tune either with the <code>--masthead-max-width</code> and{' '}
+          <code>--masthead-padding-x</code> custom properties.
         </>
       }
     >
       <Example layout='fill' code={`<Masthead container="contained" />`}>
         <div className='space-y-6'>
-          <Strip label='fluid'>
-            <Masthead id='masthead-container-fluid' container='fluid' />
+          <Strip label='fluid (default)'>
+            <Masthead
+              id='masthead-container-fluid'
+              container='fluid'
+              className='ring-1 ring-foreground/10'
+            />
           </Strip>
           <Strip label='contained'>
-            <Masthead id='masthead-container-contained' container='contained' />
+            <Masthead
+              id='masthead-container-contained'
+              container='contained'
+              className='ring-1 ring-foreground/10'
+            />
           </Strip>
           <Strip label='contained, --masthead-max-width: 40rem'>
             <Masthead
               id='masthead-container-custom'
               container='contained'
+              className='ring-1 ring-foreground/10'
               style={{ '--masthead-max-width': '40rem' } as React.CSSProperties}
             />
           </Strip>
@@ -119,13 +129,20 @@ function ContainersSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='The masthead sits flush above the Header, themed with the same word. SkipLinks come before both in the DOM.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<SkipLinks />
+<Masthead color="dark" />
+<Header color="dark">
+  <HeaderBrand sitename="Department of Primary Industries" />
+</Header>`}
+      >
         <div className='overflow-hidden ring-1 ring-foreground/10'>
           <Masthead id='masthead-in-context' color='dark' />
           <Header id='masthead-in-context-header' color='dark' sticky={false}>
@@ -147,10 +164,10 @@ function MastheadDocs() {
       registry='masthead'
       summary={
         <>
-          The strip that tells people they are on an official NSW Government website. It sits at the
-          very top of every page, directly above the <code>Header</code>, with{' '}
-          <code>SkipLinks</code> rendered before it. It carries mandated identification rather than
-          content, so it is deliberately quiet.
+          The masthead tells people they are on an official NSW Government website. It sits above
+          the site header on every page, paired with SkipLinks rendered immediately before it. Every
+          colour variant is a verified WCAG 2.2 AAA (7:1) text/background pair. It carries mandated
+          identification rather than content, so it is deliberately quiet.
         </>
       }
     >
@@ -180,6 +197,7 @@ const meta = {
   title: 'Components/Masthead',
   component: Masthead,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'fullscreen',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -243,9 +261,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Colours: Story = { name: 'Colours', render: () => <ColoursSection /> }
-
-export const Containers: Story = { name: 'Containers', render: () => <ContainersSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

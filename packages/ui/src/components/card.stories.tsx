@@ -1,9 +1,12 @@
 /**
- * Card — follows docs/reference-storybook-standard.md.
+ * Card — a composable surface for grouping related content.
  *
- *   Components/Card                → this file: Docs, Default, Playground and
- *                                    one story per docs section
+ *   Components/Card                → this file: Docs, Default, Playground
+ *   Components/Card/Features       → card.features.stories.tsx
  *   Components/Card/Accessibility  → card.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -20,21 +23,44 @@ import {
   CardHeader,
   CardTitle,
 } from './card.js'
-import {
-  DocsApi,
-  DocsPage,
-  DocsUsage,
-  Example,
-  ExampleCell,
-  ExampleSection,
-} from './story-helpers.js'
+import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
-const sizes = ['default', 'sm'] as const
+const sizes = ['sm', 'default'] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function SizesSection() {
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description='The out-of-the-box card: a header with a title and description, then the content and a footer, at the default size.'
+    >
+      <Example
+        surface='subtle'
+        code={`<Card>
+  <CardHeader>
+    <CardTitle>Notifications</CardTitle>
+    <CardDescription>You have 3 unread messages.</CardDescription>
+  </CardHeader>
+  <CardContent>Manage how you receive emails and in-app alerts.</CardContent>
+  <CardFooter>Updated just now.</CardFooter>
+</Card>`}
+      >
+        <Card className='w-full max-w-md'>
+          <CardHeader>
+            <CardTitle>Notifications</CardTitle>
+            <CardDescription>You have 3 unread messages.</CardDescription>
+          </CardHeader>
+          <CardContent>Manage how you receive emails and in-app alerts.</CardContent>
+          <CardFooter>Updated just now.</CardFooter>
+        </Card>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function SizesSection() {
   return (
     <ExampleSection
       title='Sizes'
@@ -47,22 +73,25 @@ function SizesSection() {
     >
       <Example layout='grid' surface='subtle' code={`<Card size="sm">…</Card>`}>
         {sizes.map((size) => (
-          <ExampleCell key={size} label={size}>
-            <Card size={size} className='w-full'>
+          <div key={size} className='space-y-3'>
+            <Card size={size}>
               <CardHeader>
-                <CardTitle>Renew your boat licence</CardTitle>
-                <CardDescription>Licence BL-48213 expires on 30 June.</CardDescription>
+                <CardTitle>Size: {size}</CardTitle>
+                <CardDescription>Padding and gap scale with the size token.</CardDescription>
               </CardHeader>
-              <CardContent>Renew online in about 10 minutes.</CardContent>
+              <CardContent>Card body content.</CardContent>
             </Card>
-          </ExampleCell>
+            <p className='text-center text-base font-medium tracking-wide text-muted-foreground'>
+              {size}
+            </p>
+          </div>
         ))}
       </Example>
     </ExampleSection>
   )
 }
 
-function CompositionSection() {
+export function CompositionSection() {
   return (
     <ExampleSection
       title='Composition'
@@ -124,7 +153,7 @@ function CompositionSection() {
   )
 }
 
-function WithAnImageSection() {
+export function WithAnImageSection() {
   return (
     <ExampleSection
       title='With an image'
@@ -154,7 +183,7 @@ function WithAnImageSection() {
   )
 }
 
-function ContentOnlySection() {
+export function ContentOnlySection() {
   return (
     <ExampleSection
       title='Content only'
@@ -174,13 +203,26 @@ function ContentOnlySection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='A row of service cards, each leading to the start of a task.'
     >
-      <Example layout='fill' surface='subtle'>
+      <Example
+        layout='fill'
+        surface='subtle'
+        code={`<Card>
+  <CardHeader>
+    <CardTitle>Apply for a Working with Children Check</CardTitle>
+    <CardDescription>For paid and volunteer work with children.</CardDescription>
+  </CardHeader>
+  <CardContent>It takes about 15 minutes. You will need proof of identity.</CardContent>
+  <CardFooter>
+    <ButtonLink href="/apply" trailingVisual={IconArrowForward}>Start now</ButtonLink>
+  </CardFooter>
+</Card>`}
+      >
         <div className='grid gap-6 md:grid-cols-2'>
           <Card>
             <CardHeader>
@@ -230,9 +272,9 @@ function CardDocs() {
       registry='card'
       summary={
         <>
-          A card groups related content on a white surface drawn with a hairline, not a shadow. It
-          is composed from parts — header, title, description, action, content and footer — so a
-          layout never needs ad-hoc wrappers.
+          Card is a generic content container that groups related information into a bordered,
+          rounded surface. It composes from header, title, description, action, content, and footer
+          parts so consumers can assemble any layout without ad-hoc wrappers.
         </>
       }
     >
@@ -248,6 +290,7 @@ function CardDocs() {
           'Laying out rows of data to compare — use Table or DescriptionList.',
         ]}
       />
+      <DefaultSection />
       <SizesSection />
       <CompositionSection />
       <WithAnImageSection />
@@ -264,10 +307,17 @@ const meta = {
   title: 'Components/Card',
   component: Card,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: CardDocs },
+    docs: {
+      page: CardDocs,
+      description: {
+        component:
+          'Card is a composable surface for grouping related content. Compose header, title, description, action, content, and footer parts to assemble dashboards, list rows, summary panels, or feature blocks without ad-hoc wrappers.',
+      },
+    },
   },
   args: {
     size: 'default',
@@ -314,13 +364,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const Sizes: Story = { name: 'Sizes', render: () => <SizesSection /> }
-
-export const Composition: Story = { name: 'Composition', render: () => <CompositionSection /> }
-
-export const WithImage: Story = { name: 'With an image', render: () => <WithAnImageSection /> }
-
-export const ContentOnly: Story = { name: 'Content only', render: () => <ContentOnlySection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

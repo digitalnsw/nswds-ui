@@ -1,9 +1,10 @@
 /**
  * MobileNav — the story set, per docs/reference-storybook-standard.md.
  *
- *   Patterns/MobileNav        → this file: Docs, Default, Playground and one
- *                               story per docs section
- *   Patterns/MobileNav/Tests  → mobile-nav.tests.stories.tsx
+ *   Patterns/MobileNav                → this file: Docs, Default, Playground
+ *   Patterns/MobileNav/Features       → mobile-nav.features.stories.tsx
+ *   Patterns/MobileNav/Accessibility  → mobile-nav.accessibility.stories.tsx
+ *   Patterns/MobileNav/Tests          → mobile-nav.tests.stories.tsx (hidden)
  *
  * A registry block: a hamburger trigger opening a left-side sheet that holds
  * the multi-level PushMenu. Copy-and-adapt source, not a published component.
@@ -11,6 +12,9 @@
  * The examples render the closed trigger only. The drawer is a modal that
  * portals to document.body, so an open one would cover the docs page — open
  * each example to see it.
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -26,6 +30,7 @@ import {
   DocsPage,
   DocsUsage,
   Example,
+  ExampleCell,
   ExampleSection,
 } from '../components/story-helpers.js'
 import { MobileNav } from './mobile-nav.js'
@@ -63,7 +68,7 @@ const navigation: PushMenuItem[] = [
 // ─── Sections ─────────────────────────────────────────────────────────────────
 // Each section is one example story AND one part of the docs page.
 
-function MenuTreeSection() {
+export function MenuTreeSection() {
   return (
     <ExampleSection
       title='Menu tree'
@@ -89,13 +94,15 @@ function MenuTreeSection() {
 
 <MobileNav navigation={navigation} currentHref="/about" />`}
       >
-        <MobileNav navigation={navigation} currentHref='#about-overview' />
+        <ExampleCell label='Open it, then About us — Overview is the current page'>
+          <MobileNav navigation={navigation} currentHref='#about-overview' />
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
 }
 
-function WithExtraContentSection() {
+export function WithExtraContentSection() {
   return (
     <ExampleSection
       title='With extra content'
@@ -114,11 +121,13 @@ function WithExtraContentSection() {
   </ButtonLink>
 </MobileNav>`}
       >
-        <MobileNav navigation={navigation}>
-          <ButtonLink href='#sign-in' variant='outline' color='primary' block>
-            Sign in
-          </ButtonLink>
-        </MobileNav>
+        <ExampleCell label='Open it — Sign in sits below the menu'>
+          <MobileNav navigation={navigation}>
+            <ButtonLink href='#sign-in' variant='outline' color='primary' block>
+              Sign in
+            </ButtonLink>
+          </MobileNav>
+        </ExampleCell>
       </Example>
     </ExampleSection>
   )
@@ -140,7 +149,7 @@ function ControlledExample() {
   )
 }
 
-function ControlledSection() {
+export function ControlledSection() {
   return (
     <ExampleSection
       title='Controlled'
@@ -165,20 +174,33 @@ function ControlledSection() {
   )
 }
 
-function InContextSection() {
+export function PlacementSection() {
   return (
     <ExampleSection
-      title='In context'
+      title='Placement'
       description={
         <>
-          The trigger sits in <code>HeaderActions</code>; the <code>Header</code> already carries
-          the brand lockup, so this block is only the drawer. Hide it from the outside with a{' '}
-          <code>lg:hidden</code> wrapper where the service switches to <code>MainNav</code> at
-          desktop widths.
+          Drop it inside <code>HeaderActions</code>; the published <code>Header</code> already
+          carries the brand lockup at every width, so this block is only the drawer. Hide it at
+          desktop widths from the outside (a <code>lg:hidden</code> wrapper) when a service swaps to
+          a horizontal nav there. Choosing a destination closes the drawer, and the menu&rsquo;s own
+          close button closes the sheet — there is deliberately no second close control.
         </>
       }
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        className='overflow-hidden p-0'
+        code={`<Masthead />
+<Header sticky={false}>
+  <HeaderBrand sitename="Service NSW" />
+  <HeaderActions>
+    <div className="lg:hidden">
+      <MobileNav navigation={navigation} currentHref={pathname} />
+    </div>
+  </HeaderActions>
+</Header>`}
+      >
         <Masthead color='dark' />
         <Header color='white' sticky={false}>
           <HeaderBrand sitename='Service NSW' />
@@ -201,9 +223,10 @@ function MobileNavDocs() {
       registry='mobile-nav'
       summary={
         <>
-          A menu button that opens a left-side drawer holding the multi-level PushMenu. It is
-          composed from published components — Button, Sheet and PushMenu — so Base UI owns the
-          focus trap, scroll lock, dismissal and focus return. Copy the source and adapt it.
+          A hamburger button that opens a left-side drawer containing the multi-level{' '}
+          <code>PushMenu</code>. A registry block composed from published components —{' '}
+          <code>Button</code>, <code>Sheet</code> and <code>PushMenu</code> — so Base UI owns the
+          focus trap, scroll lock and dismissal. Copy the source and adapt it.
         </>
       }
     >
@@ -219,10 +242,10 @@ function MobileNavDocs() {
           'A short list of actions on one control — use DropdownMenu.',
         ]}
       />
+      <PlacementSection />
       <MenuTreeSection />
       <WithExtraContentSection />
       <ControlledSection />
-      <InContextSection />
       <DocsApi />
     </DocsPage>
   )
@@ -234,10 +257,17 @@ const meta = {
   title: 'Patterns/MobileNav',
   component: MobileNav,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: MobileNavDocs },
+    docs: {
+      page: MobileNavDocs,
+      description: {
+        component:
+          'Hamburger trigger opening a left-side sheet with the multi-level PushMenu. A copy-and-adapt registry block composed from Button, Sheet and PushMenu.',
+      },
+    },
   },
   args: {
     navigation,
@@ -304,14 +334,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const MenuTree: Story = { name: 'Menu tree', render: () => <MenuTreeSection /> }
-
-export const WithExtraContent: Story = {
-  name: 'With extra content',
-  render: () => <WithExtraContentSection />,
-}
-
-export const Controlled: Story = { name: 'Controlled', render: () => <ControlledSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

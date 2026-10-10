@@ -1,8 +1,12 @@
 /**
- * Input — the docs page, Default, Playground and one story per docs section.
+ * Input — the docs page, Default and Playground.
  *
  *   Components/Input                → this file
+ *   Components/Input/Features       → input.features.stories.tsx
  *   Components/Input/Accessibility  → input.accessibility.stories.tsx
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -11,6 +15,7 @@ import { expect, fn } from 'storybook/test'
 import { Button } from './button.js'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from './field.js'
 import { Input } from './input.js'
+import { Label } from './label.js'
 import {
   DocsApi,
   DocsPage,
@@ -33,13 +38,61 @@ const types = [
 ] as const
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
+
+export function DefaultSection() {
+  return (
+    <ExampleSection
+      title='Default'
+      description={
+        <>
+          A bordered 48px field on the input surface. Without a visible label it still needs an
+          accessible name, so give it an <code>aria-label</code> — and prefer a real label, below.
+        </>
+      }
+    >
+      <Example
+        code={`<Input type="email" placeholder="you@example.com" aria-label="Email address" />`}
+      >
+        <ExampleCell label='default'>
+          <div className='w-72'>
+            <Input type='email' placeholder='you@example.com' aria-label='Email address' />
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithLabelSection() {
+  return (
+    <ExampleSection
+      title='With label'
+      description={
+        <>
+          Point a <code>Label</code> at the input&apos;s <code>id</code> with <code>htmlFor</code>.
+          The label becomes the input&apos;s accessible name, and clicking it focuses the field.
+        </>
+      }
+    >
+      <Example
+        code={`<Label htmlFor="email">Email address</Label>
+<Input id="email" type="email" placeholder="you@example.com" />`}
+      >
+        <div className='grid w-full max-w-sm gap-2'>
+          <Label htmlFor='input-docs-email'>Email address</Label>
+          <Input id='input-docs-email' type='email' placeholder='you@example.com' />
+        </div>
+      </Example>
+    </ExampleSection>
+  )
+}
 
 // The forced focus ring uses the same token the component paints on
 // :focus-visible, so the specimen shows the real ring without stealing focus.
 const forcedFocus = 'outline outline-2 outline-offset-2 outline-(--input-ring)'
 
-function StatesSection() {
+export function StatesSection() {
   return (
     <ExampleSection
       title='States'
@@ -100,7 +153,7 @@ const typeSpecimens: Record<(typeof types)[number], { label: string; value?: str
   file: { label: 'Upload your proof of address' },
 }
 
-function TypesSection() {
+export function TypesSection() {
   return (
     <ExampleSection
       title='Types'
@@ -129,7 +182,7 @@ function TypesSection() {
   )
 }
 
-function WithFieldSection() {
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -169,7 +222,7 @@ function WithFieldSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -180,7 +233,21 @@ function InContextSection() {
         </>
       }
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<FieldGroup>
+  <Field>
+    <FieldLabel>Full name</FieldLabel>
+    <Input autoComplete="name" />
+  </Field>
+  <Field>
+    <FieldLabel>Email address</FieldLabel>
+    <Input type="email" autoComplete="email" />
+    <FieldDescription>We will send your confirmation here.</FieldDescription>
+  </Field>
+  …
+</FieldGroup>`}
+      >
         <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
           <FieldGroup>
             <Field>
@@ -216,9 +283,12 @@ function InputDocs() {
       registry='input'
       summary={
         <>
-          A single-line text field for short, free-form answers such as a name, an email address or
-          a postcode. It is 48px tall, takes its colours from the shared <code>--input-*</code>{' '}
-          tokens, and works with <code>Field</code> for its label, hint and error.
+          Single-line text inputs accept short, free-form data such as a name, email address, or
+          search query. Always pair an input with a visible label so the field has an accessible
+          name, and use the matching HTML type so browsers can offer the correct keyboard and
+          validation behaviour. It is 48px tall, takes its colours from the shared{' '}
+          <code>--input-*</code> tokens, and works with <code>Field</code> for its label, hint and
+          error.
         </>
       }
     >
@@ -235,6 +305,8 @@ function InputDocs() {
           'A one-time verification code — use InputOTP.',
         ]}
       />
+      <DefaultSection />
+      <WithLabelSection />
       <StatesSection />
       <TypesSection />
       <WithFieldSection />
@@ -250,6 +322,7 @@ const meta = {
   title: 'Components/Input',
   component: Input,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -345,11 +418,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const Types: Story = { name: 'Types', render: () => <TypesSection /> }
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

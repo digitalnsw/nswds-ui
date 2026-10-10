@@ -1,8 +1,13 @@
 /**
- * Combobox — the docs page, Default, Playground and one story per docs section.
+ * Combobox — the docs page, Default and Playground.
  *
- *   Components/Combobox        → this file
- *   Components/Combobox/Tests  → combobox.tests.stories.tsx
+ *   Components/Combobox                → this file
+ *   Components/Combobox/Features       → combobox.features.stories.tsx
+ *   Components/Combobox/Accessibility  → combobox.accessibility.stories.tsx
+ *   Components/Combobox/Tests          → combobox.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  *
  * Built on the Base UI Combobox primitive: the input renders in the canvas, but
  * the filtered list is PORTALED to document.body, so it must be queried there.
@@ -11,6 +16,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
 
+import { Button } from './button.js'
 import {
   Combobox,
   ComboboxChip,
@@ -27,8 +33,15 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from './combobox.js'
-import { Field, FieldDescription, FieldLabel } from './field.js'
-import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from './field.js'
+import {
+  DocsApi,
+  DocsPage,
+  DocsUsage,
+  Example,
+  ExampleCell,
+  ExampleSection,
+} from './story-helpers.js'
 
 const towns = [
   'Albury',
@@ -83,9 +96,113 @@ function StringList({ empty }: { empty: string }) {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function WithFieldSection() {
+export function StatesSection() {
+  return (
+    <ExampleSection
+      title='States'
+      description={
+        <>
+          The input is an <code>InputGroup</code>, so it shares Input&apos;s surface, hover, 2px
+          focus ring and 2px danger border when <code>aria-invalid</code> is set — or when{' '}
+          <code>Field invalid</code> sets it. <code>disabled</code> on the input disables the
+          suggestions button with it.
+        </>
+      }
+    >
+      <Example
+        layout='grid'
+        code={`<ComboboxInput placeholder="Start typing a town" aria-invalid />`}
+      >
+        <ExampleCell label='placeholder'>
+          <div className='w-72'>
+            <Combobox items={towns}>
+              <ComboboxInput
+                aria-label='Town or city, placeholder'
+                placeholder='Start typing a town'
+              />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='selected'>
+          <div className='w-72'>
+            <Combobox items={towns} defaultValue='Dubbo'>
+              <ComboboxInput aria-label='Town or city, selected' />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='invalid'>
+          <div className='w-72'>
+            <Combobox items={towns}>
+              <ComboboxInput
+                aria-label='Town or city, invalid'
+                aria-invalid
+                placeholder='Start typing a town'
+              />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='disabled'>
+          <div className='w-72'>
+            <Combobox items={towns} defaultValue='Dubbo' disabled>
+              <ComboboxInput aria-label='Town or city, disabled' disabled />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function ButtonsSection() {
+  return (
+    <ExampleSection
+      title='Suggestions and clear buttons'
+      description={
+        <>
+          The input carries a button that opens the full list, named &ldquo;Show suggestions&rdquo;.{' '}
+          <code>showClear</code> adds a &ldquo;Clear&rdquo; button that empties the input and takes
+          the suggestions button&apos;s place while there is a value.{' '}
+          <code>{'showTrigger={false}'}</code> leaves a plain input that opens as people type.
+        </>
+      }
+    >
+      <Example layout='grid' code={`<ComboboxInput showClear />`}>
+        <ExampleCell label='default'>
+          <div className='w-72'>
+            <Combobox items={towns}>
+              <ComboboxInput aria-label='Town or city, with suggestions button' />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='showClear'>
+          <div className='w-72'>
+            <Combobox items={towns} defaultValue='Orange'>
+              <ComboboxInput aria-label='Town or city, with clear button' showClear />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+        <ExampleCell label='showTrigger={false}'>
+          <div className='w-72'>
+            <Combobox items={towns}>
+              <ComboboxInput aria-label='Town or city, no buttons' showTrigger={false} />
+              <StringList empty='No towns found.' />
+            </Combobox>
+          </div>
+        </ExampleCell>
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function WithFieldSection() {
   return (
     <ExampleSection
       title='With Field'
@@ -126,7 +243,7 @@ function WithFieldSection() {
   )
 }
 
-function GroupedOptionsSection() {
+export function GroupedOptionsSection() {
   return (
     <ExampleSection
       title='Grouped options'
@@ -153,7 +270,7 @@ function GroupedOptionsSection() {
       >
         <div className='w-72'>
           <Combobox items={regions}>
-            <ComboboxInput aria-label='Local council area' />
+            <ComboboxInput aria-label='Local council area' placeholder='Start typing a suburb' />
             <ComboboxContent>
               <ComboboxEmpty>No council areas found.</ComboboxEmpty>
               <ComboboxList>
@@ -210,7 +327,7 @@ function MultipleSelectionExample() {
   )
 }
 
-function MultipleSelectionSection() {
+export function MultipleSelectionSection() {
   return (
     <ExampleSection
       title='Multiple selection'
@@ -240,6 +357,45 @@ function MultipleSelectionSection() {
 </Combobox>`}
       >
         <MultipleSelectionExample />
+      </Example>
+    </ExampleSection>
+  )
+}
+
+export function InContextSection() {
+  return (
+    <ExampleSection
+      title='In context'
+      description='Booking an appointment: people type the town they are nearest to and pick it from the list, and an error says what to do when nothing was chosen.'
+    >
+      <Example
+        layout='fill'
+        code={`<Field invalid>
+  <FieldLabel>Nearest service centre</FieldLabel>
+  <Combobox name="centre" items={towns}>
+    <ComboboxInput placeholder="Start typing a town" />
+    <ComboboxContent>…</ComboboxContent>
+  </Combobox>
+  <FieldDescription>We will show the times available at that centre.</FieldDescription>
+  <FieldError>Select the service centre you want to visit.</FieldError>
+</Field>`}
+      >
+        <form className='max-w-md' onSubmit={(event) => event.preventDefault()}>
+          <FieldGroup>
+            <Field invalid>
+              <FieldLabel>Nearest service centre</FieldLabel>
+              <Combobox name='centre' items={towns}>
+                <ComboboxInput placeholder='Start typing a town' />
+                <StringList empty='No service centres found.' />
+              </Combobox>
+              <FieldDescription>We will show the times available at that centre.</FieldDescription>
+              <FieldError>Select the service centre you want to visit.</FieldError>
+            </Field>
+            <div>
+              <Button type='submit'>Find a time</Button>
+            </div>
+          </FieldGroup>
+        </form>
       </Example>
     </ExampleSection>
   )
@@ -289,9 +445,12 @@ function ComboboxDocs() {
           'Searching a whole site or service — use a search field, not a picker.',
         ]}
       />
+      <StatesSection />
       <WithFieldSection />
+      <ButtonsSection />
       <GroupedOptionsSection />
       <MultipleSelectionSection />
+      <InContextSection />
       <DocsApi />
     </DocsPage>
   )
@@ -305,6 +464,7 @@ const meta: Meta<typeof Combobox> = {
   title: 'Components/Combobox',
   component: Combobox,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -397,15 +557,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const WithField: Story = { name: 'With Field', render: () => <WithFieldSection /> }
-
-export const GroupedOptions: Story = {
-  name: 'Grouped options',
-  render: () => <GroupedOptionsSection />,
-}
-
-export const MultipleSelection: Story = {
-  name: 'Multiple selection',
-  render: () => <MultipleSelectionSection />,
-}

@@ -1,8 +1,14 @@
 /**
- * StepIndicator — Docs, Default, Playground and one story per docs section.
+ * StepIndicator — vertical journey progress: one link per step with a status
+ * marker and connector line, plus the sectioned StepNav shell.
  *
- *   Components/StepIndicator        → this file
- *   Components/StepIndicator/Tests  → step-indicator.tests.stories.tsx
+ *   Components/StepIndicator                → this file: Docs, Default, Playground
+ *   Components/StepIndicator/Features       → step-indicator.features.stories.tsx
+ *   Components/StepIndicator/Accessibility  → step-indicator.accessibility.stories.tsx
+ *   Components/StepIndicator/Tests          → step-indicator.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -44,61 +50,84 @@ function getIndicator(canvasElement: HTMLElement): HTMLElement {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-const statuses: ReadonlyArray<readonly [StepStatus, string]> = [
-  ['completed', 'completed'],
-  ['saved', 'saved'],
-  ['in-progress', 'in-progress'],
-  ['error', 'error'],
-  ['not-started', 'not-started'],
-  ['default', 'status omitted'],
-  ['cannot-start', 'cannot-start'],
+const allStatuses: StepStatus[] = [
+  'default',
+  'not-started',
+  'in-progress',
+  'completed',
+  'saved',
+  'error',
+  'cannot-start',
 ]
 
-function StatesSection() {
+// The 'default' entry omits the `status` key rather than setting it: 'default'
+// is what the component's `step.status ?? 'default'` fallback resolves to, so
+// the label tells the truth about the data.
+const allStatusSteps: Step[] = allStatuses.map((status) =>
+  status === 'default'
+    ? { title: 'default (status omitted)', href: `#status-${status}` }
+    : { title: status, href: `#status-${status}`, status },
+)
+
+const statusDocs: ReadonlyArray<readonly [string, string]> = [
+  ['default', 'No status given. An empty ring, with a dot on hover.'],
+  ['not-started', 'Ready to begin. The same ring; announced “Not started”.'],
+  ['in-progress', 'Begun but not finished. An outlined disc that fills on hover.'],
+  ['completed', 'Finished. A solid success disc with a tick.'],
+  ['saved', 'Saved for later. An outlined success disc that fills on hover.'],
+  ['error', 'Needs fixing. A solid danger disc.'],
+  ['cannot-start', 'Blocked by an earlier step: out of the tab order and click-inert.'],
+]
+
+export function StatusesSection() {
   return (
     <ExampleSection
-      title='States'
+      title='Statuses'
       description={
         <>
-          Each step carries its own <code>status</code>. Completed, error and cannot-start are solid
-          discs; saved and in-progress are outlined and fill on hover; a step not yet begun is an
-          empty ring. A step with no status renders as not started. A cannot-start step is disabled
-          — out of the tab order and click-inert. Each status is also announced after the title, in
-          words: localise or suppress them with <code>statusLabels</code>.
+          Seven statuses, one visual map: solid discs for completed / error / cannot-start, outlined
+          discs that fill on hover for saved / in-progress, and a hover dot for steps not yet begun.
+          Status is also announced to screen readers as a visually-hidden suffix — override the
+          wording (or suppress it) via <code>statusLabels</code>.
         </>
       }
     >
       <Example
-        code={`<StepIndicator steps={[{ title: 'Your details', href: '/apply/details', status: 'completed' }]} />`}
+        code={`<StepIndicator
+  steps={[
+    { title: 'Your details', href: '/apply/details', status: 'completed' },
+    { title: 'Eligibility', href: '/apply/eligibility', status: 'in-progress' },
+  ]}
+/>`}
       >
-        {statuses.map(([status, label]) => (
-          <ExampleCell key={status} label={label}>
-            <StepIndicator
-              steps={[
-                status === 'default'
-                  ? { title: 'Your details', href: `#state-${status}` }
-                  : { title: 'Your details', href: `#state-${status}`, status },
-              ]}
-            />
-          </ExampleCell>
-        ))}
+        <div className='w-72'>
+          <StepIndicator steps={allStatusSteps} />
+        </div>
       </Example>
+      <dl className='grid gap-x-8 gap-y-3 sm:grid-cols-2'>
+        {statusDocs.map(([name, desc]) => (
+          <div key={name} className='flex gap-3 text-base'>
+            <dt className='w-28 shrink-0 font-semibold'>{name}</dt>
+            <dd className='text-muted-foreground'>{desc}</dd>
+          </div>
+        ))}
+      </dl>
     </ExampleSection>
   )
 }
 
-function CurrentStepSection() {
+export function CurrentStepSection() {
   return (
     <ExampleSection
       title='Current step'
       description={
         <>
-          The step whose <code>href</code> equals <code>currentHref</code> is announced with{' '}
-          <code>aria-current=&quot;step&quot;</code> whatever its status. An in-progress current
-          step is emphasised with a double ring; a not-started one gets a filled dot in the primary
-          ink. Completed, saved, error and cannot-start steps keep their own treatment.
+          The step whose <code>href</code> matches <code>currentHref</code> gets{' '}
+          <code>aria-current=&quot;step&quot;</code>. An in-progress current step is emphasised with
+          a double ring; a not-yet-started current step gets a filled dot and the primary ink.
+          Completed, saved, error and cannot-start steps keep their own treatment.
         </>
       }
     >
@@ -135,7 +164,7 @@ const navSections = [
   },
 ]
 
-function GroupedWithStepNavSection() {
+export function GroupedWithStepNavSection() {
   return (
     <ExampleSection
       title='Grouped with StepNav'
@@ -165,13 +194,16 @@ function GroupedWithStepNavSection() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
       description='Beside a long application form, so a reader can see how far they have come and return to a finished step.'
     >
-      <Example layout='fill'>
+      <Example
+        layout='fill'
+        code={`<StepIndicator steps={steps} currentHref="/apply/documents" />`}
+      >
         <div className='grid gap-10 sm:grid-cols-[14rem_1fr]'>
           <StepIndicator steps={journeySteps} currentHref='#documents' />
           <div className='max-w-prose space-y-4'>
@@ -200,9 +232,11 @@ function StepIndicatorDocs() {
       registry='step-indicator'
       summary={
         <>
-          A vertical list of the steps in a multi-page journey, such as an application form: one
-          link per step, with a status marker, a connector line and an emphasised treatment for the
-          step being viewed. Status is data on each step, so any state source can drive it.
+          A vertical list of the steps in a multi-step journey — one link per step, with a status
+          marker, a connector line, and an emphasised treatment for the step being viewed. Pass
+          status as data on each step; compare <code>currentHref</code> against step hrefs to mark
+          the current page. <code>StepNav</code> wraps one indicator per titled section in a named{' '}
+          <code>nav</code> landmark.
         </>
       }
     >
@@ -218,7 +252,7 @@ function StepIndicatorDocs() {
           'Paging through a long list of results — use Pagination.',
         ]}
       />
-      <StatesSection />
+      <StatusesSection />
       <CurrentStepSection />
       <GroupedWithStepNavSection />
       <InContextSection />
@@ -233,6 +267,7 @@ const meta = {
   title: 'Components/StepIndicator',
   component: StepIndicator,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
@@ -313,17 +348,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const States: Story = { name: 'States', render: () => <StatesSection /> }
-
-export const CurrentStep: Story = {
-  name: 'Current step',
-  render: () => <CurrentStepSection />,
-}
-
-export const GroupedWithStepNav: Story = {
-  name: 'Grouped with StepNav',
-  render: () => <GroupedWithStepNavSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }

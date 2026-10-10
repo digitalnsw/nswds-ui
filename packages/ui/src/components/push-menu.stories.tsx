@@ -1,9 +1,13 @@
 /**
  * PushMenu — the drill-down drawer menu for small screens.
  *
- *   Components/PushMenu        → this file: Docs, Default, Playground and one
- *                                story per docs section
- *   Components/PushMenu/Tests  → push-menu.tests.stories.tsx
+ *   Components/PushMenu                → this file: Docs, Default, Playground
+ *   Components/PushMenu/Features       → push-menu.features.stories.tsx
+ *   Components/PushMenu/Accessibility  → push-menu.accessibility.stories.tsx
+ *   Components/PushMenu/Tests          → push-menu.tests.stories.tsx (hidden)
+ *
+ * The docs page's sections are exported (and kept out of the story index by
+ * `excludeStories`) so the Features stories render the same examples.
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
@@ -67,9 +71,9 @@ function DrawerFrame({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Sections ─────────────────────────────────────────────────────────────────
-// Each section is one example story AND one part of the docs page.
+// Each section is one part of the docs page AND one Features story.
 
-function DrillingDownSection() {
+export function DrillingDownSection() {
   return (
     <ExampleSection
       title='Drilling down'
@@ -103,7 +107,36 @@ function DrillingDownSection() {
   )
 }
 
-function CurrentPageSection() {
+export function BehaviourSection() {
+  return (
+    <ExampleSection
+      title='Behaviour'
+      description='What the menu does for the reader as levels change, with nothing to wire up.'
+    >
+      <ul className='max-w-2xl list-disc space-y-2 ps-5 text-base text-muted-foreground'>
+        <li>
+          Focus moves with the level: drilling forward focuses the new level&rsquo;s Back button,
+          going back returns focus to the item that opened the level just left.
+        </li>
+        <li>
+          Hidden levels carry the <code>inert</code> attribute, so their links are neither tabbable
+          nor exposed to assistive tech.
+        </li>
+        <li>
+          A visually-hidden <code>aria-live</code> region announces each level change, and leaf
+          links matching <code>currentHref</code> get <code>aria-current=&quot;page&quot;</code>.
+        </li>
+        <li>
+          Slides respect <code>prefers-reduced-motion</code>, and the duration is tunable via the{' '}
+          <code>durationMs</code> prop, which drives both the <code>--push-menu-duration</code>{' '}
+          custom property and the settle timeouts — never override the custom property directly.
+        </li>
+      </ul>
+    </ExampleSection>
+  )
+}
+
+export function CurrentPageSection() {
   return (
     <ExampleSection
       title='Current page'
@@ -124,7 +157,7 @@ function CurrentPageSection() {
   )
 }
 
-function CloseButtonSection() {
+export function CloseButtonSection() {
   return (
     <ExampleSection
       title='Close button'
@@ -152,7 +185,7 @@ function CloseButtonSection() {
   )
 }
 
-function BreadcrumbTrailSection() {
+export function BreadcrumbTrailSection() {
   return (
     <ExampleSection
       title='Breadcrumb trail'
@@ -214,7 +247,7 @@ function SheetScene() {
   )
 }
 
-function InContextSection() {
+export function InContextSection() {
   return (
     <ExampleSection
       title='In context'
@@ -253,10 +286,10 @@ function PushMenuDocs() {
       registry='push-menu'
       summary={
         <>
-          A drill-down menu for small screens: each level slides in over the last, with a Back
-          button to return, so a deep site tree fits a narrow drawer. Links render through{' '}
-          <code>Link</code>, so a framework link set on <code>LinkProvider</code> is used
-          automatically.
+          A multi-level drill-down menu for mobile navigation. Items with children slide a new level
+          in from the right; leaf items are links rendered through <code>Link</code>, so apps can
+          inject their framework link component with <code>LinkProvider</code>. Compose it inside{' '}
+          <code>SheetContent side=&quot;left&quot;</code> for the classic mobile drawer.
         </>
       }
     >
@@ -273,6 +306,7 @@ function PushMenuDocs() {
         ]}
       />
       <DrillingDownSection />
+      <BehaviourSection />
       <CurrentPageSection />
       <CloseButtonSection />
       <BreadcrumbTrailSection />
@@ -288,10 +322,17 @@ const meta = {
   title: 'Components/PushMenu',
   component: PushMenu,
   tags: ['autodocs'],
+  excludeStories: /Section$/,
   parameters: {
     layout: 'padded',
     controls: { expanded: true, sort: 'requiredFirst' },
-    docs: { page: PushMenuDocs },
+    docs: {
+      page: PushMenuDocs,
+      description: {
+        component:
+          'Multi-level slide-in-place drill-down menu for mobile navigation, with managed focus, inert hidden levels and live-region announcements.',
+      },
+    },
   },
   args: {
     navigation: sampleNavigation,
@@ -525,19 +566,3 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
-
-export const DrillingDown: Story = {
-  name: 'Drilling down',
-  render: () => <DrillingDownSection />,
-}
-
-export const CurrentPage: Story = { name: 'Current page', render: () => <CurrentPageSection /> }
-
-export const CloseButton: Story = { name: 'Close button', render: () => <CloseButtonSection /> }
-
-export const BreadcrumbTrail: Story = {
-  name: 'Breadcrumb trail',
-  render: () => <BreadcrumbTrailSection />,
-}
-
-export const InContext: Story = { name: 'In context', render: () => <InContextSection /> }
