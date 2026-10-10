@@ -1,3 +1,9 @@
+## [9.1.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.2...@nswds/ui-v9.1.3) (2026-10-10)
+
+### Bug Fixes
+
+* **ui:** restore the Public Sans and JetBrains Mono font stacks ([#243](https://github.com/digitalnsw/nswds-ui/issues/243)) ([0c55d38](https://github.com/digitalnsw/nswds-ui/commit/0c55d386dfcad3454c5c93f534ad7d033a0b15aa)), closes [#14](https://github.com/digitalnsw/nswds-ui/issues/14)
+
 ## [9.1.2](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.1...@nswds/ui-v9.1.2) (2026-10-10)
 
 ### Bug Fixes
