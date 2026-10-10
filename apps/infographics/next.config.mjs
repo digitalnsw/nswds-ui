@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Same compiler setup as apps/web — see the note in its next.config.mjs.
+  // Next only runs the React Compiler when this flag is set; installing
+  // babel-plugin-react-compiler alone does nothing
+  // (node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/reactCompiler.md).
   reactCompiler: true,
   transpilePackages: ['@nswds/ui'],
 }

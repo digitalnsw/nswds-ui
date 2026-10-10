@@ -15,7 +15,9 @@
 
 This is a **reusable design system** for NSW Government digital products. It is NOT an application.
 It is built to be consumed by _other_ teams' projects — the apps inside this monorepo
-(`apps/web`, `apps/infographics`, `apps/storybook`) exist only to develop and preview the system, not as end products.
+(`apps/web`, `apps/storybook`) exist only to develop and preview the system, not as end products.
+The one exception is `apps/infographics`, a public site (`infographics.design.nsw.gov.au`)
+built on the system — treat it as a live consumer, not a sandbox.
 
 **Two distribution channels:**
 

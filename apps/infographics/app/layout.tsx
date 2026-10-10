@@ -4,7 +4,7 @@ import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 // Import the SOURCE dev entry (not the `@nswds/ui/styles.css` export, which
 // is the prebuilt dist/styles.css) so this app's Tailwind build scans
-// apps/** live and emits utilities for the sandbox's own classes.
+// apps/** live and emits utilities for this app's own classes.
 import '../../../packages/ui/src/styles/globals.css'
 
 import { site } from '@/lib/site'
