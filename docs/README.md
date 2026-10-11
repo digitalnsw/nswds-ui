@@ -34,7 +34,7 @@ design system — organised by what you're trying to do.
 
 ## Elsewhere
 
-- [Storybook](https://storybook.digital.nsw.gov.au) — every component with live controls
+- [Storybook](https://ui.design.nsw.gov.au/storybook) — every component with live controls
 - [Registry](https://registry.design.nsw.gov.au) — the shadcn endpoint
 - [`packages/ui/README.md`](../packages/ui/README.md) — the npm landing page
 - [DESIGN.md](../DESIGN.md) · [PRODUCT.md](../PRODUCT.md) — design language and product framing

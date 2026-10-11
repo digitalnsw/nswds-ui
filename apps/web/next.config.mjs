@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { zoneRewrites } from './zones.mjs'
+
 const repoRoot = resolve(import.meta.dirname, '../..')
 
 // Local-dev convenience: load the monorepo-root .env so a REGISTRY_ORIGIN
@@ -51,20 +53,26 @@ const nextConfig = {
   reactCompiler: true,
   transpilePackages: ['@nswds/ui'],
   async rewrites() {
-    // Serve the registry project under /registry on this domain.
-    // /registry/r/<name>.json proxies to the registry deployment.
-    // Proxy the stable production alias — never a per-deploy URL. The registry project
-    // must have Deployment Protection disabled or these fetches return 401.
-    return [
-      {
-        source: '/registry',
-        destination: registryOrigin,
-      },
-      {
-        source: '/registry/:path*',
-        destination: `${registryOrigin}/:path*`,
-      },
-    ]
+    return {
+      // The zones (zones.mjs): /infographics and /storybook, sent to their own domains before
+      // this app's routes are matched.
+      beforeFiles: zoneRewrites(),
+      // Serve the registry project under /registry on this domain.
+      // /registry/r/<name>.json proxies to the registry deployment.
+      // Proxy the stable production alias — never a per-deploy URL. The registry project
+      // must have Deployment Protection disabled or these fetches return 401.
+      afterFiles: [
+        {
+          source: '/registry',
+          destination: registryOrigin,
+        },
+        {
+          source: '/registry/:path*',
+          destination: `${registryOrigin}/:path*`,
+        },
+      ],
+      fallback: [],
+    }
   },
 }
 

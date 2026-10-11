@@ -16,7 +16,7 @@
 This is a **reusable design system** for NSW Government digital products. It is NOT an application.
 It is built to be consumed by _other_ teams' projects — the apps inside this monorepo
 (`apps/web`, `apps/storybook`) exist only to develop and preview the system, not as end products.
-The one exception is `apps/infographics`, a public site (`infographics.design.nsw.gov.au`)
+The one exception is `apps/infographics`, a public site (`ui.design.nsw.gov.au/infographics`)
 built on the system — treat it as a live consumer, not a sandbox.
 
 **Two distribution channels:**
@@ -445,7 +445,7 @@ Run from the **repo root** unless noted.
 | Dev all apps                    | `npm run dev`                                                  |
 | Storybook only                  | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
 | Web sandbox only                | `npm run dev -w web` → http://localhost:3000                   |
-| Infographics site only          | `npm run dev -w infographics` → http://localhost:3001          |
+| Infographics site only          | `npm run dev -w infographics` → http://localhost:3001/infographics |
 | Build everything                | `npm run build`                                                |
 | Build UI package only           | `npm run build -w @nswds/ui`                                   |
 | Build JS only                   | `npm run build:js -w @nswds/ui`                                |
@@ -504,12 +504,14 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   the step's `env:` and read them as `"$VAR"`. `if:`/`with:`/`env:` are
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
-- **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs`.
+- **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs
+  apps/web/zones.test.mjs apps/storybook/scripts/*.test.mjs`.
   Today that is the `check:workflows` scanner, the `check:portal-boundary`,
-  `check:theme-parity` and `check:stories` gates, and a guard pinning
+  `check:theme-parity` and `check:stories` gates, a guard pinning
   `globals.css`'s `@source` directives to `packages/ui/src` (one outside it
   leaks every app's classes into every other app's CSS, which no build or
-  visual check can see), and it is not belt-and-braces: the scanner's first
+  visual check can see), and the web app's zones and Storybook's `<base>` step (§7),
+  and it is not belt-and-braces: the scanner's first
   version silently missed every `- run:` written as a YAML sequence item — the common form —
   while still passing `release.yml`, which happens to use the bare `run:` form,
   and the portal gate's first version passed three shapes that leak because it
@@ -943,10 +945,40 @@ which project's Root Directory is set.
 
 | Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
 | -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
-| `nswds-ui-web`       | `apps/web`       | `https://ui.digital.nsw.gov.au`                             | Dev sandbox / design docs site |
-| `nswds-ui-infographics` | `apps/infographics` | `https://infographics.design.nsw.gov.au` | Infographics site |
-| `nswds-ui-storybook` | `apps/storybook` | `https://storybook.digital.nsw.gov.au`                      | Component catalogue            |
+| `nswds-ui-web`       | `apps/web`       | `https://ui.design.nsw.gov.au` (and the earlier `ui.digital.nsw.gov.au`) | Dev sandbox / design docs site |
+| `nswds-ui-infographics` | `apps/infographics` | `https://ui.design.nsw.gov.au/infographics` (zone; origin `infographics.design.nsw.gov.au`) | Infographics site |
+| `nswds-ui-storybook` | `apps/storybook` | `https://ui.design.nsw.gov.au/storybook` (zone; origin `storybook.design.nsw.gov.au`) | Component catalogue            |
 | `nswds-ui-registry`  | `apps/registry`  | `https://registry.design.nsw.gov.au` (legacy path proxied — see below) | shadcn registry JSON endpoint  |
+
+### One domain, zones under it
+
+`apps/web` owns `ui.design.nsw.gov.au`, and two other projects serve paths under it as
+**Next.js multi-zones**: `apps/web/zones.mjs` lists each zone's path and its own custom domain,
+and `next.config.mjs` rewrites the path, and everything under it, to that domain before the web
+app's own routes match (`beforeFiles`). No per-project fee, unlike Vercel Microfrontends, at the
+cost of a second hop and of web previews that reach the zones' production builds.
+`apps/web/zones.test.mjs` (in `test:scripts`) checks the table.
+
+- **Each zone serves the same path on its own domain.** `apps/infographics` sets
+  `basePath: '/infographics'`; Storybook's deployed build (`npm run build:site`, the Vercel build
+  command) writes into `storybook-static/storybook/`. A zone's own domain is then only an origin:
+  its root redirects to the zone's address here (`redirects` in `next.config.mjs` and in
+  `apps/storybook/vercel.json`, which covers `storybook.digital.nsw.gov.au` too).
+- **Storybook needs a `<base>`.** Its manager page uses only relative URLs, which assume a page
+  URL ending in a slash, and Next here redirects `/storybook/` to `/storybook`.
+  `apps/storybook/scripts/set-base-href.mjs` puts `<base href="/storybook/">` first in the built
+  `index.html`. `managerHead` cannot carry it: Storybook inserts it after the favicon, the fonts
+  and the module preloads. `npm run build` stays plain, because Chromatic runs it with its own
+  `--output-dir` and serves the snapshot from its root.
+- **The root's trailing slash differs by zone.** A static Storybook serves its root at
+  `/storybook/` (index.html); a Next zone serves `/infographics` and redirects `/infographics/`
+  there, so rewriting the bare path to the slashed one would loop. `trailingSlash` in
+  `zones.mjs` records which.
+- **Canonicals:** a basePath app's root page states its own address (`homeURL` in
+  `apps/infographics/lib/site_name.ts`), because Next joins the page's path (`/`) onto
+  `metadataBase`'s and would keep the slash.
+- **Local development:** `INFOGRAPHICS_ORIGIN` and `STORYBOOK_ORIGIN` point a zone at a local
+  server (`.env.example`); both are in turbo.json `globalEnv`.
 
 Each project serves from a **custom domain**. Link to those, never to a `*.vercel.app`
 name: some do not serve the project at all (`nswds-ui-storybook.vercel.app` returns
@@ -1025,7 +1057,7 @@ the domain consumers install from, and only `apps/web` owns it.
 ```
 Framework:        None
 Root Directory:   apps/storybook
-Build Command:    npm run build -w @nswds/ui && npm run build  (runs storybook build)
+Build Command:    npm run build -w @nswds/ui && npm run build:site  (storybook build into storybook-static/storybook, plus the <base>)
 Output Directory: storybook-static
 ```
 

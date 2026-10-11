@@ -1,5 +1,23 @@
 {
   "framework": null,
-  "buildCommand": "npm run build -w @nswds/ui && npm run build",
-  "outputDirectory": "storybook-static"
+  "buildCommand": "npm run build -w @nswds/ui && npm run build:site",
+  "outputDirectory": "storybook-static",
+  "redirects": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "(www\\.)?storybook\\.(design|digital)\\.nsw\\.gov\\.au"
+        }
+      ],
+      "destination": "https://ui.design.nsw.gov.au/storybook/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "destination": "/storybook/",
+      "permanent": false
+    }
+  ]
 }
