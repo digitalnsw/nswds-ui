@@ -505,12 +505,12 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs
-  apps/web/zones.test.mjs apps/storybook/scripts/*.test.mjs`.
+  apps/web/*.test.mjs apps/storybook/scripts/*.test.mjs`.
   Today that is the `check:workflows` scanner, the `check:portal-boundary`,
   `check:theme-parity` and `check:stories` gates, a guard pinning
   `globals.css`'s `@source` directives to `packages/ui/src` (one outside it
   leaks every app's classes into every other app's CSS, which no build or
-  visual check can see), and the web app's zones and Storybook's `<base>` step (§7),
+  visual check can see), and the web app's zones and host redirect and Storybook's `<base>` step (§7),
   and it is not belt-and-braces: the scanner's first
   version silently missed every `- run:` written as a YAML sequence item — the common form —
   while still passing `release.yml`, which happens to use the bare `run:` form,
@@ -945,7 +945,7 @@ which project's Root Directory is set.
 
 | Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
 | -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
-| `nswds-ui-web`       | `apps/web`       | `https://ui.design.nsw.gov.au` (and the earlier `ui.digital.nsw.gov.au`) | Dev sandbox / design docs site |
+| `nswds-ui-web`       | `apps/web`       | `https://ui.design.nsw.gov.au` (the earlier `ui.digital.nsw.gov.au` redirects here, all but `/registry`) | Dev sandbox / design docs site |
 | `nswds-ui-infographics` | `apps/infographics` | `https://ui.design.nsw.gov.au/infographics` (zone; origin `infographics.design.nsw.gov.au`) | Infographics site |
 | `nswds-ui-storybook` | `apps/storybook` | `https://ui.design.nsw.gov.au/storybook` (zone; origin `storybook.design.nsw.gov.au`) | Component catalogue            |
 | `nswds-ui-registry`  | `apps/registry`  | `https://registry.design.nsw.gov.au` (legacy path proxied — see below) | shadcn registry JSON endpoint  |
@@ -994,7 +994,11 @@ own custom domain. The web app also keeps the legacy path
 `https://ui.digital.nsw.gov.au/registry` working: `apps/web/next.config.mjs` rewrites
 `/registry/:path*` to the registry. That path has to keep resolving because every item
 installed before the move — and the registry JSON deployed before it — carries it in
-`registryDependencies`. `registry.config.json` holds both URLs:
+`registryDependencies`. So `ui.digital.nsw.gov.au` stays on the web project: every other path
+there 308s to the same path on `ui.design.nsw.gov.au` (`apps/web/hosts.mjs`, checked through
+Next's own matcher in `apps/web/hosts.test.mjs`), but `/registry` keeps answering directly
+rather than depending on every registry client following a redirect. `registry.config.json`
+holds both URLs:
 
 | Field      | Value                                | Who reads it                                                                                                                 |
 | ---------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
