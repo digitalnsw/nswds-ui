@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
+    "build:site": "storybook build -o storybook-static/storybook && node scripts/set-base-href.mjs",
     "test": "vitest --project storybook run",
     "check:optimize-deps": "node scripts/check-optimize-deps.mjs",
     "lint": "eslint --max-warnings 0",
