@@ -19,7 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check:workflows": "node scripts/check-workflow-interpolation.mjs",
-    "test:scripts": "node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs apps/web/zones.test.mjs apps/storybook/scripts/*.test.mjs",
+    "test:scripts": "node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs apps/web/*.test.mjs apps/storybook/scripts/*.test.mjs",
     "pr:title": "scripts/pull-request.sh",
     "release": "semantic-release",
     "registry:build": "turbo registry:build",

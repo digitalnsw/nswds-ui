@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { hostRedirects } from './hosts.mjs'
 import { zoneRewrites } from './zones.mjs'
 
 const repoRoot = resolve(import.meta.dirname, '../..')
@@ -52,6 +53,10 @@ const nextConfig = {
   // set-state-in-effect disable in push-menu).
   reactCompiler: true,
   transpilePackages: ['@nswds/ui'],
+  // ui.digital.nsw.gov.au moves to ui.design.nsw.gov.au, all but /registry (hosts.mjs).
+  async redirects() {
+    return hostRedirects()
+  },
   async rewrites() {
     return {
       // The zones (zones.mjs): /infographics and /storybook, sent to their own domains before
