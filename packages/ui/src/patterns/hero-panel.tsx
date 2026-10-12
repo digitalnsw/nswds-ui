@@ -19,14 +19,17 @@ const contentSample = {
   actions: [
     { label: 'Get started', href: '#start' },
     { label: 'View components', href: '#components' },
-  ],
+  ] as const,
 }
 
 type HeroAction = { label: string; href: string }
 
+/** Up to two actions; the first is the primary one. More would be silently dropped, so the type refuses them. */
+type HeroActions = readonly [] | readonly [HeroAction, HeroAction?]
+
 type HeroPanelProps = Omit<React.ComponentProps<typeof Hero>, 'children' | 'content' | 'layout'> & {
   /** Title, description and up to two actions; the first action is the primary one. */
-  content?: { title: string; description: string; actions: readonly HeroAction[] }
+  content?: { title: string; description: string; actions: HeroActions }
   /** The illustration, rising from the bottom edge of the panel. */
   media: { src: string; alt: string }
 }

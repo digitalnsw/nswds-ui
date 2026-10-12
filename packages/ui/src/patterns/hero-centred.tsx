@@ -19,17 +19,20 @@ const contentSample = {
   actions: [
     { label: 'Get started', href: '#start' },
     { label: 'View components', href: '#components' },
-  ],
+  ] as const,
 }
 
 type HeroAction = { label: string; href: string }
+
+/** Up to two actions; the first is the primary one. More would be silently dropped, so the type refuses them. */
+type HeroActions = readonly [] | readonly [HeroAction, HeroAction?]
 
 type HeroCentredProps = Omit<
   React.ComponentProps<typeof Hero>,
   'children' | 'content' | 'layout' | 'align'
 > & {
   /** Title, description and up to two actions; the first action is the primary one. */
-  content?: { title: string; description: string; actions: readonly HeroAction[] }
+  content?: { title: string; description: string; actions: HeroActions }
   /** The illustration, as a shallow full-width strip beneath the text. */
   media: { src: string; alt: string }
 }
