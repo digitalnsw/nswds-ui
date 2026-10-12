@@ -41,9 +41,11 @@ const footerColors = [
 
 type FooterColor = (typeof footerColors)[number]
 
-// Shared by cva's defaultVariants and the data-color attribute, so the two
-// can't drift apart.
+// Shared by cva's defaultVariants, the `??` normaliser in `Footer` and
+// `footerLogoType`, so they can't drift apart.
 const DEFAULT_FOOTER_COLOR: FooterColor = 'white'
+// Shared by cva's defaultVariants and the `??` normaliser in `Footer`.
+const DEFAULT_FOOTER_CONTAINER = 'fluid'
 
 /**
  * Surfaces dark enough that the full-colour mark is illegible but the waratah
@@ -204,7 +206,7 @@ const footerContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_FOOTER_CONTAINER,
     },
   },
 )
@@ -634,17 +636,24 @@ function Footer({
   const showAcknowledgement = Boolean(acknowledgement)
   const showLegalLinks = legalLinks.length > 0
 
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes and `data-color` would
+  // otherwise disagree for `color={null}`, and `container={null}` would drop
+  // the width hook altogether.
+  const colorway = color ?? DEFAULT_FOOTER_COLOR
+  const containerway = container ?? DEFAULT_FOOTER_CONTAINER
+
   return (
     <footer
       data-slot='footer'
-      data-color={color ?? DEFAULT_FOOTER_COLOR}
+      data-color={colorway}
       {...props}
-      className={cn(footerVariants({ color }), className)}
+      className={cn(footerVariants({ color: colorway }), className)}
       ref={ref}
     >
       <div
         data-slot='footer-container'
-        className={cn(footerContainerVariants({ container }), containerClassName)}
+        className={cn(footerContainerVariants({ container: containerway }), containerClassName)}
       >
         {topBorder && <Separator decorative className='mb-4 bg-(--footer-border)' />}
         {children}

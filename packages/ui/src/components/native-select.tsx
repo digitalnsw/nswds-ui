@@ -4,6 +4,11 @@ import * as React from 'react'
 import { IconExpandMore } from '../icons/expand-more.js'
 import { cn } from '../lib/utils.js'
 
+// Shared by cva's defaultVariants, the data-* attributes and the `??`
+// normalisers in `NativeSelect`, so they can't drift apart.
+const DEFAULT_NATIVE_SELECT_VARIANT = 'default'
+const DEFAULT_NATIVE_SELECT_SIZE = 'default'
+
 const nativeSelectVariants = cva(
   // Field foundation shared with Input (input.tsx) and the Select trigger: the
   // same --input-* semantic tokens, 16px text, and an outline-based focus ring.
@@ -25,7 +30,7 @@ const nativeSelectVariants = cva(
         sm: 'h-10 ps-3 pe-9',
       },
     },
-    defaultVariants: { variant: 'default', size: 'default' },
+    defaultVariants: { variant: DEFAULT_NATIVE_SELECT_VARIANT, size: DEFAULT_NATIVE_SELECT_SIZE },
   },
 )
 
@@ -33,6 +38,11 @@ type NativeSelectProps = Omit<React.ComponentProps<'select'>, 'size'> &
   VariantProps<typeof nativeSelectVariants>
 
 function NativeSelect({ className, variant, size, ...props }: NativeSelectProps) {
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes and the four data attributes
+  // would otherwise disagree for `size={null}` or `variant={null}`.
+  const variantway = variant ?? DEFAULT_NATIVE_SELECT_VARIANT
+  const sizeway = size ?? DEFAULT_NATIVE_SELECT_SIZE
   return (
     <div
       className={cn(
@@ -40,14 +50,14 @@ function NativeSelect({ className, variant, size, ...props }: NativeSelectProps)
         className,
       )}
       data-slot='native-select-wrapper'
-      data-size={size ?? 'default'}
-      data-variant={variant ?? 'default'}
+      data-size={sizeway}
+      data-variant={variantway}
     >
       <select
         data-slot='native-select'
-        data-size={size ?? 'default'}
-        data-variant={variant ?? 'default'}
-        className={cn(nativeSelectVariants({ variant, size }))}
+        data-size={sizeway}
+        data-variant={variantway}
+        className={cn(nativeSelectVariants({ variant: variantway, size: sizeway }))}
         {...props}
       />
       <IconExpandMore

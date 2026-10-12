@@ -72,3 +72,61 @@ export const CssCheck: Story = {
     }
   },
 }
+
+/**
+ * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
+ * as "no variant" (no classes for that axis at all) where `??` falls through
+ * to the default. Before the variant was normalised once, that produced a
+ * list whose `data-layout` said `stacked` while its classes laid nothing out.
+ * This renders the two spellings side by side and holds them to the same
+ * output. `layout` has no native attribute and takes `null` as typed.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <DescriptionList {...args} layout={undefined}>
+        {FACTS.map(({ term, detail }) => (
+          <div key={term}>
+            <DescriptionTerm>{term}</DescriptionTerm>
+            <DescriptionDetails>{detail}</DescriptionDetails>
+          </div>
+        ))}
+      </DescriptionList>
+      <DescriptionList {...args} layout={null}>
+        {FACTS.map(({ term, detail }) => (
+          <div key={term}>
+            <DescriptionTerm>{term}</DescriptionTerm>
+            <DescriptionDetails>{detail}</DescriptionDetails>
+          </div>
+        ))}
+      </DescriptionList>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const lists = canvasElement.querySelectorAll<HTMLElement>('[data-slot="description-list"]')
+    const [byDefault, byNull] = lists
+    if (!byDefault || !byNull || lists.length !== 2) {
+      throw new Error(`Expected 2 lists, got ${lists.length}.`)
+    }
+
+    if (byNull.dataset.layout !== 'stacked') {
+      throw new Error(
+        `Expected layout={null} to report data-layout="stacked", got "${byNull.dataset.layout}".`,
+      )
+    }
+    if (!byNull.classList.contains('flex')) {
+      throw new Error(
+        `Expected layout={null} to carry the stacked layout classes (flex), got "${byNull.className}".`,
+      )
+    }
+    if (byNull.className !== byDefault.className) {
+      throw new Error(
+        `Expected layout={null} to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
+      )
+    }
+    if (getComputedStyle(byNull).display !== getComputedStyle(byDefault).display) {
+      throw new Error('Expected layout={null} to lay out like the default.')
+    }
+  },
+}

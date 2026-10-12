@@ -63,3 +63,61 @@ export const CssCheck: Story = {
     }
   },
 }
+
+/**
+ * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
+ * as "no variant" (no classes for that axis at all) where `??` falls through
+ * to the default. Before the variants were normalised once, that produced a
+ * wrapper and `<select>` whose `data-size`/`data-variant` said `default` while
+ * the control carried neither the default height nor the default border. This
+ * renders the two spellings side by side and holds them to the same output.
+ * `size` is omitted from the native props and `variant` has no native
+ * attribute, so both take `null` as typed.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <NativeSelect {...args} aria-label='Default variants'>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
+      <NativeSelect {...args} aria-label='Null variants' variant={null} size={null}>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const wrappers = canvasElement.querySelectorAll<HTMLElement>(
+      '[data-slot="native-select-wrapper"]',
+    )
+    const selects = canvasElement.querySelectorAll<HTMLElement>('[data-slot="native-select"]')
+    const [wrapDefault, wrapNull] = wrappers
+    const [byDefault, byNull] = selects
+    if (!wrapDefault || !wrapNull || !byDefault || !byNull || selects.length !== 2) {
+      throw new Error(`Expected 2 native selects, got ${selects.length}.`)
+    }
+
+    for (const el of [wrapNull, byNull]) {
+      for (const key of ['size', 'variant'] as const) {
+        if (el.dataset[key] !== 'default') {
+          throw new Error(
+            `Expected ${key}={null} to report data-${key}="default" on ${el.dataset.slot}, got "${el.dataset[key]}".`,
+          )
+        }
+      }
+    }
+    if (!byNull.classList.contains('h-12')) {
+      throw new Error(
+        `Expected size={null} to carry the default size classes (h-12), got "${byNull.className}".`,
+      )
+    }
+    if (byNull.className !== byDefault.className) {
+      throw new Error(
+        `Expected the null spelling to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
+      )
+    }
+    if (getComputedStyle(byNull).height !== getComputedStyle(byDefault).height) {
+      throw new Error('Expected size={null} to render at the default height.')
+    }
+  },
+}

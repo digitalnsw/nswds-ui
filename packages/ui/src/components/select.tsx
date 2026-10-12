@@ -32,6 +32,11 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
   )
 }
 
+// Shared by cva's defaultVariants, the data-* attributes and the `??`
+// normalisers in `SelectTrigger`, so they can't drift apart.
+const DEFAULT_SELECT_TRIGGER_VARIANT = 'default'
+const DEFAULT_SELECT_TRIGGER_SIZE = 'default'
+
 const selectTriggerVariants = cva(
   // Field foundation shared with Input (input.tsx): the same --input-* semantic
   // tokens, 16px text, and an outline-based focus ring. No `outline-none` here —
@@ -62,7 +67,7 @@ const selectTriggerVariants = cva(
         sm: 'h-10 px-3 py-1.5',
       },
     },
-    defaultVariants: { variant: 'default', size: 'default' },
+    defaultVariants: { variant: DEFAULT_SELECT_TRIGGER_VARIANT, size: DEFAULT_SELECT_TRIGGER_SIZE },
   },
 )
 
@@ -73,12 +78,17 @@ function SelectTrigger({
   children,
   ...props
 }: SelectPrimitive.Trigger.Props & VariantProps<typeof selectTriggerVariants>) {
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes and the data attributes
+  // would otherwise disagree for `size={null}` or `variant={null}`.
+  const variantway = variant ?? DEFAULT_SELECT_TRIGGER_VARIANT
+  const sizeway = size ?? DEFAULT_SELECT_TRIGGER_SIZE
   return (
     <SelectPrimitive.Trigger
       data-slot='select-trigger'
-      data-size={size ?? 'default'}
-      data-variant={variant ?? 'default'}
-      className={cn(selectTriggerVariants({ variant, size, className }))}
+      data-size={sizeway}
+      data-variant={variantway}
+      className={cn(selectTriggerVariants({ variant: variantway, size: sizeway, className }))}
       {...props}
     >
       {children}

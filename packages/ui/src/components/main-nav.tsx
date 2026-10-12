@@ -52,9 +52,11 @@ const mainNavColors = [
 
 type MainNavColor = (typeof mainNavColors)[number]
 
-// Shared by cva's defaultVariants, the data-color attribute and the panel
-// variant lookup, so the three can't drift apart.
+// Shared by the bar's and the panel's cva defaultVariants and the `??`
+// normaliser in `MainNav`, so they can't drift apart.
 const DEFAULT_MAIN_NAV_COLOR: MainNavColor = 'white'
+// Shared by cva's defaultVariants and the `??` normaliser in `MainNav`.
+const DEFAULT_MAIN_NAV_CONTAINER = 'fluid'
 
 const mainNavVariants = cva(
   [
@@ -152,7 +154,7 @@ const mainNavContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_MAIN_NAV_CONTAINER,
     },
   },
 )
@@ -615,15 +617,22 @@ function MainNav({
     return lastAlignOffsetRef.current
   }, [])
 
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes, `data-color` and the panel
+  // colourway would otherwise disagree for `color={null}`, and
+  // `container={null}` would drop the width hook altogether.
+  const colorway = color ?? DEFAULT_MAIN_NAV_COLOR
+  const containerway = container ?? DEFAULT_MAIN_NAV_CONTAINER
+
   return (
     <nav
       id='nsw-main-navigation'
       data-slot='main-nav'
-      data-color={color ?? DEFAULT_MAIN_NAV_COLOR}
+      data-color={colorway}
       aria-label={ariaLabel}
       {...props}
       className={cn(
-        mainNavVariants({ color, border }),
+        mainNavVariants({ color: colorway, border }),
         // z-40 matches Header (both sit below the z-50 SkipLinks). An app
         // stacking this under a sticky Header sets --main-nav-top to the
         // header's height.
@@ -637,7 +646,7 @@ function MainNav({
       <div
         ref={containerRef}
         data-slot='main-nav-container'
-        className={cn(mainNavContainerVariants({ container }), containerClassName)}
+        className={cn(mainNavContainerVariants({ container: containerway }), containerClassName)}
       >
         {navigation.length === 0 ? (
           // No items: render the message directly rather than an empty
@@ -683,7 +692,7 @@ function MainNav({
                   <MainNavMenuItem
                     key={`${item.title}-${item.href ?? 'section'}`}
                     item={item}
-                    color={color ?? DEFAULT_MAIN_NAV_COLOR}
+                    color={colorway}
                     currentHref={currentHref}
                     panelWidth={panelWidth}
                   />

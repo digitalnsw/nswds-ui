@@ -8,6 +8,7 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import type { ComponentProps } from 'react'
 import React from 'react'
 
 import { DirectionProvider } from './direction.js'
@@ -49,6 +50,15 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
+
+/**
+ * `null` is what cva's `VariantProps` admits and `??` falls through, but the
+ * native `color?: string` attribute these props intersect narrows it away for
+ * TypeScript consumers. Untyped consumers — the shadcn registry copies, plain
+ * JS — can still pass it, so the story reaches that path the way they would.
+ * `container` collides with no native attribute and takes `null` as typed.
+ */
+const nullColour = { color: null } as unknown as Pick<ComponentProps<typeof MainNav>, 'color'>
 
 // ─── Demo content (from nswds-app NavigationMenuMainNavigationDemo) ──────────
 
@@ -590,6 +600,85 @@ export const CssCheck: Story = {
     if (styles.borderTopColor === '' || styles.borderTopColor === 'rgba(0, 0, 0, 0)') {
       throw new Error(
         `Expected border="both" to draw an ink-derived top rule, got "${styles.borderTopColor}".`,
+      )
+    }
+  },
+}
+
+/**
+ * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
+ * as "no variant" (no classes for that axis at all) where `??` falls through
+ * to the default. Before the variants were normalised once, that produced a
+ * bar whose `data-color` said `white` while its own classes painted nothing,
+ * and a `container={null}` that dropped the width hook. This renders the two
+ * spellings of each default side by side and holds them to the same output.
+ * The panel colourway is normalised from the same value but is only observable
+ * with a section open, which this story does not do. Multi-instance: the
+ * component defaults to `id="nsw-main-navigation"`, which is only valid once
+ * per page.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <MainNav
+        {...args}
+        id='main-nav-default'
+        aria-label='Default variants'
+        navigation={demoNavigation}
+        color={undefined}
+        container={undefined}
+      />
+      <MainNav
+        {...args}
+        id='main-nav-null'
+        aria-label='Null variants'
+        navigation={demoNavigation}
+        {...nullColour}
+        container={null}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const surfaces = canvasElement.querySelectorAll<HTMLElement>('[data-slot="main-nav"]')
+    const [byDefault, byNull] = surfaces
+    if (!byDefault || !byNull || surfaces.length !== 2) {
+      throw new Error(`Expected 2 navs, got ${surfaces.length}.`)
+    }
+
+    if (byNull.dataset.color !== 'white') {
+      throw new Error(
+        `Expected the null spelling to report data-color="white", got "${byNull.dataset.color}".`,
+      )
+    }
+    if (!byNull.classList.contains('bg-white')) {
+      throw new Error(
+        `Expected the null spelling to carry the default classes (bg-white), got "${byNull.className}".`,
+      )
+    }
+    if (byNull.className !== byDefault.className) {
+      throw new Error(
+        `Expected the null spelling to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
+      )
+    }
+
+    const defaultBg = getComputedStyle(byDefault).backgroundColor
+    const nullBg = getComputedStyle(byNull).backgroundColor
+    if (nullBg !== defaultBg) {
+      throw new Error(
+        `Expected the null spelling to paint the default surface (${defaultBg}), got ${nullBg}.`,
+      )
+    }
+
+    // `container` lives on the inner wrapper.
+    const innerDefault = byDefault.querySelector<HTMLElement>('[data-slot="main-nav-container"]')
+    const innerNull = byNull.querySelector<HTMLElement>('[data-slot="main-nav-container"]')
+    if (!innerDefault || !innerNull) {
+      throw new Error('Expected a [data-slot="main-nav-container"] inside each nav.')
+    }
+    if (innerNull.className !== innerDefault.className) {
+      throw new Error(
+        `Expected container={null} to render the same inner classes as the default:\n  default: ${innerDefault.className}\n  null:    ${innerNull.className}`,
       )
     }
   },
