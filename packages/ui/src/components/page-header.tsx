@@ -2,6 +2,7 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { overlayInk } from '../lib/overlay.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -11,7 +12,10 @@ import { cn } from '../lib/utils.js'
  * the standfirst. A third, `--page-header-ink`, is the interactive ink
  * (`primary-800` light / `primary-200` dark, the Role-Flip Rule) and is the
  * same in every colourway: the meta row's hairline is drawn in it, and so is
- * the rule everywhere except `red`, where the rule follows the box.
+ * the rule everywhere except `red`, where the rule follows the box. The ink
+ * is not declared here: it aliases `--overlay-ink` from `overlayInk`
+ * (`src/lib/overlay.ts`), the one declaration Breadcrumb and the overlays
+ * share, so a retune of the ink stays one edit (AGENTS.md §3).
  *
  * The box fills are palette steps, not role tokens (AGENTS.md §3, recorded
  * exception): `blue` is `primary-600`, the masterbrand's Blue 02 and the
@@ -45,8 +49,10 @@ const pageHeaderVariants = cva(
   [
     'w-full text-foreground',
     // The interactive ink, flipping for dark mode (DESIGN.md, The Role-Flip
-    // Rule). The hairline and, outside `red`, the rule read it.
-    '[--page-header-ink:var(--primary-800)] dark:[--page-header-ink:var(--primary-200)]',
+    // Rule), read from the shared declaration rather than restated. The
+    // hairline and, outside `red`, the rule read the alias.
+    overlayInk,
+    '[--page-header-ink:var(--overlay-ink)]',
   ],
   {
     variants: {
@@ -177,8 +183,10 @@ type PageHeaderTitleProps = React.ComponentPropsWithoutRef<'h1'> & {
  * The box hangs back into the margin by its own horizontal padding, so the
  * TEXT sits on the column, lined up with the breadcrumb above and the body
  * below, and the colour reaches out past it. A block wrapper gives the title
- * its measure, holds the air between it and the breadcrumb above (24px, 16px
- * on a phone), and puts the slots after it on a new line.
+ * its measure (40rem, retuned through `--page-header-title-max-width` like
+ * the column's own `--page-header-max-width`), holds the air between it and
+ * the breadcrumb above (24px, 16px on a phone), and puts the slots after it
+ * on a new line.
  */
 function PageHeaderTitle({ className, headingLevel = 1, ref, ...props }: PageHeaderTitleProps) {
   const Heading = `h${headingLevel}` as const
@@ -189,14 +197,16 @@ function PageHeaderTitle({ className, headingLevel = 1, ref, ...props }: PageHea
       // inside a 320px viewport instead of pushing past it (WCAG 1.4.10).
       // text-balance lives here, not on the heading: balancing is a property
       // of the block container, and on the inline heading it does nothing.
-      className='max-w-[40rem] text-balance wrap-break-word max-sm:mt-4 sm:mt-6'
+      className='max-w-[var(--page-header-title-max-width,40rem)] text-balance wrap-break-word max-sm:mt-4 sm:mt-6'
     >
       <Heading
         ref={ref}
         data-slot='page-header-title'
         className={cn(
-          // The box colour falls back to the default colourway so a title
-          // rendered outside a PageHeader (or copied without it) still paints.
+          // The box colour falls back to `blue`'s step so a title rendered
+          // outside a PageHeader (or copied without it) still paints. It is a
+          // literal because Tailwind only emits complete class strings; keep
+          // it in step with `pageHeaderColors.blue`.
           'inline bg-[var(--page-header-box,var(--primary-600))] box-decoration-clone font-semibold tracking-tight text-white',
           // 1.46 is the line-height at which the boxes of a wrapped title
           // touch with neither a gap nor an overlap — the box is the line box
@@ -256,7 +266,9 @@ function PageHeaderRule({ className, ref, ...props }: PageHeaderRuleProps) {
       aria-hidden='true'
       data-slot='page-header-rule'
       className={cn(
-        'h-1 w-12 bg-[var(--page-header-rule,var(--primary-800))] max-sm:mt-6 sm:mt-7',
+        // Outside a PageHeader the rule takes the text colour, which is
+        // theme-correct on its own, rather than a restated ink.
+        'h-1 w-12 bg-[var(--page-header-rule,currentColor)] max-sm:mt-6 sm:mt-7',
         className,
       )}
       {...props}
@@ -279,7 +291,9 @@ function PageHeaderMeta({ className, ref, ...props }: PageHeaderMetaProps) {
       ref={ref}
       data-slot='page-header-meta'
       className={cn(
-        'flex border-t border-[var(--page-header-ink,var(--primary-800))] pt-3 text-muted-foreground',
+        // The hairline falls back to the row's own (muted) text colour when
+        // there is no PageHeader ink above it.
+        'flex border-t border-[var(--page-header-ink,currentColor)] pt-3 text-muted-foreground',
         'max-sm:mt-6 max-sm:flex-col max-sm:gap-1 sm:mt-9 sm:flex-wrap sm:justify-between sm:gap-4',
         className,
       )}

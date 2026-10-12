@@ -379,7 +379,7 @@ actions and an illustration, use `Hero`.
 | Prop         | Type                        | Default   | Notes                                                                                                                                                              |
 | ------------ | --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `color`      | `'blue' \| 'navy' \| 'red'` | `'blue'`  | The title box: Blue 02 (`primary-600`, the Transport for NSW reference), the brand band, or the waratah red. The rule follows the box in `red`, the ink elsewhere. |
-| `container`  | `'fluid' \| 'contained'`    | `'fluid'` | Tune with the `--page-header-max-width` and `--page-header-padding-x` custom properties.                                                                           |
+| `container`  | `'fluid' \| 'contained'`    | `'fluid'` | Tune with the `--page-header-max-width` and `--page-header-padding-x` custom properties; the title's 40rem measure is `--page-header-title-max-width`.             |
 | `labelledBy` | `string`                    | —         | Id of the `PageHeaderTitle`. Supplying it makes the header a **named `region` landmark**; omitting it leaves a plain `<section>`.                                  |
 
 `PageHeaderTitle` takes `headingLevel` (`1 \| 2`, default `1`). `PageHeaderMeta`'s children are
