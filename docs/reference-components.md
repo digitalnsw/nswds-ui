@@ -3,8 +3,8 @@
 Every component the design system ships, on both distribution channels, with the props for the
 ones you cannot look up anywhere else.
 
-`@nswds/ui` exports **431 named symbols** across **69 components** and **1 hook**, and the
-registry serves **90 items**: the 69 components and the hook, 2 icon items, 17 blocks, and the `theme` foundation. This page is the complete list. It is
+`@nswds/ui` exports **445 named symbols** across **70 components** and **1 hook**, and the
+registry serves **91 items**: the 70 components and the hook, 2 icon items, 17 blocks, and the `theme` foundation. This page is the complete list. It is
 maintained by hand against `packages/ui/registry.json` and the built type declarations, so update
 it alongside any change to either.
 
@@ -18,9 +18,9 @@ Blocks are registry-only by design; hooks and components ship on both channels.
 
 ## The catalogue
 
-### NSW-original items (24)
+### NSW-original items (25)
 
-22 components plus the two icon items.
+23 components plus the two icon items.
 
 Built for NSW Government and documented nowhere else. Prop tables for these are in [Props for the NSW-original components](#props-for-the-nsw-original-components).
 
@@ -115,25 +115,26 @@ Familiar shadcn shapes rebuilt on Base UI primitives and NSW tokens. Composition
 
 Copy-and-adapt worked examples. **Registry only** — deliberately not exported from `@nswds/ui`, because a block is a starting point you own, not an API we version.
 
-| Registry ref                   | Exports | What it is                                                                                                                                           |
-| ------------------------------ | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@nswds/footer-accordion`      | —       | A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.                                             |
-| `@nswds/footer-compact`        | —       | A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.      |
-| `@nswds/footer-contact`        | —       | Phone, email, street address and opening hours in an <address> element, beside the site map.                                                         |
-| `@nswds/footer-cta`            | —       | A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.                                            |
-| `@nswds/footer-newsletter`     | —       | Link columns beside a labelled email subscription form built on Field, Input and Button.                                                             |
-| `@nswds/footer-simple-centred` | —       | Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.      |
-| `@nswds/footer-sitemap`        | —       | Four columns of links above the standard footer. The default choice for a department or agency site.                                                 |
-| `@nswds/footer-sitemap-brand`  | —       | The NSW Government mark and a one-paragraph mission beside three link columns.                                                                       |
-| `@nswds/forgot-password-form`  | —       | A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component. |
-| `@nswds/hero-centred`          | —       | Centred title, description and actions over a shallow full-width strip of the illustration.                                                          |
-| `@nswds/hero-framed`           | —       | Navy title on the page's white surface with the illustration framed as a rounded picture beside it.                                                  |
-| `@nswds/hero-panel`            | —       | A pale primary-200 panel with the illustration rising from its bottom edge, top corners rounded.                                                     |
-| `@nswds/hero-split`            | —       | The brand band: white text on primary-800 with the illustration flush to the right edge, filling the band's full height.                             |
-| `@nswds/hero-statement`        | —       | Type only: an accent rule, title, description and actions, with no illustration.                                                                     |
-| `@nswds/login-form`            | —       | A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.           |
-| `@nswds/mobile-nav`            | —       | Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.               |
-| `@nswds/sign-up-form`          | —       | A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.         |
+| Registry ref                   | Exports                                                                                                                                                                                                                                                                                                     | What it is                                                                                                                                                                    |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@nswds/footer-accordion`      | —                                                                                                                                                                                                                                                                                                           | A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.                                                                      |
+| `@nswds/footer-compact`        | —                                                                                                                                                                                                                                                                                                           | A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.                               |
+| `@nswds/footer-contact`        | —                                                                                                                                                                                                                                                                                                           | Phone, email, street address and opening hours in an <address> element, beside the site map.                                                                                  |
+| `@nswds/footer-cta`            | —                                                                                                                                                                                                                                                                                                           | A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.                                                                     |
+| `@nswds/footer-newsletter`     | —                                                                                                                                                                                                                                                                                                           | Link columns beside a labelled email subscription form built on Field, Input and Button.                                                                                      |
+| `@nswds/footer-simple-centred` | —                                                                                                                                                                                                                                                                                                           | Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.                               |
+| `@nswds/footer-sitemap`        | —                                                                                                                                                                                                                                                                                                           | Four columns of links above the standard footer. The default choice for a department or agency site.                                                                          |
+| `@nswds/footer-sitemap-brand`  | —                                                                                                                                                                                                                                                                                                           | The NSW Government mark and a one-paragraph mission beside three link columns.                                                                                                |
+| `@nswds/forgot-password-form`  | —                                                                                                                                                                                                                                                                                                           | A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.                          |
+| `@nswds/hero-centred`          | —                                                                                                                                                                                                                                                                                                           | Centred title, description and actions over a shallow full-width strip of the illustration.                                                                                   |
+| `@nswds/hero-framed`           | —                                                                                                                                                                                                                                                                                                           | Navy title on the page's white surface with the illustration framed as a rounded picture beside it.                                                                           |
+| `@nswds/hero-panel`            | —                                                                                                                                                                                                                                                                                                           | A pale primary-200 panel with the illustration rising from its bottom edge, top corners rounded.                                                                              |
+| `@nswds/hero-split`            | —                                                                                                                                                                                                                                                                                                           | The brand band: white text on primary-800 with the illustration flush to the right edge, filling the band's full height.                                                      |
+| `@nswds/hero-statement`        | —                                                                                                                                                                                                                                                                                                           | Type only: an accent rule, title, description and actions, with no illustration.                                                                                              |
+| `@nswds/login-form`            | —                                                                                                                                                                                                                                                                                                           | A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.                                    |
+| `@nswds/mobile-nav`            | —                                                                                                                                                                                                                                                                                                           | Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.                                        |
+| `@nswds/page-header`           | `PageHeader`, `PageHeaderColor`, `PageHeaderDescription`, `PageHeaderDescriptionProps`, `PageHeaderMeta`, `PageHeaderMetaProps`, `PageHeaderProps`, `PageHeaderRule`, `PageHeaderRuleProps`, `PageHeaderTitle`, `PageHeaderTitleProps`, `pageHeaderColors`, `pageHeaderInnerVariants`, `pageHeaderVariants` | The opening of a content page: the title on its own flat colour band, one box per wrapped line, a standfirst, and optionally a short rule or a meta row, in three colourways. |
+| `@nswds/sign-up-form`          | —                                                                                                                                                                                                                                                                                                           | A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.                                  |
 
 ---
 
@@ -367,6 +368,22 @@ five hero blocks are worked examples of the recommended combinations.
 `HeroTitle` takes `headingLevel` (`1 \| 2`, default `1`). `HeroMedia` takes `fit`
 (`'bleed' \| 'framed' \| 'rise' \| 'band'`, default `'framed'`) and wraps one image, which every fit
 sizes to fill and crop.
+
+#### `PageHeader`
+
+The opening of a content page, under the site's Header and Breadcrumb: `PageHeaderTitle` (the
+title on its own flat colour band, drawn per wrapped line), `PageHeaderDescription`, and
+optionally `PageHeaderRule` or `PageHeaderMeta`. For the opening band of a landing page, with
+actions and an illustration, use `Hero`.
+
+| Prop         | Type                        | Default   | Notes                                                                                                                                                              |
+| ------------ | --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `color`      | `'blue' \| 'navy' \| 'red'` | `'blue'`  | The title box: Blue 02 (`primary-600`, the Transport for NSW reference), the brand band, or the waratah red. The rule follows the box in `red`, the ink elsewhere. |
+| `container`  | `'fluid' \| 'contained'`    | `'fluid'` | Tune with the `--page-header-max-width` and `--page-header-padding-x` custom properties.                                                                           |
+| `labelledBy` | `string`                    | —         | Id of the `PageHeaderTitle`. Supplying it makes the header a **named `region` landmark**; omitting it leaves a plain `<section>`.                                  |
+
+`PageHeaderTitle` takes `headingLevel` (`1 \| 2`, default `1`). `PageHeaderMeta`'s children are
+the consumer's `span`s, spread to the row's ends and stacked on a phone.
 
 #### `Callout`
 

@@ -163,6 +163,12 @@ export const WCAG_CRITERIA: Record<string, WcagCriterion> = {
     title: 'Contrast (Minimum)',
     url: 'https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum',
   },
+  '1.4.10': {
+    number: '1.4.10',
+    level: 'AA',
+    title: 'Reflow',
+    url: 'https://www.w3.org/WAI/WCAG22/Understanding/reflow',
+  },
   '1.4.11': {
     number: '1.4.11',
     level: 'AA',
@@ -186,6 +192,12 @@ export const WCAG_CRITERIA: Record<string, WcagCriterion> = {
     level: 'A',
     title: 'Focus Order',
     url: 'https://www.w3.org/WAI/WCAG22/Understanding/focus-order',
+  },
+  '2.4.6': {
+    number: '2.4.6',
+    level: 'AA',
+    title: 'Headings and Labels',
+    url: 'https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels',
   },
   '2.4.7': {
     number: '2.4.7',

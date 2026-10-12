@@ -236,7 +236,7 @@ Two `@theme` blocks make all the above available as Tailwind utility classes:
 'bg-[#0055a4]'
 ```
 
-**Recorded exception — fixed pairs no semantic role carries.** Four values are
+**Recorded exception — fixed pairs no semantic role carries.** Five values are
 palette steps on purpose, because no layer-3 token holds them: the interactive
 **ink** (`primary-800` light / `primary-200` dark, DESIGN.md's Role-Flip Rule —
 `--primary` is the _fill_, which flips to a bright `blue-500` in dark), the
@@ -246,7 +246,14 @@ modal **scrim** (`grey-950` at 70%), **Button's danger pairing**
 **brand band** (`primary-800` fill with white text, deepening to `primary-950`
 in dark — Header's `dark` colour and Breadcrumb's `band`, which deepen
 together so a band under that header never draws a seam; `--primary` would
-brighten instead). Button, Header, Breadcrumb and the overlays use them. Don't restate them per component: the overlays read
+brighten instead), and **PageHeader's title box** (`primary-600`, the
+masterbrand's Blue 02 with white text, theme-invariant, because no semantic
+role carries the bright brand blue — `--primary` is the interactive fill and
+brightens in dark; its `red` colourway is `accent-600`, and its `navy` is the
+brand band's `primary-800` in light but lifts to `primary-700` in dark rather
+than deepening with Header, so the box stays distinct from a `dark` header
+above it instead of merging into it — the one place the band pair is
+deliberately not followed). Button, Header, Breadcrumb, PageHeader and the overlays use them. Don't restate them per component: the overlays read
 the ink and scrim from `src/lib/overlay.ts` (`overlayInk`, `overlayScrim`), so
 a retune is one edit. A brand theme re-points these by overriding the palette
 steps, not `--primary`.
