@@ -21,7 +21,7 @@ import { HeroPanel } from './hero-panel.js'
 import { HeroSplit } from './hero-split.js'
 import { HeroStatement } from './hero-statement.js'
 
-const illustration = { src: '/images/hero-illustration.png', alt: '' }
+const illustration = { src: 'images/hero-illustration.png', alt: '' }
 const heroColors: HeroColor[] = ['white', 'light', 'tint', 'dark']
 
 const meta = {

@@ -24,7 +24,7 @@ import {
 } from './hero.js'
 import { expectContrast, wcagStoryMeta } from './story-helpers.js'
 
-const illustration = { src: '/images/hero-illustration.png', alt: '' }
+const illustration = { src: 'images/hero-illustration.png', alt: '' }
 const description =
   'Reusable components, layouts and tools for NSW Government email: accessible, on-brand and proven in every major client, Outlook included.'
 const colors: HeroColor[] = ['white', 'light', 'tint', 'dark']

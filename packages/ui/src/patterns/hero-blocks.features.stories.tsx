@@ -18,7 +18,7 @@ import {
 } from './hero-blocks.stories.js'
 import { HeroSplit } from './hero-split.js'
 
-const illustration = { src: '/images/hero-illustration.png', alt: '' }
+const illustration = { src: 'images/hero-illustration.png', alt: '' }
 
 const meta = {
   title: 'Patterns/HeroBlocks/Features',

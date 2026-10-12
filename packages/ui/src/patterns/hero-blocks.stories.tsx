@@ -37,9 +37,9 @@ import { HeroSplit } from './hero-split.js'
 import { HeroStatement } from './hero-statement.js'
 
 // Served by Storybook from apps/storybook/public; replace with your own artwork.
-const illustration = { src: '/images/hero-illustration.png', alt: '' }
-const canvas = { src: '/images/hero-illustration-canvas.png', alt: '' }
-const stack = { src: '/images/hero-illustration-stack.png', alt: '' }
+const illustration = { src: 'images/hero-illustration.png', alt: '' }
+const canvas = { src: 'images/hero-illustration-canvas.png', alt: '' }
+const stack = { src: 'images/hero-illustration-stack.png', alt: '' }
 
 const heroColors: HeroColor[] = ['white', 'light', 'tint', 'dark']
 

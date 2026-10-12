@@ -28,9 +28,9 @@ import {
 import { DocsApi, DocsPage, DocsUsage, Example, ExampleSection } from './story-helpers.js'
 
 // Served by Storybook from apps/storybook/public; replace with your own artwork.
-const illustration = { src: '/images/hero-illustration.png', alt: '' }
-const canvas = { src: '/images/hero-illustration-canvas.png', alt: '' }
-const stack = { src: '/images/hero-illustration-stack.png', alt: '' }
+const illustration = { src: 'images/hero-illustration.png', alt: '' }
+const canvas = { src: 'images/hero-illustration-canvas.png', alt: '' }
+const stack = { src: 'images/hero-illustration-stack.png', alt: '' }
 
 const description =
   'Reusable components, layouts and tools for NSW Government email: accessible, on-brand and proven in every major client, Outlook included.'
