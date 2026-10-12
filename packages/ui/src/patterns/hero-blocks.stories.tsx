@@ -13,7 +13,8 @@
  * They are worked examples: copy the source and adapt it.
  *
  * Default and Playground render HeroSplit, the brand band that
- * email.digital.nsw.gov.au opens with; every block takes the same Hero props.
+ * email.digital.nsw.gov.au opens with; every block takes the same Hero props,
+ * and each block is also its own story beside them.
  *
  * The docs page's sections are exported (and kept out of the story index by
  * `excludeStories`) so the Features stories render the same examples.
@@ -362,3 +363,17 @@ export const Default: Story = {
 }
 
 export const Playground: Story = {}
+
+// One story per block, so each hero is a click away in the sidebar as well
+// as a section of the docs page. They take no args: the point of each is the
+// combination it ships with.
+
+export const Split: Story = { render: () => <HeroSplit media={illustration} /> }
+
+export const Framed: Story = { render: () => <HeroFramed media={canvas} /> }
+
+export const Panel: Story = { render: () => <HeroPanel media={stack} /> }
+
+export const Centred: Story = { render: () => <HeroCentred media={illustration} /> }
+
+export const Statement: Story = { render: () => <HeroStatement /> }
