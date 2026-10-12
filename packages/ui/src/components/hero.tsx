@@ -49,6 +49,12 @@ const heroColors = {
 type HeroColor = keyof typeof heroColors
 
 const DEFAULT_HERO_COLOR: HeroColor = 'white'
+// Shared by cva's defaultVariants and the `??` normalisers (and, for layout
+// and fit, the data-* attributes), so they can't drift apart — the arrangement
+// Header and Masthead use for their colour.
+const DEFAULT_HERO_LAYOUT = 'split'
+const DEFAULT_HERO_CONTAINER = 'fluid'
+const DEFAULT_HERO_FIT = 'framed'
 
 const heroVariants = cva('group/hero w-full text-(--hero-ink)', {
   variants: {
@@ -94,8 +100,8 @@ const heroInnerVariants = cva(
       },
     },
     defaultVariants: {
-      layout: 'split',
-      container: 'fluid',
+      layout: DEFAULT_HERO_LAYOUT,
+      container: DEFAULT_HERO_CONTAINER,
     },
   },
 )
@@ -158,20 +164,29 @@ function Hero({
   children,
   ...props
 }: HeroProps) {
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes and the data attributes
+  // would otherwise disagree for `color={null}` or `layout={null}`.
+  const colorway = color ?? DEFAULT_HERO_COLOR
+  const layoutway = layout ?? DEFAULT_HERO_LAYOUT
+  const containerway = container ?? DEFAULT_HERO_CONTAINER
   return (
     <section
       ref={ref}
       data-slot='hero'
-      data-color={color ?? DEFAULT_HERO_COLOR}
-      data-layout={layout ?? 'split'}
+      data-color={colorway}
+      data-layout={layoutway}
       data-align={align}
       aria-labelledby={labelledBy}
-      className={cn(heroVariants({ color, className }))}
+      className={cn(heroVariants({ color: colorway, className }))}
       {...props}
     >
       <div
         data-slot='hero-inner'
-        className={cn(heroInnerVariants({ layout, container }), innerClassName)}
+        className={cn(
+          heroInnerVariants({ layout: layoutway, container: containerway }),
+          innerClassName,
+        )}
       >
         {children}
       </div>
@@ -336,7 +351,7 @@ const heroMediaVariants = cva(
       },
     },
     defaultVariants: {
-      fit: 'framed',
+      fit: DEFAULT_HERO_FIT,
     },
   },
 )
@@ -352,12 +367,14 @@ type HeroMediaProps = React.ComponentPropsWithoutRef<'div'> &
  * title, descriptive when it carries meaning the text does not.
  */
 function HeroMedia({ className, fit, ref, ...props }: HeroMediaProps) {
+  // Normalised once, as `Hero` does for `color` and `layout`.
+  const fitway = fit ?? DEFAULT_HERO_FIT
   return (
     <div
       ref={ref}
       data-slot='hero-media'
-      data-fit={fit ?? 'framed'}
-      className={cn(heroMediaVariants({ fit, className }))}
+      data-fit={fitway}
+      className={cn(heroMediaVariants({ fit: fitway, className }))}
       {...props}
     />
   )

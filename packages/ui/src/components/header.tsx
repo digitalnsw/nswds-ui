@@ -45,6 +45,8 @@ type HeaderColor = keyof typeof headerColors
 // Shared by cva's defaultVariants, the data-color attribute and the logo
 // context, so the four can't drift apart.
 const DEFAULT_HEADER_COLOR: HeaderColor = 'white'
+// Shared by cva's defaultVariants and the `??` normaliser in `Header`.
+const DEFAULT_HEADER_CONTAINER = 'fluid'
 
 const headerVariants = cva(
   [
@@ -85,7 +87,7 @@ const headerContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_HEADER_CONTAINER,
     },
   },
 )
@@ -420,17 +422,24 @@ function Header({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes, `data-color` and the
+  // colour context would otherwise disagree for `color={null}`, and
+  // `container={null}` would drop the width hook altogether.
+  const colorway = color ?? DEFAULT_HEADER_COLOR
+  const containerway = container ?? DEFAULT_HEADER_CONTAINER
+
   return (
     <header
       id='nsw-header'
       data-slot='header'
-      data-color={color ?? DEFAULT_HEADER_COLOR}
+      data-color={colorway}
       // Present-or-absent rather than "true"/"false", so it reads like Base
       // UI's data-disabled and Tailwind's bare `data-scrolled:` variant works.
       data-scrolled={isScrolled || undefined}
       {...props}
       className={cn(
-        headerVariants({ color }),
+        headerVariants({ color: colorway }),
         // z-40 sits below the z-50 SkipLinks: a sticky header at the same
         // level comes later in the DOM and would paint over a focused skip
         // link, hiding the page's bypass mechanism (WCAG 2.2, 2.4.1).
@@ -445,10 +454,10 @@ function Header({
       )}
       ref={ref}
     >
-      <HeaderColorContext.Provider value={color ?? DEFAULT_HEADER_COLOR}>
+      <HeaderColorContext.Provider value={colorway}>
         <div
           data-slot='header-container'
-          className={cn(headerContainerVariants({ container }), containerClassName)}
+          className={cn(headerContainerVariants({ container: containerway }), containerClassName)}
         >
           {children}
         </div>

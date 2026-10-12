@@ -34,6 +34,8 @@ type MastheadColor = keyof typeof mastheadColors
 // Shared by cva's defaultVariants and the data-color attribute, so the two
 // can't drift apart — the same arrangement as Header, Footer and MainNav.
 const DEFAULT_MASTHEAD_COLOR: MastheadColor = 'dark'
+// Shared by cva's defaultVariants and the `??` normaliser in `Masthead`.
+const DEFAULT_MASTHEAD_CONTAINER = 'fluid'
 
 const mastheadVariants = cva('w-full text-xs', {
   variants: {
@@ -65,7 +67,7 @@ const mastheadContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_MASTHEAD_CONTAINER,
     },
   },
 )
@@ -103,20 +105,26 @@ function Masthead({
   ref,
   ...props
 }: MastheadProps) {
+  // Normalised once: cva treats an explicit `null` as "no variant" where
+  // `undefined` takes the default, so the classes and `data-color` would
+  // otherwise disagree for `color={null}`, and `container={null}` would drop
+  // the width hook altogether.
+  const colorway = color ?? DEFAULT_MASTHEAD_COLOR
+  const containerway = container ?? DEFAULT_MASTHEAD_CONTAINER
   return (
     <div
       id='nsw-masthead'
       data-slot='masthead'
       // Named surface, exposed for styling hooks and test diagnostics — the
       // convention Header, Footer and MainNav already follow.
-      data-color={color ?? DEFAULT_MASTHEAD_COLOR}
+      data-color={colorway}
       {...props}
-      className={cn(mastheadVariants({ color }), className)}
+      className={cn(mastheadVariants({ color: colorway }), className)}
       ref={ref}
     >
       <div
         data-slot='masthead-container'
-        className={cn(mastheadContainerVariants({ container }), containerClassName)}
+        className={cn(mastheadContainerVariants({ container: containerway }), containerClassName)}
       >
         {children ?? 'A NSW Government website'}
       </div>
