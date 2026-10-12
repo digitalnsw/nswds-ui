@@ -562,6 +562,26 @@
       ]
     },
     {
+      "name": "hero",
+      "type": "registry:ui",
+      "title": "Hero",
+      "description": "The opening band of a page: title, description, up to two actions and one optional illustration, on four surface colours with split or stacked layouts.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/hero.tsx",
+          "type": "registry:ui",
+          "target": "components/hero.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
       "name": "masthead",
       "type": "registry:ui",
       "title": "Masthead",
@@ -2098,6 +2118,101 @@
           "path": "src/patterns/footer-accordion.tsx",
           "type": "registry:component",
           "target": "components/footer-accordion.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hero-split",
+      "type": "registry:block",
+      "title": "Hero — Split",
+      "description": "The brand band: white text on primary-800 with the illustration flush to the right edge, filling the band's full height.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/hero.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/hero-split.tsx",
+          "type": "registry:component",
+          "target": "components/hero-split.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hero-framed",
+      "type": "registry:block",
+      "title": "Hero — Framed",
+      "description": "Navy title on the page's white surface with the illustration framed as a rounded picture beside it.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/hero.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/hero-framed.tsx",
+          "type": "registry:component",
+          "target": "components/hero-framed.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hero-panel",
+      "type": "registry:block",
+      "title": "Hero — Panel",
+      "description": "A pale primary-200 panel with the illustration rising from its bottom edge, top corners rounded.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/hero.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/hero-panel.tsx",
+          "type": "registry:component",
+          "target": "components/hero-panel.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hero-centred",
+      "type": "registry:block",
+      "title": "Hero — Centred",
+      "description": "Centred title, description and actions over a shallow full-width strip of the illustration.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/hero.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/hero-centred.tsx",
+          "type": "registry:component",
+          "target": "components/hero-centred.tsx"
+        }
+      ]
+    },
+    {
+      "name": "hero-statement",
+      "type": "registry:block",
+      "title": "Hero — Statement",
+      "description": "Type only: an accent rule, title, description and actions, with no illustration.",
+      "registryDependencies": [
+        "{{REGISTRY_LOCATION}}/r/theme.json",
+        "{{REGISTRY_LOCATION}}/r/hero.json",
+        "{{REGISTRY_LOCATION}}/r/button.json",
+        "{{REGISTRY_LOCATION}}/r/icons.json"
+      ],
+      "files": [
+        {
+          "path": "src/patterns/hero-statement.tsx",
+          "type": "registry:component",
+          "target": "components/hero-statement.tsx"
         }
       ]
     },

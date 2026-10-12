@@ -3,8 +3,8 @@
 Every component the design system ships, on both distribution channels, with the props for the
 ones you cannot look up anywhere else.
 
-`@nswds/ui` exports **412 named symbols** across **68 components** and **1 hook**, and the
-registry serves **84 items**: the 68 components and the hook, 2 icon items, 12 blocks, and the `theme` foundation. This page is the complete list. It is
+`@nswds/ui` exports **431 named symbols** across **69 components** and **1 hook**, and the
+registry serves **90 items**: the 69 components and the hook, 2 icon items, 17 blocks, and the `theme` foundation. This page is the complete list. It is
 maintained by hand against `packages/ui/registry.json` and the built type declarations, so update
 it alongside any change to either.
 
@@ -18,9 +18,9 @@ Blocks are registry-only by design; hooks and components ship on both channels.
 
 ## The catalogue
 
-### NSW-original items (23)
+### NSW-original items (24)
 
-21 components plus the two icon items.
+22 components plus the two icon items.
 
 Built for NSW Government and documented nowhere else. Prop tables for these are in [Props for the NSW-original components](#props-for-the-nsw-original-components).
 
@@ -32,6 +32,7 @@ Built for NSW Government and documented nowhere else. Prop tables for these are 
 | `@nswds/expandable-search` | `ExpandableSearch`, `ExpandableSearchButtonProps`, `ExpandableSearchField`, `ExpandableSearchFieldProps`, `ExpandableSearchProps`, `ExpandableSearchVariant`, `expandableSearchVariants`                                                                                                                                                                                                                                                                                                              | A 48px search button that expands into a text field on focus, with ink-derived surface colours matching the footer palette.                                                                               |
 | `@nswds/footer`            | `Footer`, `FooterAcknowledgement`, `FooterAcknowledgementProps`, `FooterColor`, `FooterLegalLinkItem`, `FooterLegalLinks`, `FooterLegalLinksProps`, `FooterLinkItem`, `FooterNav`, `FooterNavColumn`, `FooterNavColumnProps`, `FooterNavLink`, `FooterNavLinkProps`, `FooterNavProps`, `FooterProps`, `FooterSmallPrint`, `FooterSmallPrintProps`, `FooterSocialLink`, `FooterSocialLinkItem`, `FooterSocialLinkProps`, `footerColors`, `footerContainerVariants`, `footerLogoType`, `footerVariants` | End-of-page contentinfo landmark with acknowledgement of Country, legal links, ownership and social channels, themeable across 13 token-based surface colours.                                            |
 | `@nswds/header`            | `Header`, `HeaderActions`, `HeaderActionsProps`, `HeaderBrand`, `HeaderBrandProps`, `HeaderColor`, `HeaderProps`, `headerColors`, `headerContainerVariants`, `headerVariants`                                                                                                                                                                                                                                                                                                                         | Top-of-page banner landmark with brand lockup, site name, version badge and a slot for header controls, in four WCAG 2.2 AAA surface colours.                                                             |
+| `@nswds/hero`              | `Hero`, `HeroActions`, `HeroActionsProps`, `HeroColor`, `HeroContent`, `HeroContentProps`, `HeroDescription`, `HeroDescriptionProps`, `HeroMedia`, `HeroMediaProps`, `HeroProps`, `HeroRule`, `HeroRuleProps`, `HeroTitle`, `HeroTitleProps`, `heroColors`, `heroInnerVariants`, `heroMediaVariants`, `heroVariants`                                                                                                                                                                                  | The opening band of a page: title, description, up to two actions and one optional illustration, on four surface colours with split or stacked layouts.                                                   |
 | `@nswds/icon-brands`       | —                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Third-party brand marks (Facebook, X, YouTube, LinkedIn, Instagram, GitHub) for the footer social row, which the Material Symbols set does not include.                                                   |
 | `@nswds/icons`             | —                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | Curated NSWDS icon subset used by the shipped components and patterns. The full Material Symbols set is available per-icon from the @nswds/ui npm package (import { IconSearch } from '@nswds/ui/icons'). |
 | `@nswds/labeled-separator` | `LabeledSeparator`, `LabeledSeparatorProps`                                                                                                                                                                                                                                                                                                                                                                                                                                                           | A horizontal divider broken by a centred label, such as an "or" rule between sign-in methods.                                                                                                             |
@@ -110,7 +111,7 @@ Familiar shadcn shapes rebuilt on Base UI primitives and NSW tokens. Composition
 | -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `@nswds/use-chrome-height` | —       | Measures a sticky chrome element and publishes its height as a CSS custom property, keeping it current as the element resizes. |
 
-### Blocks (12)
+### Blocks (17)
 
 Copy-and-adapt worked examples. **Registry only** — deliberately not exported from `@nswds/ui`, because a block is a starting point you own, not an API we version.
 
@@ -125,6 +126,11 @@ Copy-and-adapt worked examples. **Registry only** — deliberately not exported 
 | `@nswds/footer-sitemap`        | —       | Four columns of links above the standard footer. The default choice for a department or agency site.                                                 |
 | `@nswds/footer-sitemap-brand`  | —       | The NSW Government mark and a one-paragraph mission beside three link columns.                                                                       |
 | `@nswds/forgot-password-form`  | —       | A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component. |
+| `@nswds/hero-centred`          | —       | Centred title, description and actions over a shallow full-width strip of the illustration.                                                          |
+| `@nswds/hero-framed`           | —       | Navy title on the page's white surface with the illustration framed as a rounded picture beside it.                                                  |
+| `@nswds/hero-panel`            | —       | A pale primary-200 panel with the illustration rising from its bottom edge, top corners rounded.                                                     |
+| `@nswds/hero-split`            | —       | The brand band: white text on primary-800 with the illustration flush to the right edge, filling the band's full height.                             |
+| `@nswds/hero-statement`        | —       | Type only: an accent rule, title, description and actions, with no illustration.                                                                     |
 | `@nswds/login-form`            | —       | A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.           |
 | `@nswds/mobile-nav`            | —       | Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.               |
 | `@nswds/sign-up-form`          | —       | A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.         |
@@ -343,6 +349,24 @@ A 48px search button that expands into a field on focus.
 | `spacing`    | `'none' \| 'tight' \| 'default' \| 'loose'` | `'default'` |                                                                                                                                                                                     |
 | `divider`    | `boolean`                                   | `false`     |                                                                                                                                                                                     |
 | `labelledBy` | `string`                                    | —           | Id of the section's heading. Supplying it makes the section a **named `region` landmark**; omitting it leaves a plain `<section>`. Prefer supplying it for top-level page sections. |
+
+#### `Hero`
+
+The opening band of a page, composed from `HeroContent` (holding `HeroTitle`, `HeroDescription`
+and `HeroActions`, with an optional `HeroRule` above the title) and an optional `HeroMedia`. The
+five hero blocks are worked examples of the recommended combinations.
+
+| Prop         | Type                                     | Default   | Notes                                                                                                                     |
+| ------------ | ---------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `color`      | `'white' \| 'light' \| 'tint' \| 'dark'` | `'white'` | Sets the inks the slots read. `dark` is the brand band; give its actions `color="white"`.                                 |
+| `layout`     | `'split' \| 'stack'`                     | `'split'` | Content beside the media from `lg`, or over it.                                                                           |
+| `container`  | `'fluid' \| 'contained'`                 | `'fluid'` | Tune with the `--hero-max-width` and `--hero-padding-x` custom properties.                                                |
+| `align`      | `'start' \| 'centre'`                    | `'start'` |                                                                                                                           |
+| `labelledBy` | `string`                                 | —         | Id of the `HeroTitle`. Supplying it makes the hero a **named `region` landmark**; omitting it leaves a plain `<section>`. |
+
+`HeroTitle` takes `headingLevel` (`1 \| 2`, default `1`). `HeroMedia` takes `fit`
+(`'bleed' \| 'framed' \| 'rise' \| 'band'`, default `'framed'`) and wraps one image, which every fit
+sizes to fill and crop.
 
 #### `Callout`
 

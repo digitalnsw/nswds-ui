@@ -67,6 +67,9 @@ export const GROUPS = new Map([
   // The eight footer blocks are one family chosen between side by side; one
   // page with a chooser serves that better than eight near-identical pages.
   ['patterns/footer-blocks', 'the footer-*.tsx blocks'],
+  // The five hero blocks are likewise one family chosen between side by side,
+  // each built on the published `Hero`.
+  ['patterns/hero-blocks', 'the hero-*.tsx blocks'],
   // The generated icon set (src/icons/), which has no component file here.
   ['components/icons', 'src/icons/'],
   // The brand marks Footer's social row takes, documented apart from the
