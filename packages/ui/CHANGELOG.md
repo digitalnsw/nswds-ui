@@ -1,3 +1,9 @@
+## [9.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.2.0...@nswds/ui-v9.3.0) (2026-10-12)
+
+### Features
+
+* **ui:** add the PageHeader component ([#264](https://github.com/digitalnsw/nswds-ui/issues/264)) ([b5091b5](https://github.com/digitalnsw/nswds-ui/commit/b5091b5c37d787736ec606c10d319c9f32c2cd4f))
+
 ## [9.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.3...@nswds/ui-v9.2.0) (2026-10-12)
 
 ### Features
