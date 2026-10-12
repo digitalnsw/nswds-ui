@@ -19,6 +19,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from './breadcrumb.js'
+import { Container } from './container.js'
 import {
   PageHeader,
   PageHeaderDescription,
@@ -63,39 +64,45 @@ export function InContextSection() {
       description={
         <>
           The header sits under the site’s Breadcrumb, which is its own component, not a slot. The
-          title box clears the breadcrumb by 24px (16px on a phone) and its text lines up with the
-          breadcrumb and the body below; only the box hangs into the margin.
+          default breadcrumb carries no inset of its own, so it sits in the page’s Container, whose
+          16 → 24 → 48px inset the header shares. The title box clears the breadcrumb by 24px (16px
+          on a phone) and its text lines up with the breadcrumb and the body below; only the box
+          hangs into the margin.
         </>
       }
     >
       <Example
         layout='fill'
-        code={`<Breadcrumb>…</Breadcrumb>
+        code={`<Container>
+  <Breadcrumb>…</Breadcrumb>
+</Container>
 <PageHeader labelledBy="page-title">
   <PageHeaderTitle id="page-title">Discovery Pass</PageHeaderTitle>
   <PageHeaderDescription>…</PageHeaderDescription>
   <PageHeaderRule />
 </PageHeader>`}
       >
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#regional-travel'>Regional travel</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href='#regional-offers'>Regional offers</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{title}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <Container>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink href='#home'>Home</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href='#regional-travel'>Regional travel</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink href='#regional-offers'>Regional offers</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </Container>
         <PageHeader labelledBy='in-context-title'>
           <PageHeaderTitle id='in-context-title' headingLevel={2}>
             {title}

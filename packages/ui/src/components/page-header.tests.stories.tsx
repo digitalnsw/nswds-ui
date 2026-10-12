@@ -74,6 +74,9 @@ function paint(header: HTMLElement) {
     hairline: resolveColor(getComputedStyle(facts).borderTopColor),
     ink: resolveColor(getComputedStyle(header).getPropertyValue('--page-header-ink')),
     brandBand: resolveColor(getComputedStyle(header).getPropertyValue('--primary-800')),
+    primary600: resolveColor(getComputedStyle(header).getPropertyValue('--primary-600')),
+    primary700: resolveColor(getComputedStyle(header).getPropertyValue('--primary-700')),
+    accent600: resolveColor(getComputedStyle(header).getPropertyValue('--accent-600')),
   }
 }
 
@@ -101,8 +104,21 @@ const wiring: Story = {
     await expect(headers).toHaveLength(colors.length)
     const painted = new Map<string, ReturnType<typeof paint>>()
     for (const header of headers) painted.set(header.dataset.color ?? '', paint(header))
+    const dark = globals.theme === 'dark'
 
     for (const [color, p] of painted) {
+      // Each box is its own palette step, not merely distinct from the
+      // others: a coordinated swap of two mappings would keep every
+      // relationship below intact.
+      const expectedBox =
+        color === 'blue'
+          ? p.primary600
+          : color === 'red'
+            ? p.accent600
+            : dark
+              ? p.primary700
+              : p.brandBand
+      await expect(same(p.box, expectedBox)).toBe(true)
       // The hairline is always the ink.
       await expect(same(p.hairline, p.ink)).toBe(true)
       // The rule follows the box in `red` and the ink elsewhere.
@@ -117,7 +133,6 @@ const wiring: Story = {
     // `red` hold still, so their boxes never equal the band either way.
     const navy = painted.get('navy')
     if (!navy) throw new Error('Expected the navy header.')
-    const dark = globals.theme === 'dark'
     await expect(same(navy.box, navy.brandBand)).toBe(!dark)
   },
 }

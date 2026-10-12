@@ -187,7 +187,9 @@ function PageHeaderTitle({ className, headingLevel = 1, ref, ...props }: PageHea
       data-slot='page-header-title-row'
       // wrap-break-word so one unbreakable token (a URL, an acronym) wraps
       // inside a 320px viewport instead of pushing past it (WCAG 1.4.10).
-      className='max-w-[40rem] wrap-break-word max-sm:mt-4 sm:mt-6'
+      // text-balance lives here, not on the heading: balancing is a property
+      // of the block container, and on the inline heading it does nothing.
+      className='max-w-[40rem] text-balance wrap-break-word max-sm:mt-4 sm:mt-6'
     >
       <Heading
         ref={ref}
@@ -195,7 +197,7 @@ function PageHeaderTitle({ className, headingLevel = 1, ref, ...props }: PageHea
         className={cn(
           // The box colour falls back to the default colourway so a title
           // rendered outside a PageHeader (or copied without it) still paints.
-          'inline bg-[var(--page-header-box,var(--primary-600))] box-decoration-clone font-semibold tracking-tight text-balance text-white',
+          'inline bg-[var(--page-header-box,var(--primary-600))] box-decoration-clone font-semibold tracking-tight text-white',
           // 1.46 is the line-height at which the boxes of a wrapped title
           // touch with neither a gap nor an overlap — the box is the line box
           // plus the vertical padding, so the two are tuned together for
