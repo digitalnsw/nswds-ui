@@ -3,8 +3,8 @@
 Every component the design system ships, on both distribution channels, with the props for the
 ones you cannot look up anywhere else.
 
-`@nswds/ui` exports **431 named symbols** across **69 components** and **1 hook**, and the
-registry serves **90 items**: the 69 components and the hook, 2 icon items, 17 blocks, and the `theme` foundation. This page is the complete list. It is
+`@nswds/ui` exports **445 named symbols** across **70 components** and **1 hook**, and the
+registry serves **91 items**: the 70 components and the hook, 2 icon items, 17 blocks, and the `theme` foundation. This page is the complete list. It is
 maintained by hand against `packages/ui/registry.json` and the built type declarations, so update
 it alongside any change to either.
 
@@ -18,9 +18,9 @@ Blocks are registry-only by design; hooks and components ship on both channels.
 
 ## The catalogue
 
-### NSW-original items (24)
+### NSW-original items (25)
 
-22 components plus the two icon items.
+23 components plus the two icon items.
 
 Built for NSW Government and documented nowhere else. Prop tables for these are in [Props for the NSW-original components](#props-for-the-nsw-original-components).
 
@@ -42,6 +42,7 @@ Built for NSW Government and documented nowhere else. Prop tables for these are 
 | `@nswds/main-nav`          | `MainNav`, `MainNavColor`, `MainNavItem`, `MainNavLinkItem`, `MainNavProps`, `mainNavColors`, `mainNavContainerVariants`, `mainNavPanelVariants`, `mainNavVariants`                                                                                                                                                                                                                                                                                                                                   | The full-width NSW site navigation bar with mega-menu panels, current-page marking and 13 token-based surface colours, built on the navigation-menu component.                                            |
 | `@nswds/masthead`          | `Masthead`, `MastheadColor`, `MastheadProps`, `mastheadContainerVariants`, `mastheadVariants`                                                                                                                                                                                                                                                                                                                                                                                                         | The "A NSW Government website" strip shown above the site header, with WCAG 2.2 AAA colour variants and fluid/contained width presets.                                                                    |
 | `@nswds/on-this-page`      | `OnThisPage`, `OnThisPageItem`, `OnThisPageProps`                                                                                                                                                                                                                                                                                                                                                                                                                                                     | In-page anchor navigation that tracks which section the reader has reached and marks it aria-current="location".                                                                                          |
+| `@nswds/page-header`       | `PageHeader`, `PageHeaderColor`, `PageHeaderDescription`, `PageHeaderDescriptionProps`, `PageHeaderMeta`, `PageHeaderMetaProps`, `PageHeaderProps`, `PageHeaderRule`, `PageHeaderRuleProps`, `PageHeaderTitle`, `PageHeaderTitleProps`, `pageHeaderColors`, `pageHeaderInnerVariants`, `pageHeaderVariants`                                                                                                                                                                                           | The opening of a content page: the title on its own flat colour band, one box per wrapped line, a standfirst, and optionally a short rule or a meta row, in three colourways.                             |
 | `@nswds/push-menu`         | `PUSH_MENU_DURATION_MS`, `PushMenu`, `PushMenuItem`, `PushMenuLevel`, `PushMenuProps`, `generatePushMenuBreadcrumb`                                                                                                                                                                                                                                                                                                                                                                                   | Multi-level drill-down navigation menu with slide transitions, focus management and inert parked levels, for mobile drawers.                                                                              |
 | `@nswds/section`           | `Section`, `SectionProps`, `sectionVariants`                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Top-level page section with the house vertical rhythm, an optional divider, and the aria-labelledby wiring that makes it a named region landmark.                                                         |
 | `@nswds/side-nav`          | `SideNav`, `SideNavItem`, `SideNavProps`, `SideNavRowVariantProps`, `sideNavRowVariants`                                                                                                                                                                                                                                                                                                                                                                                                              | Vertical section navigation with arbitrary collapsible nesting, current-page marking and auto-expansion of the active branch.                                                                             |
@@ -367,6 +368,22 @@ five hero blocks are worked examples of the recommended combinations.
 `HeroTitle` takes `headingLevel` (`1 \| 2`, default `1`). `HeroMedia` takes `fit`
 (`'bleed' \| 'framed' \| 'rise' \| 'band'`, default `'framed'`) and wraps one image, which every fit
 sizes to fill and crop.
+
+#### `PageHeader`
+
+The opening of a content page, under the site's Header and Breadcrumb: `PageHeaderTitle` (the
+title on its own flat colour band, drawn per wrapped line), `PageHeaderDescription`, and
+optionally `PageHeaderRule` or `PageHeaderMeta`. For the opening band of a landing page, with
+actions and an illustration, use `Hero`.
+
+| Prop         | Type                        | Default   | Notes                                                                                                                                                              |
+| ------------ | --------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `color`      | `'blue' \| 'navy' \| 'red'` | `'blue'`  | The title box: Blue 02 (`primary-600`, the Transport for NSW reference), the brand band, or the waratah red. The rule follows the box in `red`, the ink elsewhere. |
+| `container`  | `'fluid' \| 'contained'`    | `'fluid'` | Tune with the `--page-header-max-width` and `--page-header-padding-x` custom properties; the title's 40rem measure is `--page-header-title-max-width`.             |
+| `labelledBy` | `string`                    | —         | Id of the `PageHeaderTitle`. Supplying it makes the header a **named `region` landmark**; omitting it leaves a plain `<section>`.                                  |
+
+`PageHeaderTitle` takes `headingLevel` (`1 \| 2`, default `1`). `PageHeaderMeta`'s children are
+the consumer's `span`s, spread to the row's ends and stacked on a phone.
 
 #### `Callout`
 

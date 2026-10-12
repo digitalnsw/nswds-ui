@@ -7,9 +7,9 @@
       "name": "theme",
       "type": "registry:theme",
       "title": "NSWDS Theme",
-      "description": "NSW Government semantic design tokens — maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
+      "description": "NSW Government semantic design tokens \u2014 maps the shadcn token names onto the @nswds/tokens palette for light and dark mode.",
       "dependencies": ["@nswds/tokens"],
-      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically — toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nFonts: preset.css sets the Public Sans / JetBrains Mono stacks but loads no font files, so load Public Sans yourself. If the shadcn CLI writes `--font-sans: var(--font-sans)` into your `@theme inline` when adding a font, put that font's variable class on `<html>`, or `--font-sans` is a self-reference and empty at the root.\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
+      "docs": "Add the @nswds/tokens token layers to your Tailwind entry CSS (after `@import \"tailwindcss\";`):\n\n@import \"@nswds/tokens/tailwind/preset.css\";\n@import \"@nswds/tokens/css/colors/global/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.css\";\n@import \"@nswds/tokens/css/colors/semantic/oklch.dark.css\";\n@import \"@nswds/tokens/css/colors/themes/masterbrand/oklch.css\";\n@import \"@nswds/tokens/tailwind/colors/themes/masterbrand/oklch.css\";\n\n`preset.css` wires every token category (colour, radius, space, typography, motion, shadow, border) into Tailwind in a single import. Keep the oklch colour layers AFTER it so the palette stays oklch (preset bundles hex values); the masterbrand layers add the brand theme, which preset excludes. The semantic DARK layer is scoped `.dark`, so the role tokens these variables map onto flip automatically \u2014 toggle the `.dark` class on your root element for dark mode (no separate dark variable block needed).\n\nFonts: preset.css sets the Public Sans / JetBrains Mono stacks but loads no font files, so load Public Sans yourself. If the shadcn CLI writes `--font-sans: var(--font-sans)` into your `@theme inline` when adding a font, put that font's variable class on `<html>`, or `--font-sans` is a self-reference and empty at the root.\n\nSee https://github.com/digitalnsw/nswds-ui/blob/main/docs/installing-from-the-registry.md",
       "css": {
         "@media (prefers-reduced-motion: reduce)": {
           "*, ::before, ::after": {
@@ -180,7 +180,7 @@
       "name": "field",
       "type": "registry:ui",
       "title": "Field",
-      "description": "Form field layout primitives — set, group, label, description, error, and separator slots.",
+      "description": "Form field layout primitives \u2014 set, group, label, description, error, and separator slots.",
       "dependencies": ["@base-ui/react", "class-variance-authority", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -578,6 +578,31 @@
           "path": "src/lib/utils.ts",
           "type": "registry:lib",
           "target": "lib/utils.ts"
+        }
+      ]
+    },
+    {
+      "name": "page-header",
+      "type": "registry:ui",
+      "title": "Page Header",
+      "description": "The opening of a content page: the title on its own flat colour band, one box per wrapped line, a standfirst, and optionally a short rule or a meta row, in three colourways.",
+      "dependencies": ["class-variance-authority", "clsx", "tailwind-merge"],
+      "registryDependencies": ["{{REGISTRY_LOCATION}}/r/theme.json"],
+      "files": [
+        {
+          "path": "src/components/page-header.tsx",
+          "type": "registry:ui",
+          "target": "components/page-header.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
         }
       ]
     },
@@ -1012,7 +1037,7 @@
       "name": "theme-switcher",
       "type": "registry:ui",
       "title": "Theme Switcher",
-      "description": "Light/dark toggle button with controlled and uncontrolled modes — framework-free, wire it to next-themes or any theme store.",
+      "description": "Light/dark toggle button with controlled and uncontrolled modes \u2014 framework-free, wire it to next-themes or any theme store.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -1055,7 +1080,7 @@
       "name": "site-search",
       "type": "registry:ui",
       "title": "Site Search",
-      "description": "Cmd/Ctrl-K site search palette on the Base UI autocomplete and dialog primitives — grouped results, keyboard filtering and an onSelect callback for framework routing.",
+      "description": "Cmd/Ctrl-K site search palette on the Base UI autocomplete and dialog primitives \u2014 grouped results, keyboard filtering and an onSelect callback for framework routing.",
       "dependencies": ["@base-ui/react", "clsx", "tailwind-merge"],
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -1908,7 +1933,7 @@
       "name": "login-form",
       "type": "registry:block",
       "title": "Login Form",
-      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A login form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -1932,7 +1957,7 @@
       "name": "sign-up-form",
       "type": "registry:block",
       "title": "Sign-up Form",
-      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A sign-up form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -1955,7 +1980,7 @@
       "name": "forgot-password-form",
       "type": "registry:block",
       "title": "Forgot Password Form",
-      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block — not a published component.",
+      "description": "A forgot-password form worked example (Card + Field + Input + Button) wired with NSWDS components. Copy-and-adapt block \u2014 not a published component.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
@@ -1975,7 +2000,7 @@
     {
       "name": "footer-simple-centred",
       "type": "registry:block",
-      "title": "Footer — Simple Centred",
+      "title": "Footer \u2014 Simple Centred",
       "description": "Everything centred under the NSW Government logo: the smallest footer that still carries acknowledgement of Country, legal links and ownership.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -1994,7 +2019,7 @@
     {
       "name": "footer-compact",
       "type": "registry:block",
-      "title": "Footer — Compact Bar",
+      "title": "Footer \u2014 Compact Bar",
       "description": "A single horizontal row of logo, links, ownership and social, for embedded tools and admin screens. Omits acknowledgement of Country by design.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2012,7 +2037,7 @@
     {
       "name": "footer-sitemap",
       "type": "registry:block",
-      "title": "Footer — Site Map",
+      "title": "Footer \u2014 Site Map",
       "description": "Four columns of links above the standard footer. The default choice for a department or agency site.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2029,7 +2054,7 @@
     {
       "name": "footer-sitemap-brand",
       "type": "registry:block",
-      "title": "Footer — Site Map with Brand",
+      "title": "Footer \u2014 Site Map with Brand",
       "description": "The NSW Government mark and a one-paragraph mission beside three link columns.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2047,7 +2072,7 @@
     {
       "name": "footer-newsletter",
       "type": "registry:block",
-      "title": "Footer — Newsletter",
+      "title": "Footer \u2014 Newsletter",
       "description": "Link columns beside a labelled email subscription form built on Field, Input and Button.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2068,7 +2093,7 @@
     {
       "name": "footer-contact",
       "type": "registry:block",
-      "title": "Footer — Contact Details",
+      "title": "Footer \u2014 Contact Details",
       "description": "Phone, email, street address and opening hours in an <address> element, beside the site map.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2086,7 +2111,7 @@
     {
       "name": "footer-cta",
       "type": "registry:block",
-      "title": "Footer — Call to Action",
+      "title": "Footer \u2014 Call to Action",
       "description": "A call-to-action band above the site map, tinted with the footer ink so it works on every surface colour.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2105,7 +2130,7 @@
     {
       "name": "footer-accordion",
       "type": "registry:block",
-      "title": "Footer — Collapsible Site Map",
+      "title": "Footer \u2014 Collapsible Site Map",
       "description": "A long site map that collapses into accordions below the lg breakpoint and lays out as columns above it.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2124,7 +2149,7 @@
     {
       "name": "hero-split",
       "type": "registry:block",
-      "title": "Hero — Split",
+      "title": "Hero \u2014 Split",
       "description": "The brand band: white text on primary-800 with the illustration flush to the right edge, filling the band's full height.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2143,7 +2168,7 @@
     {
       "name": "hero-framed",
       "type": "registry:block",
-      "title": "Hero — Framed",
+      "title": "Hero \u2014 Framed",
       "description": "Navy title on the page's white surface with the illustration framed as a rounded picture beside it.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2162,7 +2187,7 @@
     {
       "name": "hero-panel",
       "type": "registry:block",
-      "title": "Hero — Panel",
+      "title": "Hero \u2014 Panel",
       "description": "A pale primary-200 panel with the illustration rising from its bottom edge, top corners rounded.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2181,7 +2206,7 @@
     {
       "name": "hero-centred",
       "type": "registry:block",
-      "title": "Hero — Centred",
+      "title": "Hero \u2014 Centred",
       "description": "Centred title, description and actions over a shallow full-width strip of the illustration.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2200,7 +2225,7 @@
     {
       "name": "hero-statement",
       "type": "registry:block",
-      "title": "Hero — Statement",
+      "title": "Hero \u2014 Statement",
       "description": "Type only: an accent rule, title, description and actions, with no illustration.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
@@ -2220,7 +2245,7 @@
       "name": "mobile-nav",
       "type": "registry:block",
       "title": "Mobile Navigation Drawer",
-      "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu — the mobile navigation pattern for NSW site headers.",
+      "description": "Hamburger trigger opening a left-side sheet containing the multi-level push menu \u2014 the mobile navigation pattern for NSW site headers.",
       "registryDependencies": [
         "{{REGISTRY_LOCATION}}/r/theme.json",
         "{{REGISTRY_LOCATION}}/r/button.json",
