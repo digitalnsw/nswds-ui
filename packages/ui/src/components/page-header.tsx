@@ -142,13 +142,17 @@ function PageHeader({
   children,
   ...props
 }: PageHeaderProps) {
+  // Normalised once: cva treats an explicit `null` as "no colourway" where
+  // `undefined` takes the default, so the classes and `data-color` would
+  // otherwise disagree for `color={null}`.
+  const colorway = color ?? DEFAULT_PAGE_HEADER_COLOR
   return (
     <section
       ref={ref}
       data-slot='page-header'
-      data-color={color ?? DEFAULT_PAGE_HEADER_COLOR}
+      data-color={colorway}
       aria-labelledby={labelledBy}
-      className={cn(pageHeaderVariants({ color, className }))}
+      className={cn(pageHeaderVariants({ color: colorway, className }))}
       {...props}
     >
       <div
