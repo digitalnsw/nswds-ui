@@ -652,6 +652,37 @@
       ]
     },
     {
+      "name": "page-header",
+      "type": "registry:ui",
+      "title": "Page Header",
+      "description": "The opening of a content page: the title on its own flat colour band, one box per wrapped line, a standfirst, and optionally a short rule or a meta row, in three colourways.",
+      "dependencies": [
+        "class-variance-authority",
+        "clsx",
+        "tailwind-merge"
+      ],
+      "registryDependencies": [
+        "https://registry.design.nsw.gov.au/r/theme.json"
+      ],
+      "files": [
+        {
+          "path": "src/components/page-header.tsx",
+          "type": "registry:ui",
+          "target": "components/page-header.tsx"
+        },
+        {
+          "path": "src/lib/utils.ts",
+          "type": "registry:lib",
+          "target": "lib/utils.ts"
+        },
+        {
+          "path": "src/lib/overlay.ts",
+          "type": "registry:lib",
+          "target": "lib/overlay.ts"
+        }
+      ]
+    },
+    {
       "name": "masthead",
       "type": "registry:ui",
       "title": "Masthead",
@@ -2574,6 +2605,6 @@
     }
   ],
   "meta": {
-    "nswdsVersion": "9.2.0"
+    "nswdsVersion": "9.3.0"
   }
 }
