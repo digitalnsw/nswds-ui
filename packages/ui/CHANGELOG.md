@@ -1,3 +1,9 @@
+## [9.2.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.3...@nswds/ui-v9.2.0) (2026-10-12)
+
+### Features
+
+* **ui:** add the Hero component and five hero blocks ([#263](https://github.com/digitalnsw/nswds-ui/issues/263)) ([b765b7b](https://github.com/digitalnsw/nswds-ui/commit/b765b7bff2be845249e45c4f28db981e29ac8067))
+
 ## [9.1.3](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.1.2...@nswds/ui-v9.1.3) (2026-10-10)
 
 ### Bug Fixes
