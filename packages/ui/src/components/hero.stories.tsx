@@ -44,9 +44,9 @@ const colorDocs: ReadonlyArray<readonly [HeroColor, string]> = [
   ['dark', 'The brand band: white on navy, as email.digital.nsw.gov.au opens.'],
 ]
 
-/** Actions that read on the given surface (see Button’s `color`). */
-function Actions({ color }: { color: HeroColor }) {
-  const buttonColor = color === 'dark' ? 'white' : 'primary'
+/** Actions that read on the given hero surface (see Button’s `color`). */
+function Actions({ surface }: { surface: HeroColor }) {
+  const buttonColor = surface === 'dark' ? 'white' : 'primary'
   return (
     <HeroActions>
       <ButtonLink href='#start' color={buttonColor} trailingVisual={IconArrowForward}>
@@ -89,7 +89,7 @@ export function LayoutsSection() {
           <HeroContent>
             <HeroTitle id='layouts-split-title'>Built for every inbox.</HeroTitle>
             <HeroDescription>{description}</HeroDescription>
-            <Actions color='white' />
+            <Actions surface='white' />
           </HeroContent>
           <HeroMedia fit='framed'>
             <img src={canvas.src} alt={canvas.alt} />
@@ -109,7 +109,7 @@ export function LayoutsSection() {
               Consistent, accessible email for NSW Government.
             </HeroTitle>
             <HeroDescription>{description}</HeroDescription>
-            <Actions color='white' />
+            <Actions surface='white' />
           </HeroContent>
           <HeroMedia fit='band'>
             <img src={illustration.src} alt={illustration.alt} />
@@ -147,7 +147,7 @@ export function ColoursSection() {
                   {color}
                 </HeroTitle>
                 <HeroDescription>{colorDocs.find(([c]) => c === color)?.[1]}</HeroDescription>
-                <Actions color={color} />
+                <Actions surface={color} />
               </HeroContent>
             </Hero>
           ))}
@@ -178,7 +178,7 @@ export function MediaSection() {
               Made to send.
             </HeroTitle>
             <HeroDescription>{description}</HeroDescription>
-            <Actions color='dark' />
+            <Actions surface='dark' />
           </HeroContent>
           <HeroMedia fit='bleed'>
             <img src={illustration.src} alt={illustration.alt} />
@@ -192,7 +192,7 @@ export function MediaSection() {
               Design once, send anywhere.
             </HeroTitle>
             <HeroDescription>{description}</HeroDescription>
-            <Actions color='tint' />
+            <Actions surface='tint' />
           </HeroContent>
           <HeroMedia fit='rise'>
             <img src={stack.src} alt={stack.alt} />
@@ -232,7 +232,7 @@ export function RuleSection() {
               On-brand in every inbox.
             </HeroTitle>
             <HeroDescription>{description}</HeroDescription>
-            <Actions color='white' />
+            <Actions surface='white' />
           </HeroContent>
         </Hero>
       </Example>
@@ -338,7 +338,7 @@ const meta = {
         <HeroContent>
           <HeroTitle id='demo-hero-title'>Built for every inbox.</HeroTitle>
           <HeroDescription>{description}</HeroDescription>
-          <Actions color='white' />
+          <Actions surface='white' />
         </HeroContent>
         <HeroMedia fit='framed'>
           <img src={canvas.src} alt={canvas.alt} />
