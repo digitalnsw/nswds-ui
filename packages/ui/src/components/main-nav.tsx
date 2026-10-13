@@ -620,9 +620,10 @@ function MainNav({
     return lastAlignOffsetRef.current
   }, [])
 
-  // Resolved once (see `resolveVariant`), so cva, `data-color`, the panel
-  // colourway and the width hook agree for `null` and `''` as well as the
-  // default spelling.
+  // Resolved once (see `resolveVariant`), so cva, `data-color` and the panel
+  // colourway agree for `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's `max-w-[var(--main-nav-max-width,…)]`
+  // class instead of dropping it.
   const colorway = resolveVariant(color, DEFAULT_MAIN_NAV_COLOR)
   const containerway = resolveVariant(container, DEFAULT_MAIN_NAV_CONTAINER)
 
