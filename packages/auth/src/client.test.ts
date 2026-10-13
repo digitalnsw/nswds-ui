@@ -46,6 +46,15 @@ describe('signOutEverywhere', () => {
     )
   })
 
+  it('still clears the cookies when this session is already gone (401)', async () => {
+    const c = {
+      revokeOtherSessions: vi.fn(async () => ({ error: { message: 'Unauthorized', status: 401 } })),
+      signOut: vi.fn(async () => ({ error: null })),
+    }
+    await expect(signOutEverywhere(c)).resolves.toEqual({ error: null })
+    expect(c.signOut).toHaveBeenCalledOnce()
+  })
+
   it('stops and reports the error when revoking the other sessions fails, leaving the visitor signed in', async () => {
     const c = stub({ message: 'network down' })
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: { message: 'network down' } })

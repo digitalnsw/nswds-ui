@@ -35,8 +35,8 @@ export type AppAuthClient = ReturnType<typeof createAuthClient>
 
 /** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
 interface SignOutClient {
-  revokeOtherSessions: () => Promise<{ error: { message?: string } | null }>
-  signOut: () => Promise<{ error: { message?: string } | null }>
+  revokeOtherSessions: () => Promise<{ error: { message?: string; status?: number } | null }>
+  signOut: () => Promise<{ error: { message?: string; status?: number } | null }>
 }
 
 /**
@@ -48,14 +48,19 @@ interface SignOutClient {
  * one a browser presents, so a plain sign-out would leave it valid in the
  * database, where a rollback to the old cookie name would read it again.
  * Revoking the *other* sessions first keeps this one valid until `signOut`
- * succeeds, so a sign-out that fails part-way can simply be retried. On a
- * failure nothing further is tried and the error is returned, so the caller
+ * succeeds, so a sign-out that fails part-way can simply be retried. If this
+ * session is already dead the revoke is refused (401) and sign-out runs anyway
+ * to clear the cookies. On any other failure nothing further is tried and the
+ * error is returned, so the caller
  * keeps the visitor in place.
  */
 export async function signOutEverywhere(
   client: SignOutClient,
-): Promise<{ error: { message?: string } | null }> {
+): Promise<{ error: { message?: string; status?: number } | null }> {
   const revoked = await client.revokeOtherSessions()
-  if (revoked.error) return revoked
+  // 401: this session is already gone from the database (revoked on another
+  // device or site, or by the revoke script), so there is nothing it may revoke
+  // and nothing to keep. Sign-out still clears this browser's cookies.
+  if (revoked.error && revoked.error.status !== 401) return revoked
   return client.signOut()
 }
