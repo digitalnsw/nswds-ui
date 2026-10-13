@@ -15,30 +15,35 @@ Source: `.github/workflows/pr-checks.yml`.
 
 Run in this order, in one job:
 
-| #   | Step                       | Command                                                    |
-| --- | -------------------------- | ---------------------------------------------------------- |
-| 1   | Lint                       | `npm run lint`                                             |
-| 2   | Typecheck                  | `npm run typecheck`                                        |
-| 3   | Format check               | `npm run format:check`                                     |
-| 4   | Workflow interpolation     | `npm run check:workflows`                                  |
-| 5   | Script tests               | `npm run test:scripts`                                     |
-| 6   | Component drift            | `npm run check:drift -w @nswds/ui`                         |
-| 7   | Radius scale               | `npm run check:radius -w @nswds/ui`                        |
-| 8   | Icon module parity         | `npm run check:icons -w @nswds/ui`                         |
-| 9   | Portal boundaries          | `npm run check:portal-boundary -w @nswds/ui`               |
-| 10  | Theme parity               | `npm run check:theme-parity -w @nswds/ui`                  |
-| 11  | Story standard             | `npm run check:stories -w @nswds/ui`                       |
-| 12  | Variant normalisation      | `npm run check:variants -w @nswds/ui`                      |
-| 13  | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
-| 14  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
-| 15  | Unit tests                 | `npm test -w @nswds/ui`                                    |
-| 16  | Next app builds            | `npm run build -w web -w infographics`                     |
-| 17  | Package checks             | `npm run check:package -w @nswds/ui`                       |
-| 18  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
-| 19  | Registry freshness         | rebuild + `git status` comparison                          |
-| 20  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
-| 21  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
-| 22  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
+| #   | Step                       | Command                                                       |
+| --- | -------------------------- | ------------------------------------------------------------- |
+| 1   | Lint                       | `npm run lint`                                                |
+| 2   | Typecheck                  | `npm run typecheck`                                           |
+| 3   | Format check               | `npm run format:check`                                        |
+| 4   | Workflow interpolation     | `npm run check:workflows`                                     |
+| 5   | Script tests               | `npm run test:scripts`                                        |
+| 6   | Auth package tests         | `npm test -w @workspace/auth`                                 |
+| 7   | Component drift            | `npm run check:drift -w @nswds/ui`                            |
+| 8   | Radius scale               | `npm run check:radius -w @nswds/ui`                           |
+| 9   | Icon module parity         | `npm run check:icons -w @nswds/ui`                            |
+| 10  | Portal boundaries          | `npm run check:portal-boundary -w @nswds/ui`                  |
+| 11  | Theme parity               | `npm run check:theme-parity -w @nswds/ui`                     |
+| 12  | Story standard             | `npm run check:stories -w @nswds/ui`                          |
+| 13  | Variant normalisation      | `npm run check:variants -w @nswds/ui`                         |
+| 14  | Release config tests       | `npm test -w @workspace/semantic-release-config`              |
+| 15  | Build                      | `npx turbo build --filter=@nswds/ui` (`check:cascade` inside) |
+| 16  | Unit tests                 | `npm test -w @nswds/ui`                                       |
+| 17  | Next app builds            | `npm run build -w web -w infographics`                        |
+| 18  | Package checks             | `npm run check:package -w @nswds/ui`                          |
+| 19  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                          |
+| 20  | Registry freshness         | rebuild + `git status` comparison                             |
+| 21  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`                |
+| 22  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`         |
+| 23  | Storybook tests            | `npm run test -w @workspace/storybook`                        |
+
+Step 2 already builds `@nswds/ui` (turbo's `typecheck` depends on `^build`, since the auth package
+typechecks against its `dist/` types), so step 15 runs through turbo and is a cache hit, not a
+second build.
 
 A separate `visual-change-release-guard` job runs in parallel.
 
@@ -86,7 +91,18 @@ reason the release-config tests exist.
 
 **Fix:** `npm run test:scripts` and read the failing assertion.
 
-### 6 · `check:drift`
+### 6 · Auth package tests
+
+`npm test -w @workspace/auth`: the vitest suite of the sign-in package that gates `apps/web` and
+`apps/infographics` — the proxy gate and its return path, the sign-up allowlist, the shared-session
+contract (`SHARED_SESSION`, which must match nswds-design and nswds-email-design) and sign-out. It
+runs in Node with no database. The shared `install / test` job also finds the package's vitest
+config, but this is the required check, so it runs here too.
+
+**Fix:** `npm test -w @workspace/auth` and read the failing assertion. A `SHARED_SESSION` failure
+means the contract changed here alone: change it in all three repos together.
+
+### 7 · `check:drift`
 
 `packages/ui/scripts/check-component-drift.mjs` enforces the two-channel rule:
 
@@ -99,19 +115,19 @@ Removing a component from the public API is therefore never just deleting a barr
 **Escape hatch:** the `INTERNAL` allowlist at the top of that script — for a component that owns no
 registry item but ships as a supporting file inside another item's `files` list.
 
-### 7 · `check:radius`
+### 8 · `check:radius`
 
 Components may only use the token radius scale (`--radius-none|sm|md|lg|pill`). Catches a
 hand-rolled `rounded-[6px]`.
 
-### 8 · `check:icons`
+### 9 · `check:icons`
 
 Regenerates the icon barrel and byte-compares. The barrel is generated and lint/format-exempt, so
 it drifts silently otherwise.
 
 **Fix:** regenerate from `packages/ui` and commit the result.
 
-### 9 · `check:portal-boundary`
+### 10 · `check:portal-boundary`
 
 Requires every primitive `Portal` in `packages/ui/src` (`<Portal>` or `<Namespace.Portal>`) to have
 exactly one child: a `<ButtonGroupBoundary>` element enclosing the whole popup. ButtonGroup hands
@@ -134,7 +150,7 @@ inside it; that reset is pinned by the `In Overlays` story instead. Its fixture 
 **Fix:** make `<ButtonGroupBoundary>` the portal's only child, with everything the portal renders
 inside it. The failure names the file, the line and the shape it found.
 
-### 10 · `check:theme-parity`
+### 11 · `check:theme-parity`
 
 The shadcn→NSW token map is hand-maintained twice: the `:root` block of
 `src/styles/theme.css` (npm) and the `registry:theme` item's `cssVars.light` in
@@ -145,7 +161,7 @@ the build. Self-tested under `test:scripts`.
 **Fix:** make the same change in both places — `theme.css` `:root` and `registry.json`
 `cssVars.light` — then rerun `npm run check:theme-parity -w @nswds/ui`.
 
-### 11 · `check:stories`
+### 12 · `check:stories`
 
 Holds every story file in `packages/ui/src` to
 [the Storybook standard](reference-storybook-standard.md), which is Button's shape: a main
@@ -165,7 +181,7 @@ and passing. Its recorded exceptions (`REFERENCE`, `EXTRAS`, `GROUPS`, `GUIDES`,
 
 **Fix:** follow the failure's message; Button (`button.stories.tsx`) is the reference.
 
-### 12 · `check:variants`
+### 13 · `check:variants`
 
 Fails a component that advertises a variant's default in a `data-*` attribute
 (`data-color={color ?? DEFAULT}`) while handing cva the raw prop (`variants({ color })`), and one
@@ -181,7 +197,7 @@ under [script tests](#5--script-tests).
 **Fix:** resolve the variant once with `resolveVariant` from `packages/ui/src/lib/resolve-variant.ts`,
 pass that one value to cva and the attribute, and write the attribute after the spread.
 
-### 13 · Release config tests
+### 14 · Release config tests
 
 Cover the path-scoped release gate. They exist because `release.yml` commits with `[skip ci]`, so
 nothing else in CI ever exercises the release configuration — a mistake there is invisible until it
@@ -189,7 +205,7 @@ has already published, or silently failed to.
 
 They build a throwaway git repo per case, so they pass under this job's shallow checkout.
 
-### 14 · `check:cascade` (inside `build`)
+### 15 · `check:cascade` (inside `build`)
 
 Runs **inside** `build`, not as its own step, because it reads the built `dist/styles.css` — so a
 `build` that "succeeded" without it has not actually been run.
@@ -209,7 +225,7 @@ re-emit the loser after ours.
 Cascade layers cannot fix this — see
 [Surviving someone else's build](explanation-architecture.md#surviving-someone-elses-build).
 
-### 15 · Unit tests
+### 16 · Unit tests
 
 `node --test` over `packages/ui/tests/`, covering the package's **pure exported logic**. Runs
 against `dist/`, not `src/` (Node cannot strip JSX), so it must come after `build` and fails with a
@@ -221,7 +237,7 @@ with no coverage and two bugs.
 
 **Pure logic goes here; rendered behaviour goes in a story.**
 
-### 16 · Next app builds
+### 17 · Next app builds
 
 `apps/web` and `apps/infographics` compile `@nswds/ui` from source
 (`transpilePackages` and the `globals.css` dev entry), so a change in
@@ -229,12 +245,12 @@ with no coverage and two bugs.
 build all pass. Before this step the only signal was each app's Vercel deploy
 check. Needs the `@nswds/ui` build first, like the Vercel build commands.
 
-### 17 · `check:package`
+### 18 · `check:package`
 
 `publint --strict` + `are-the-types-wrong` against the built tarball. Catches export-map and
 type-resolution faults that `build` alone will happily produce.
 
-### 18 · Consumer fixture
+### 19 · Consumer fixture
 
 **The only gate with no npm script** — invisible from `package.json`. Run it by path:
 
@@ -256,7 +272,7 @@ Build `@nswds/ui` first. Not redundant with `check:package`: that validates the 
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside
 ours, the only place the two-build cascade is tested end to end.
 
-### 19 · Registry freshness
+### 20 · Registry freshness
 
 Rebuilds the registry and fails if committed output differs. Run `npm run registry:build` and
 commit `apps/registry/public/r/` whenever component source, `registry.json` or `components.json`
@@ -266,7 +282,7 @@ change.
 > `git status`, which cannot see a file nothing regenerates. Deleting an item from `registry.json`
 > also means deleting `apps/registry/public/r/<name>.json` by hand.
 
-### 20 · `check:registry-resolves`
+### 21 · `check:registry-resolves`
 
 The companion to `check:drift`, and easy to confuse with it. **Drift proves an item is registered;
 this proves it would actually compile** once `shadcn add` copies it.
@@ -289,7 +305,7 @@ Four real bugs motivated it, all of which passed drift, validate **and** the fre
 
 **Import icons per-icon (`../icons/close.js`), never through the barrel.**
 
-### 21 · `check:optimize-deps`
+### 22 · `check:optimize-deps`
 
 Asserts every bare import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
 `apps/storybook/vitest.config.ts`.
@@ -302,7 +318,7 @@ that kills whichever story was mid-flight.
 Add a component with a new dependency, forget this list, and the Storybook job starts failing
 intermittently **somewhere else entirely**.
 
-### 22 · Storybook tests
+### 23 · Storybook tests
 
 Every story rendered in real Chromium, with axe at WCAG 2.x AA enforced as an error. This is the
 suite that actually proves the components work. Takes roughly 80–170s.
@@ -345,6 +361,7 @@ npm run typecheck
 npm run format:check
 npm run check:workflows
 npm run test:scripts
+npm test -w @workspace/auth
 npm run check:drift -w @nswds/ui
 npm run check:radius -w @nswds/ui
 npm run check:icons -w @nswds/ui
@@ -353,7 +370,7 @@ npm run check:theme-parity -w @nswds/ui
 npm run check:stories -w @nswds/ui
 npm run check:variants -w @nswds/ui
 npm test -w @workspace/semantic-release-config
-npm run build -w @nswds/ui
+npx turbo build --filter=@nswds/ui
 npm test -w @nswds/ui
 npm run check:package -w @nswds/ui
 ./scripts/test-consumer-fixture.sh

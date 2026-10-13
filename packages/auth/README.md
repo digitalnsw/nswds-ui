@@ -27,9 +27,10 @@ migrated from there, and then copied here and into the other toolkit. There is d
 migration tooling in this package, so no repo but nswds-design writes the database's migration
 history.
 
-The browser suites run a built app with no database: `NSWDS_AUTH_GATE=off` lifts the gate, and
-only on localhost, so the switch cannot open a deployment. Each `playwright.config.ts` passes it to
-`next start`.
+`NSWDS_AUTH_GATE=off` lifts the gate for a built app run with no database to sign in against,
+and only on localhost, never on Vercel, so the switch cannot open a deployment. A browser suite sets
+it on `next start` (nswds-email-design's Playwright configs do); to look through a local built app
+by hand, run `NSWDS_AUTH_GATE=off npx next start` in the app.
 
 A preview deployment is trusted through the addresses Vercel sets for it (`VERCEL_URL`,
 `VERCEL_BRANCH_URL`); a zone lists its own domain in `trustedOrigins` so its sign-in page works there
