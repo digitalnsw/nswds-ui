@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
 import { getAuthClient } from '../client'
-import { RETURN_PARAM, safeReturnPath } from '../proxy'
+import { RETURN_PARAM, safeReturnPath } from '../return-path'
 
 export interface SignInFormProps {
   /**

@@ -76,6 +76,12 @@ jobs:
       - name: Script tests
         run: npm run test:scripts
 
+      # The sign-in gate and allowlist (packages/auth): a vitest suite with no
+      # database. The shared `install / test` job also finds it, but this is
+      # the required check, so it runs here too.
+      - name: Auth package tests
+        run: npm test -w @workspace/auth
+
       # Every component under packages/ui/src/components must ship on BOTH
       # channels (src/index.ts barrel + registry.json) or be explicitly
       # allowlisted as internal in the script.

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createProxy, isGateLifted, isPublicRoute, safeReturnPath, underBasePath } from './proxy'
+import { createProxy, isGateLifted, isPublicRoute, underBasePath } from './proxy'
 
 // A stand-in for an app's auth instance: the gate only reads `api.getSession`.
 const getSession = vi.fn<(input: { headers: Headers }) => Promise<unknown>>()
@@ -227,42 +227,6 @@ describe('NSWDS_AUTH_GATE=off (the browser suites)', () => {
     getSession.mockResolvedValue(null)
     const req = new NextRequest(new URL('/account', 'https://email.design.nsw.gov.au'))
     expectsRedirectTo(await proxy(req), 'https://email.design.nsw.gov.au/sign-in?from=%2Faccount')
-  })
-})
-
-describe('safeReturnPath', () => {
-  it('accepts a path of this app, query included', () => {
-    expect(safeReturnPath('/account')).toBe('/account')
-    expect(safeReturnPath('/colour/blue?tab=ramps')).toBe('/colour/blue?tab=ramps')
-  })
-
-  it('refuses anything that could leave the app', () => {
-    for (const value of [
-      null,
-      undefined,
-      '',
-      'account',
-      'https://evil.example/',
-      '//evil.example/',
-      '/\\evil.example/',
-      'javascript:alert(1)',
-      '/account\r\nSet-Cookie: x=1',
-      // The URL parser drops a tab, leaving `//evil.example/`.
-      '/\t/evil.example/',
-      // Dot segments would walk out of a zone's basePath.
-      '/../builder',
-      '/account/../../builder',
-      '/./account',
-      '/account/..',
-      '/%2e%2e/account',
-      '/account/%2E%2E/%2e%2e/builder',
-      '/%2e/account',
-      '/\\/evil.example/',
-      '/account\u0000',
-      '/account\u007f',
-    ]) {
-      expect(safeReturnPath(value), String(value)).toBeNull()
-    }
   })
 })
 
