@@ -36,7 +36,13 @@
  *      value (`{ color }`, `{ color: color }`, or a renamed prop such as
  *      `{ color: colorProp }`) hands it to cva RAW.
  *   4. If `<ident>` is advertised (2) and raw (3) inside the same component,
- *      the file fails.
+ *      the file fails (kind `mismatch`).
+ *   5. An advertised attribute (2) written BEFORE a `{...props}` spread on the
+ *      same element fails (kind `order`): the spread lets a consumer's own
+ *      `data-*` replace it, so the attribute can again contradict the classes.
+ *      Write it after the spread. State that is not a variant default — Header's
+ *      `data-scrolled={isScrolled || undefined}` — is not advertised, so it may
+ *      stay before the spread for a consumer to pin.
  *
  * Not flagged: `data-size={size}` beside `variants({ size })` (the attribute
  * mirrors the prop, so for `null` both are absent together) and presence
@@ -129,8 +135,9 @@ function scopeOf(node, sourceFile) {
 }
 
 /**
- * Checks one source file. Returns one failure per offending identifier per
- * component: `{ line, identifier, attribute, call, message }`.
+ * Checks one source file. Returns one `mismatch` failure per offending
+ * identifier per component and one `order` failure per misplaced attribute:
+ * `{ kind, line, identifier, attribute, call, message }`.
  */
 export function checkVariantSource(source, fileName = 'component.tsx') {
   const sourceFile = ts.createSourceFile(
@@ -152,6 +159,8 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
   const raw = new Map()
   /** scope -> Map(alias -> identifier) */
   const aliases = new Map()
+  /** Advertised attributes written before a props spread on the same element. */
+  const orderFailures = []
   const bucket = (store, scope) => {
     if (!store.has(scope)) store.set(scope, new Map())
     return store.get(scope)
@@ -192,7 +201,24 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
         if (!target && ts.isIdentifier(expression)) {
           target = bucket(aliases, scope).get(expression.text) ?? null
         }
-        if (target) bucket(advertised, scope).set(target, { attribute: name, node })
+        if (target) {
+          bucket(advertised, scope).set(target, { attribute: name, node })
+          const siblings = node.parent.properties
+          const index = siblings.indexOf(node)
+          if (siblings.slice(index + 1).some((sibling) => ts.isJsxSpreadAttribute(sibling))) {
+            const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
+            orderFailures.push({
+              kind: 'order',
+              line: line + 1,
+              identifier: target,
+              attribute: name,
+              call: null,
+              message:
+                `\`${name}\` advertises the resolved \`${target}\` before a \`{...props}\` spread, so a ` +
+                `consumer's own \`${name}\` can replace it and contradict the classes. Write it after the spread.`,
+            })
+          }
+        }
       }
     }
 
@@ -224,7 +250,7 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
   }
   visit(sourceFile)
 
-  const failures = []
+  const failures = [...orderFailures]
   for (const [scope, attributes] of advertised) {
     const rawInScope = raw.get(scope)
     if (!rawInScope) continue
@@ -233,6 +259,7 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
       if (!call) continue
       const { line } = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile))
       failures.push({
+        kind: 'mismatch',
         line: line + 1,
         identifier,
         attribute,

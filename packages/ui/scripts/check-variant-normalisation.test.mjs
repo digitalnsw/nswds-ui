@@ -17,7 +17,12 @@ import test from 'node:test'
 
 import { checkVariantSource } from './check-variant-normalisation.mjs'
 
-const messages = (source) => checkVariantSource(source).map((failure) => failure.message)
+// Each rule is tested on its own: `mismatch` (default advertised, raw prop to
+// cva) and `order` (advertised attribute before a props spread).
+const mismatches = (source) =>
+  checkVariantSource(source).filter((failure) => failure.kind === 'mismatch')
+const messages = (source) => mismatches(source).map((failure) => failure.message)
+const orders = (source) => checkVariantSource(source).filter((failure) => failure.kind === 'order')
 
 const component = (body, { cvaName = 'widgetVariants' } = {}) => `
 import { cva } from 'class-variance-authority'
@@ -88,7 +93,7 @@ test('fails the original pattern: ?? in the attribute, raw shorthand to cva', ()
   const source = component(`
   return <div data-color={color ?? DEFAULT_COLOR} className={cn(widgetVariants({ color }), className)} {...props} />
   `)
-  const failures = checkVariantSource(source)
+  const failures = mismatches(source)
   assert.equal(failures.length, 1)
   assert.equal(failures[0].identifier, 'color')
   assert.equal(failures[0].attribute, 'data-color')
@@ -127,7 +132,7 @@ test('fails the half-applied new idiom: resolveVariant alias on the attribute, r
     </div>
   )
   `)
-  const failures = checkVariantSource(source)
+  const failures = mismatches(source)
   assert.equal(failures.length, 1)
   assert.equal(failures[0].call, 'heroInnerVariants')
 })
@@ -183,7 +188,7 @@ test('reports each offending identifier once with its line', () => {
     />
   )
   `)
-  const failures = checkVariantSource(source)
+  const failures = mismatches(source)
   assert.deepEqual(failures.map((f) => f.identifier).sort(), ['size', 'variant'])
   assert.ok(failures.every((f) => Number.isInteger(f.line) && f.line > 0))
 })
@@ -202,7 +207,7 @@ function Other({ color, ...props }) {
     />
   )
   `)
-  const failures = checkVariantSource(source)
+  const failures = mismatches(source)
   assert.equal(failures.length, 1)
   const otherStart = source.split('\n').findIndex((l) => l.includes('function Other')) + 1
   assert.ok(
@@ -296,4 +301,51 @@ test('does not catch a positional cva wrapper', () => {
   return <div data-color={color ?? DEFAULT_COLOR} className={labelColorVariants(color, 'soft')} {...props} />
   `)
   assert.deepEqual(messages(source), [])
+})
+
+// ─── Attribute order ─────────────────────────────────────────────────────────
+
+test('order: fails an advertised attribute written before a props spread', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return <div data-color={colorway} {...props} className={widgetVariants({ color: colorway })} />
+  `)
+  const failures = orders(source)
+  assert.equal(failures.length, 1)
+  assert.equal(failures[0].attribute, 'data-color')
+  assert.match(failures[0].message, /after the spread/)
+})
+
+test('order: passes an advertised attribute written after the spread', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return <div {...props} data-color={colorway} className={widgetVariants({ color: colorway })} />
+  `)
+  assert.deepEqual(orders(source), [])
+})
+
+test('order: passes state and mirrored attributes before the spread', () => {
+  const source = component(`
+  return (
+    <div
+      data-scrolled={isScrolled || undefined}
+      data-color={color}
+      {...props}
+      className={widgetVariants({ color })}
+    />
+  )
+  `)
+  assert.deepEqual(orders(source), [])
+})
+
+test('order: a spread on a different element does not count', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return (
+    <div data-color={colorway} className={widgetVariants({ color: colorway })}>
+      <span {...props} />
+    </div>
+  )
+  `)
+  assert.deepEqual(orders(source), [])
 })

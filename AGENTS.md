@@ -606,8 +606,8 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   with `resolveVariant` from `src/lib/resolve-variant.ts` and feed that one
   value to cva, the attribute and anything else that reads it; write
   variant-derived attributes after the `{...props}` spread so a consumer cannot
-  desync them (state such as Header's `data-scrolled` stays before it, so docs
-  can pin it). The gate follows aliases, ternaries, renamed props and any cva
+  desync them (the gate enforces this too; state such as Header's
+  `data-scrolled` stays before it, so docs can pin it). The gate follows aliases, ternaries, renamed props and any cva
   function declared in the file or named `*Variants`/`*Cva`, matches within one
   component (nested callbacks included), and does not flag presence coercion
   (`data-icon-only={iconOnly || undefined}`). The shapes it is known not to
