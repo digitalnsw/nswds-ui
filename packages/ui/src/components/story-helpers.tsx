@@ -1056,11 +1056,18 @@ export function expectNullVariantsMatchDefault(
   byNull: HTMLElement,
   { attrs, sentinelClass, style = ['backgroundColor'], innerSlot }: NullVariantsExpectation,
 ) {
+  // Both instances, so the stories pin the documented default as well as the
+  // parity between the two spellings.
   for (const [key, value] of Object.entries(attrs)) {
-    if (byNull.dataset[key] !== value) {
-      throw new Error(
-        `Expected the null spelling to report data-${key}="${value}", got "${byNull.dataset[key]}".`,
-      )
+    for (const [spelling, element] of [
+      ['default', byDefault],
+      ['null', byNull],
+    ] as const) {
+      if (element.dataset[key] !== value) {
+        throw new Error(
+          `Expected the ${spelling} spelling to report data-${key}="${value}", got "${element.dataset[key]}".`,
+        )
+      }
     }
   }
   if (!byNull.classList.contains(sentinelClass)) {
