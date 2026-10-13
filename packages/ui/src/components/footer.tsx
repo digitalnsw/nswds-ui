@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 import { ButtonLink, type IconSlot, TouchTarget } from '../components/button.js'
 import { Link } from '../components/link.js'
@@ -110,7 +110,7 @@ function warnIfMonoLogoRequired(color: FooterColor) {
  * white and every surface deepens, so all thirteen render an all-white logo.
  */
 function footerLogoType(color?: FooterColor | null): 'default' | 'reversed' | 'mono-white' {
-  const resolved = color ?? DEFAULT_FOOTER_COLOR
+  const resolved = resolveVariant(color, DEFAULT_FOOTER_COLOR)
   if (footerReversedLogoColors.has(resolved)) {
     return 'reversed'
   }
@@ -558,7 +558,9 @@ function FooterSmallPrint({
   )
 }
 
-type FooterProps = React.ComponentPropsWithoutRef<'footer'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type FooterProps = Omit<React.ComponentPropsWithoutRef<'footer'>, 'color'> &
   VariantProps<typeof footerVariants> &
   VariantProps<typeof footerContainerVariants> & {
     /** Supporting/legal links — privacy, accessibility, copyright, etc. */
@@ -636,18 +638,18 @@ function Footer({
   const showAcknowledgement = Boolean(acknowledgement)
   const showLegalLinks = legalLinks.length > 0
 
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and `data-color` would
-  // otherwise disagree for `color={null}`, and `container={null}` would drop
-  // the width hook altogether.
-  const colorway = color ?? DEFAULT_FOOTER_COLOR
-  const containerway = container ?? DEFAULT_FOOTER_CONTAINER
+  // Resolved once (see `resolveVariant`), so cva, `data-color` and the width
+  // hook agree for `null` and `''` as well as the default spelling.
+  const colorway = resolveVariant(color, DEFAULT_FOOTER_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_FOOTER_CONTAINER)
 
   return (
     <footer
       data-slot='footer'
-      data-color={colorway}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(footerVariants({ color: colorway }), className)}
       ref={ref}
     >

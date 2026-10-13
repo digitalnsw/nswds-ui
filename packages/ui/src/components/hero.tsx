@@ -2,7 +2,7 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 /**
  * Surface colours a hero can be drawn on, in the Header's and Masthead's
@@ -106,7 +106,9 @@ const heroInnerVariants = cva(
   },
 )
 
-type HeroProps = React.ComponentPropsWithoutRef<'section'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type HeroProps = Omit<React.ComponentPropsWithoutRef<'section'>, 'color'> &
   VariantProps<typeof heroVariants> &
   VariantProps<typeof heroInnerVariants> & {
     /**
@@ -164,22 +166,24 @@ function Hero({
   children,
   ...props
 }: HeroProps) {
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and the data attributes
-  // would otherwise disagree for `color={null}` or `layout={null}`.
-  const colorway = color ?? DEFAULT_HERO_COLOR
-  const layoutway = layout ?? DEFAULT_HERO_LAYOUT
-  const containerway = container ?? DEFAULT_HERO_CONTAINER
+  // Resolved once (see `resolveVariant`), so cva, the data attributes and
+  // anything else reading these agree for `null` and `''` as well as the
+  // default spelling.
+  const colorway = resolveVariant(color, DEFAULT_HERO_COLOR)
+  const layoutway = resolveVariant(layout, DEFAULT_HERO_LAYOUT)
+  const containerway = resolveVariant(container, DEFAULT_HERO_CONTAINER)
   return (
     <section
       ref={ref}
       data-slot='hero'
+      aria-labelledby={labelledBy}
+      {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
       data-color={colorway}
       data-layout={layoutway}
       data-align={align}
-      aria-labelledby={labelledBy}
       className={cn(heroVariants({ color: colorway, className }))}
-      {...props}
     >
       <div
         data-slot='hero-inner'
@@ -367,15 +371,15 @@ type HeroMediaProps = React.ComponentPropsWithoutRef<'div'> &
  * title, descriptive when it carries meaning the text does not.
  */
 function HeroMedia({ className, fit, ref, ...props }: HeroMediaProps) {
-  // Normalised once, as `Hero` does for `color` and `layout`.
-  const fitway = fit ?? DEFAULT_HERO_FIT
+  // Resolved once, as `Hero` does for `color` and `layout`.
+  const fitway = resolveVariant(fit, DEFAULT_HERO_FIT)
   return (
     <div
       ref={ref}
       data-slot='hero-media'
+      {...props}
       data-fit={fitway}
       className={cn(heroMediaVariants({ fit: fitway, className }))}
-      {...props}
     />
   )
 }

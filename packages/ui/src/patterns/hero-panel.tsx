@@ -10,6 +10,7 @@ import {
   HeroTitle,
 } from '../components/hero.js'
 import { IconArrowForward } from '../icons/arrow-forward.js'
+import { resolveVariant } from '../lib/utils.js'
 
 // ── Sample content — replace with your service's own ────────────────────────
 const contentSample = {
@@ -43,10 +44,13 @@ type HeroPanelProps = Omit<React.ComponentProps<typeof Hero>, 'children' | 'cont
 export function HeroPanel({
   content = contentSample,
   media,
-  color = 'tint',
+  color: colorProp,
   labelledBy = 'hero-panel-title',
   ...props
 }: HeroPanelProps) {
+  // Resolved once, so a `null` from an untyped consumer lands on this block's
+  // own default rather than falling through to Hero's.
+  const color = resolveVariant(colorProp, 'tint')
   const [primary, secondary] = content.actions
   const buttonColor = color === 'dark' ? 'white' : 'primary'
   return (

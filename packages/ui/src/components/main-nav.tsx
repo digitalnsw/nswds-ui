@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
 import { IconEast } from '../icons/east.js'
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 import {
   NavigationMenu,
@@ -456,7 +456,9 @@ function MainNavMenuItem({ item, color, currentHref, panelWidth }: MainNavMenuIt
   )
 }
 
-type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 'color'> &
   VariantProps<typeof mainNavVariants> &
   VariantProps<typeof mainNavContainerVariants> & {
     /** Top-level items; items with `links` open mega panels. */
@@ -617,20 +619,21 @@ function MainNav({
     return lastAlignOffsetRef.current
   }, [])
 
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes, `data-color` and the panel
-  // colourway would otherwise disagree for `color={null}`, and
-  // `container={null}` would drop the width hook altogether.
-  const colorway = color ?? DEFAULT_MAIN_NAV_COLOR
-  const containerway = container ?? DEFAULT_MAIN_NAV_CONTAINER
+  // Resolved once (see `resolveVariant`), so cva, `data-color`, the panel
+  // colourway and the width hook agree for `null` and `''` as well as the
+  // default spelling.
+  const colorway = resolveVariant(color, DEFAULT_MAIN_NAV_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_MAIN_NAV_CONTAINER)
 
   return (
     <nav
       id='nsw-main-navigation'
       data-slot='main-nav'
-      data-color={colorway}
       aria-label={ariaLabel}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(
         mainNavVariants({ color: colorway, border }),
         // z-40 matches Header (both sit below the z-50 SkipLinks). An app

@@ -6,10 +6,10 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ComponentProps } from 'react'
 import * as React from 'react'
 
 import { Footer, footerColors, FooterNav, FooterNavColumn } from './footer.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 // Plain stand-ins rather than the package's own brand marks (icons/brands),
 // which bake in `data-slot="icon"`. These do not, so SocialIconElements proves
@@ -56,15 +56,6 @@ const socialLinks = [
 ]
 
 const department = 'Digital NSW, Department of Customer Service'
-
-/**
- * `null` is what cva's `VariantProps` admits and `??` falls through, but the
- * native `color?: string` attribute these props intersect narrows it away for
- * TypeScript consumers. Untyped consumers — the shadcn registry copies, plain
- * JS — can still pass it, so the story reaches that path the way they would.
- * `container` collides with no native attribute and takes `null` as typed.
- */
-const nullColour = { color: null } as unknown as Pick<ComponentProps<typeof Footer>, 'color'>
 
 // The copyright year is pinned so Chromatic snapshots don't churn every new
 // year — the same escape hatch consumers use to avoid SSR hydration skew.
@@ -525,60 +516,24 @@ export const CssCheck: Story = {
 /**
  * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
  * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Before the variants were normalised once, that produced a
- * footer whose `data-color` said `white` while its classes painted nothing,
- * and a `container={null}` that dropped the width hook. This renders the two
- * spellings of each default side by side and holds them to the same output.
+ * to the default. Each variant is now resolved once (`resolveVariant`), so the
+ * null spelling and the default spelling must render identically: classes,
+ * data attributes and painted result. `container` has no native attribute to collide with.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',
   render: (args) => (
     <div className='space-y-4'>
       <Footer {...args} color={undefined} container={undefined} />
-      <Footer {...args} {...nullColour} container={null} />
+      <Footer {...args} color={null} container={null} />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const surfaces = canvasElement.querySelectorAll<HTMLElement>('[data-slot="footer"]')
-    const [byDefault, byNull] = surfaces
-    if (!byDefault || !byNull || surfaces.length !== 2) {
-      throw new Error(`Expected 2 footers, got ${surfaces.length}.`)
-    }
-
-    if (byNull.dataset.color !== 'white') {
-      throw new Error(
-        `Expected the null spelling to report data-color="white", got "${byNull.dataset.color}".`,
-      )
-    }
-    if (!byNull.classList.contains('bg-white')) {
-      throw new Error(
-        `Expected the null spelling to carry the default classes (bg-white), got "${byNull.className}".`,
-      )
-    }
-    if (byNull.className !== byDefault.className) {
-      throw new Error(
-        `Expected the null spelling to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
-      )
-    }
-
-    const defaultBg = getComputedStyle(byDefault).backgroundColor
-    const nullBg = getComputedStyle(byNull).backgroundColor
-    if (nullBg !== defaultBg) {
-      throw new Error(
-        `Expected the null spelling to paint the default surface (${defaultBg}), got ${nullBg}.`,
-      )
-    }
-
-    // `container` lives on the inner wrapper.
-    const innerDefault = byDefault.querySelector<HTMLElement>('[data-slot="footer-container"]')
-    const innerNull = byNull.querySelector<HTMLElement>('[data-slot="footer-container"]')
-    if (!innerDefault || !innerNull) {
-      throw new Error('Expected a [data-slot="footer-container"] inside each footer.')
-    }
-    if (innerNull.className !== innerDefault.className) {
-      throw new Error(
-        `Expected container={null} to render the same inner classes as the default:\n  default: ${innerDefault.className}\n  null:    ${innerNull.className}`,
-      )
-    }
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'footer')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'footer-container',
+    })
   },
 }

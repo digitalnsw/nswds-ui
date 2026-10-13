@@ -3,7 +3,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 import { Badge, type BadgeProps } from '../components/badge.js'
 import { Link } from '../components/link.js'
@@ -351,7 +351,9 @@ function HeaderActions({ className, ref, ...props }: HeaderActionsProps) {
   )
 }
 
-type HeaderProps = React.ComponentPropsWithoutRef<'header'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type HeaderProps = Omit<React.ComponentPropsWithoutRef<'header'>, 'color'> &
   VariantProps<typeof headerVariants> &
   VariantProps<typeof headerContainerVariants> & {
     /** Stick to the top of the viewport as the page scrolls. Defaults to `true`. */
@@ -422,22 +424,23 @@ function Header({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes, `data-color` and the
-  // colour context would otherwise disagree for `color={null}`, and
-  // `container={null}` would drop the width hook altogether.
-  const colorway = color ?? DEFAULT_HEADER_COLOR
-  const containerway = container ?? DEFAULT_HEADER_CONTAINER
+  // Resolved once (see `resolveVariant`), so cva, `data-color`, the colour
+  // context and the width hook agree for `null` and `''` as well as the
+  // default spelling.
+  const colorway = resolveVariant(color, DEFAULT_HEADER_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_HEADER_CONTAINER)
 
   return (
     <header
       id='nsw-header'
       data-slot='header'
+      {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
       data-color={colorway}
       // Present-or-absent rather than "true"/"false", so it reads like Base
       // UI's data-disabled and Tailwind's bare `data-scrolled:` variant works.
       data-scrolled={isScrolled || undefined}
-      {...props}
       className={cn(
         headerVariants({ color: colorway }),
         // z-40 sits below the z-50 SkipLinks: a sticky header at the same

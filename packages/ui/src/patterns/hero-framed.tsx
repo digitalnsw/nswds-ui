@@ -10,6 +10,7 @@ import {
   HeroTitle,
 } from '../components/hero.js'
 import { IconArrowForward } from '../icons/arrow-forward.js'
+import { resolveVariant } from '../lib/utils.js'
 
 // ── Sample content — replace with your service's own ────────────────────────
 const contentSample = {
@@ -45,10 +46,13 @@ type HeroFramedProps = Omit<
 export function HeroFramed({
   content = contentSample,
   media,
-  color = 'white',
+  color: colorProp,
   labelledBy = 'hero-framed-title',
   ...props
 }: HeroFramedProps) {
+  // Resolved once, so a `null` from an untyped consumer lands on this block's
+  // own default rather than falling through to Hero's.
+  const color = resolveVariant(colorProp, 'white')
   const [primary, secondary] = content.actions
   const buttonColor = color === 'dark' ? 'white' : 'primary'
   return (

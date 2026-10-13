@@ -8,7 +8,7 @@ import { IconCheck } from '../icons/check.js'
 import { IconExpandLess } from '../icons/expand-less.js'
 import { IconExpandMore } from '../icons/expand-more.js'
 import { ButtonGroupBoundary } from '../lib/button-group-context.js'
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 const Select = SelectPrimitive.Root
 
@@ -31,11 +31,6 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
     />
   )
 }
-
-// Shared by cva's defaultVariants, the data-* attributes and the `??`
-// normalisers in `SelectTrigger`, so they can't drift apart.
-const DEFAULT_SELECT_TRIGGER_VARIANT = 'default'
-const DEFAULT_SELECT_TRIGGER_SIZE = 'default'
 
 const selectTriggerVariants = cva(
   // Field foundation shared with Input (input.tsx): the same --input-* semantic
@@ -67,7 +62,7 @@ const selectTriggerVariants = cva(
         sm: 'h-10 px-3 py-1.5',
       },
     },
-    defaultVariants: { variant: DEFAULT_SELECT_TRIGGER_VARIANT, size: DEFAULT_SELECT_TRIGGER_SIZE },
+    defaultVariants: { variant: 'default', size: 'default' },
   },
 )
 
@@ -78,18 +73,19 @@ function SelectTrigger({
   children,
   ...props
 }: SelectPrimitive.Trigger.Props & VariantProps<typeof selectTriggerVariants>) {
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and the data attributes
-  // would otherwise disagree for `size={null}` or `variant={null}`.
-  const variantway = variant ?? DEFAULT_SELECT_TRIGGER_VARIANT
-  const sizeway = size ?? DEFAULT_SELECT_TRIGGER_SIZE
+  // Resolved once (see `resolveVariant`), so cva and the data attributes
+  // agree for `null` and `''` as well as the default spelling.
+  const variantway = resolveVariant(variant, 'default')
+  const sizeway = resolveVariant(size, 'default')
   return (
     <SelectPrimitive.Trigger
       data-slot='select-trigger'
+      {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
       data-size={sizeway}
       data-variant={variantway}
       className={cn(selectTriggerVariants({ variant: variantway, size: sizeway, className }))}
-      {...props}
     >
       {children}
       <SelectPrimitive.Icon

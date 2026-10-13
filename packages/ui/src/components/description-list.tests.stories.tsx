@@ -8,6 +8,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from './description-list.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const FACTS = [
   { term: 'Version', detail: '2.001' },
@@ -76,10 +77,9 @@ export const CssCheck: Story = {
 /**
  * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
  * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Before the variant was normalised once, that produced a
- * list whose `data-layout` said `stacked` while its classes laid nothing out.
- * This renders the two spellings side by side and holds them to the same
- * output. `layout` has no native attribute and takes `null` as typed.
+ * to the default. Each variant is now resolved once (`resolveVariant`), so the
+ * null spelling and the default spelling must render identically: classes,
+ * data attributes and painted result. `layout` has no native attribute to collide with.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',
@@ -104,29 +104,11 @@ export const NullVariantsAreTheDefaults: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const lists = canvasElement.querySelectorAll<HTMLElement>('[data-slot="description-list"]')
-    const [byDefault, byNull] = lists
-    if (!byDefault || !byNull || lists.length !== 2) {
-      throw new Error(`Expected 2 lists, got ${lists.length}.`)
-    }
-
-    if (byNull.dataset.layout !== 'stacked') {
-      throw new Error(
-        `Expected layout={null} to report data-layout="stacked", got "${byNull.dataset.layout}".`,
-      )
-    }
-    if (!byNull.classList.contains('flex')) {
-      throw new Error(
-        `Expected layout={null} to carry the stacked layout classes (flex), got "${byNull.className}".`,
-      )
-    }
-    if (byNull.className !== byDefault.className) {
-      throw new Error(
-        `Expected layout={null} to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
-      )
-    }
-    if (getComputedStyle(byNull).display !== getComputedStyle(byDefault).display) {
-      throw new Error('Expected layout={null} to lay out like the default.')
-    }
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'description-list')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { layout: 'stacked' },
+      sentinelClass: 'flex',
+      style: ['display'],
+    })
   },
 }

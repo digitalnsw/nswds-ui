@@ -2,12 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 import { IconExpandMore } from '../icons/expand-more.js'
-import { cn } from '../lib/utils.js'
-
-// Shared by cva's defaultVariants, the data-* attributes and the `??`
-// normalisers in `NativeSelect`, so they can't drift apart.
-const DEFAULT_NATIVE_SELECT_VARIANT = 'default'
-const DEFAULT_NATIVE_SELECT_SIZE = 'default'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 const nativeSelectVariants = cva(
   // Field foundation shared with Input (input.tsx) and the Select trigger: the
@@ -30,7 +25,7 @@ const nativeSelectVariants = cva(
         sm: 'h-10 ps-3 pe-9',
       },
     },
-    defaultVariants: { variant: DEFAULT_NATIVE_SELECT_VARIANT, size: DEFAULT_NATIVE_SELECT_SIZE },
+    defaultVariants: { variant: 'default', size: 'default' },
   },
 )
 
@@ -38,11 +33,10 @@ type NativeSelectProps = Omit<React.ComponentProps<'select'>, 'size'> &
   VariantProps<typeof nativeSelectVariants>
 
 function NativeSelect({ className, variant, size, ...props }: NativeSelectProps) {
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and the four data attributes
-  // would otherwise disagree for `size={null}` or `variant={null}`.
-  const variantway = variant ?? DEFAULT_NATIVE_SELECT_VARIANT
-  const sizeway = size ?? DEFAULT_NATIVE_SELECT_SIZE
+  // Resolved once (see `resolveVariant`), so cva and the four data attributes
+  // agree for `null` and `''` as well as the default spelling.
+  const variantway = resolveVariant(variant, 'default')
+  const sizeway = resolveVariant(size, 'default')
   return (
     <div
       className={cn(
@@ -55,10 +49,12 @@ function NativeSelect({ className, variant, size, ...props }: NativeSelectProps)
     >
       <select
         data-slot='native-select'
+        {...props}
+        // After the spread, so a consumer's own `data-*` cannot desync the
+        // attributes from the classes both derive from the resolved values.
         data-size={sizeway}
         data-variant={variantway}
         className={cn(nativeSelectVariants({ variant: variantway, size: sizeway }))}
-        {...props}
       />
       <IconExpandMore
         className='pointer-events-none absolute end-3 top-1/2 size-5 -translate-y-1/2 text-primary select-none'

@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 // Colour pairs are curated for WCAG 2.2 AAA (1.4.6 Contrast Enhanced): every
 // text/background combination below resolves to at least 7:1, in BOTH themes.
@@ -72,7 +72,9 @@ const mastheadContainerVariants = cva(
   },
 )
 
-type MastheadProps = React.ComponentPropsWithoutRef<'div'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type MastheadProps = Omit<React.ComponentPropsWithoutRef<'div'>, 'color'> &
   VariantProps<typeof mastheadVariants> &
   VariantProps<typeof mastheadContainerVariants> & {
     /** Classes applied to the inner width-constraining wrapper. */
@@ -105,20 +107,20 @@ function Masthead({
   ref,
   ...props
 }: MastheadProps) {
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and `data-color` would
-  // otherwise disagree for `color={null}`, and `container={null}` would drop
-  // the width hook altogether.
-  const colorway = color ?? DEFAULT_MASTHEAD_COLOR
-  const containerway = container ?? DEFAULT_MASTHEAD_CONTAINER
+  // Resolved once (see `resolveVariant`), so cva, `data-color` and the width
+  // hook agree for `null` and `''` as well as the default spelling.
+  const colorway = resolveVariant(color, DEFAULT_MASTHEAD_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_MASTHEAD_CONTAINER)
   return (
     <div
       id='nsw-masthead'
       data-slot='masthead'
-      // Named surface, exposed for styling hooks and test diagnostics — the
-      // convention Header, Footer and MainNav already follow.
-      data-color={colorway}
       {...props}
+      // Named surface, exposed for styling hooks and test diagnostics — the
+      // convention Header, Footer and MainNav already follow. After the
+      // spread, so a consumer's own `data-color` cannot desync it from the
+      // classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(mastheadVariants({ color: colorway }), className)}
       ref={ref}
     >

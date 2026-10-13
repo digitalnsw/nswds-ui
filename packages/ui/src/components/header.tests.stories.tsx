@@ -6,7 +6,6 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ComponentProps } from 'react'
 
 import { IconDarkMode } from '../icons/dark-mode.js'
 import { IconMenu } from '../icons/menu.js'
@@ -14,6 +13,7 @@ import { IconSearch } from '../icons/search.js'
 
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Header/Tests',
@@ -38,14 +38,6 @@ type Story = StoryObj<typeof meta>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const HEADER_COLORS = ['white', 'light', 'dark', 'grey'] as const
-
-/**
- * `null` is what cva's `VariantProps` admits and `??` falls through, but the
- * native `color?: string` attribute these props intersect narrows it away for
- * TypeScript consumers. Untyped consumers — the shadcn registry copies, plain
- * JS — can still pass it, so the story reaches that path the way they would.
- */
-const nullColour = { color: null } as unknown as Pick<ComponentProps<typeof Header>, 'color'>
 
 function getHeader(canvasElement: HTMLElement) {
   const el = canvasElement.querySelector<HTMLElement>('[data-slot="header"]')
@@ -436,67 +428,29 @@ export const CssCheck: Story = {
 /**
  * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
  * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Before the variants were normalised once, that produced a
- * header whose `data-color` and colour context said `white` while its classes
- * painted nothing, and a `container={null}` that dropped the width hook. This
- * renders the two spellings of each default side by side and holds them to the
- * same output. The colour context is normalised too, but it is only observable
- * on the dark surfaces, which the Colours story covers.
+ * to the default. Each variant is now resolved once (`resolveVariant`), so the
+ * null spelling and the default spelling must render identically: classes,
+ * data attributes and painted result. The colour context is resolved from the same value but is only
+ * observable on the dark surfaces, which the Colours story covers.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',
   render: () => (
     <div className='space-y-2'>
       <Header id='header-default' sticky={false}>
-        <HeaderBrand sitename='Default colour' version='2.1.0' />
+        <HeaderBrand sitename='Default variants' version='2.1.0' />
       </Header>
-      <Header id='header-null' {...nullColour} container={null} sticky={false}>
-        <HeaderBrand sitename='Null colour' version='2.1.0' />
+      <Header id='header-null' color={null} container={null} sticky={false}>
+        <HeaderBrand sitename='Null variants' version='2.1.0' />
       </Header>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const headers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header"]')
-    const [byDefault, byNull] = headers
-    if (!byDefault || !byNull || headers.length !== 2) {
-      throw new Error(`Expected 2 headers, got ${headers.length}.`)
-    }
-
-    if (byNull.dataset.color !== 'white') {
-      throw new Error(
-        `Expected color={null} to report data-color="white", got "${byNull.dataset.color}".`,
-      )
-    }
-    if (!byNull.classList.contains('bg-white')) {
-      throw new Error(
-        `Expected color={null} to carry the default surface classes (bg-white), got "${byNull.className}".`,
-      )
-    }
-    if (byNull.className !== byDefault.className) {
-      throw new Error(
-        `Expected color={null} to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
-      )
-    }
-
-    const defaultBg = getComputedStyle(byDefault).backgroundColor
-    const nullBg = getComputedStyle(byNull).backgroundColor
-    if (nullBg !== defaultBg) {
-      throw new Error(
-        `Expected color={null} to paint the default surface (${defaultBg}), got ${nullBg}.`,
-      )
-    }
-
-    // `container` lives on the inner wrapper and, unlike `color`, takes `null`
-    // as typed: no native attribute narrows it away.
-    const innerDefault = byDefault.querySelector<HTMLElement>('[data-slot="header-container"]')
-    const innerNull = byNull.querySelector<HTMLElement>('[data-slot="header-container"]')
-    if (!innerDefault || !innerNull) {
-      throw new Error('Expected a [data-slot="header-container"] inside each header.')
-    }
-    if (innerNull.className !== innerDefault.className) {
-      throw new Error(
-        `Expected container={null} to render the same inner classes as the default:\n  default: ${innerDefault.className}\n  null:    ${innerNull.className}`,
-      )
-    }
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'header')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'header-container',
+    })
   },
 }

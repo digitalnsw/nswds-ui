@@ -8,13 +8,13 @@
  */
 
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import type { ComponentProps } from 'react'
 import React from 'react'
 
 import { DirectionProvider } from './direction.js'
 import { Header, HeaderBrand } from './header.js'
 import { MainNav, type MainNavItem } from './main-nav.js'
 import { Masthead } from './masthead.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 /**
  * Seven top-level items — a realistic NSW cluster site — which cannot fit a
@@ -50,15 +50,6 @@ const meta = {
 export default meta
 
 type Story = StoryObj<typeof meta>
-
-/**
- * `null` is what cva's `VariantProps` admits and `??` falls through, but the
- * native `color?: string` attribute these props intersect narrows it away for
- * TypeScript consumers. Untyped consumers — the shadcn registry copies, plain
- * JS — can still pass it, so the story reaches that path the way they would.
- * `container` collides with no native attribute and takes `null` as typed.
- */
-const nullColour = { color: null } as unknown as Pick<ComponentProps<typeof MainNav>, 'color'>
 
 // ─── Demo content (from nswds-app NavigationMenuMainNavigationDemo) ──────────
 
@@ -608,14 +599,12 @@ export const CssCheck: Story = {
 /**
  * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
  * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Before the variants were normalised once, that produced a
- * bar whose `data-color` said `white` while its own classes painted nothing,
- * and a `container={null}` that dropped the width hook. This renders the two
- * spellings of each default side by side and holds them to the same output.
- * The panel colourway is normalised from the same value but is only observable
- * with a section open, which this story does not do. Multi-instance: the
- * component defaults to `id="nsw-main-navigation"`, which is only valid once
- * per page.
+ * to the default. Each variant is now resolved once (`resolveVariant`), so the
+ * null spelling and the default spelling must render identically: classes,
+ * data attributes and painted result. The panel colourway is resolved from the same value, so each bar
+ * opens one section and the portalled panels are held to the same classes
+ * too. Multi-instance: the component defaults to `id="nsw-main-navigation"`,
+ * which is only valid once per page.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',
@@ -634,51 +623,52 @@ export const NullVariantsAreTheDefaults: Story = {
         id='main-nav-null'
         aria-label='Null variants'
         navigation={demoNavigation}
-        {...nullColour}
+        color={null}
         container={null}
       />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const surfaces = canvasElement.querySelectorAll<HTMLElement>('[data-slot="main-nav"]')
-    const [byDefault, byNull] = surfaces
-    if (!byDefault || !byNull || surfaces.length !== 2) {
-      throw new Error(`Expected 2 navs, got ${surfaces.length}.`)
-    }
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'main-nav')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'main-nav-container',
+    })
 
-    if (byNull.dataset.color !== 'white') {
-      throw new Error(
-        `Expected the null spelling to report data-color="white", got "${byNull.dataset.color}".`,
+    // The panel is portalled, so open a section on each bar in turn and read
+    // its classes before closing it again.
+    const panelClasses = async (nav: HTMLElement) => {
+      const trigger = nav.querySelector<HTMLButtonElement>('[data-slot="navigation-menu-trigger"]')
+      if (!trigger) {
+        throw new Error(`Expected a section trigger inside #${nav.id}.`)
+      }
+      trigger.focus()
+      trigger.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
       )
-    }
-    if (!byNull.classList.contains('bg-white')) {
-      throw new Error(
-        `Expected the null spelling to carry the default classes (bg-white), got "${byNull.className}".`,
+      const queryPanel = () => document.querySelector<HTMLElement>('[data-slot="main-nav-panel"]')
+      await waitFor(
+        () => queryPanel() !== null,
+        `Expected ArrowDown to open the panel in #${nav.id}.`,
       )
-    }
-    if (byNull.className !== byDefault.className) {
-      throw new Error(
-        `Expected the null spelling to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
+      const classes = queryPanel()?.className ?? ''
+      const escapeTarget =
+        document.activeElement instanceof HTMLElement ? document.activeElement : trigger
+      escapeTarget.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
       )
-    }
-
-    const defaultBg = getComputedStyle(byDefault).backgroundColor
-    const nullBg = getComputedStyle(byNull).backgroundColor
-    if (nullBg !== defaultBg) {
-      throw new Error(
-        `Expected the null spelling to paint the default surface (${defaultBg}), got ${nullBg}.`,
+      await waitFor(
+        () => !trigger.hasAttribute('data-popup-open') && queryPopup() === null,
+        `Expected Escape to close the panel in #${nav.id}.`,
       )
+      return classes
     }
-
-    // `container` lives on the inner wrapper.
-    const innerDefault = byDefault.querySelector<HTMLElement>('[data-slot="main-nav-container"]')
-    const innerNull = byNull.querySelector<HTMLElement>('[data-slot="main-nav-container"]')
-    if (!innerDefault || !innerNull) {
-      throw new Error('Expected a [data-slot="main-nav-container"] inside each nav.')
-    }
-    if (innerNull.className !== innerDefault.className) {
+    const panelDefault = await panelClasses(byDefault)
+    const panelNull = await panelClasses(byNull)
+    if (panelDefault === '' || panelNull !== panelDefault) {
       throw new Error(
-        `Expected container={null} to render the same inner classes as the default:\n  default: ${innerDefault.className}\n  null:    ${innerNull.className}`,
+        `Expected color={null} to render the default panel colourway:\n  default: ${panelDefault}\n  null:    ${panelNull}`,
       )
     }
   },

@@ -2,7 +2,7 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '../lib/utils.js'
+import { cn, resolveVariant } from '../lib/utils.js'
 
 // Shared by cva's defaultVariants, the data-layout attribute and the `??`
 // normaliser in `DescriptionList`, so they can't drift apart.
@@ -84,17 +84,18 @@ type DescriptionListProps = React.ComponentPropsWithoutRef<'dl'> &
  * `stacked` has no such requirement — wrap or don't, it reads the same.
  */
 function DescriptionList({ className, layout, ref, ...props }: DescriptionListProps) {
-  // Normalised once: cva treats an explicit `null` as "no variant" where
-  // `undefined` takes the default, so the classes and `data-layout` would
-  // otherwise disagree for `layout={null}`.
-  const layoutway = layout ?? DEFAULT_DESCRIPTION_LIST_LAYOUT
+  // Resolved once (see `resolveVariant`), so cva and `data-layout` agree for
+  // `null` and `''` as well as the default spelling.
+  const layoutway = resolveVariant(layout, DEFAULT_DESCRIPTION_LIST_LAYOUT)
   return (
     <dl
       ref={ref}
       data-slot='description-list'
+      {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
       data-layout={layoutway}
       className={cn(descriptionListVariants({ layout: layoutway, className }))}
-      {...props}
     />
   )
 }
