@@ -249,6 +249,11 @@ describe('safeReturnPath', () => {
       '/account\r\nSet-Cookie: x=1',
       // The URL parser drops a tab, leaving `//evil.example/`.
       '/\t/evil.example/',
+      // Dot segments would walk out of a zone's basePath.
+      '/../builder',
+      '/account/../../builder',
+      '/./account',
+      '/account/..',
       '/\\/evil.example/',
       '/account\u0000',
       '/account\u007f',
