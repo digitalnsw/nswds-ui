@@ -218,6 +218,9 @@ describe('safeReturnPath', () => {
       '/\\evil.example/',
       'javascript:alert(1)',
       '/account\r\nSet-Cookie: x=1',
+      // The URL parser drops a tab, leaving `//evil.example/`.
+      '/\t/evil.example/',
+      '/\\/evil.example/',
       '/account\u0000',
       '/account\u007f',
     ]) {

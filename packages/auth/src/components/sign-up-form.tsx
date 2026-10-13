@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient } from '../client'
-import { returnPath } from './sign-in-form'
+import { returnPath, useReturnPath, withReturnPath } from './sign-in-form'
 
 export interface SignUpFormProps {
   /**
@@ -40,6 +40,7 @@ export function SignUpForm({
 }: SignUpFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const from = useReturnPath()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -123,7 +124,10 @@ export function SignUpForm({
 
       <p className='text-center text-sm text-muted-foreground'>
         Already have an account?{' '}
-        <Link href={signInHref} className='font-bold text-[var(--primary)] underline'>
+        <Link
+          href={withReturnPath(signInHref, from)}
+          className='font-bold text-[var(--primary)] underline'
+        >
           Sign in
         </Link>
       </p>

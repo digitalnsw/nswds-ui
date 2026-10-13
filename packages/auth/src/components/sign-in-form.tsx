@@ -4,7 +4,7 @@ import { Button, Callout, Input, Label } from '@nswds/ui'
 import type { Route } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 import { getAuthClient } from '../client'
 import { RETURN_PARAM, safeReturnPath } from '../proxy'
@@ -40,6 +40,28 @@ export function returnPath(): string | null {
   return safeReturnPath(new URLSearchParams(window.location.search).get(RETURN_PARAM))
 }
 
+/** The URL never changes under the form, so there is nothing to subscribe to. */
+const subscribeToNothing = () => () => {}
+const noReturnPath = () => null
+
+/**
+ * The return path for the link to the other form: `null` on the server and in
+ * the hydrating render (there is no URL to read), the parameter once mounted,
+ * so the link gains `?from=` and a visitor who switches forms still lands
+ * where they were going.
+ */
+export function useReturnPath(): string | null {
+  return useSyncExternalStore(subscribeToNothing, returnPath, noReturnPath)
+}
+
+/** `href` with the return path carried along as `from`, when there is one. */
+export function withReturnPath(
+  href: Route,
+  from: string | null,
+): Route | { pathname: Route; query: Record<string, string> } {
+  return from ? { pathname: href, query: { [RETURN_PARAM]: from } } : href
+}
+
 export function SignInForm({
   basePath,
   homeHref = '/' as Route,
@@ -47,6 +69,7 @@ export function SignInForm({
 }: SignInFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const from = useReturnPath()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -111,7 +134,10 @@ export function SignInForm({
 
       <p className='text-center text-sm text-muted-foreground'>
         Don&rsquo;t have an account?{' '}
-        <Link href={signUpHref} className='font-bold text-[var(--primary)] underline'>
+        <Link
+          href={withReturnPath(signUpHref, from)}
+          className='font-bold text-[var(--primary)] underline'
+        >
           Create one
         </Link>
       </p>

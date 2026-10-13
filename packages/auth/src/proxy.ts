@@ -53,8 +53,9 @@ export const RETURN_PARAM = 'from'
 /**
  * `value` if it is a path of this app the forms may send a visitor to after
  * sign-in, else `null`: an absolute path, so never another origin
- * (`https://…`, `//evil`) or a scheme; `basePath`-relative, which `router.push`
- * prefixes. Read on both ends — the gate writes it, the forms read it.
+ * (`https://…`, `//evil`, or anything the URL parser would resolve off this
+ * origin) or a scheme; `basePath`-relative, which `router.push` prefixes. Read
+ * on both ends — the gate writes it, the forms read it.
  */
 export function safeReturnPath(value: string | null | undefined): string | null {
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
@@ -66,8 +67,21 @@ export function safeReturnPath(value: string | null | undefined): string | null 
     const code = value.charCodeAt(i)
     if (code < 0x20 || code === 0x7f) return null
   }
+  // And what a browser would make of it stays on this origin: the URL parser
+  // drops some characters (a tab, say) before it looks for `//`, so the text
+  // checks above are not the last word.
+  let resolved: URL
+  try {
+    resolved = new URL(value, SAME_ORIGIN)
+  } catch {
+    return null
+  }
+  if (resolved.origin !== SAME_ORIGIN || !resolved.pathname.startsWith('/')) return null
   return value
 }
+
+/** A stand-in origin to resolve a return path against; only equality matters. */
+const SAME_ORIGIN = 'https://same-origin.invalid'
 
 /**
  * `path` under the app's `basePath`, without the `/infographics/` a plain join
