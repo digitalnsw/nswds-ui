@@ -35,32 +35,35 @@ export type AppAuthClient = ReturnType<typeof createAuthClient>
 
 /** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
 interface SignOutClient {
-  revokeOtherSessions: () => Promise<{ error: { message?: string; status?: number } | null }>
+  revokeSessions: () => Promise<{ error: { message?: string; status?: number } | null }>
   signOut: () => Promise<{ error: { message?: string; status?: number } | null }>
 }
 
 /**
- * Sign out of every session the user holds: first every session but this one,
- * then this one, which `signOut` ends while clearing this browser's cookie.
+ * Sign out of every session the user holds, this one included, then clear this
+ * browser's cookies.
  *
  * One sign-in covers every NSW Design site, and a session design.nsw.gov.au
  * issued before the cookies were renamed (`SESSION_COOKIE_PREFIX`) is not the
  * one a browser presents, so a plain sign-out would leave it valid in the
  * database, where a rollback to the old cookie name would read it again.
- * Revoking the *other* sessions first keeps this one valid until `signOut`
- * succeeds, so a sign-out that fails part-way can simply be retried. If this
- * session is already dead the revoke is refused (401) and sign-out runs anyway
- * to clear the cookies. On any other failure nothing further is tried and the
- * error is returned, so the caller
- * keeps the visitor in place.
+ *
+ * Revoking is the step that must report failure: Better Auth's sign-out logs a
+ * failed session deletion, clears the cookie and still answers success, so it
+ * cannot be trusted to end a session; `revokeSessions` throws instead. If it
+ * fails, nothing further is tried and the error is returned, so the visitor
+ * stays signed in and can retry. If this session is already gone (401) there
+ * is nothing to revoke and sign-out runs to clear the cookies, which is also
+ * how a retry after a failed sign-out completes.
  */
 export async function signOutEverywhere(
   client: SignOutClient,
 ): Promise<{ error: { message?: string; status?: number } | null }> {
-  const revoked = await client.revokeOtherSessions()
+  const revoked = await client.revokeSessions()
   // 401: this session is already gone from the database (revoked on another
-  // device or site, or by the revoke script), so there is nothing it may revoke
-  // and nothing to keep. Sign-out still clears this browser's cookies.
+  // device or site, by the revoke script, or by an earlier attempt whose
+  // sign-out then failed), so there is nothing left to revoke. Sign-out still
+  // clears this browser's cookies.
   if (revoked.error && revoked.error.status !== 401) return revoked
   return client.signOut()
 }

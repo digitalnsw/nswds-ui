@@ -33,29 +33,29 @@ describe('getAuthClient', () => {
 describe('signOutEverywhere', () => {
   function stub(revokeError: { message?: string } | null = null) {
     return {
-      revokeOtherSessions: vi.fn(async () => ({ error: revokeError })),
+      revokeSessions: vi.fn(async () => ({ error: revokeError })),
       signOut: vi.fn(async () => ({ error: null })),
     }
   }
 
-  it('revokes the other sessions before signing out of this one', async () => {
+  it('revokes every session before clearing the cookies', async () => {
     const c = stub()
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: null })
-    expect(c.revokeOtherSessions.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(c.revokeSessions.mock.invocationCallOrder[0]).toBeLessThan(
       c.signOut.mock.invocationCallOrder[0]!,
     )
   })
 
   it('still clears the cookies when this session is already gone (401)', async () => {
     const c = {
-      revokeOtherSessions: vi.fn(async () => ({ error: { message: 'Unauthorized', status: 401 } })),
+      revokeSessions: vi.fn(async () => ({ error: { message: 'Unauthorized', status: 401 } })),
       signOut: vi.fn(async () => ({ error: null })),
     }
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: null })
     expect(c.signOut).toHaveBeenCalledOnce()
   })
 
-  it('stops and reports the error when revoking the other sessions fails, leaving the visitor signed in', async () => {
+  it('stops and reports the error when revoking fails, leaving the visitor signed in', async () => {
     const c = stub({ message: 'network down' })
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: { message: 'network down' } })
     expect(c.signOut).not.toHaveBeenCalled()
