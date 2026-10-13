@@ -29,7 +29,9 @@ export interface SignOutButtonProps {
  * Only navigates on success: a failed sign-out leaves the session live, so
  * bouncing to the sign-in page would just be redirected back into the app and
  * the user would silently still be signed in. On failure we re-enable the
- * control and announce the error in a live region beside it; the chrome mounts
+ * control and announce the error beside it: the paragraph is only mounted when
+ * there is one (an inserted `role='alert'` is announced), so the header's
+ * actions row carries no empty element the rest of the time. The chrome mounts
  * no toaster, so the message is rendered inline rather than toasted.
  */
 export function SignOutButton({
@@ -71,9 +73,11 @@ export function SignOutButton({
       >
         {pending ? 'Signing out…' : 'Sign out'}
       </Button>
-      <p role='alert' className='text-sm text-[var(--danger-text)]'>
-        {error}
-      </p>
+      {error ? (
+        <p role='alert' className='text-sm text-[var(--danger-text)]'>
+          {error}
+        </p>
+      ) : null}
     </>
   )
 }

@@ -129,8 +129,10 @@ jobs:
       # apps/storybook/.storybook/main.ts aliases `@nswds/ui/globals.css`
       # back to source for Tailwind live-scanning, but JS subpath imports
       # still go through `exports` → `dist/`.
+      # Through turbo, not `npm run -w`: `typecheck` above already built the
+      # package (it depends on `^build`), so this is a cache hit, not a rebuild.
       - name: Build @nswds/ui
-        run: npm run build -w @nswds/ui
+        run: npx turbo build --filter=@nswds/ui
 
       # Unit tests for the package's pure logic, run with node:test against
       # dist/ (the source is TSX, which Node cannot strip). Must sit AFTER the

@@ -8,7 +8,8 @@
     "./server": "./src/server.ts",
     "./client": "./src/client.ts",
     "./proxy": "./src/proxy.ts",
-    "./components": "./src/components/index.ts"
+    "./components": "./src/components/index.ts",
+    "./env": "./src/env.ts"
   },
   "scripts": {
     "lint": "eslint --max-warnings 0",

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createProxy, isGateLifted, isPublicRoute } from './proxy'
+import { createProxy, isGateLifted, isPublicRoute, underBasePath } from './proxy'
 
 // A stand-in for an app's auth instance: the gate only reads `api.getSession`.
 const getSession = vi.fn<(input: { headers: Headers }) => Promise<unknown>>()
@@ -105,12 +105,21 @@ describe('proxy gate under a basePath', () => {
     )
   })
 
-  it('sends a signed-in visitor on an auth page to the zone root', async () => {
+  it('sends a signed-in visitor on an auth page to the zone root, no trailing slash', async () => {
     getSession.mockResolvedValue(A_SESSION)
     expectsRedirectTo(
       await proxy(request('/sign-in', '/infographics')),
-      'http://localhost:3100/infographics/',
+      'http://localhost:3100/infographics',
     )
+  })
+})
+
+describe('underBasePath', () => {
+  it('joins a path under the basePath and keeps the root slash-less', () => {
+    expect(underBasePath('', '/')).toBe('/')
+    expect(underBasePath('', '/sign-in')).toBe('/sign-in')
+    expect(underBasePath('/infographics', '/')).toBe('/infographics')
+    expect(underBasePath('/infographics', '/sign-in')).toBe('/infographics/sign-in')
   })
 })
 
@@ -159,6 +168,12 @@ describe('NSWDS_AUTH_GATE=off (the browser suites)', () => {
     expectsPassThrough(await proxy(request('/account')))
     expectsPassThrough(await proxy(request('/sign-in')))
     expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('never lifts the gate on Vercel, whatever the Host header says', () => {
+    vi.stubEnv('NSWDS_AUTH_GATE', 'off')
+    vi.stubEnv('VERCEL', '1')
+    expect(isGateLifted('localhost')).toBe(false)
   })
 
   it('never lifts the gate for a deployed host', async () => {

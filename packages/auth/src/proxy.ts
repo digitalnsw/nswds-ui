@@ -24,8 +24,11 @@ export const PUBLIC_ROUTES = ['/sign-in', '/sign-up'] as const
 
 /**
  * Hosts a browser gate serves the built app on. `NSWDS_AUTH_GATE=off` lifts the
- * gate only for these, so the switch cannot open a deployment: nothing on
- * Vercel is reached as localhost.
+ * gate only for these, and never on Vercel (`VERCEL=1` is set on every
+ * deployment), so the switch cannot open a deployment. The hostname comes
+ * from the request's Host header, which is why the Vercel check is there too:
+ * off Vercel, a server started with the variable set would otherwise answer a
+ * forged `Host: localhost`.
  */
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
 
@@ -33,11 +36,24 @@ const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
  * Whether the gate is lifted for this request: the Playwright suites run the
  * built app with `NSWDS_AUTH_GATE=off` (each app's `playwright.config.ts`
  * passes it to `next start`), because they have no database to sign in
- * against. Read per request so a test can set the variable; fail-closed, so
+ * against. Read per request so a test can set the variables; fail-closed, so
  * an unset or any other value keeps the gate.
  */
 export function isGateLifted(hostname: string): boolean {
-  return process.env.NSWDS_AUTH_GATE === 'off' && LOOPBACK_HOSTS.has(hostname)
+  return (
+    process.env.NSWDS_AUTH_GATE === 'off' &&
+    process.env.VERCEL !== '1' &&
+    LOOPBACK_HOSTS.has(hostname)
+  )
+}
+
+/**
+ * `path` under the app's `basePath`, without the `/infographics/` a plain join
+ * would produce for the root: Next 308s that to `/infographics`, and a zone's
+ * rewrite on the shared domain only matches the slash-less form directly.
+ */
+export function underBasePath(basePath: string, path: string): string {
+  return basePath && path === '/' ? basePath : `${basePath}${path}`
 }
 
 export function isPublicRoute(
@@ -93,12 +109,12 @@ export function createProxy(auth: SessionReader, options: ProxyOptions = {}) {
 
     // Signed out and heading somewhere private → send to sign-in.
     if (!hasSession && !publicRoute) {
-      return NextResponse.redirect(new URL(`${basePath}${signInPath}`, request.url))
+      return NextResponse.redirect(new URL(underBasePath(basePath, signInPath), request.url))
     }
 
     // Already signed in but on an auth page → send to the app.
     if (hasSession && publicRoute) {
-      return NextResponse.redirect(new URL(`${basePath}${homePath}`, request.url))
+      return NextResponse.redirect(new URL(underBasePath(basePath, homePath), request.url))
     }
 
     return NextResponse.next()

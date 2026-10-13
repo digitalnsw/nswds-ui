@@ -58,6 +58,31 @@ describe('createAuth wiring', () => {
     expect(typeof auth.options.databaseHooks?.user?.create?.before).toBe('function')
   })
 
+  it("trusts the deployment's own Vercel addresses and the app's extra origins", () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_URL', 'nswds-ui-web-abc123.vercel.app')
+    vi.stubEnv('VERCEL_BRANCH_URL', 'nswds-ui-web-git-feat-x.vercel.app')
+    const { trustedOrigins } = createAuth({
+      trustedOrigins: ['https://infographics.design.nsw.gov.au'],
+    }).options
+    expect(trustedOrigins).toEqual([
+      'https://nswds-ui-web-abc123.vercel.app',
+      'https://nswds-ui-web-git-feat-x.vercel.app',
+      'https://infographics.design.nsw.gov.au',
+    ])
+  })
+
+  it('trusts only the listed origins when no Vercel address is set', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_URL', undefined)
+    vi.stubEnv('VERCEL_BRANCH_URL', undefined)
+    expect(createAuth().options.trustedOrigins).toEqual([])
+  })
+
+  it('caches the session in a signed cookie so the proxy rarely hits the database', () => {
+    expect(createAuth().options.session?.cookieCache).toEqual({ enabled: true, maxAge: 300 })
+  })
+
   it('mounts the endpoints under the app path it is given', () => {
     expect(createAuth().options.basePath).toBe('/api/auth')
     // A folder the routes live in: Next hands the handler the whole path.

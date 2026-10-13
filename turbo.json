@@ -12,7 +12,10 @@
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
     "SIGNUP_ALLOWED_EMAILS",
-    "NSWDS_AUTH_GATE"
+    "NSWDS_AUTH_GATE",
+    "VERCEL",
+    "VERCEL_URL",
+    "VERCEL_BRANCH_URL"
   ],
   "globalDependencies": [".env", "registry.config.json"],
   "tasks": {
