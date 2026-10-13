@@ -87,6 +87,22 @@ describe('proxy gate', () => {
     expectsRedirectTo(await proxy(request('/sign-in')), 'http://localhost:3100/')
   })
 
+  it('sends a signed-in visitor on an auth page to the page `from` names, if safe', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsRedirectTo(
+      await proxy(request('/sign-in?from=%2Fcolour%2Fblue%3Ftab%3Dramps')),
+      'http://localhost:3100/colour/blue?tab=ramps',
+    )
+    expectsRedirectTo(
+      await proxy(request('/sign-in?from=%2F%2Fevil.example%2F')),
+      'http://localhost:3100/',
+    )
+    expectsRedirectTo(
+      await proxy(request('/sign-in?from=%2Faccount', '/infographics')),
+      'http://localhost:3100/infographics/account',
+    )
+  })
+
   it('lets a signed-in visitor reach a private route', async () => {
     getSession.mockResolvedValue(A_SESSION)
     expectsPassThrough(await proxy(request('/account')))

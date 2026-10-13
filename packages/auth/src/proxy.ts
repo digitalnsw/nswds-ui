@@ -156,9 +156,12 @@ export function createProxy(auth: SessionReader, options: ProxyOptions = {}) {
       return NextResponse.redirect(target)
     }
 
-    // Already signed in but on an auth page → send to the app.
+    // Already signed in but on an auth page → send to the app: to the page a
+    // `from` on the URL names (they signed in elsewhere since the gate wrote
+    // it), else home.
     if (hasSession && publicRoute) {
-      return NextResponse.redirect(new URL(underBasePath(basePath, homePath), request.url))
+      const wanted = safeReturnPath(request.nextUrl.searchParams.get(RETURN_PARAM)) ?? homePath
+      return NextResponse.redirect(new URL(underBasePath(basePath, wanted), request.url))
     }
 
     return NextResponse.next()
