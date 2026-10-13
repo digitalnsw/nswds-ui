@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest'
 
 // Stand in for Better Auth's React client: the cache is what is under test,
 // and the real client would only add fetch plumbing.
@@ -8,7 +8,7 @@ vi.mock('better-auth/react', () => ({
 
 import { createAuthClient } from 'better-auth/react'
 
-import { getAuthClient, settle, signOutEverywhere, UNREACHABLE } from './client'
+import { AUTH_TIMEOUT_MS, getAuthClient, settle, signOutEverywhere, UNREACHABLE } from './client'
 
 const created = vi.mocked(createAuthClient)
 
@@ -46,6 +46,14 @@ describe('signOutEverywhere', () => {
     )
   })
 
+  it('passes an abort signal to both requests', async () => {
+    const c = stub()
+    await signOutEverywhere(c)
+    for (const fn of [c.revokeSessions, c.signOut]) {
+      expect(fn).toHaveBeenCalledWith({ fetchOptions: { signal: expect.any(AbortSignal) } })
+    }
+  })
+
   it('still clears the cookies when this session is already gone (401)', async () => {
     const c = {
       revokeSessions: vi.fn(async () => ({ error: { message: 'Unauthorized', status: 401 } })),
@@ -62,6 +70,15 @@ describe('signOutEverywhere', () => {
   })
 })
 
+// `settle` logs each rejection; keep the test output quiet and let tests assert on the log.
+let consoleError: MockInstance<typeof console.error>
+beforeEach(() => {
+  consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+})
+afterEach(() => {
+  consoleError.mockRestore()
+})
+
 describe('settle', () => {
   it('passes a resolved result through untouched', async () => {
     const result = { data: { ok: true }, error: null }
@@ -74,6 +91,47 @@ describe('settle', () => {
         throw new TypeError('fetch failed')
       }),
     ).resolves.toEqual({ data: null, error: { message: UNREACHABLE } })
+  })
+
+  it('logs the rejection, so a bug inside the call is not hidden behind the network message', async () => {
+    const cause = new TypeError('bad argument')
+    await settle(async () => {
+      throw cause
+    })
+    expect(consoleError).toHaveBeenCalledWith('Auth request rejected', cause)
+  })
+
+  it('logs nothing when the call resolves', async () => {
+    await settle(async () => ({ data: null, error: null }))
+    expect(consoleError).not.toHaveBeenCalled()
+  })
+
+  it('aborts a request that never settles and reports it as unreachable', async () => {
+    vi.useFakeTimers()
+    try {
+      let given: AbortSignal | undefined
+      const result = settle((signal) => {
+        given = signal
+        return new Promise<never>(() => {})
+      })
+      await vi.advanceTimersByTimeAsync(AUTH_TIMEOUT_MS - 1)
+      expect(given?.aborted).toBe(false)
+      await vi.advanceTimersByTimeAsync(1)
+      await expect(result).resolves.toEqual({ data: null, error: { message: UNREACHABLE } })
+      expect(given?.aborted).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('leaves the signal alone when the call answers in time', async () => {
+    let given: AbortSignal | undefined
+    await settle(async (signal) => {
+      given = signal
+      return { data: null, error: null }
+    }, 50)
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    expect(given?.aborted).toBe(false)
   })
 })
 

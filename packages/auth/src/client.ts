@@ -36,28 +36,53 @@ export type AppAuthClient = ReturnType<typeof createAuthClient>
 /** Shown when the request never reached the server (offline, DNS, a dropped connection). */
 export const UNREACHABLE = 'Could not reach the server. Check your connection and try again.'
 
+/** How long an auth request may take before it is aborted and reported as unreachable. */
+export const AUTH_TIMEOUT_MS = 15_000
+
 /**
  * Run a Better Auth client call and always get a result back. The client
  * resolves with `{ error }` for an error the server answers with, but rejects
  * when the request fails before that (offline, a dropped connection), which
  * would skip a caller's error path and leave its control pending forever.
- * Here a rejection becomes `{ data: null, error: { message: UNREACHABLE } }`,
- * so the same path handles both.
+ * A stalled connection may never settle at all, so the call also gets a
+ * deadline: after `timeoutMs` its request is aborted through the signal it is
+ * given, and the result is returned without waiting for the call to notice.
+ * Either way the result is `{ data: null, error: { message: UNREACHABLE } }`,
+ * so the same path handles both. The same helper lives in nswds-design's
+ * `src/lib/auth-client.ts`.
  */
 export async function settle<T extends { error: unknown }>(
-  call: () => Promise<T>,
+  call: (signal: AbortSignal) => Promise<T>,
+  timeoutMs = AUTH_TIMEOUT_MS,
 ): Promise<T | { data: null; error: { message: string; status?: number } }> {
+  const controller = new AbortController()
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      const reason = new DOMException(`Auth request took over ${timeoutMs} ms`, 'TimeoutError')
+      controller.abort(reason)
+      reject(reason)
+    }, timeoutMs)
+  })
   try {
-    return await call()
-  } catch {
+    return await Promise.race([call(controller.signal), deadline])
+  } catch (cause) {
+    // Keep the cause visible: a bug inside `call` would otherwise read as a network failure.
+    console.error('Auth request rejected', cause)
     return { data: null, error: { message: UNREACHABLE } }
+  } finally {
+    clearTimeout(timer)
   }
 }
 
 /** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
+type AbortableCall = (options: {
+  fetchOptions: { signal: AbortSignal }
+}) => Promise<{ error: { message?: string; status?: number } | null }>
+
 interface SignOutClient {
-  revokeSessions: () => Promise<{ error: { message?: string; status?: number } | null }>
-  signOut: () => Promise<{ error: { message?: string; status?: number } | null }>
+  revokeSessions: AbortableCall
+  signOut: AbortableCall
 }
 
 /**
@@ -85,11 +110,11 @@ interface SignOutClient {
 export async function signOutEverywhere(
   client: SignOutClient,
 ): Promise<{ error: { message?: string; status?: number } | null }> {
-  const revoked = await settle(() => client.revokeSessions())
+  const revoked = await settle((signal) => client.revokeSessions({ fetchOptions: { signal } }))
   // 401: this session is already gone from the database (revoked on another
   // device or site, by the revoke script, or by an earlier attempt whose
   // sign-out then failed). With no session there is no authority to revoke
   // others; sign-out still clears this browser's cookies.
   if (revoked.error && revoked.error.status !== 401) return { error: revoked.error }
-  return settle(() => client.signOut())
+  return settle((signal) => client.signOut({ fetchOptions: { signal } }))
 }

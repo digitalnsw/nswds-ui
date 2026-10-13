@@ -52,7 +52,9 @@ export function SignUpForm({
     setError(null)
     setPending(true)
 
-    const { error } = await settle(() => client.signUp.email({ name, email, password }))
+    const { error } = await settle((signal) =>
+      client.signUp.email({ name, email, password, fetchOptions: { signal } }),
+    )
 
     if (error) {
       setError(error.message ?? 'Could not create your account. Please try again.')

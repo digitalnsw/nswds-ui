@@ -80,7 +80,9 @@ export function SignInForm({
     setError(null)
     setPending(true)
 
-    const { error } = await settle(() => client.signIn.email({ email, password }))
+    const { error } = await settle((signal) =>
+      client.signIn.email({ email, password, fetchOptions: { signal } }),
+    )
 
     if (error) {
       setError(error.message ?? 'Invalid email or password.')
