@@ -59,6 +59,16 @@ const allowedSignUpEmails = parseAllowedEmails(process.env.SIGNUP_ALLOWED_EMAILS
 export const SHARED_COOKIE_DOMAIN = 'design.nsw.gov.au'
 
 /**
+ * The name every NSW Design site gives its sign-in cookies
+ * (`__Secure-nswds-design.session_token`, …), in place of Better Auth's
+ * `better-auth`. Renamed when the cookie became shared: design.nsw.gov.au had
+ * already issued host-only cookies under the old name, which would otherwise
+ * sit beside the shared one where a sign-out could clear only one of the two.
+ * Must match nswds-design (`src/lib/cookie-domain.ts`) and the other toolkit.
+ */
+export const SESSION_COOKIE_PREFIX = 'nswds-design'
+
+/**
  * The domain to scope the session cookie to, or `undefined` for a host-only one.
  *
  * Every NSW Design site (design.nsw.gov.au, ui.design.nsw.gov.au,
@@ -177,9 +187,10 @@ export function createAuth({
       enabled: true,
     },
     databaseHooks: createSignUpAllowlistHooks(allowedSignUpEmails),
-    advanced: cookieDomain
-      ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } }
-      : undefined,
+    advanced: {
+      cookiePrefix: SESSION_COOKIE_PREFIX,
+      ...(cookieDomain ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } } : {}),
+    },
     plugins: [nextCookies()],
   })
 }

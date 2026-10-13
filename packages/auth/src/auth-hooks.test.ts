@@ -117,6 +117,10 @@ describe('createAuth wiring', () => {
     expect(createAuth().options.trustedOrigins).toEqual([])
   })
 
+  it('names the cookies for NSW Design, as every site must', () => {
+    expect(createAuth().options.advanced?.cookiePrefix).toBe('nswds-design')
+  })
+
   it('shares the session cookie across design.nsw.gov.au in production only', () => {
     vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
     vi.stubEnv('VERCEL_ENV', 'production')
