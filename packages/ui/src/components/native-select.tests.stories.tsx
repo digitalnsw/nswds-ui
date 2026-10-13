@@ -8,7 +8,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { NativeSelect, NativeSelectOption } from './native-select.js'
-import { resolveColor } from './story-helpers.js'
+import { expectNullVariantsMatchDefault, queryVariantPair, resolveColor } from './story-helpers.js'
 
 const meta = {
   title: 'Components/NativeSelect/Tests',
@@ -61,5 +61,39 @@ export const CssCheck: Story = {
         `Expected the border to be the --input-border token (${token}), received "${style.borderTopColor}".`,
       )
     }
+  },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `size` is omitted from the native props and `variant` has no native
+ * attribute, so both take `null` as typed; the wrapper mirrors the control's
+ * attributes and is held to the same values.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <NativeSelect {...args} aria-label='Default variants'>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
+      <NativeSelect {...args} aria-label='Null variants' variant={null} size={null}>
+        <NativeSelectOption value='nsw'>New South Wales</NativeSelectOption>
+      </NativeSelect>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [wrapDefault, wrapNull] = queryVariantPair(canvasElement, 'native-select-wrapper')
+    expectNullVariantsMatchDefault(wrapDefault, wrapNull, {
+      attrs: { size: 'default', variant: 'default' },
+      sentinelClass: 'group/native-select',
+      style: [],
+    })
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'native-select')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { size: 'default', variant: 'default' },
+      sentinelClass: 'h-12',
+      style: ['height'],
+    })
   },
 }

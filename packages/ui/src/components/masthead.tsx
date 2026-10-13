@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 // Colour pairs are curated for WCAG 2.2 AAA (1.4.6 Contrast Enhanced): every
@@ -34,6 +35,8 @@ type MastheadColor = keyof typeof mastheadColors
 // Shared by cva's defaultVariants and the data-color attribute, so the two
 // can't drift apart — the same arrangement as Header, Footer and MainNav.
 const DEFAULT_MASTHEAD_COLOR: MastheadColor = 'dark'
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Masthead`.
+const DEFAULT_MASTHEAD_CONTAINER = 'fluid'
 
 const mastheadVariants = cva('w-full text-xs', {
   variants: {
@@ -65,12 +68,14 @@ const mastheadContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_MASTHEAD_CONTAINER,
     },
   },
 )
 
-type MastheadProps = React.ComponentPropsWithoutRef<'div'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type MastheadProps = Omit<React.ComponentPropsWithoutRef<'div'>, 'color'> &
   VariantProps<typeof mastheadVariants> &
   VariantProps<typeof mastheadContainerVariants> & {
     /** Classes applied to the inner width-constraining wrapper. */
@@ -103,20 +108,28 @@ function Masthead({
   ref,
   ...props
 }: MastheadProps) {
+  // Resolved once (see `resolveVariant`), so cva and `data-color` agree for
+  // `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--masthead-max-width`, instead of dropping it.
+  const colorway = resolveVariant(color, DEFAULT_MASTHEAD_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_MASTHEAD_CONTAINER)
   return (
     <div
       id='nsw-masthead'
       data-slot='masthead'
-      // Named surface, exposed for styling hooks and test diagnostics — the
-      // convention Header, Footer and MainNav already follow.
-      data-color={color ?? DEFAULT_MASTHEAD_COLOR}
       {...props}
-      className={cn(mastheadVariants({ color }), className)}
+      // Named surface, exposed for styling hooks and test diagnostics — the
+      // convention Header, Footer and MainNav already follow. After the
+      // spread, so a consumer's own `data-color` cannot desync it from the
+      // classes both derive from the resolved value.
+      data-color={colorway}
+      className={cn(mastheadVariants({ color: colorway }), className)}
       ref={ref}
     >
       <div
         data-slot='masthead-container'
-        className={cn(mastheadContainerVariants({ container }), containerClassName)}
+        className={cn(mastheadContainerVariants({ container: containerway }), containerClassName)}
       >
         {children ?? 'A NSW Government website'}
       </div>

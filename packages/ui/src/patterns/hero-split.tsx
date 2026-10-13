@@ -10,6 +10,7 @@ import {
   HeroTitle,
 } from '../components/hero.js'
 import { IconArrowForward } from '../icons/arrow-forward.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 
 // ── Sample content — replace with your service's own ────────────────────────
 const contentSample = {
@@ -47,10 +48,13 @@ type HeroSplitProps = Omit<React.ComponentProps<typeof Hero>, 'children' | 'cont
 export function HeroSplit({
   content = contentSample,
   media,
-  color = 'dark',
+  color: colorProp,
   labelledBy = 'hero-split-title',
   ...props
 }: HeroSplitProps) {
+  // Resolved once, so a `null` from an untyped consumer lands on this block's
+  // own default rather than falling through to Hero's.
+  const color = resolveVariant(colorProp, 'dark')
   const [primary, secondary] = content.actions
   return (
     <Hero color={color} layout='split' labelledBy={labelledBy} {...props}>

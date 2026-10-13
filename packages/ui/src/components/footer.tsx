@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 import { ButtonLink, type IconSlot, TouchTarget } from '../components/button.js'
@@ -41,9 +42,11 @@ const footerColors = [
 
 type FooterColor = (typeof footerColors)[number]
 
-// Shared by cva's defaultVariants and the data-color attribute, so the two
-// can't drift apart.
+// Shared by cva's defaultVariants, the `resolveVariant` call in `Footer` and
+// `footerLogoType`, so they can't drift apart.
 const DEFAULT_FOOTER_COLOR: FooterColor = 'white'
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Footer`.
+const DEFAULT_FOOTER_CONTAINER = 'fluid'
 
 /**
  * Surfaces dark enough that the full-colour mark is illegible but the waratah
@@ -108,7 +111,7 @@ function warnIfMonoLogoRequired(color: FooterColor) {
  * white and every surface deepens, so all thirteen render an all-white logo.
  */
 function footerLogoType(color?: FooterColor | null): 'default' | 'reversed' | 'mono-white' {
-  const resolved = color ?? DEFAULT_FOOTER_COLOR
+  const resolved = resolveVariant(color, DEFAULT_FOOTER_COLOR)
   if (footerReversedLogoColors.has(resolved)) {
     return 'reversed'
   }
@@ -204,7 +207,7 @@ const footerContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_FOOTER_CONTAINER,
     },
   },
 )
@@ -556,7 +559,9 @@ function FooterSmallPrint({
   )
 }
 
-type FooterProps = React.ComponentPropsWithoutRef<'footer'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type FooterProps = Omit<React.ComponentPropsWithoutRef<'footer'>, 'color'> &
   VariantProps<typeof footerVariants> &
   VariantProps<typeof footerContainerVariants> & {
     /** Supporting/legal links — privacy, accessibility, copyright, etc. */
@@ -634,17 +639,26 @@ function Footer({
   const showAcknowledgement = Boolean(acknowledgement)
   const showLegalLinks = legalLinks.length > 0
 
+  // Resolved once (see `resolveVariant`), so cva and `data-color` agree for
+  // `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--footer-max-width`, instead of dropping it.
+  const colorway = resolveVariant(color, DEFAULT_FOOTER_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_FOOTER_CONTAINER)
+
   return (
     <footer
       data-slot='footer'
-      data-color={color ?? DEFAULT_FOOTER_COLOR}
       {...props}
-      className={cn(footerVariants({ color }), className)}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
+      className={cn(footerVariants({ color: colorway }), className)}
       ref={ref}
     >
       <div
         data-slot='footer-container'
-        className={cn(footerContainerVariants({ container }), containerClassName)}
+        className={cn(footerContainerVariants({ container: containerway }), containerClassName)}
       >
         {topBorder && <Separator decorative className='mb-4 bg-(--footer-border)' />}
         {children}

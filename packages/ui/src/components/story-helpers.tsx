@@ -1014,3 +1014,91 @@ export function BreadcrumbLookPage({
     </div>
   )
 }
+
+// ─── Null variants ────────────────────────────────────────────────────────────
+
+/**
+ * The two instances a "Null variants are the defaults" story renders: the
+ * default spelling first, the `null` spelling second, found by `data-slot`.
+ */
+export function queryVariantPair(canvasElement: HTMLElement, slot: string) {
+  const found = canvasElement.querySelectorAll<HTMLElement>(`[data-slot="${slot}"]`)
+  const [byDefault, byNull] = found
+  if (!byDefault || !byNull || found.length !== 2) {
+    throw new Error(`Expected 2 [data-slot="${slot}"] elements, got ${found.length}.`)
+  }
+  return [byDefault, byNull] as const
+}
+
+export interface NullVariantsExpectation {
+  /** The `data-*` values the null spelling must report, keyed without `data-`. */
+  attrs: Record<string, string>
+  /** One class the default always carries, so a pair of empty class lists cannot pass. */
+  sentinelClass: string
+  /** Computed style properties that must match between the two spellings. */
+  style?: readonly (keyof CSSStyleDeclaration & string)[]
+  /** `data-slot` of an inner wrapper whose classes must also match. */
+  innerSlot?: string
+}
+
+/**
+ * Holds the `null` spelling of a component's variants to the same output as
+ * the default spelling: the advertised `data-*` values, the sentinel class,
+ * the full class list, the computed style, and optionally an inner wrapper.
+ *
+ * cva reads an explicit `null` as "no variant" where `undefined` takes the
+ * default; a component that normalises each variant once (`resolveVariant`)
+ * renders both spellings identically, and one that passes the raw prop to
+ * cva fails here on the sentinel class.
+ */
+export function expectNullVariantsMatchDefault(
+  byDefault: HTMLElement,
+  byNull: HTMLElement,
+  { attrs, sentinelClass, style = ['backgroundColor'], innerSlot }: NullVariantsExpectation,
+) {
+  // Both instances, so the stories pin the documented default as well as the
+  // parity between the two spellings.
+  for (const [key, value] of Object.entries(attrs)) {
+    for (const [spelling, element] of [
+      ['default', byDefault],
+      ['null', byNull],
+    ] as const) {
+      if (element.dataset[key] !== value) {
+        throw new Error(
+          `Expected the ${spelling} spelling to report data-${key}="${value}", got "${element.dataset[key]}".`,
+        )
+      }
+    }
+  }
+  if (!byNull.classList.contains(sentinelClass)) {
+    throw new Error(
+      `Expected the null spelling to carry the default classes (${sentinelClass}), got "${byNull.className}".`,
+    )
+  }
+  if (byNull.className !== byDefault.className) {
+    throw new Error(
+      `Expected the null spelling to render the same classes as the default:\n  default: ${byDefault.className}\n  null:    ${byNull.className}`,
+    )
+  }
+  const defaultStyle = getComputedStyle(byDefault)
+  const nullStyle = getComputedStyle(byNull)
+  for (const property of style) {
+    if (nullStyle[property] !== defaultStyle[property]) {
+      throw new Error(
+        `Expected the null spelling to compute the default ${property} (${String(defaultStyle[property])}), got ${String(nullStyle[property])}.`,
+      )
+    }
+  }
+  if (innerSlot) {
+    const innerDefault = byDefault.querySelector<HTMLElement>(`[data-slot="${innerSlot}"]`)
+    const innerNull = byNull.querySelector<HTMLElement>(`[data-slot="${innerSlot}"]`)
+    if (!innerDefault || !innerNull) {
+      throw new Error(`Expected a [data-slot="${innerSlot}"] inside each instance.`)
+    }
+    if (innerNull.className !== innerDefault.className) {
+      throw new Error(
+        `Expected the null spelling to render the same ${innerSlot} classes as the default:\n  default: ${innerDefault.className}\n  null:    ${innerNull.className}`,
+      )
+    }
+  }
+}

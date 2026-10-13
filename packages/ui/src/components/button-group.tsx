@@ -10,6 +10,7 @@ import {
   ButtonGroupContext,
   type ButtonGroupContextValue,
 } from '../lib/button-group-context.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 import { buttonColorVariants, type ButtonProps } from './button.js'
 import { Separator } from './separator.js'
@@ -240,8 +241,8 @@ function ButtonGroup({
   children,
   ...props
 }: ButtonGroupProps) {
-  const resolvedVariant = variant ?? DEFAULT_GROUP_VARIANT
-  const resolvedOrientation = orientation ?? DEFAULT_GROUP_ORIENTATION
+  const resolvedVariant = resolveVariant(variant, DEFAULT_GROUP_VARIANT)
+  const resolvedOrientation = resolveVariant(orientation, DEFAULT_GROUP_ORIENTATION)
   // `null` is admitted by both prop types (they borrow Button's, which allow
   // it) and is the idiomatic way to thread an optional prop through a
   // wrapper. cva reads it as "no variant" rather than "unspecified", so an

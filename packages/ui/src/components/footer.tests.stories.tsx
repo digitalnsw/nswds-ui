@@ -9,6 +9,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import * as React from 'react'
 
 import { Footer, footerColors, FooterNav, FooterNavColumn } from './footer.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 // Plain stand-ins rather than the package's own brand marks (icons/brands),
 // which bake in `data-slot="icon"`. These do not, so SocialIconElements proves
@@ -509,5 +510,27 @@ export const CssCheck: Story = {
         `Expected --footer-border to resolve via color-mix off --footer-ink, got "${ruleBg}".`,
       )
     }
+  },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `container` has no native attribute to collide with.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <Footer {...args} color={undefined} container={undefined} />
+      <Footer {...args} color={null} container={null} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'footer')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'footer-container',
+    })
   },
 }

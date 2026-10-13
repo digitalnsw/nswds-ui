@@ -3,6 +3,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 import { IconSearch } from '../icons/search.js'
@@ -245,13 +246,15 @@ function ExpandableSearch({
   onSubmit,
   onFocusCapture,
   onBlurCapture,
-  variant = 'default',
+  variant,
   ref,
   ...props
 }: ExpandableSearchProps) {
   const [value, setValue] = React.useState(defaultValue)
   const [formHasFocusWithin, setFormHasFocusWithin] = React.useState(false)
-  const resolvedVariant: ExpandableSearchVariant = variant ?? 'default'
+  // Resolved once (see `resolveVariant`), so cva, `data-variant` and the
+  // context agree for `null` and `''` as well as the default spelling.
+  const resolvedVariant: ExpandableSearchVariant = resolveVariant(variant, 'default')
   const isActive = value.length > 0 || formHasFocusWithin
 
   const contextValue = React.useMemo(
@@ -289,17 +292,19 @@ function ExpandableSearch({
     <ExpandableSearchContext.Provider value={contextValue}>
       <form
         data-slot='expandable-search'
-        data-variant={resolvedVariant}
         // Present-or-absent rather than "true"/"false", so it reads like Base
         // UI's data-* attributes and Tailwind's bare `data-expanded:` variant
         // works. Same convention as Header's data-scrolled.
         data-expanded={isActive || undefined}
         {...props}
+        // After the spread, so a consumer's own `data-variant` cannot desync
+        // the attribute from the classes both derive from the resolved value.
+        data-variant={resolvedVariant}
         // The surface (and its ink) lives on the root so BOTH children — the
         // input and the absolutely-positioned submit button — inherit the
         // custom properties. The root shrink-wraps the input, so painting the
         // background here is visually identical to painting it on the input.
-        className={cn(expandableSearchVariants({ variant }), className)}
+        className={cn(expandableSearchVariants({ variant: resolvedVariant }), className)}
         onBlurCapture={handleBlurCapture}
         onFocusCapture={handleFocusCapture}
         onSubmit={handleSubmit}

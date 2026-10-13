@@ -3,6 +3,7 @@ import type * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { overlayInk } from '../lib/overlay.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -44,6 +45,8 @@ const pageHeaderColors = {
 type PageHeaderColor = keyof typeof pageHeaderColors
 
 const DEFAULT_PAGE_HEADER_COLOR: PageHeaderColor = 'blue'
+// Shared by cva's defaultVariants and the `resolveVariant` call in `PageHeader`.
+const DEFAULT_PAGE_HEADER_CONTAINER = 'fluid'
 
 const pageHeaderVariants = cva(
   [
@@ -93,12 +96,14 @@ const pageHeaderInnerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_PAGE_HEADER_CONTAINER,
     },
   },
 )
 
-type PageHeaderProps = React.ComponentPropsWithoutRef<'section'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type PageHeaderProps = Omit<React.ComponentPropsWithoutRef<'section'>, 'color'> &
   VariantProps<typeof pageHeaderVariants> &
   VariantProps<typeof pageHeaderInnerVariants> & {
     /**
@@ -142,22 +147,26 @@ function PageHeader({
   children,
   ...props
 }: PageHeaderProps) {
-  // Normalised once: cva treats an explicit `null` as "no colourway" where
-  // `undefined` takes the default, so the classes and `data-color` would
-  // otherwise disagree for `color={null}`.
-  const colorway = color ?? DEFAULT_PAGE_HEADER_COLOR
+  // Resolved once (see `resolveVariant`), so cva and `data-color` agree for
+  // `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--page-header-max-width`, instead of dropping it.
+  const colorway = resolveVariant(color, DEFAULT_PAGE_HEADER_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_PAGE_HEADER_CONTAINER)
   return (
     <section
       ref={ref}
       data-slot='page-header'
-      data-color={colorway}
       aria-labelledby={labelledBy}
-      className={cn(pageHeaderVariants({ color: colorway, className }))}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
+      className={cn(pageHeaderVariants({ color: colorway, className }))}
     >
       <div
         data-slot='page-header-inner'
-        className={cn(pageHeaderInnerVariants({ container }), innerClassName)}
+        className={cn(pageHeaderInnerVariants({ container: containerway }), innerClassName)}
       >
         {children}
       </div>

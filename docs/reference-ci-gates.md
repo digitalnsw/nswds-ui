@@ -28,16 +28,17 @@ Run in this order, in one job:
 | 9   | Portal boundaries          | `npm run check:portal-boundary -w @nswds/ui`               |
 | 10  | Theme parity               | `npm run check:theme-parity -w @nswds/ui`                  |
 | 11  | Story standard             | `npm run check:stories -w @nswds/ui`                       |
-| 12  | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
-| 13  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
-| 14  | Unit tests                 | `npm test -w @nswds/ui`                                    |
-| 15  | Next app builds            | `npm run build -w web -w infographics`                     |
-| 16  | Package checks             | `npm run check:package -w @nswds/ui`                       |
-| 17  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
-| 18  | Registry freshness         | rebuild + `git status` comparison                          |
-| 19  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
-| 20  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
-| 21  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
+| 12  | Variant normalisation      | `npm run check:variants -w @nswds/ui`                      |
+| 13  | Release config tests       | `npm test -w @workspace/semantic-release-config`           |
+| 14  | Build                      | `npm run build -w @nswds/ui` (runs `check:cascade` inside) |
+| 15  | Unit tests                 | `npm test -w @nswds/ui`                                    |
+| 16  | Next app builds            | `npm run build -w web -w infographics`                     |
+| 17  | Package checks             | `npm run check:package -w @nswds/ui`                       |
+| 18  | Consumer fixture           | `./scripts/test-consumer-fixture.sh`                       |
+| 19  | Registry freshness         | rebuild + `git status` comparison                          |
+| 20  | Registry resolution        | `npm run check:registry-resolves -w @nswds/ui`             |
+| 21  | Storybook pre-bundle drift | `npm run check:optimize-deps -w @workspace/storybook`      |
+| 22  | Storybook tests            | `npm run test -w @workspace/storybook`                     |
 
 A separate `visual-change-release-guard` job runs in parallel.
 
@@ -71,7 +72,8 @@ platform computes.
 ### 5 · Script tests
 
 `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs` — today, the `check:workflows`
-scanner and the `check:portal-boundary`, `check:theme-parity` and `check:stories` gates.
+scanner and the `check:portal-boundary`, `check:theme-parity`, `check:stories` and
+`check:variants` gates.
 
 Not belt-and-braces. A gate that stops gating exits 0, which reads exactly like success, and this
 one has done it twice: the first version silently missed every `- run:` written as a YAML sequence
@@ -163,7 +165,23 @@ and passing. Its recorded exceptions (`REFERENCE`, `EXTRAS`, `GROUPS`, `GUIDES`,
 
 **Fix:** follow the failure's message; Button (`button.stories.tsx`) is the reference.
 
-### 12 · Release config tests
+### 12 · `check:variants`
+
+Fails a component that advertises a variant's default in a `data-*` attribute
+(`data-color={color ?? DEFAULT}`) while handing cva the raw prop (`variants({ color })`), and one
+that writes such an attribute before a `{...props}` spread. cva reads an explicit `null` as "no
+variant" where `??` falls through to the default, so the first pair renders an element whose
+attribute and classes disagree; the second lets a consumer's own attribute contradict them. Both
+lint, typecheck, build and pass every story that passes a member value, so nothing else in CI sees
+them. The pair was hand-fixed in nine components before the gate existed, and its first full run
+caught two more. It parses the syntax tree, follows aliases, ternaries and renamed props, matches
+within one component, and records the shapes it does not catch as fixtures. Its fixture tests run
+under [script tests](#5--script-tests).
+
+**Fix:** resolve the variant once with `resolveVariant` from `packages/ui/src/lib/resolve-variant.ts`,
+pass that one value to cva and the attribute, and write the attribute after the spread.
+
+### 13 · Release config tests
 
 Cover the path-scoped release gate. They exist because `release.yml` commits with `[skip ci]`, so
 nothing else in CI ever exercises the release configuration — a mistake there is invisible until it
@@ -171,7 +189,7 @@ has already published, or silently failed to.
 
 They build a throwaway git repo per case, so they pass under this job's shallow checkout.
 
-### 13 · `check:cascade` (inside `build`)
+### 14 · `check:cascade` (inside `build`)
 
 Runs **inside** `build`, not as its own step, because it reads the built `dist/styles.css` — so a
 `build` that "succeeded" without it has not actually been run.
@@ -191,7 +209,7 @@ re-emit the loser after ours.
 Cascade layers cannot fix this — see
 [Surviving someone else's build](explanation-architecture.md#surviving-someone-elses-build).
 
-### 14 · Unit tests
+### 15 · Unit tests
 
 `node --test` over `packages/ui/tests/`, covering the package's **pure exported logic**. Runs
 against `dist/`, not `src/` (Node cannot strip JSX), so it must come after `build` and fails with a
@@ -203,7 +221,7 @@ with no coverage and two bugs.
 
 **Pure logic goes here; rendered behaviour goes in a story.**
 
-### 15 · Next app builds
+### 16 · Next app builds
 
 `apps/web` and `apps/infographics` compile `@nswds/ui` from source
 (`transpilePackages` and the `globals.css` dev entry), so a change in
@@ -211,12 +229,12 @@ with no coverage and two bugs.
 build all pass. Before this step the only signal was each app's Vercel deploy
 check. Needs the `@nswds/ui` build first, like the Vercel build commands.
 
-### 16 · `check:package`
+### 17 · `check:package`
 
 `publint --strict` + `are-the-types-wrong` against the built tarball. Catches export-map and
 type-resolution faults that `build` alone will happily produce.
 
-### 17 · Consumer fixture
+### 18 · Consumer fixture
 
 **The only gate with no npm script** — invisible from `package.json`. Run it by path:
 
@@ -238,7 +256,7 @@ Build `@nswds/ui` first. Not redundant with `check:package`: that validates the 
 this exercises it as a consumer receives it. The fixture runs its **own** Tailwind build alongside
 ours, the only place the two-build cascade is tested end to end.
 
-### 18 · Registry freshness
+### 19 · Registry freshness
 
 Rebuilds the registry and fails if committed output differs. Run `npm run registry:build` and
 commit `apps/registry/public/r/` whenever component source, `registry.json` or `components.json`
@@ -248,7 +266,7 @@ change.
 > `git status`, which cannot see a file nothing regenerates. Deleting an item from `registry.json`
 > also means deleting `apps/registry/public/r/<name>.json` by hand.
 
-### 19 · `check:registry-resolves`
+### 20 · `check:registry-resolves`
 
 The companion to `check:drift`, and easy to confuse with it. **Drift proves an item is registered;
 this proves it would actually compile** once `shadcn add` copies it.
@@ -271,7 +289,7 @@ Four real bugs motivated it, all of which passed drift, validate **and** the fre
 
 **Import icons per-icon (`../icons/close.js`), never through the barrel.**
 
-### 20 · `check:optimize-deps`
+### 21 · `check:optimize-deps`
 
 Asserts every bare import reachable from `packages/ui/src` appears in `optimizeDeps.include` in
 `apps/storybook/vitest.config.ts`.
@@ -284,7 +302,7 @@ that kills whichever story was mid-flight.
 Add a component with a new dependency, forget this list, and the Storybook job starts failing
 intermittently **somewhere else entirely**.
 
-### 21 · Storybook tests
+### 22 · Storybook tests
 
 Every story rendered in real Chromium, with axe at WCAG 2.x AA enforced as an error. This is the
 suite that actually proves the components work. Takes roughly 80–170s.
@@ -333,6 +351,7 @@ npm run check:icons -w @nswds/ui
 npm run check:portal-boundary -w @nswds/ui
 npm run check:theme-parity -w @nswds/ui
 npm run check:stories -w @nswds/ui
+npm run check:variants -w @nswds/ui
 npm test -w @workspace/semantic-release-config
 npm run build -w @nswds/ui
 npm test -w @nswds/ui

@@ -9,6 +9,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Alert, alertVariants, Callout, calloutVariants } from './callout.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Callout/Tests',
@@ -72,5 +73,30 @@ export const AlertAlias: Story = {
     if (Alert !== Callout || alertVariants !== calloutVariants) {
       throw new Error('Alert and alertVariants must be the Callout exports, not copies.')
     }
+  },
+}
+
+/**
+ * Callout advertised `data-status="info"` for a `null` status while handing
+ * cva the raw prop, so the callout carried none of the status custom
+ * properties. The null spelling must render as the default (see
+ * `expectNullVariantsMatchDefault`). `status` has no native attribute to
+ * collide with.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <Callout {...args} status={undefined} />
+      <Callout {...args} status={null} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'callout')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { status: 'info' },
+      sentinelClass: '[--callout-border:var(--info-border)]',
+      style: ['backgroundColor', 'borderTopColor'],
+    })
   },
 }

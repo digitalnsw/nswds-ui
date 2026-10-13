@@ -4,6 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
 import { IconEast } from '../icons/east.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 import {
@@ -52,9 +53,11 @@ const mainNavColors = [
 
 type MainNavColor = (typeof mainNavColors)[number]
 
-// Shared by cva's defaultVariants, the data-color attribute and the panel
-// variant lookup, so the three can't drift apart.
+// Shared by the bar's and the panel's cva defaultVariants and the
+// `resolveVariant` call in `MainNav`, so they can't drift apart.
 const DEFAULT_MAIN_NAV_COLOR: MainNavColor = 'white'
+// Shared by cva's defaultVariants and the `resolveVariant` call in `MainNav`.
+const DEFAULT_MAIN_NAV_CONTAINER = 'fluid'
 
 const mainNavVariants = cva(
   [
@@ -152,7 +155,7 @@ const mainNavContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_MAIN_NAV_CONTAINER,
     },
   },
 )
@@ -454,7 +457,9 @@ function MainNavMenuItem({ item, color, currentHref, panelWidth }: MainNavMenuIt
   )
 }
 
-type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type MainNavProps = Omit<React.ComponentPropsWithoutRef<'nav'>, 'children' | 'color'> &
   VariantProps<typeof mainNavVariants> &
   VariantProps<typeof mainNavContainerVariants> & {
     /** Top-level items; items with `links` open mega panels. */
@@ -615,15 +620,24 @@ function MainNav({
     return lastAlignOffsetRef.current
   }, [])
 
+  // Resolved once (see `resolveVariant`), so cva, `data-color` and the panel
+  // colourway agree for `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--main-nav-max-width`, instead of dropping it.
+  const colorway = resolveVariant(color, DEFAULT_MAIN_NAV_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_MAIN_NAV_CONTAINER)
+
   return (
     <nav
       id='nsw-main-navigation'
       data-slot='main-nav'
-      data-color={color ?? DEFAULT_MAIN_NAV_COLOR}
       aria-label={ariaLabel}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(
-        mainNavVariants({ color, border }),
+        mainNavVariants({ color: colorway, border }),
         // z-40 matches Header (both sit below the z-50 SkipLinks). An app
         // stacking this under a sticky Header sets --main-nav-top to the
         // header's height.
@@ -637,7 +651,7 @@ function MainNav({
       <div
         ref={containerRef}
         data-slot='main-nav-container'
-        className={cn(mainNavContainerVariants({ container }), containerClassName)}
+        className={cn(mainNavContainerVariants({ container: containerway }), containerClassName)}
       >
         {navigation.length === 0 ? (
           // No items: render the message directly rather than an empty
@@ -683,7 +697,7 @@ function MainNav({
                   <MainNavMenuItem
                     key={`${item.title}-${item.href ?? 'section'}`}
                     item={item}
-                    color={color ?? DEFAULT_MAIN_NAV_COLOR}
+                    color={colorway}
                     currentHref={currentHref}
                     panelWidth={panelWidth}
                   />
