@@ -33,20 +33,20 @@ describe('getAuthClient', () => {
 describe('signOutEverywhere', () => {
   function stub(revokeError: { message?: string } | null = null) {
     return {
-      revokeSessions: vi.fn(async () => ({ error: revokeError })),
+      revokeOtherSessions: vi.fn(async () => ({ error: revokeError })),
       signOut: vi.fn(async () => ({ error: null })),
     }
   }
 
-  it('revokes every session before clearing the cookie', async () => {
+  it('revokes the other sessions before signing out of this one', async () => {
     const c = stub()
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: null })
-    expect(c.revokeSessions.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(c.revokeOtherSessions.mock.invocationCallOrder[0]).toBeLessThan(
       c.signOut.mock.invocationCallOrder[0]!,
     )
   })
 
-  it('stops and reports the error when revoking fails, leaving the visitor signed in', async () => {
+  it('stops and reports the error when revoking the other sessions fails, leaving the visitor signed in', async () => {
     const c = stub({ message: 'network down' })
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: { message: 'network down' } })
     expect(c.signOut).not.toHaveBeenCalled()
