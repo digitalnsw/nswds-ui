@@ -7,7 +7,9 @@
     "REGISTRY_LOCATION",
     "REGISTRY_ORIGIN",
     "INFOGRAPHICS_ORIGIN",
-    "STORYBOOK_ORIGIN",
+    "STORYBOOK_ORIGIN"
+  ],
+  "globalPassThroughEnv": [
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",

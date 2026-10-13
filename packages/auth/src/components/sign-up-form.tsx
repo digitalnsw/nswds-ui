@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient } from '../client'
+import { returnPath } from './sign-in-form'
 
 export interface SignUpFormProps {
   /**
@@ -22,7 +23,8 @@ export interface SignUpFormProps {
 
 /**
  * Email + password registration. On success Better Auth sets the session
- * cookie and we send the new user to `homeHref`; `router.refresh()` re-runs
+ * cookie and we send the new user to the page the gate turned them away from
+ * (`from`, when it is a path of this app) or else to `homeHref`; `router.refresh()` re-runs
  * the server components so the signed-in state is picked up immediately.
  *
  * Registration is gated to an email allowlist server-side (see `createAuth`);
@@ -57,7 +59,9 @@ export function SignUpForm({
       return
     }
 
-    router.push(homeHref)
+    // The return path is checked to be a path of this app (`safeReturnPath`);
+    // an app with `typedRoutes` cannot know it statically, hence the cast.
+    router.push((returnPath() ?? homeHref) as Route)
     router.refresh()
   }
 

@@ -80,7 +80,7 @@ describe('createAuth wiring', () => {
   })
 
   it('caches the session in a signed cookie so the proxy rarely hits the database', () => {
-    expect(createAuth().options.session?.cookieCache).toEqual({ enabled: true, maxAge: 300 })
+    expect(createAuth().options.session?.cookieCache).toEqual({ enabled: true, maxAge: 60 })
   })
 
   it('mounts the endpoints under the app path it is given', () => {

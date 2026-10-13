@@ -28,3 +28,7 @@ A preview deployment is trusted through the addresses Vercel sets for it (`VERCE
 `VERCEL_BRANCH_URL`); a zone lists its own domain in `trustedOrigins` so its sign-in page works there
 too. `@workspace/auth/env` holds `loadRootEnv`, which a `next.config.ts` can call to read the root
 `.env`.
+
+Registration is one-shot per allowlisted address (no email verification): claim each address
+before the site is shared. The gate remembers where a signed-out visitor was going (`from`) and the
+forms return them there after sign-in, for a path of the app only.

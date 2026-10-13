@@ -19,6 +19,10 @@ export const basePath = '/infographics'
 export const auth = createAuth({
   basePath,
   nextBasePath: true,
-  // The zone's own domain, so the sign-in page also works when reached there.
-  trustedOrigins: ['https://infographics.design.nsw.gov.au'],
+  // The zone's own domain (and its www, which next.config.mjs also answers on),
+  // so the sign-in page also works when reached there.
+  trustedOrigins: [
+    'https://infographics.design.nsw.gov.au',
+    'https://www.infographics.design.nsw.gov.au',
+  ],
 })

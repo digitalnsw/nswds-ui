@@ -96,11 +96,18 @@ export interface CreateAuthOptions {
  * Set-Cookie headers for calls made from Server Actions, and only works there
  * as the final plugin.
  *
- * The session is also cached in a signed cookie for five minutes
- * (`cookieCache`), so the proxy's per-request `getSession` reads the cookie
- * rather than the database for most requests — a page's assets, framed
- * previews and RSC prefetches each pass the gate. Sign-out clears it; a
- * revoked session is still honoured for at most the cache's age.
+ * The session is also cached in a signed cookie for one minute (`cookieCache`),
+ * so the proxy's per-request `getSession` reads the cookie rather than the
+ * database for the burst of requests a page costs — its assets, framed previews
+ * and RSC prefetches each pass the gate. Sign-out clears the cached cookie at
+ * once; a session revoked in the database any other way is still honoured for
+ * at most that minute, which is the trade this gate makes.
+ *
+ * Who may register is the allowlist's business (`SIGNUP_ALLOWED_EMAILS`), and
+ * registration is one-shot per address: with no email verification, the first
+ * person to sign up with an allowlisted address owns it. Claim each address
+ * before the site is shared; verification or seeded accounts (`disableSignUp`)
+ * would close that window, at the cost of an email provider or a script.
  *
  * Self-service sign-up stays enabled, but `databaseHooks.user.create.before`
  * restricts *who* may register to `allowedSignUpEmails`: any account creation
@@ -118,7 +125,7 @@ export function createAuth({
     basePath: nextBasePath ? authBasePath() : authBasePath(basePath),
     trustedOrigins: resolveTrustedOrigins(trustedOrigins),
     session: {
-      cookieCache: { enabled: true, maxAge: 5 * 60 },
+      cookieCache: { enabled: true, maxAge: 60 },
     },
     database: drizzleAdapter(db, {
       provider: 'pg',

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient } from '../client'
+import { RETURN_PARAM, safeReturnPath } from '../proxy'
 
 export interface SignInFormProps {
   /**
@@ -22,12 +23,23 @@ export interface SignInFormProps {
 
 /**
  * Email + password sign-in. On success Better Auth sets the session cookie and
- * we send the user to `homeHref`; `router.refresh()` re-runs the server
- * components so the signed-in state is picked up immediately.
+ * we send the user to the page the gate turned them away from (`from` in the
+ * URL, when it is a path of this app) or else to `homeHref`; `router.refresh()`
+ * re-runs the server components so the signed-in state is picked up immediately.
  * The hrefs are `Route`s so an app with `typedRoutes` checks what it passes;
  * the defaults are cast because they name routes of the app that renders the
  * form, which this package cannot know.
  */
+/**
+ * The page to return to after sign-in, from the gate's `from` parameter. Read at
+ * submit time rather than through `useSearchParams`, so the statically rendered
+ * sign-in page needs no Suspense boundary and ships its form in the HTML.
+ */
+export function returnPath(): string | null {
+  if (typeof window === 'undefined') return null
+  return safeReturnPath(new URLSearchParams(window.location.search).get(RETURN_PARAM))
+}
+
 export function SignInForm({
   basePath,
   homeHref = '/' as Route,
@@ -53,7 +65,9 @@ export function SignInForm({
       return
     }
 
-    router.push(homeHref)
+    // The return path is checked to be a path of this app (`safeReturnPath`);
+    // an app with `typedRoutes` cannot know it statically, hence the cast.
+    router.push((returnPath() ?? homeHref) as Route)
     router.refresh()
   }
 

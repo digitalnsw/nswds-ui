@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createProxy, isGateLifted, isPublicRoute, underBasePath } from './proxy'
+import { createProxy, isGateLifted, isPublicRoute, safeReturnPath, underBasePath } from './proxy'
 
 // A stand-in for an app's auth instance: the gate only reads `api.getSession`.
 const getSession = vi.fn<(input: { headers: Headers }) => Promise<unknown>>()
@@ -60,9 +60,21 @@ describe('isPublicRoute', () => {
 describe('proxy gate', () => {
   const proxy = createProxy(auth)
 
-  it('redirects a signed-out visitor away from a private route to /sign-in', async () => {
+  it('redirects a signed-out visitor away from a private route to /sign-in, remembering it', async () => {
     getSession.mockResolvedValue(null)
-    expectsRedirectTo(await proxy(request('/account')), 'http://localhost:3100/sign-in')
+    expectsRedirectTo(
+      await proxy(request('/account')),
+      'http://localhost:3100/sign-in?from=%2Faccount',
+    )
+    expectsRedirectTo(
+      await proxy(request('/colour/blue?tab=ramps')),
+      'http://localhost:3100/sign-in?from=%2Fcolour%2Fblue%3Ftab%3Dramps',
+    )
+  })
+
+  it('sends a signed-out visitor to the root to plain /sign-in', async () => {
+    getSession.mockResolvedValue(null)
+    expectsRedirectTo(await proxy(request('/')), 'http://localhost:3100/sign-in')
   })
 
   it('lets a signed-out visitor reach a public route', async () => {
@@ -85,7 +97,10 @@ describe('proxy gate', () => {
     getSession.mockRejectedValue(new Error('database unreachable'))
 
     // Private route → redirected to sign-in rather than throwing.
-    expectsRedirectTo(await proxy(request('/account')), 'http://localhost:3100/sign-in')
+    expectsRedirectTo(
+      await proxy(request('/account')),
+      'http://localhost:3100/sign-in?from=%2Faccount',
+    )
     expect(consoleError).toHaveBeenCalled()
 
     consoleError.mockRestore()
@@ -99,9 +114,10 @@ describe('proxy gate under a basePath', () => {
 
   it('sends a signed-out visitor to the sign-in page inside the zone', async () => {
     getSession.mockResolvedValue(null)
+    // `from` is basePath-relative: the zone's form pushes it and Next prefixes.
     expectsRedirectTo(
       await proxy(request('/account', '/infographics')),
-      'http://localhost:3100/infographics/sign-in',
+      'http://localhost:3100/infographics/sign-in?from=%2Faccount',
     )
   })
 
@@ -136,7 +152,7 @@ describe('proxy gate for routes under a folder (no basePath)', () => {
     getSession.mockResolvedValue(null)
     expectsRedirectTo(
       await proxy(request('/builder/workbench')),
-      'http://localhost:3100/builder/sign-in',
+      'http://localhost:3100/builder/sign-in?from=%2Fbuilder%2Fworkbench',
     )
   })
 
@@ -181,7 +197,29 @@ describe('NSWDS_AUTH_GATE=off (the browser suites)', () => {
     expect(isGateLifted('email.design.nsw.gov.au')).toBe(false)
     getSession.mockResolvedValue(null)
     const req = new NextRequest(new URL('/account', 'https://email.design.nsw.gov.au'))
-    expectsRedirectTo(await proxy(req), 'https://email.design.nsw.gov.au/sign-in')
+    expectsRedirectTo(await proxy(req), 'https://email.design.nsw.gov.au/sign-in?from=%2Faccount')
+  })
+})
+
+describe('safeReturnPath', () => {
+  it('accepts a path of this app, query included', () => {
+    expect(safeReturnPath('/account')).toBe('/account')
+    expect(safeReturnPath('/colour/blue?tab=ramps')).toBe('/colour/blue?tab=ramps')
+  })
+
+  it('refuses anything that could leave the app', () => {
+    for (const value of [
+      null,
+      undefined,
+      '',
+      'account',
+      'https://evil.example/',
+      '//evil.example/',
+      '/\\evil.example/',
+      'javascript:alert(1)',
+    ]) {
+      expect(safeReturnPath(value), String(value)).toBeNull()
+    }
   })
 })
 

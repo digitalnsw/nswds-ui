@@ -47,6 +47,22 @@ export function isGateLifted(hostname: string): boolean {
   )
 }
 
+/** The query parameter the gate uses to carry the page a visitor was after. */
+export const RETURN_PARAM = 'from'
+
+/**
+ * `value` if it is a path of this app the forms may send a visitor to after
+ * sign-in, else `null`: an absolute path, so never another origin
+ * (`https://…`, `//evil`) or a scheme; `basePath`-relative, which `router.push`
+ * prefixes. Read on both ends — the gate writes it, the forms read it.
+ */
+export function safeReturnPath(value: string | null | undefined): string | null {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
+    return null
+  }
+  return value
+}
+
 /**
  * `path` under the app's `basePath`, without the `/infographics/` a plain join
  * would produce for the root: Next 308s that to `/infographics`, and a zone's
@@ -69,11 +85,15 @@ export function isPublicRoute(
  * The session is validated server-side via `auth.api.getSession`, not by cookie
  * presence: `getSessionCookie` only reports that *some* session cookie exists,
  * so a fabricated, invalid or expired value would otherwise pass the gate. Proxy
- * runs on the Node.js runtime by default in Next 16, so the full auth stack —
- * including its database-backed session lookup — is available here. The cost is
- * one session lookup per matched request; that is the right default for "the
- * whole app is behind sign-in", and can be traded for Better Auth's signed
- * cookie cache later if that per-request latency ever matters.
+ * runs on the Node.js runtime by default in Next 16, so the full auth stack is
+ * available here. Most requests are answered from the signed cookie cache
+ * `createAuth` turns on (one minute): a page's assets, previews and prefetches
+ * cost no database round-trip, and a session revoked in the database stays
+ * accepted for at most that long; sign-out clears the cached cookie at once.
+ *
+ * A signed-out visitor is sent to the sign-in page with the path they asked for
+ * in `from` (`RETURN_PARAM`), which the forms honour after sign-in when it is a
+ * path of this app (`safeReturnPath`).
  *
  * Paths are compared without the app's `basePath` (`nextUrl.pathname` strips
  * it), and redirects put it back, so the same `publicRoutes` serve an app at the
@@ -107,9 +127,13 @@ export function createProxy(auth: SessionReader, options: ProxyOptions = {}) {
       console.error('[proxy] session validation failed', error)
     }
 
-    // Signed out and heading somewhere private → send to sign-in.
+    // Signed out and heading somewhere private → send to sign-in, remembering
+    // where they were going (basePath-relative, as `router.push` wants it).
     if (!hasSession && !publicRoute) {
-      return NextResponse.redirect(new URL(underBasePath(basePath, signInPath), request.url))
+      const target = new URL(underBasePath(basePath, signInPath), request.url)
+      const wanted = `${pathname}${request.nextUrl.search}`
+      if (wanted !== '/') target.searchParams.set(RETURN_PARAM, wanted)
+      return NextResponse.redirect(target)
     }
 
     // Already signed in but on an auth page → send to the app.
