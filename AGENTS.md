@@ -65,6 +65,11 @@ nswds-ui/                        ← private monorepo root (name: "design")
 │                                   preview + manager. Not published, not part of
 │                                   the @nswds/ui API — see docs/archive/v2-plan.md
 │                                   §2 for why it was pulled out of the barrel.)
+│   └── auth/                    ← @workspace/auth (private; the pre-launch sign-in
+│                                   for apps/web and apps/infographics: Better Auth
+│                                   over Drizzle + Neon, an allowlisted sign-up, the
+│                                   proxy gate and the sign-in views. Consumed as TS
+│                                   source; schema + migrations live here. README.)
 │
 ├── turbo.json                   pipeline orchestration
 ├── release.config.cjs           extends @workspace/semantic-release-config
@@ -1041,6 +1046,14 @@ Two consequences worth knowing:
 Each app has its own [`vercel.json`](apps/web/vercel.json) — Vercel reads this from the
 Root Directory. Do not put a repo-root `vercel.json` (it would conflict with the registry
 project which also uses the repo root for npm install).
+
+Both Next apps sit behind sign-in until launch (`packages/auth`, each app's `proxy.ts`;
+`apps/web` keeps `/registry` open for installs). They share one Neon database and one
+secret, so each project needs the same `DATABASE_URL`, `BETTER_AUTH_SECRET`,
+`BETTER_AUTH_URL` (`https://ui.design.nsw.gov.au`, the origin the zones are served
+through) and `SIGNUP_ALLOWED_EMAILS` — see `.env.example`. Storybook and the registry
+are static and carry no gate of their own; through the web app's zone rewrite
+`/storybook` is gated, on `storybook.design.nsw.gov.au` it is not.
 
 **`apps/web`** — `apps/web/vercel.json`
 

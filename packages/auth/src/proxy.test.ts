@@ -1,0 +1,147 @@
+import { NextRequest } from 'next/server'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import { createProxy, isPublicRoute } from './proxy'
+
+// A stand-in for an app's auth instance: the gate only reads `api.getSession`.
+const getSession = vi.fn<(input: { headers: Headers }) => Promise<unknown>>()
+const auth = { api: { getSession } }
+
+const A_SESSION = { session: {}, user: {} }
+
+function request(pathname: string, basePath = ''): NextRequest {
+  // The request as Next hands it to the proxy for an app with that `basePath`:
+  // the prefix is on the URL, and `nextUrl` strips it from `pathname` and keeps
+  // it beside it.
+  return new NextRequest(new URL(`${basePath}${pathname}`, 'http://localhost:3100'), {
+    nextConfig: { basePath },
+  })
+}
+
+/** A response is a redirect to `target` (an absolute URL). */
+function expectsRedirectTo(response: Response, target: string) {
+  expect(response.status).toBe(307)
+  expect(response.headers.get('location')).toBe(target)
+}
+
+/** A response lets the request through (NextResponse.next()). */
+function expectsPassThrough(response: Response) {
+  expect(response.headers.get('location')).toBeNull()
+  expect(response.headers.get('x-middleware-next')).toBe('1')
+}
+
+beforeEach(() => {
+  getSession.mockReset()
+})
+
+describe('isPublicRoute', () => {
+  it('matches the public routes and their subpaths', () => {
+    expect(isPublicRoute('/sign-in')).toBe(true)
+    expect(isPublicRoute('/sign-up')).toBe(true)
+    expect(isPublicRoute('/sign-in/reset')).toBe(true)
+  })
+
+  it('does not match private routes or lookalike prefixes', () => {
+    expect(isPublicRoute('/')).toBe(false)
+    expect(isPublicRoute('/account')).toBe(false)
+    expect(isPublicRoute('/components/button')).toBe(false)
+    // A prefix that is not a whole-segment match must not count as public.
+    expect(isPublicRoute('/sign-info')).toBe(false)
+    expect(isPublicRoute('/sign-up-early')).toBe(false)
+  })
+
+  it('takes a custom list for an app whose routes live under a folder', () => {
+    const routes = ['/builder/sign-in', '/builder/sign-up']
+    expect(isPublicRoute('/builder/sign-in', routes)).toBe(true)
+    expect(isPublicRoute('/sign-in', routes)).toBe(false)
+  })
+})
+
+describe('proxy gate', () => {
+  const proxy = createProxy(auth)
+
+  it('redirects a signed-out visitor away from a private route to /sign-in', async () => {
+    getSession.mockResolvedValue(null)
+    expectsRedirectTo(await proxy(request('/account')), 'http://localhost:3100/sign-in')
+  })
+
+  it('lets a signed-out visitor reach a public route', async () => {
+    getSession.mockResolvedValue(null)
+    expectsPassThrough(await proxy(request('/sign-in')))
+  })
+
+  it('redirects a signed-in visitor away from an auth page to the app root', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsRedirectTo(await proxy(request('/sign-in')), 'http://localhost:3100/')
+  })
+
+  it('lets a signed-in visitor reach a private route', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsPassThrough(await proxy(request('/account')))
+  })
+
+  it('fails closed: a getSession error is treated as signed out, not a 500', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    getSession.mockRejectedValue(new Error('database unreachable'))
+
+    // Private route → redirected to sign-in rather than throwing.
+    expectsRedirectTo(await proxy(request('/account')), 'http://localhost:3100/sign-in')
+    expect(consoleError).toHaveBeenCalled()
+
+    consoleError.mockRestore()
+  })
+})
+
+describe('proxy gate under a basePath', () => {
+  // A zone such as /infographics: Next strips the prefix from `pathname`, and
+  // the redirects must put it back or they would leave the zone.
+  const proxy = createProxy(auth)
+
+  it('sends a signed-out visitor to the sign-in page inside the zone', async () => {
+    getSession.mockResolvedValue(null)
+    expectsRedirectTo(
+      await proxy(request('/account', '/infographics')),
+      'http://localhost:3100/infographics/sign-in',
+    )
+  })
+
+  it('sends a signed-in visitor on an auth page to the zone root', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsRedirectTo(
+      await proxy(request('/sign-in', '/infographics')),
+      'http://localhost:3100/infographics/',
+    )
+  })
+})
+
+describe('proxy gate for routes under a folder (no basePath)', () => {
+  // A microfrontend child such as the builder: its routes live under /builder
+  // in the app itself, so the public routes and both targets carry the prefix.
+  const proxy = createProxy(auth, {
+    publicRoutes: ['/builder/sign-in', '/builder/sign-up'],
+    signInPath: '/builder/sign-in',
+    homePath: '/builder',
+  })
+
+  it('sends a signed-out visitor to the sign-in page under the folder', async () => {
+    getSession.mockResolvedValue(null)
+    expectsRedirectTo(
+      await proxy(request('/builder/workbench')),
+      'http://localhost:3100/builder/sign-in',
+    )
+  })
+
+  it('lets a signed-out visitor reach the sign-in page under the folder', async () => {
+    getSession.mockResolvedValue(null)
+    expectsPassThrough(await proxy(request('/builder/sign-in')))
+  })
+
+  it('sends a signed-in visitor on an auth page to the folder root', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsRedirectTo(await proxy(request('/builder/sign-up')), 'http://localhost:3100/builder')
+  })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})

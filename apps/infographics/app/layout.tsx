@@ -6,7 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 // is the prebuilt dist/styles.css) so this app's Tailwind build scans
 // packages/ui/src live. This app's own classes come from Tailwind's automatic
 // detection of the folder it builds in (see the note in globals.css).
-import '../../../packages/ui/src/styles/globals.css'
+import './globals.css'
 
 import { site } from '@/lib/site'
 

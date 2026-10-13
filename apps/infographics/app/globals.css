@@ -1,0 +1,9 @@
+/*
+ * The @nswds/ui DEV entry (its SOURCE, so this app's Tailwind build scans
+ * packages/ui/src live — see the note there), plus the one workspace package
+ * this app renders components from. The package sits behind a workspace
+ * symlink, which Tailwind's automatic content detection ignores, so its
+ * classes are named here; this app's own files are found automatically.
+ */
+@import '../../../packages/ui/src/styles/globals.css';
+@source '../../../packages/auth/src';
