@@ -13,6 +13,7 @@ import { IconSearch } from '../icons/search.js'
 
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Header/Tests',
@@ -419,6 +420,61 @@ export const CssCheck: Story = {
     if (styles.borderBottomColor === '' || styles.borderBottomColor === 'rgba(0, 0, 0, 0)') {
       throw new Error(
         `Expected --header-border to mix down from --header-ink, got "${styles.borderBottomColor}".`,
+      )
+    }
+  },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * The colour context is resolved from the same value but is only
+ * observable on the dark surfaces, which the Colours story covers.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: () => (
+    <div className='space-y-2'>
+      <Header id='header-default' sticky={false}>
+        <HeaderBrand sitename='Default variants' version='2.1.0' />
+      </Header>
+      <Header id='header-null' color={null} container={null} sticky={false}>
+        <HeaderBrand sitename='Null variants' version='2.1.0' />
+      </Header>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'header')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'header-container',
+    })
+  },
+}
+
+/**
+ * The resolved `data-color` is written after the props spread, so a
+ * consumer's own `data-color` cannot advertise a surface the classes do not
+ * paint. `data-scrolled` is state, not a variant, and stays before the spread
+ * so a consumer (and the docs specimens) can pin it on.
+ */
+export const ConsumerDataAttributeCannotDesync: Story = {
+  name: 'Consumer data attribute cannot desync',
+  render: () => (
+    <Header id='header-override' sticky={false} data-color='dark' data-scrolled=''>
+      <HeaderBrand sitename='Consumer attributes' version='2.1.0' />
+    </Header>
+  ),
+  play: async ({ canvasElement }) => {
+    const override = getHeader(canvasElement)
+    if (override.dataset.color !== 'white' || !override.classList.contains('bg-white')) {
+      throw new Error(
+        `Expected a consumer data-color to be overridden by the resolved colour, got data-color="${override.dataset.color}".`,
+      )
+    }
+    if (override.dataset.scrolled !== '') {
+      throw new Error(
+        `Expected a pinned data-scrolled='' to survive the render, got ${JSON.stringify(override.dataset.scrolled)}.`,
       )
     }
   },

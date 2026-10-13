@@ -1,3 +1,9 @@
+## [9.3.1](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.3.0...@nswds/ui-v9.3.1) (2026-10-13)
+
+### Bug Fixes
+
+* **ui:** normalise null variants once for cva and data attributes ([#265](https://github.com/digitalnsw/nswds-ui/issues/265)) ([8ad0585](https://github.com/digitalnsw/nswds-ui/commit/8ad0585944072b5bb3a1abe0ceaf4126c7bfc0f2))
+
 ## [9.3.0](https://github.com/digitalnsw/nswds-ui/compare/@nswds/ui-v9.2.0...@nswds/ui-v9.3.0) (2026-10-12)
 
 ### Features

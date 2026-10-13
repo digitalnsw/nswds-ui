@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -42,15 +43,17 @@ function Skeleton({
   variant,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof skeletonVariants>) {
-  // Coalesce before cva: it treats `null` as "no variant" and skips the
-  // default, which would leave the block with no fill at all.
-  const look = variant ?? 'default'
+  // Resolved once (see `resolveVariant`): cva treats `null` as "no variant"
+  // and skips the default, which would leave the block with no fill at all.
+  const look = resolveVariant(variant, 'default')
   return (
     <div
       data-slot='skeleton'
+      {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
       data-variant={look}
       className={cn(skeletonVariants({ variant: look, className }))}
-      {...props}
     />
   )
 }

@@ -14,6 +14,7 @@ import { DirectionProvider } from './direction.js'
 import { Header, HeaderBrand } from './header.js'
 import { MainNav, type MainNavItem } from './main-nav.js'
 import { Masthead } from './masthead.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 /**
  * Seven top-level items — a realistic NSW cluster site — which cannot fit a
@@ -590,6 +591,81 @@ export const CssCheck: Story = {
     if (styles.borderTopColor === '' || styles.borderTopColor === 'rgba(0, 0, 0, 0)') {
       throw new Error(
         `Expected border="both" to draw an ink-derived top rule, got "${styles.borderTopColor}".`,
+      )
+    }
+  },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * The panel colourway is resolved from the same value, so each bar
+ * opens one section and the portalled panels are held to the same classes
+ * too. Multi-instance: the component defaults to `id="nsw-main-navigation"`,
+ * which is only valid once per page.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <MainNav
+        {...args}
+        id='main-nav-default'
+        aria-label='Default variants'
+        navigation={demoNavigation}
+        color={undefined}
+        container={undefined}
+      />
+      <MainNav
+        {...args}
+        id='main-nav-null'
+        aria-label='Null variants'
+        navigation={demoNavigation}
+        color={null}
+        container={null}
+      />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'main-nav')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'white' },
+      sentinelClass: 'bg-white',
+      innerSlot: 'main-nav-container',
+    })
+
+    // The panel is portalled, so open a section on each bar in turn and read
+    // its classes before closing it again.
+    const panelClasses = async (nav: HTMLElement) => {
+      const trigger = nav.querySelector<HTMLButtonElement>('[data-slot="navigation-menu-trigger"]')
+      if (!trigger) {
+        throw new Error(`Expected a section trigger inside #${nav.id}.`)
+      }
+      trigger.focus()
+      trigger.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }),
+      )
+      const queryPanel = () => document.querySelector<HTMLElement>('[data-slot="main-nav-panel"]')
+      await waitFor(
+        () => queryPanel() !== null,
+        `Expected ArrowDown to open the panel in #${nav.id}.`,
+      )
+      const classes = queryPanel()?.className ?? ''
+      const escapeTarget =
+        document.activeElement instanceof HTMLElement ? document.activeElement : trigger
+      escapeTarget.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+      )
+      await waitFor(
+        () => !trigger.hasAttribute('data-popup-open') && queryPopup() === null,
+        `Expected Escape to close the panel in #${nav.id}.`,
+      )
+      return classes
+    }
+    const panelDefault = await panelClasses(byDefault)
+    const panelNull = await panelClasses(byNull)
+    if (panelDefault === '' || panelNull !== panelDefault) {
+      throw new Error(
+        `Expected color={null} to render the default panel colourway:\n  default: ${panelDefault}\n  null:    ${panelNull}`,
       )
     }
   },

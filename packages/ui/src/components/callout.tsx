@@ -2,6 +2,7 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 import { IconCheckCircle } from '../icons/check-circle.js'
@@ -102,7 +103,9 @@ type CalloutProps = Omit<React.ComponentPropsWithoutRef<'div'>, 'title'> &
  * relying on the icon, which is decorative here by design.
  */
 function Callout({ className, status, title, icon, children, ref, ...props }: CalloutProps) {
-  const resolvedStatus = status ?? 'info'
+  // Resolved once (see `resolveVariant`), so cva, `data-status` and the icon
+  // lookup agree for `null` and `''` as well as the default spelling.
+  const resolvedStatus = resolveVariant(status, 'info')
   // `icon` is optional-with-a-default AND nullable-to-disable, so an explicit
   // `null` has to survive: `icon ?? CALLOUT_ICONS[…]` would resurrect the
   // default for exactly the consumer trying to turn it off.
@@ -112,9 +115,11 @@ function Callout({ className, status, title, icon, children, ref, ...props }: Ca
     <div
       ref={ref}
       data-slot='callout'
-      data-status={resolvedStatus}
-      className={cn(calloutVariants({ status, className }))}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-status={resolvedStatus}
+      className={cn(calloutVariants({ status: resolvedStatus, className }))}
     >
       {Icon ? (
         <Icon

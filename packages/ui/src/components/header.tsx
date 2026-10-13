@@ -3,6 +3,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 import { Badge, type BadgeProps } from '../components/badge.js'
@@ -45,6 +46,8 @@ type HeaderColor = keyof typeof headerColors
 // Shared by cva's defaultVariants, the data-color attribute and the logo
 // context, so the four can't drift apart.
 const DEFAULT_HEADER_COLOR: HeaderColor = 'white'
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Header`.
+const DEFAULT_HEADER_CONTAINER = 'fluid'
 
 const headerVariants = cva(
   [
@@ -85,7 +88,7 @@ const headerContainerVariants = cva(
       },
     },
     defaultVariants: {
-      container: 'fluid',
+      container: DEFAULT_HEADER_CONTAINER,
     },
   },
 )
@@ -349,7 +352,9 @@ function HeaderActions({ className, ref, ...props }: HeaderActionsProps) {
   )
 }
 
-type HeaderProps = React.ComponentPropsWithoutRef<'header'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type HeaderProps = Omit<React.ComponentPropsWithoutRef<'header'>, 'color'> &
   VariantProps<typeof headerVariants> &
   VariantProps<typeof headerContainerVariants> & {
     /** Stick to the top of the viewport as the page scrolls. Defaults to `true`. */
@@ -420,17 +425,28 @@ function Header({
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Resolved once (see `resolveVariant`), so cva, `data-color` and the colour
+  // context agree for `null` and `''` as well as the default spelling, and
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--header-max-width`, instead of dropping it.
+  const colorway = resolveVariant(color, DEFAULT_HEADER_COLOR)
+  const containerway = resolveVariant(container, DEFAULT_HEADER_CONTAINER)
+
   return (
     <header
       id='nsw-header'
       data-slot='header'
-      data-color={color ?? DEFAULT_HEADER_COLOR}
       // Present-or-absent rather than "true"/"false", so it reads like Base
       // UI's data-disabled and Tailwind's bare `data-scrolled:` variant works.
+      // Before the spread on purpose: it is state, not a variant, and the
+      // docs pin it on (`data-scrolled=''`) to show the scrolled treatment.
       data-scrolled={isScrolled || undefined}
       {...props}
+      // After the spread, so a consumer's own `data-color` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(
-        headerVariants({ color }),
+        headerVariants({ color: colorway }),
         // z-40 sits below the z-50 SkipLinks: a sticky header at the same
         // level comes later in the DOM and would paint over a focused skip
         // link, hiding the page's bypass mechanism (WCAG 2.2, 2.4.1).
@@ -445,10 +461,10 @@ function Header({
       )}
       ref={ref}
     >
-      <HeaderColorContext.Provider value={color ?? DEFAULT_HEADER_COLOR}>
+      <HeaderColorContext.Provider value={colorway}>
         <div
           data-slot='header-container'
-          className={cn(headerContainerVariants({ container }), containerClassName)}
+          className={cn(headerContainerVariants({ container: containerway }), containerClassName)}
         >
           {children}
         </div>

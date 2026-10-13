@@ -390,7 +390,9 @@ Add an entry to `packages/ui/registry.json`:
 }
 ```
 
-Only list `src/lib/utils.ts` if the component uses `cn()`. List every dep the component
+List every `src/lib/*` file the component imports as a `registry:lib` file — `utils.ts` for
+`cn()`, `resolve-variant.ts` for `resolveVariant()` (its own, specifically named file, so it
+never collides with a module the consumer already owns). List every dep the component
 actually imports, even one a `registryDependencies` sibling already installs — consumers
 install them on `shadcn add`, and relying on a sibling's declaration breaks silently the
 day that sibling drops it.
@@ -474,6 +476,7 @@ Run from the **repo root** unless noted.
 | Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
 | Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                   |
 | Check the story standard        | `npm run check:stories -w @nswds/ui`                           |
+| Check variant normalisation     | `npm run check:variants -w @nswds/ui`                          |
 | Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                      |
 | Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
 | Check published package         | `npm run check:package -w @nswds/ui`                           |
@@ -492,7 +495,7 @@ The registry commands run in `packages/ui` but output to `apps/registry/public/r
 `.github/workflows/pr-checks.yml` runs, in order: `lint`, `typecheck`,
 `format:check`, `check:workflows`, `test:scripts`, `check:drift`,
 `check:radius`, `check:icons`, `check:portal-boundary`,
-`check:theme-parity`, `check:stories`, the
+`check:theme-parity`, `check:stories`, `check:variants`, the
 release-config tests,
 `build -w @nswds/ui`, `test -w @nswds/ui`, the Next app builds
 (`build -w web -w infographics`), `check:package`,
@@ -519,7 +522,7 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs
   apps/web/*.test.mjs apps/storybook/scripts/*.test.mjs`.
   Today that is the `check:workflows` scanner, the `check:portal-boundary`,
-  `check:theme-parity` and `check:stories` gates, a guard pinning
+  `check:theme-parity`, `check:stories` and `check:variants` gates, a guard pinning
   `globals.css`'s `@source` directives to `packages/ui/src` (one outside it
   leaks every app's classes into every other app's CSS, which no build or
   visual check can see), and the web app's zones and host redirect and Storybook's `<base>` step (§7),
@@ -597,6 +600,24 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   the same reason the portal gate does, its recorded exceptions (`REFERENCE`,
   `EXTRAS`, `GROUPS`, `GUIDES`, `DOCUMENTED_ELSEWHERE`) each carry a reason, and
   it is self-tested under `test:scripts`.
+- **`check:variants`** (`packages/ui/scripts/check-variant-normalisation.mjs`)
+  fails a component that advertises a variant's default in a `data-*`
+  attribute (`data-color={color ?? DEFAULT}`) while handing cva the raw prop
+  (`variants({ color })`). cva reads an explicit `null` as "no variant" where
+  `??` falls through, so that pair renders an element whose attribute and
+  classes disagree — and lints, typechecks and passes every story that passes
+  a member value. The pair was hand-fixed in nine components before the gate
+  existed, and its first full run caught two more. Resolve each variant once
+  with `resolveVariant` from `src/lib/resolve-variant.ts` and feed that one
+  value to cva, the attribute and anything else that reads it; write
+  variant-derived attributes after the `{...props}` spread so a consumer cannot
+  desync them (the gate enforces this too; state such as Header's
+  `data-scrolled` stays before it, so docs can pin it). The gate follows aliases, ternaries, renamed props and any cva
+  function declared in the file or named `*Variants`/`*Cva`, matches within one
+  component (nested callbacks included), and does not flag presence coercion
+  (`data-icon-only={iconOnly || undefined}`). The shapes it is known not to
+  catch are recorded as fixtures. Parses the syntax tree, like the two gates
+  above, and is self-tested under `test:scripts`.
 - **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
   asserts the shadcn→NSW token map is identical across the two channels that
   ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,
