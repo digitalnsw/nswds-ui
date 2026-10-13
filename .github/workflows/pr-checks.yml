@@ -77,6 +77,12 @@ jobs:
       - name: Script tests
         run: npm run test:scripts
 
+      # The sign-in gate and allowlist (packages/auth): a vitest suite with no
+      # database. The shared `install / test` job also finds it, but this is
+      # the required check, so it runs here too.
+      - name: Auth package tests
+        run: npm test -w @workspace/auth
+
       # Every component under packages/ui/src/components must ship on BOTH
       # channels (src/index.ts barrel + registry.json) or be explicitly
       # allowlisted as internal in the script.
@@ -138,8 +144,10 @@ jobs:
       # apps/storybook/.storybook/main.ts aliases `@nswds/ui/globals.css`
       # back to source for Tailwind live-scanning, but JS subpath imports
       # still go through `exports` → `dist/`.
+      # Through turbo, not `npm run -w`: `typecheck` above already built the
+      # package (it depends on `^build`), so this is a cache hit, not a rebuild.
       - name: Build @nswds/ui
-        run: npm run build -w @nswds/ui
+        run: npx turbo build --filter=@nswds/ui
 
       # Unit tests for the package's pure logic, run with node:test against
       # dist/ (the source is TSX, which Node cannot strip). Must sit AFTER the

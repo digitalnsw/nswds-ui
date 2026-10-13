@@ -52,7 +52,7 @@ const nextConfig = {
   // for them (the destructure note on useChromeHeight, the
   // set-state-in-effect disable in push-menu).
   reactCompiler: true,
-  transpilePackages: ['@nswds/ui'],
+  transpilePackages: ['@nswds/ui', '@workspace/auth'],
   // ui.digital.nsw.gov.au moves to ui.design.nsw.gov.au, all but /registry (hosts.mjs).
   async redirects() {
     return hostRedirects()

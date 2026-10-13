@@ -9,6 +9,17 @@
     "INFOGRAPHICS_ORIGIN",
     "STORYBOOK_ORIGIN"
   ],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
+    "SIGNUP_ALLOWED_EMAILS",
+    "NSWDS_AUTH_GATE",
+    "VERCEL",
+    "VERCEL_URL",
+    "VERCEL_BRANCH_URL",
+    "VERCEL_ENV"
+  ],
   "globalDependencies": [".env", "registry.config.json"],
   "tasks": {
     "build": {
@@ -28,7 +39,7 @@
       "inputs": ["registry.json"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck", "^build"]
     },
     "dev": {
       "cache": false,

@@ -1,0 +1,43 @@
+{
+  "name": "@workspace/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sign-in for the repo's Next.js apps: Better Auth over Drizzle and Neon, an allowlisted email + password sign-up, the proxy that gates an app, and the sign-in, sign-up and account views over @nswds/ui. Not published; consumed as TypeScript source by workspace apps.",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./client": "./src/client.ts",
+    "./proxy": "./src/proxy.ts",
+    "./components": "./src/components/index.ts",
+    "./env": "./src/env.ts"
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "@nswds/ui": "*",
+    "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.4"
+  },
+  "peerDependencies": {
+    "next": ">=16",
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
+    "eslint": "^9.39.2",
+    "next": "16.4.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

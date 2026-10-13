@@ -1,0 +1,224 @@
+import { randomUUID } from 'node:crypto'
+
+import { betterAuth } from 'better-auth'
+import { memoryAdapter } from 'better-auth/adapters/memory'
+import { APIError } from 'better-auth/api'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+import {
+  authBasePath,
+  createAuth,
+  SHARED_SESSION,
+  sharedCookieDomain,
+  sharingUndetermined,
+} from './auth'
+import { createSignUpAllowlistHooks } from './auth-hooks'
+
+describe('createSignUpAllowlistHooks', () => {
+  const { before } = createSignUpAllowlistHooks(new Set(['ok@example.com'])).user.create
+
+  it('rejects a disallowed email with a 403 APIError', async () => {
+    const error = await before({ email: 'mallory@example.com' }).then(
+      () => null,
+      (e: unknown) => e,
+    )
+    expect(error).toBeInstanceOf(APIError)
+    expect((error as APIError).status).toBe('FORBIDDEN')
+  })
+
+  it('permits an allowlisted email (case-insensitive)', async () => {
+    await expect(before({ email: 'OK@example.com' })).resolves.toBeUndefined()
+  })
+
+  it('is fail-closed: an empty allowlist rejects everyone', async () => {
+    const { before: strict } = createSignUpAllowlistHooks(new Set()).user.create
+    await expect(strict({ email: 'ok@example.com' })).rejects.toBeInstanceOf(APIError)
+  })
+})
+
+describe('authBasePath', () => {
+  it('mounts the endpoints at /api/auth for an app at the root', () => {
+    expect(authBasePath()).toBe('/api/auth')
+    expect(authBasePath('')).toBe('/api/auth')
+  })
+
+  it('prefixes the endpoints with the app path, tolerating a trailing slash', () => {
+    expect(authBasePath('/infographics')).toBe('/infographics/api/auth')
+    expect(authBasePath('/builder/')).toBe('/builder/api/auth')
+  })
+})
+
+describe('sharedCookieDomain', () => {
+  it('scopes a production deployment on any NSW Design host to the parent domain', () => {
+    for (const url of [
+      'https://design.nsw.gov.au',
+      'https://ui.design.nsw.gov.au',
+      'https://email.design.nsw.gov.au',
+      'https://email.design.nsw.gov.au/',
+    ]) {
+      expect(sharedCookieDomain(url, 'production'), url).toBe('design.nsw.gov.au')
+    }
+  })
+
+  it('keeps a host-only cookie off production, off the domain, or without a base URL', () => {
+    expect(sharedCookieDomain('https://ui.design.nsw.gov.au', 'preview')).toBeUndefined()
+    expect(sharedCookieDomain('https://ui.design.nsw.gov.au', undefined)).toBeUndefined()
+    expect(sharedCookieDomain('http://localhost:3000', 'production')).toBeUndefined()
+    expect(sharedCookieDomain('https://nswds-ui-web.vercel.app', 'production')).toBeUndefined()
+    // A lookalike is not a subdomain.
+    expect(sharedCookieDomain('https://evildesign.nsw.gov.au', 'production')).toBeUndefined()
+    expect(sharedCookieDomain(undefined, 'production')).toBeUndefined()
+    expect(sharedCookieDomain('not a url', 'production')).toBeUndefined()
+  })
+})
+
+describe('SHARED_SESSION', () => {
+  it('is the contract all three NSW Design repos hold, value for value', () => {
+    // Identical in the other toolkit's package and in nswds-design
+    // (src/lib/cookie-domain.ts). Changing it here alone splits the login.
+    expect(SHARED_SESSION).toEqual({
+      cookiePrefix: 'nswds-design',
+      cookieDomain: 'design.nsw.gov.au',
+      cookieCacheMaxAge: 60,
+    })
+  })
+})
+
+describe('sharingUndetermined', () => {
+  it('is true only for a production server on the domain with no VERCEL_ENV', () => {
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', undefined, 'production')).toBe(true)
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', 'production', 'production')).toBe(
+      false,
+    )
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', undefined, 'development')).toBe(
+      false,
+    )
+    expect(sharingUndetermined('http://localhost:3000', undefined, 'production')).toBe(false)
+  })
+})
+
+describe('createAuth wiring', () => {
+  // The factory reads the secret from the environment as the apps do; give it a
+  // test-only one rather than letting Better Auth fall back to its public default.
+  beforeEach(() => {
+    vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret-test-secret-test-secret-123')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  // Guards against the hook or the base path being unwired from the factory.
+  it('registers the sign-up allowlist before-hook on a real auth instance', () => {
+    const auth = createAuth()
+    expect(typeof auth.options.databaseHooks?.user?.create?.before).toBe('function')
+  })
+
+  it("trusts the deployment's own Vercel addresses and the app's extra origins", () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_URL', 'nswds-ui-web-abc123.vercel.app')
+    vi.stubEnv('VERCEL_BRANCH_URL', 'nswds-ui-web-git-feat-x.vercel.app')
+    const { trustedOrigins } = createAuth({
+      trustedOrigins: ['https://infographics.design.nsw.gov.au'],
+    }).options
+    expect(trustedOrigins).toEqual([
+      'https://nswds-ui-web-abc123.vercel.app',
+      'https://nswds-ui-web-git-feat-x.vercel.app',
+      'https://infographics.design.nsw.gov.au',
+    ])
+  })
+
+  it('does not trust the Vercel addresses of a production deployment that shares the cookie', () => {
+    // The shared cookie is scoped to design.nsw.gov.au, which a browser drops on
+    // *.vercel.app: refuse the origin rather than sign in into nothing.
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    vi.stubEnv('VERCEL_URL', 'nswds-ui-web-abc123.vercel.app')
+    vi.stubEnv('VERCEL_BRANCH_URL', 'nswds-ui-web-git-main.vercel.app')
+    const { trustedOrigins } = createAuth({
+      trustedOrigins: ['https://infographics.design.nsw.gov.au'],
+    }).options
+    expect(trustedOrigins).toEqual(['https://infographics.design.nsw.gov.au'])
+  })
+
+  it('trusts only the listed origins when no Vercel address is set', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_URL', undefined)
+    vi.stubEnv('VERCEL_BRANCH_URL', undefined)
+    expect(createAuth().options.trustedOrigins).toEqual([])
+  })
+
+  it('warns when production on the domain cannot tell it is production', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    createAuth()
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('VERCEL_ENV is not set'))
+    warn.mockRestore()
+  })
+
+  it('names the cookies for NSW Design, as every site must', () => {
+    expect(createAuth().options.advanced?.cookiePrefix).toBe('nswds-design')
+  })
+
+  it('shares the session cookie across design.nsw.gov.au in production only', () => {
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    expect(createAuth().options.advanced?.crossSubDomainCookies).toEqual({
+      enabled: true,
+      domain: 'design.nsw.gov.au',
+    })
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    expect(createAuth().options.advanced?.crossSubDomainCookies).toBeUndefined()
+  })
+
+  it('caches the session in a signed cookie so the proxy rarely hits the database', () => {
+    expect(createAuth().options.session?.cookieCache).toEqual({ enabled: true, maxAge: 60 })
+  })
+
+  it('mounts the endpoints under the app path it is given', () => {
+    expect(createAuth().options.basePath).toBe('/api/auth')
+    // A folder the routes live in: Next hands the handler the whole path.
+    expect(createAuth({ basePath: '/builder' }).options.basePath).toBe('/builder/api/auth')
+    // Next's own basePath: stripped before the handler runs, so matched without it.
+    expect(createAuth({ basePath: '/signature', nextBasePath: true }).options.basePath).toBe(
+      '/api/auth',
+    )
+  })
+})
+
+describe('sign-up allowlist enforcement (Better Auth integration)', () => {
+  // A real Better Auth instance over an in-memory adapter, wired with the same
+  // factory createAuth uses, so the test proves the hook actually aborts
+  // account creation end to end — not just that the predicate returns false.
+  // Any password at least 8 characters long will do; a fresh one per test keeps
+  // the fixture from reading as a credential.
+  const password = randomUUID()
+
+  function makeAuth() {
+    return betterAuth({
+      baseURL: 'http://localhost:3000',
+      secret: 'test-secret-test-secret-test-secret-123',
+      emailAndPassword: { enabled: true },
+      database: memoryAdapter({ user: [], session: [], account: [], verification: [] }),
+      databaseHooks: createSignUpAllowlistHooks(new Set(['ok@example.com'])),
+    })
+  }
+
+  it('rejects a disallowed email and creates no account or session', async () => {
+    await expect(
+      makeAuth().api.signUpEmail({
+        body: { name: 'Mallory', email: 'mallory@example.com', password },
+      }),
+    ).rejects.toMatchObject({ status: 'FORBIDDEN' })
+  })
+
+  it('lets an allowlisted email register and receive a session', async () => {
+    const result = await makeAuth().api.signUpEmail({
+      body: { name: 'Ok', email: 'ok@example.com', password },
+    })
+    expect(result.token).toBeTruthy()
+    expect(result.user.email).toBe('ok@example.com')
+  })
+})

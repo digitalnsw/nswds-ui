@@ -65,6 +65,13 @@ nswds-ui/                        ← private monorepo root (name: "design")
 │                                   preview + manager. Not published, not part of
 │                                   the @nswds/ui API — see docs/archive/v2-plan.md
 │                                   §2 for why it was pulled out of the barrel.)
+│   └── auth/                    ← @workspace/auth (private; the pre-launch sign-in
+│                                   for apps/web and apps/infographics: Better Auth
+│                                   over Drizzle + Neon, an allowlisted sign-up, the
+│                                   proxy gate and the sign-in views. Consumed as TS
+│                                   source; holds a schema copy, while nswds-design
+│                                   owns the shared database's schema and
+│                                   migrations. README.)
 │
 ├── turbo.json                   pipeline orchestration
 ├── release.config.cjs           extends @workspace/semantic-release-config
@@ -1062,6 +1069,17 @@ Two consequences worth knowing:
 Each app has its own [`vercel.json`](apps/web/vercel.json) — Vercel reads this from the
 Root Directory. Do not put a repo-root `vercel.json` (it would conflict with the registry
 project which also uses the repo root for npm install).
+
+Both Next apps sit behind sign-in until launch (`packages/auth`, each app's `proxy.ts`;
+`apps/web` keeps `/registry` open for installs). Every NSW Design site signs in against
+one database (the nswds-design Neon resource, connected to each project) with one secret,
+and in production the session cookie is scoped to `design.nsw.gov.au`, so one sign-in
+covers design., ui. and email. Each project needs `DATABASE_URL` (from that resource),
+`BETTER_AUTH_SECRET` and `SIGNUP_ALLOWED_EMAILS` (team shared variables) and its own
+`BETTER_AUTH_URL` (`https://ui.design.nsw.gov.au`, the origin the zones are served
+through) — see `.env.example`. Storybook and the registry
+are static and carry no gate of their own; through the web app's zone rewrite
+`/storybook` is gated, on `storybook.design.nsw.gov.au` it is not.
 
 **`apps/web`** — `apps/web/vercel.json`
 
