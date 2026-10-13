@@ -1,6 +1,7 @@
 /**
- * `resolveVariant` is the one mechanism every variant-bearing component now
- * routes through, and its reason for using `||` over `??` is the empty
+ * `resolveVariant` is the mechanism the components that advertise a variant
+ * in a `data-*` attribute route through (Badge and Tag, which mirror the raw
+ * prop, do not need it), and its reason for using `||` over `??` is the empty
  * string: cva reads `''` as unset, `??` passes it through. The stories prove
  * the `null` spelling against the default; this pins the other two inputs and
  * the member case against the built output, like the rest of this directory.
@@ -13,7 +14,7 @@ import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-const file = path.join(dirname, '../dist/lib/variants.js')
+const file = path.join(dirname, '../dist/lib/resolve-variant.js')
 assert.ok(
   existsSync(file),
   `Missing ${file} — run \`npm run build -w @nswds/ui\` before \`npm test -w @nswds/ui\`.`,

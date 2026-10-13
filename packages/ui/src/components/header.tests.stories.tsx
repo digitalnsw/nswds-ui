@@ -13,7 +13,7 @@ import { IconSearch } from '../icons/search.js'
 
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
-import { expectNullVariantsMatchDefault } from './story-helpers.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Header/Tests',
@@ -440,32 +440,33 @@ export const NullVariantsAreTheDefaults: Story = {
       <Header id='header-null' color={null} container={null} sticky={false}>
         <HeaderBrand sitename='Null variants' version='2.1.0' />
       </Header>
-      {/* A consumer's own data-color must not desync the attribute from the
-          classes, while a pinned data-scrolled (state, which the docs pin on
-          to show the treatment) must survive. */}
-      <div data-override=''>
-        <Header id='header-override' sticky={false} data-color='dark' data-scrolled=''>
-          <HeaderBrand sitename='Consumer attributes' version='2.1.0' />
-        </Header>
-      </div>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const headers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header"]')
-    if (headers.length !== 3) {
-      throw new Error(`Expected 3 headers, got ${headers.length}.`)
-    }
-    const [byDefault, byNull, override] = headers as unknown as [
-      HTMLElement,
-      HTMLElement,
-      HTMLElement,
-    ]
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'header')
     expectNullVariantsMatchDefault(byDefault, byNull, {
       attrs: { color: 'white' },
       sentinelClass: 'bg-white',
       innerSlot: 'header-container',
     })
+  },
+}
 
+/**
+ * The resolved `data-color` is written after the props spread, so a
+ * consumer's own `data-color` cannot advertise a surface the classes do not
+ * paint. `data-scrolled` is state, not a variant, and stays before the spread
+ * so a consumer (and the docs specimens) can pin it on.
+ */
+export const ConsumerDataAttributeCannotDesync: Story = {
+  name: 'Consumer data attribute cannot desync',
+  render: () => (
+    <Header id='header-override' sticky={false} data-color='dark' data-scrolled=''>
+      <HeaderBrand sitename='Consumer attributes' version='2.1.0' />
+    </Header>
+  ),
+  play: async ({ canvasElement }) => {
+    const override = getHeader(canvasElement)
     if (override.dataset.color !== 'white' || !override.classList.contains('bg-white')) {
       throw new Error(
         `Expected a consumer data-color to be overridden by the resolved colour, got data-color="${override.dataset.color}".`,

@@ -595,9 +595,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -629,9 +629,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -660,9 +660,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -691,9 +691,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         },
         {
           "path": "src/lib/overlay.ts",
@@ -727,9 +727,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -1109,9 +1109,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         },
         {
           "path": "src/lib/button-group-context.tsx",
@@ -1229,9 +1229,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -1392,9 +1392,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -1423,9 +1423,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -1623,9 +1623,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         },
         {
           "path": "src/lib/overlay.ts",
@@ -1662,9 +1662,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         },
         {
           "path": "src/lib/button-group-context.tsx",
@@ -1886,9 +1886,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -1998,9 +1998,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         },
         {
           "path": "src/lib/button-group-context.tsx",
@@ -2087,9 +2087,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2314,9 +2314,9 @@
           "target": "lib/utils.ts"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2581,9 +2581,9 @@
           "target": "components/hero-split.tsx"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2605,9 +2605,9 @@
           "target": "components/hero-framed.tsx"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2629,9 +2629,9 @@
           "target": "components/hero-panel.tsx"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2653,9 +2653,9 @@
           "target": "components/hero-centred.tsx"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },
@@ -2677,9 +2677,9 @@
           "target": "components/hero-statement.tsx"
         },
         {
-          "path": "src/lib/variants.ts",
+          "path": "src/lib/resolve-variant.ts",
           "type": "registry:lib",
-          "target": "lib/variants.ts"
+          "target": "lib/resolve-variant.ts"
         }
       ]
     },

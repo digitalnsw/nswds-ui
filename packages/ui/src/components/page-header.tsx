@@ -3,8 +3,8 @@ import type * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { overlayInk } from '../lib/overlay.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 /**
  * The colourways a page header's title box can wear. Each sets two custom

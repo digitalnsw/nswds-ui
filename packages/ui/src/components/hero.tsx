@@ -2,8 +2,8 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 /**
  * Surface colours a hero can be drawn on, in the Header's and Masthead's

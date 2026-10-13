@@ -2,8 +2,8 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 import { IconCheckCircle } from '../icons/check-circle.js'
 import { IconError } from '../icons/error.js'

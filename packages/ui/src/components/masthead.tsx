@@ -1,8 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 // Colour pairs are curated for WCAG 2.2 AAA (1.4.6 Contrast Enhanced): every
 // text/background combination below resolves to at least 7:1, in BOTH themes.

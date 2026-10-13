@@ -3,8 +3,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 import { Badge, type BadgeProps } from '../components/badge.js'
 import { Link } from '../components/link.js'

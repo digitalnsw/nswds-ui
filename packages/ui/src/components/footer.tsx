@@ -1,8 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 import { ButtonLink, type IconSlot, TouchTarget } from '../components/button.js'
 import { Link } from '../components/link.js'

@@ -8,8 +8,8 @@ import * as React from 'react'
 import { IconChevronRight } from '../icons/chevron-right.js'
 import { IconMoreHoriz } from '../icons/more-horiz.js'
 import { overlayInk } from '../lib/overlay.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 import { TouchTarget } from './button.js'
 import {
   DropdownMenu,

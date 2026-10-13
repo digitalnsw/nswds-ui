@@ -12,25 +12,29 @@
  *
  * renders an element whose attribute and classes disagree, silently: it lints,
  * typechecks, builds, and every story that passes a member value is green. The
- * same pair was hand-fixed in eleven components across two pull requests
- * before this held it. The fix is always the same: resolve the value once with
- * `resolveVariant` from `lib/variants` and feed that one value to cva, the
- * attribute, and anything else that reads it.
+ * pair was hand-fixed in nine components before this held it, and the gate's
+ * first run with its full rule caught two more (Callout, ExpandableSearch). The
+ * fix is always the same: resolve the value once with `resolveVariant` from
+ * `lib/resolve-variant` and feed that one value to cva, the attribute, and
+ * anything else that reads it.
  *
- * THE RULE, per component (function-like scope) in every source file under
- * `src/components` and `src/patterns` (stories excluded):
+ * THE RULE, per component — the outermost function in the file that encloses
+ * the code, so a `.map()` callback or a `useMemo` belongs to its component —
+ * in every source file under `src/components` and `src/patterns`, recursively
+ * (stories excluded):
  *
  *   1. An identifier `<ident>` is NORMALISED by an expression that supplies a
  *      real fallback: `<ident> ?? <fallback>`, `<ident> || <fallback>`,
  *      `<ident> ? <ident> : <fallback>` or `resolveVariant(<ident>, …)`,
- *      where the fallback is not `undefined`/`null`. A `const <alias> =
- *      <that expression>` makes `<alias>` carry the normalised value.
+ *      where the fallback is not `undefined`/`null`/`void 0`. A `const
+ *      <alias> = <that expression>` makes `<alias>` carry the normalised value.
  *   2. A `data-*` JSX attribute whose value is such an expression, or such an
  *      alias, ADVERTISES `<ident>`'s default.
  *   3. A call to a cva function — one declared in the file as `const x =
- *      cva(…)`, or named `*Variants` / `*Cva` — whose object-literal argument
- *      passes the bare `<ident>` (shorthand `{ color }` or `{ color: color }`)
- *      hands it to cva RAW.
+ *      cva(…)`, or named `*Variants` / `*Cva`, called bare or as a member —
+ *      whose object-literal argument passes the bare identifier `<ident>` as a
+ *      value (`{ color }`, `{ color: color }`, or a renamed prop such as
+ *      `{ color: colorProp }`) hands it to cva RAW.
  *   4. If `<ident>` is advertised (2) and raw (3) inside the same component,
  *      the file fails.
  *
@@ -39,8 +43,11 @@
  * coercion such as `data-icon-only={iconOnly || undefined}`.
  *
  * Known to slip (recorded as fixtures): a fallback applied through another
- * helper, a member access (`props.color ?? D`), a template literal, or an
- * attribute arriving through a spread object. Extend the rule when one of
+ * helper, a member access (`props.color ?? D`), a template literal, an
+ * attribute arriving through a spread object, an options object built before
+ * the call (`const o = { color }; variants(o)`), a raw prop renamed through a
+ * local (`const c = color; variants({ color: c })`), and a positional cva
+ * wrapper (`labelColorVariants(color, variant)`). Extend the rule when one of
  * those shapes appears in a component.
  *
  * WHY IT PARSES. The halves are often many lines apart and Prettier is free to
@@ -60,7 +67,9 @@ import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
 
 const isAbsence = (node) =>
-  node.kind === ts.SyntaxKind.NullKeyword || (ts.isIdentifier(node) && node.text === 'undefined')
+  node.kind === ts.SyntaxKind.NullKeyword ||
+  (ts.isIdentifier(node) && node.text === 'undefined') ||
+  (ts.isVoidExpression(node) && ts.isNumericLiteral(node.expression))
 
 /**
  * The identifier an expression normalises, or `null` when it does not supply a
@@ -105,16 +114,23 @@ const isFunctionLike = (node) =>
   ts.isArrowFunction(node) ||
   ts.isMethodDeclaration(node)
 
-/** The nearest enclosing function-like node — one component — or the file. */
+/**
+ * The component a node belongs to: the OUTERMOST enclosing function-like node,
+ * so a `.map()` callback, a `useMemo` or a render helper inside a component is
+ * matched with the component's own attributes and cva calls. Module-level code
+ * belongs to the file.
+ */
 function scopeOf(node, sourceFile) {
-  let current = node.parent
-  while (current && !isFunctionLike(current)) current = current.parent
-  return current ?? sourceFile
+  let outermost = null
+  for (let current = node.parent; current; current = current.parent) {
+    if (isFunctionLike(current)) outermost = current
+  }
+  return outermost ?? sourceFile
 }
 
 /**
- * Checks one source file. Returns one failure per offending identifier:
- * `{ line, identifier, attribute, call, message }`.
+ * Checks one source file. Returns one failure per offending identifier per
+ * component: `{ line, identifier, attribute, call, message }`.
  */
 export function checkVariantSource(source, fileName = 'component.tsx') {
   const sourceFile = ts.createSourceFile(
@@ -180,22 +196,24 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
       }
     }
 
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const calleeName = node.expression.text
-      if (isCvaCallee(calleeName)) {
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression
+      const calleeName = ts.isIdentifier(callee)
+        ? callee.text
+        : ts.isPropertyAccessExpression(callee)
+          ? callee.name.text
+          : null
+      if (calleeName && isCvaCallee(calleeName)) {
         const scope = scopeOf(node, sourceFile)
         for (const argument of node.arguments) {
           if (!ts.isObjectLiteralExpression(argument)) continue
           for (const property of argument.properties) {
+            // Keyed on the VALUE handed to cva, so a renamed prop
+            // (`{ color: colorProp }`) is caught as well as `{ color }`.
             if (ts.isShorthandPropertyAssignment(property)) {
               bucket(raw, scope).set(property.name.text, calleeName)
-            } else if (
-              ts.isPropertyAssignment(property) &&
-              ts.isIdentifier(property.initializer) &&
-              ts.isIdentifier(property.name) &&
-              property.name.text === property.initializer.text
-            ) {
-              bucket(raw, scope).set(property.name.text, calleeName)
+            } else if (ts.isPropertyAssignment(property) && ts.isIdentifier(property.initializer)) {
+              bucket(raw, scope).set(property.initializer.text, calleeName)
             }
           }
         }
@@ -221,8 +239,8 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
         call,
         message:
           `\`${attribute}\` advertises a default for \`${identifier}\` while \`${call}()\` receives it raw — ` +
-          `cva paints no classes for null. Resolve it once (\`const ${identifier}way = resolveVariant(${identifier}, DEFAULT)\`) ` +
-          'and pass that to both.',
+          `cva paints no classes for null. Resolve it once (\`resolveVariant(${identifier}, DEFAULT)\`) ` +
+          'and pass that one value to both.',
       })
     }
   }
@@ -238,7 +256,7 @@ function main() {
   let checked = 0
   for (const root of ROOTS) {
     const dir = join(SRC, root)
-    for (const name of readdirSync(dir)) {
+    for (const name of readdirSync(dir, { recursive: true })) {
       if (!name.endsWith('.tsx') || name.includes('.stories.')) continue
       const relName = relative(SRC, join(dir, name))
       for (const failure of checkVariantSource(readFileSync(join(dir, name), 'utf8'), relName)) {

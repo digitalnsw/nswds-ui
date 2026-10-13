@@ -10,8 +10,8 @@ import {
   ButtonGroupContext,
   type ButtonGroupContextValue,
 } from '../lib/button-group-context.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 import { buttonColorVariants, type ButtonProps } from './button.js'
 import { Separator } from './separator.js'
 

@@ -4,8 +4,8 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
 import { IconEast } from '../icons/east.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
 
 import {
   NavigationMenu,

@@ -22,7 +22,7 @@ const messages = (source) => checkVariantSource(source).map((failure) => failure
 const component = (body, { cvaName = 'widgetVariants' } = {}) => `
 import { cva } from 'class-variance-authority'
 import { cn } from '../lib/utils.js'
-import { resolveVariant } from '../lib/variants.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 const DEFAULT_COLOR = 'white'
 const ${cvaName} = cva('w-full', {
   variants: { color: { white: 'bg-white', dark: 'bg-dark' } },
@@ -71,6 +71,13 @@ test('passes two components in one file that each use a legal shape', () => {
 }
 function Other({ color, ...props }) {
   return <div data-color={color} className={widgetVariants({ color })} {...props} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
+test('passes presence coercion spelled `x || void 0`', () => {
+  const source = component(`
+  return <div data-flag={color || void 0} className={widgetVariants({ color })} {...props} />
   `)
   assert.deepEqual(messages(source), [])
 })
@@ -181,6 +188,69 @@ test('reports each offending identifier once with its line', () => {
   assert.ok(failures.every((f) => Number.isInteger(f.line) && f.line > 0))
 })
 
+test('fails a violation in the second component of a file, at its own line', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return <div {...props} data-color={colorway} className={widgetVariants({ color: colorway })} />
+}
+function Other({ color, ...props }) {
+  return (
+    <div
+      data-color={color ?? DEFAULT_COLOR}
+      className={widgetVariants({ color })}
+      {...props}
+    />
+  )
+  `)
+  const failures = checkVariantSource(source)
+  assert.equal(failures.length, 1)
+  const otherStart = source.split('\n').findIndex((l) => l.includes('function Other')) + 1
+  assert.ok(
+    failures[0].line > otherStart,
+    `expected the failure inside Other, got line ${failures[0].line}`,
+  )
+})
+
+test('fails a raw cva call inside a useMemo in the same component', () => {
+  const source = component(`
+  const classes = React.useMemo(() => widgetVariants({ color }), [color])
+  return <div data-color={color ?? DEFAULT_COLOR} className={classes} {...props} />
+  `)
+  assert.equal(messages(source).length, 1)
+})
+
+test('fails an advertised alias used inside a .map() callback beside a raw cva call', () => {
+  const source = component(`
+  const look = resolveVariant(color, DEFAULT_COLOR)
+  return (
+    <ul className={widgetVariants({ color })} {...props}>
+      {items.map((item) => <li key={item} data-color={look} />)}
+    </ul>
+  )
+  `)
+  assert.equal(messages(source).length, 1)
+})
+
+test('fails the renamed-prop idiom: { color: colorProp } raw beside its resolved alias', () => {
+  const source = `
+import { cva } from 'class-variance-authority'
+import { resolveVariant } from '../lib/resolve-variant.js'
+const heroVariants = cva('w-full', { variants: { color: { white: 'a', dark: 'b' } } })
+function HeroX({ color: colorProp, ...props }) {
+  const color = resolveVariant(colorProp, 'white')
+  return <section data-color={color} className={heroVariants({ color: colorProp })} {...props} />
+}
+`
+  assert.equal(messages(source).length, 1)
+})
+
+test('fails a cva function called as a member', () => {
+  const source = component(`
+  return <div data-color={color ?? DEFAULT_COLOR} className={styles.widgetVariants({ color })} {...props} />
+  `)
+  assert.equal(messages(source).length, 1)
+})
+
 // ─── Shapes known to slip — accepted limitations, recorded ───────────────────
 
 test('does not catch a fallback applied through another helper', () => {
@@ -201,6 +271,29 @@ test('does not catch a template literal or an attribute supplied by a spread obj
   const source = component(`
   const attrs = { 'data-color': color ?? DEFAULT_COLOR }
   return <div data-tone={\`\${color ?? DEFAULT_COLOR}\`} {...attrs} className={widgetVariants({ color })} {...props} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
+test('does not catch an options object built before the call', () => {
+  const source = component(`
+  const options = { color }
+  return <div data-color={color ?? DEFAULT_COLOR} className={widgetVariants(options)} {...props} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
+test('does not catch a raw prop renamed through a local', () => {
+  const source = component(`
+  const raw = color
+  return <div data-color={color ?? DEFAULT_COLOR} className={widgetVariants({ color: raw })} {...props} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
+test('does not catch a positional cva wrapper', () => {
+  const source = component(`
+  return <div data-color={color ?? DEFAULT_COLOR} className={labelColorVariants(color, 'soft')} {...props} />
   `)
   assert.deepEqual(messages(source), [])
 })

@@ -14,7 +14,9 @@
  * truthy branch. Those axes keep their own handling.
  *
  * Not re-exported from the package barrel — an internal helper, shipped to
- * registry consumers as `lib/variants.ts` beside their own `lib/utils.ts`.
+ * registry consumers as `lib/resolve-variant.ts` beside their own
+ * `lib/utils.ts`, under a name specific enough not to collide with a module a
+ * consumer already owns.
  */
 export function resolveVariant<T extends string>(value: T | null | undefined, fallback: T): T {
   return value || fallback
