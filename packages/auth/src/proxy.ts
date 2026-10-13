@@ -77,10 +77,12 @@ export function safeReturnPath(value: string | null | undefined): string | null 
     return null
   }
   if (resolved.origin !== SAME_ORIGIN || !resolved.pathname.startsWith('/')) return null
-  // No dot segments: under a zone's basePath, `/../builder` would resolve to
-  // another app on the shared domain once the prefix is put in front of it.
-  const path = value.split(/[?#]/, 1)[0] ?? ''
-  if (path.split('/').some((segment) => segment === '.' || segment === '..')) return null
+  // And the parser changed nothing: the gate writes the path in the parser's
+  // own form, so a value it would rewrite was not written by the gate. That
+  // refuses dot segments, raw (`/../builder`) or encoded (`/%2e%2e/builder`),
+  // which under a zone's basePath would resolve to another app on the shared
+  // domain once the prefix is put in front of them.
+  if (`${resolved.pathname}${resolved.search}` !== value) return null
   return value
 }
 
