@@ -9,6 +9,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { expectNullVariantsMatchDefault, queryVariantPair } from '../components/story-helpers.js'
 import { HeroPanel } from './hero-panel.js'
+import { HeroSplit } from './hero-split.js'
 
 const media = { src: 'images/hero-illustration.png', alt: '' }
 
@@ -48,5 +49,39 @@ export const NullColourIsTheBlockDefault: Story = {
       sentinelClass: 'bg-primary-200',
       innerSlot: 'hero-inner',
     })
+  },
+}
+
+/**
+ * HeroSplit's own default is the `dark` brand band with white actions. Before
+ * the block resolved its colour, `null` fell through to Hero's `white` surface
+ * and the actions took `primary`, a coherent-looking but wrong block. The band
+ * and the primary action are both held to the default spelling.
+ */
+export const NullColourIsTheSplitDefault: Story = {
+  name: 'Null colour is the split default',
+  render: (args) => (
+    <div className='space-y-4'>
+      <HeroSplit media={args.media} labelledBy='hero-split-default-title' />
+      <HeroSplit media={args.media} color={null} labelledBy='hero-split-null-title' />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'hero')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'dark' },
+      sentinelClass: 'bg-primary-800',
+      innerSlot: 'hero-inner',
+    })
+    const actionDefault = byDefault.querySelector<HTMLElement>('[data-slot="hero-actions"] a')
+    const actionNull = byNull.querySelector<HTMLElement>('[data-slot="hero-actions"] a')
+    if (!actionDefault || !actionNull) {
+      throw new Error('Expected a primary action inside each hero.')
+    }
+    if (actionNull.className !== actionDefault.className) {
+      throw new Error(
+        `Expected the null spelling's action to keep the default styling:\n  default: ${actionDefault.className}\n  null:    ${actionNull.className}`,
+      )
+    }
   },
 }

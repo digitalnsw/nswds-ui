@@ -16,6 +16,7 @@ import { expect, within } from 'storybook/test'
 import { IconExpandMore } from '../icons/index.js'
 import { ButtonGroup, ButtonGroupText, type ButtonGroupVariant } from './button-group.js'
 import { Button } from './button.js'
+import { expectNullVariantsMatchDefault } from './story-helpers.js'
 
 const variants = [
   'outline',
@@ -133,6 +134,59 @@ export const Variants: Story = {
     const solidLabel = getComputedStyle(canvas.getAllByRole('button', { name: 'Save' })[0]!).color
     for (const segment of within(band).getAllByRole('button')) {
       await expect(getComputedStyle(segment).color).toBe(solidLabel)
+    }
+  },
+}
+
+/**
+ * ButtonGroup resolves `variant` and `orientation` once (see `resolveVariant`)
+ * and sends the result to both cva calls, the `data-*` stamps and the context
+ * the segments read. Both the `null` and the empty-string spelling must render
+ * as the default: the stamps every divider rule keys on, the flex direction,
+ * and a segment's own classes. `''` is not a typed value, so it reaches the
+ * group the way an untyped registry consumer would pass it.
+ */
+export const NullAndEmptyVariantsAreTheDefaults: Story = {
+  name: 'Null and empty variants are the defaults',
+  render: () => (
+    <div className='space-y-4'>
+      {[
+        { label: 'Default', props: {} },
+        { label: 'Null', props: { variant: null, orientation: null } },
+        { label: 'Empty', props: { variant: '' as never, orientation: '' as never } },
+      ].map(({ label, props }) => (
+        <ButtonGroup key={label} aria-label={`${label} variants`} {...props}>
+          <Button>Day</Button>
+          <Button>Week</Button>
+        </ButtonGroup>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const groups = canvasElement.querySelectorAll<HTMLElement>('[data-slot="button-group"]')
+    if (groups.length !== 3) {
+      throw new Error(`Expected 3 button groups, got ${groups.length}.`)
+    }
+    const [byDefault, ...others] = Array.from(groups)
+    if (!byDefault) {
+      throw new Error('Expected a default button group.')
+    }
+    for (const other of others) {
+      expectNullVariantsMatchDefault(byDefault, other, {
+        attrs: { variant: 'outline', orientation: 'horizontal' },
+        sentinelClass: 'flex-row',
+        style: ['flexDirection'],
+      })
+      const segmentDefault = byDefault.querySelector<HTMLElement>('[data-slot="button"]')
+      const segmentOther = other.querySelector<HTMLElement>('[data-slot="button"]')
+      if (!segmentDefault || !segmentOther) {
+        throw new Error('Expected a [data-slot="button"] segment inside each group.')
+      }
+      if (segmentOther.className !== segmentDefault.className) {
+        throw new Error(
+          `Expected a segment of "${other.getAttribute('aria-label')}" to match the default:\n  default: ${segmentDefault.className}\n  other:   ${segmentOther.className}`,
+        )
+      }
     }
   },
 }
