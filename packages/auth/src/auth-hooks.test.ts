@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { betterAuth } from 'better-auth'
 import { memoryAdapter } from 'better-auth/adapters/memory'
 import { APIError } from 'better-auth/api'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { authBasePath, createAuth } from './auth'
 import { createSignUpAllowlistHooks } from './auth-hooks'
@@ -43,6 +43,15 @@ describe('authBasePath', () => {
 })
 
 describe('createAuth wiring', () => {
+  // The factory reads the secret from the environment as the apps do; give it a
+  // test-only one rather than letting Better Auth fall back to its public default.
+  beforeEach(() => {
+    vi.stubEnv('BETTER_AUTH_SECRET', 'test-secret-test-secret-test-secret-123')
+  })
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
   // Guards against the hook or the base path being unwired from the factory.
   it('registers the sign-up allowlist before-hook on a real auth instance', () => {
     const auth = createAuth()

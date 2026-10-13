@@ -11,7 +11,8 @@
     "DATABASE_URL",
     "BETTER_AUTH_SECRET",
     "BETTER_AUTH_URL",
-    "SIGNUP_ALLOWED_EMAILS"
+    "SIGNUP_ALLOWED_EMAILS",
+    "NSWDS_AUTH_GATE"
   ],
   "globalDependencies": [".env", "registry.config.json"],
   "tasks": {
@@ -32,7 +33,7 @@
       "inputs": ["registry.json"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"]
+      "dependsOn": ["^typecheck", "^build"]
     },
     "dev": {
       "cache": false,

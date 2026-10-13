@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { createProxy, isPublicRoute } from './proxy'
+import { createProxy, isGateLifted, isPublicRoute } from './proxy'
 
 // A stand-in for an app's auth instance: the gate only reads `api.getSession`.
 const getSession = vi.fn<(input: { headers: Headers }) => Promise<unknown>>()
@@ -142,6 +142,35 @@ describe('proxy gate for routes under a folder (no basePath)', () => {
   })
 })
 
+describe('NSWDS_AUTH_GATE=off (the browser suites)', () => {
+  const proxy = createProxy(auth)
+
+  it('is off unless the variable says exactly off', () => {
+    vi.stubEnv('NSWDS_AUTH_GATE', undefined)
+    expect(isGateLifted('localhost')).toBe(false)
+    vi.stubEnv('NSWDS_AUTH_GATE', 'true')
+    expect(isGateLifted('localhost')).toBe(false)
+    vi.stubEnv('NSWDS_AUTH_GATE', 'off')
+    expect(isGateLifted('localhost')).toBe(true)
+  })
+
+  it('lifts the gate on localhost without reading the session', async () => {
+    vi.stubEnv('NSWDS_AUTH_GATE', 'off')
+    expectsPassThrough(await proxy(request('/account')))
+    expectsPassThrough(await proxy(request('/sign-in')))
+    expect(getSession).not.toHaveBeenCalled()
+  })
+
+  it('never lifts the gate for a deployed host', async () => {
+    vi.stubEnv('NSWDS_AUTH_GATE', 'off')
+    expect(isGateLifted('email.design.nsw.gov.au')).toBe(false)
+    getSession.mockResolvedValue(null)
+    const req = new NextRequest(new URL('/account', 'https://email.design.nsw.gov.au'))
+    expectsRedirectTo(await proxy(req), 'https://email.design.nsw.gov.au/sign-in')
+  })
+})
+
 afterEach(() => {
+  vi.unstubAllEnvs()
   vi.restoreAllMocks()
 })

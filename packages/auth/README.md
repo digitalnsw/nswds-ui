@@ -19,3 +19,7 @@ Environment (the repo-root `.env`, which every app's `next.config` loads; see `.
 
 The Drizzle schema and its migrations live here (`src/db/schema.ts`, `drizzle/`). Apply them once per
 database with `npm run db:migrate -w @workspace/auth`; `db:generate` after a schema change.
+
+The browser suites run a built app with no database: `NSWDS_AUTH_GATE=off` lifts the gate, and
+only on localhost, so the switch cannot open a deployment. Each `playwright.config.ts` passes it to
+`next start`.

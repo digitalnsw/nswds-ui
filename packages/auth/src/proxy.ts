@@ -22,6 +22,24 @@ export interface ProxyOptions {
 /** Routes reachable while signed out, by default. */
 export const PUBLIC_ROUTES = ['/sign-in', '/sign-up'] as const
 
+/**
+ * Hosts a browser gate serves the built app on. `NSWDS_AUTH_GATE=off` lifts the
+ * gate only for these, so the switch cannot open a deployment: nothing on
+ * Vercel is reached as localhost.
+ */
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+
+/**
+ * Whether the gate is lifted for this request: the Playwright suites run the
+ * built app with `NSWDS_AUTH_GATE=off` (each app's `playwright.config.ts`
+ * passes it to `next start`), because they have no database to sign in
+ * against. Read per request so a test can set the variable; fail-closed, so
+ * an unset or any other value keeps the gate.
+ */
+export function isGateLifted(hostname: string): boolean {
+  return process.env.NSWDS_AUTH_GATE === 'off' && LOOPBACK_HOSTS.has(hostname)
+}
+
 export function isPublicRoute(
   pathname: string,
   publicRoutes: readonly string[] = PUBLIC_ROUTES,
@@ -46,12 +64,20 @@ export function isPublicRoute(
  * root and a zone under `/infographics` or `/signature`. The app's own
  * `proxy.ts` must still export the `config.matcher` literal: Next reads it
  * statically from that file and prefixes `basePath` itself.
+ *
+ * `NSWDS_AUTH_GATE=off` lifts the gate on localhost only (`isGateLifted`), for
+ * the browser suites that run the built app without a database.
  */
 export function createProxy(auth: SessionReader, options: ProxyOptions = {}) {
   const { publicRoutes = PUBLIC_ROUTES, signInPath = '/sign-in', homePath = '/' } = options
 
   return async function proxy(request: NextRequest) {
-    const { pathname, basePath } = request.nextUrl
+    const { pathname, basePath, hostname } = request.nextUrl
+
+    if (isGateLifted(hostname)) {
+      return NextResponse.next()
+    }
+
     const publicRoute = isPublicRoute(pathname, publicRoutes)
 
     // Fail closed: if the session can't be validated (e.g. the database is briefly
