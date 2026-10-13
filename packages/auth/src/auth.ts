@@ -55,18 +55,35 @@ function resolveTrustedOrigins(extra: readonly string[], cookieDomain?: string):
  */
 const allowedSignUpEmails = parseAllowedEmails(process.env.SIGNUP_ALLOWED_EMAILS)
 
-/** The parent domain every NSW Design site is served under: the root, `ui.` and `email.`. */
-export const SHARED_COOKIE_DOMAIN = 'design.nsw.gov.au'
-
 /**
- * The name every NSW Design site gives its sign-in cookies
- * (`__Secure-nswds-design.session_token`, …), in place of Better Auth's
- * `better-auth`. Renamed when the cookie became shared: design.nsw.gov.au had
- * already issued host-only cookies under the old name, which would otherwise
- * sit beside the shared one where a sign-out could clear only one of the two.
- * Must match nswds-design (`src/lib/cookie-domain.ts`) and the other toolkit.
+ * The sign-in settings every NSW Design site must share, in one place.
+ *
+ * design.nsw.gov.au, ui.design.nsw.gov.au and email.design.nsw.gov.au sign in
+ * against one database with one secret and read one session cookie, so these
+ * values are a contract between three repos: this file in nswds-ui and
+ * nswds-email-design, and `src/lib/cookie-domain.ts` in nswds-design, which
+ * hold the same object. Change all three together; each repo's tests pin the
+ * whole object, so a change to one alone fails its own CI.
+ *
+ * - `cookiePrefix` names the cookies (`__Secure-nswds-design.session_token`, …)
+ *   in place of Better Auth's `better-auth`, renamed when the cookie became
+ *   shared so design.nsw.gov.au's earlier host-only cookie is never read again.
+ * - `cookieDomain` is the parent the session cookie is scoped to in production.
+ * - `cookieCacheMaxAge` is how long the signed `session_data` cookie may answer
+ *   a session read without the database. It must match: a site with the cache
+ *   off expires the shared `session_data` cookie on every read.
  */
-export const SESSION_COOKIE_PREFIX = 'nswds-design'
+export const SHARED_SESSION = {
+  cookiePrefix: 'nswds-design',
+  cookieDomain: 'design.nsw.gov.au',
+  cookieCacheMaxAge: 60,
+} as const
+
+/** The parent domain every NSW Design site is served under: the root, `ui.` and `email.`. */
+export const SHARED_COOKIE_DOMAIN = SHARED_SESSION.cookieDomain
+
+/** The name every NSW Design site gives its sign-in cookies; see `SHARED_SESSION`. */
+export const SESSION_COOKIE_PREFIX = SHARED_SESSION.cookiePrefix
 
 /**
  * The domain to scope the session cookie to, or `undefined` for a host-only one.
@@ -94,6 +111,23 @@ export function sharedCookieDomain(
   }
   const onDomain = host === SHARED_COOKIE_DOMAIN || host.endsWith(`.${SHARED_COOKIE_DOMAIN}`)
   return onDomain ? SHARED_COOKIE_DOMAIN : undefined
+}
+
+/**
+ * Whether a production server on the shared domain cannot tell that it is
+ * Vercel production: `VERCEL_ENV` is a system variable, and with the project's
+ * "Automatically expose System Environment Variables" turned off it is unset,
+ * so the cookie quietly falls back to host-only and the shared login stops.
+ * `createAuth` logs a warning when this is true rather than failing silently.
+ */
+export function sharingUndetermined(
+  baseURL: string | undefined,
+  vercelEnv: string | undefined,
+  nodeEnv: string | undefined,
+): boolean {
+  if (nodeEnv !== 'production' || vercelEnv || !baseURL) return false
+  // Reuse the domain rule: what production on this URL would share.
+  return sharedCookieDomain(baseURL, 'production') !== undefined
 }
 
 export interface CreateAuthOptions {
@@ -172,12 +206,21 @@ export function createAuth({
   trustedOrigins = [],
 }: CreateAuthOptions = {}) {
   const cookieDomain = sharedCookieDomain(process.env.BETTER_AUTH_URL, process.env.VERCEL_ENV)
+  if (
+    sharingUndetermined(process.env.BETTER_AUTH_URL, process.env.VERCEL_ENV, process.env.NODE_ENV)
+  ) {
+    console.warn(
+      '[auth] VERCEL_ENV is not set, so the session cookie stays host-only and the sign-in is not ' +
+        'shared with the other NSW Design sites. Turn on "Automatically expose System Environment ' +
+        'Variables" for this Vercel project.',
+    )
+  }
   return betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     basePath: nextBasePath ? authBasePath() : authBasePath(basePath),
     trustedOrigins: resolveTrustedOrigins(trustedOrigins, cookieDomain),
     session: {
-      cookieCache: { enabled: true, maxAge: 60 },
+      cookieCache: { enabled: true, maxAge: SHARED_SESSION.cookieCacheMaxAge },
     },
     database: drizzleAdapter(db, {
       provider: 'pg',
@@ -188,7 +231,7 @@ export function createAuth({
     },
     databaseHooks: createSignUpAllowlistHooks(allowedSignUpEmails),
     advanced: {
-      cookiePrefix: SESSION_COOKIE_PREFIX,
+      cookiePrefix: SHARED_SESSION.cookiePrefix,
       ...(cookieDomain ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } } : {}),
     },
     plugins: [nextCookies()],

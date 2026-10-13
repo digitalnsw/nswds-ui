@@ -5,7 +5,13 @@ import { memoryAdapter } from 'better-auth/adapters/memory'
 import { APIError } from 'better-auth/api'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { authBasePath, createAuth, sharedCookieDomain } from './auth'
+import {
+  authBasePath,
+  createAuth,
+  SHARED_SESSION,
+  sharedCookieDomain,
+  sharingUndetermined,
+} from './auth'
 import { createSignUpAllowlistHooks } from './auth-hooks'
 
 describe('createSignUpAllowlistHooks', () => {
@@ -66,6 +72,31 @@ describe('sharedCookieDomain', () => {
   })
 })
 
+describe('SHARED_SESSION', () => {
+  it('is the contract all three NSW Design repos hold, value for value', () => {
+    // Identical in the other toolkit's package and in nswds-design
+    // (src/lib/cookie-domain.ts). Changing it here alone splits the login.
+    expect(SHARED_SESSION).toEqual({
+      cookiePrefix: 'nswds-design',
+      cookieDomain: 'design.nsw.gov.au',
+      cookieCacheMaxAge: 60,
+    })
+  })
+})
+
+describe('sharingUndetermined', () => {
+  it('is true only for a production server on the domain with no VERCEL_ENV', () => {
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', undefined, 'production')).toBe(true)
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', 'production', 'production')).toBe(
+      false,
+    )
+    expect(sharingUndetermined('https://ui.design.nsw.gov.au', undefined, 'development')).toBe(
+      false,
+    )
+    expect(sharingUndetermined('http://localhost:3000', undefined, 'production')).toBe(false)
+  })
+})
+
 describe('createAuth wiring', () => {
   // The factory reads the secret from the environment as the apps do; give it a
   // test-only one rather than letting Better Auth fall back to its public default.
@@ -115,6 +146,16 @@ describe('createAuth wiring', () => {
     vi.stubEnv('VERCEL_URL', undefined)
     vi.stubEnv('VERCEL_BRANCH_URL', undefined)
     expect(createAuth().options.trustedOrigins).toEqual([])
+  })
+
+  it('warns when production on the domain cannot tell it is production', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', '')
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    createAuth()
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('VERCEL_ENV is not set'))
+    warn.mockRestore()
   })
 
   it('names the cookies for NSW Design, as every site must', () => {
