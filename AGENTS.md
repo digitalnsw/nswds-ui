@@ -69,7 +69,9 @@ nswds-ui/                        ← private monorepo root (name: "design")
 │                                   for apps/web and apps/infographics: Better Auth
 │                                   over Drizzle + Neon, an allowlisted sign-up, the
 │                                   proxy gate and the sign-in views. Consumed as TS
-│                                   source; schema + migrations live here. README.)
+│                                   source; holds a schema copy, while nswds-design
+│                                   owns the shared database's schema and
+│                                   migrations. README.)
 │
 ├── turbo.json                   pipeline orchestration
 ├── release.config.cjs           extends @workspace/semantic-release-config
