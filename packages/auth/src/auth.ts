@@ -46,6 +46,37 @@ function resolveTrustedOrigins(extra: readonly string[]): string[] {
  */
 const allowedSignUpEmails = parseAllowedEmails(process.env.SIGNUP_ALLOWED_EMAILS)
 
+/** The parent domain every NSW Design site is served under: the root, `ui.` and `email.`. */
+export const SHARED_COOKIE_DOMAIN = 'design.nsw.gov.au'
+
+/**
+ * The domain to scope the session cookie to, or `undefined` for a host-only one.
+ *
+ * Every NSW Design site (design.nsw.gov.au, ui.design.nsw.gov.au,
+ * email.design.nsw.gov.au) signs in against one database with one secret, so
+ * a cookie scoped to the parent domain makes one sign-in, and one sign-out,
+ * count on all of them. That is only right for a production deployment
+ * reached on that domain: a preview is served on `*.vercel.app`, where a
+ * browser refuses a cookie for `design.nsw.gov.au`, and localhost has no
+ * parent domain at all, so both keep a host-only cookie and sign in on their
+ * own. The parent cookie reaches every subdomain of design.nsw.gov.au, which
+ * is acceptable while every one of them is served by the team.
+ */
+export function sharedCookieDomain(
+  baseURL: string | undefined,
+  vercelEnv: string | undefined,
+): string | undefined {
+  if (vercelEnv !== 'production' || !baseURL) return undefined
+  let host: string
+  try {
+    host = new URL(baseURL).hostname
+  } catch {
+    return undefined
+  }
+  const onDomain = host === SHARED_COOKIE_DOMAIN || host.endsWith(`.${SHARED_COOKIE_DOMAIN}`)
+  return onDomain ? SHARED_COOKIE_DOMAIN : undefined
+}
+
 export interface CreateAuthOptions {
   /**
    * The path the app is served under, when it is not the domain's root: Next's
@@ -79,11 +110,12 @@ export interface CreateAuthOptions {
  * proxy and any server-side session read.
  *
  * Every app in this repo calls this once (`lib/auth.ts`) with its own
- * `basePath` (and `nextBasePath` when that is Next's). They all read the same
- * `DATABASE_URL` and `BETTER_AUTH_SECRET`, so a session signed in on one app is
- * valid on every app of the shared domain: the cookie is set for the domain,
- * and each app validates it against the same `session` table with the same
- * secret.
+ * `basePath` (and `nextBasePath` when that is Next's). Every NSW Design site —
+ * these apps, the other toolkit's and design.nsw.gov.au itself — reads the same
+ * `DATABASE_URL` and `BETTER_AUTH_SECRET`, and in production the session
+ * cookie is scoped to design.nsw.gov.au (`sharedCookieDomain`), so one sign-in
+ * covers them all: each app validates the cookie against the same `session`
+ * table with the same secret.
  *
  * `BETTER_AUTH_SECRET` and `BETTER_AUTH_URL` are read from the environment by
  * Better Auth itself. `BETTER_AUTH_URL` is the app's ORIGIN only (no path):
@@ -120,6 +152,7 @@ export function createAuth({
   nextBasePath = false,
   trustedOrigins = [],
 }: CreateAuthOptions = {}) {
+  const cookieDomain = sharedCookieDomain(process.env.BETTER_AUTH_URL, process.env.VERCEL_ENV)
   return betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     basePath: nextBasePath ? authBasePath() : authBasePath(basePath),
@@ -135,6 +168,9 @@ export function createAuth({
       enabled: true,
     },
     databaseHooks: createSignUpAllowlistHooks(allowedSignUpEmails),
+    advanced: cookieDomain
+      ? { crossSubDomainCookies: { enabled: true, domain: cookieDomain } }
+      : undefined,
     plugins: [nextCookies()],
   })
 }

@@ -1048,10 +1048,13 @@ Root Directory. Do not put a repo-root `vercel.json` (it would conflict with the
 project which also uses the repo root for npm install).
 
 Both Next apps sit behind sign-in until launch (`packages/auth`, each app's `proxy.ts`;
-`apps/web` keeps `/registry` open for installs). They share one Neon database and one
-secret, so each project needs the same `DATABASE_URL`, `BETTER_AUTH_SECRET`,
+`apps/web` keeps `/registry` open for installs). Every NSW Design site signs in against
+one database (the nswds-design Neon resource, connected to each project) with one secret,
+and in production the session cookie is scoped to `design.nsw.gov.au`, so one sign-in
+covers design., ui. and email. Each project needs `DATABASE_URL` (from that resource),
+`BETTER_AUTH_SECRET` and `SIGNUP_ALLOWED_EMAILS` (team shared variables) and its own
 `BETTER_AUTH_URL` (`https://ui.design.nsw.gov.au`, the origin the zones are served
-through) and `SIGNUP_ALLOWED_EMAILS` — see `.env.example`. Storybook and the registry
+through) — see `.env.example`. Storybook and the registry
 are static and carry no gate of their own; through the web app's zone rewrite
 `/storybook` is gated, on `storybook.design.nsw.gov.au` it is not.
 

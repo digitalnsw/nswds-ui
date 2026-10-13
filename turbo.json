@@ -17,7 +17,8 @@
     "NSWDS_AUTH_GATE",
     "VERCEL",
     "VERCEL_URL",
-    "VERCEL_BRANCH_URL"
+    "VERCEL_BRANCH_URL",
+    "VERCEL_ENV"
   ],
   "globalDependencies": [".env", "registry.config.json"],
   "tasks": {

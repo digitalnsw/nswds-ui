@@ -1,8 +1,11 @@
 # @workspace/auth
 
 Sign-in for this repo's Next.js apps, consumed as TypeScript source (each app lists it in
-`transpilePackages`). One Neon database and one `BETTER_AUTH_SECRET` serve every app, so a session
-signed in on one app of the shared domain is valid on all of them.
+`transpilePackages`). Every NSW Design site — design.nsw.gov.au, ui.design.nsw.gov.au and
+email.design.nsw.gov.au — signs in against one Neon database (nswds-design's) with one
+`BETTER_AUTH_SECRET`, and in production the session cookie is scoped to `design.nsw.gov.au`
+(`sharedCookieDomain`), so one sign-in, and one sign-out, covers them all. Previews and localhost
+keep a host-only cookie and sign in on their own.
 
 What an app adds, each a few lines over this package:
 

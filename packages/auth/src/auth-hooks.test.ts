@@ -5,7 +5,7 @@ import { memoryAdapter } from 'better-auth/adapters/memory'
 import { APIError } from 'better-auth/api'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { authBasePath, createAuth } from './auth'
+import { authBasePath, createAuth, sharedCookieDomain } from './auth'
 import { createSignUpAllowlistHooks } from './auth-hooks'
 
 describe('createSignUpAllowlistHooks', () => {
@@ -39,6 +39,30 @@ describe('authBasePath', () => {
   it('prefixes the endpoints with the app path, tolerating a trailing slash', () => {
     expect(authBasePath('/infographics')).toBe('/infographics/api/auth')
     expect(authBasePath('/builder/')).toBe('/builder/api/auth')
+  })
+})
+
+describe('sharedCookieDomain', () => {
+  it('scopes a production deployment on any NSW Design host to the parent domain', () => {
+    for (const url of [
+      'https://design.nsw.gov.au',
+      'https://ui.design.nsw.gov.au',
+      'https://email.design.nsw.gov.au',
+      'https://email.design.nsw.gov.au/',
+    ]) {
+      expect(sharedCookieDomain(url, 'production'), url).toBe('design.nsw.gov.au')
+    }
+  })
+
+  it('keeps a host-only cookie off production, off the domain, or without a base URL', () => {
+    expect(sharedCookieDomain('https://ui.design.nsw.gov.au', 'preview')).toBeUndefined()
+    expect(sharedCookieDomain('https://ui.design.nsw.gov.au', undefined)).toBeUndefined()
+    expect(sharedCookieDomain('http://localhost:3000', 'production')).toBeUndefined()
+    expect(sharedCookieDomain('https://nswds-ui-web.vercel.app', 'production')).toBeUndefined()
+    // A lookalike is not a subdomain.
+    expect(sharedCookieDomain('https://evildesign.nsw.gov.au', 'production')).toBeUndefined()
+    expect(sharedCookieDomain(undefined, 'production')).toBeUndefined()
+    expect(sharedCookieDomain('not a url', 'production')).toBeUndefined()
   })
 })
 
@@ -77,6 +101,17 @@ describe('createAuth wiring', () => {
     vi.stubEnv('VERCEL_URL', undefined)
     vi.stubEnv('VERCEL_BRANCH_URL', undefined)
     expect(createAuth().options.trustedOrigins).toEqual([])
+  })
+
+  it('shares the session cookie across design.nsw.gov.au in production only', () => {
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    expect(createAuth().options.advanced?.crossSubDomainCookies).toEqual({
+      enabled: true,
+      domain: 'design.nsw.gov.au',
+    })
+    vi.stubEnv('VERCEL_ENV', 'preview')
+    expect(createAuth().options.advanced?.crossSubDomainCookies).toBeUndefined()
   })
 
   it('caches the session in a signed cookie so the proxy rarely hits the database', () => {
