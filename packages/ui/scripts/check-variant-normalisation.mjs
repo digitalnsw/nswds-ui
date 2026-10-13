@@ -34,7 +34,8 @@
  *      cva(…)`, or named `*Variants` / `*Cva`, called bare or as a member —
  *      whose object-literal argument passes the bare identifier `<ident>` as a
  *      value (`{ color }`, `{ color: color }`, or a renamed prop such as
- *      `{ color: colorProp }`) hands it to cva RAW.
+ *      `{ color: colorProp }`) hands it to cva RAW. The `className` and
+ *      `class` options are extra classes, not variants, and are ignored.
  *   4. If `<ident>` is advertised (2) and raw (3) inside the same component,
  *      the file fails (kind `mismatch`).
  *   5. An advertised attribute (2) written BEFORE a `{...props}` spread on the
@@ -234,6 +235,10 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
         for (const argument of node.arguments) {
           if (!ts.isObjectLiteralExpression(argument)) continue
           for (const property of argument.properties) {
+            // `className`/`class` are cva's extra-classes options, not
+            // variants, so an identifier passed through them is never raw.
+            const key = property.name && ts.isIdentifier(property.name) ? property.name.text : null
+            if (key === 'className' || key === 'class') continue
             // Keyed on the VALUE handed to cva, so a renamed prop
             // (`{ color: colorProp }`) is caught as well as `{ color }`.
             if (ts.isShorthandPropertyAssignment(property)) {

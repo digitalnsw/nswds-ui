@@ -87,6 +87,23 @@ test('passes presence coercion spelled `x || void 0`', () => {
   assert.deepEqual(messages(source), [])
 })
 
+test('passes an advertised identifier handed to cva only through className', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return <div {...props} data-color={colorway} className={widgetVariants({ color: colorway, className: color })} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
+test('passes the same through the class option and the className shorthand', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  const className = color
+  return <div {...props} data-color={colorway} className={widgetVariants({ color: colorway, class: color, className })} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
 // ─── Shapes that must fail ──────────────────────────────────────────────────
 
 test('fails the original pattern: ?? in the attribute, raw shorthand to cva', () => {
