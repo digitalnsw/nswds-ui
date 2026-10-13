@@ -60,6 +60,12 @@ export function safeReturnPath(value: string | null | undefined): string | null 
   if (!value || !value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) {
     return null
   }
+  // No control characters anywhere: a newline or NUL has no place in a path
+  // and is how a value tries to smuggle a header or a second URL.
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i)
+    if (code < 0x20 || code === 0x7f) return null
+  }
   return value
 }
 

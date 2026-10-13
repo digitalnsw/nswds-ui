@@ -217,6 +217,9 @@ describe('safeReturnPath', () => {
       '//evil.example/',
       '/\\evil.example/',
       'javascript:alert(1)',
+      '/account\r\nSet-Cookie: x=1',
+      '/account\u0000',
+      '/account\u007f',
     ]) {
       expect(safeReturnPath(value), String(value)).toBeNull()
     }
