@@ -103,6 +103,19 @@ describe('proxy gate', () => {
     )
   })
 
+  it('never sends a signed-in visitor from one auth page to another', async () => {
+    getSession.mockResolvedValue(A_SESSION)
+    expectsRedirectTo(await proxy(request('/sign-in?from=%2Fsign-up')), 'http://localhost:3100/')
+    expectsRedirectTo(
+      await proxy(request('/sign-up?from=%2Fsign-in%3Ffrom%3D%252Fsign-in')),
+      'http://localhost:3100/',
+    )
+    expectsRedirectTo(
+      await proxy(request('/sign-in?from=%2Fsign-up', '/infographics')),
+      'http://localhost:3100/infographics',
+    )
+  })
+
   it('lets a signed-in visitor reach a private route', async () => {
     getSession.mockResolvedValue(A_SESSION)
     expectsPassThrough(await proxy(request('/account')))

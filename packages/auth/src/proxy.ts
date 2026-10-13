@@ -83,6 +83,11 @@ export function safeReturnPath(value: string | null | undefined): string | null 
 /** A stand-in origin to resolve a return path against; only equality matters. */
 const SAME_ORIGIN = 'https://same-origin.invalid'
 
+/** The pathname of a return path that has passed `safeReturnPath`. */
+function pathnameOf(returnPath: string): string {
+  return new URL(returnPath, SAME_ORIGIN).pathname
+}
+
 /**
  * `path` under the app's `basePath`, without the `/infographics/` a plain join
  * would produce for the root: Next 308s that to `/infographics`, and a zone's
@@ -158,9 +163,11 @@ export function createProxy(auth: SessionReader, options: ProxyOptions = {}) {
 
     // Already signed in but on an auth page → send to the app: to the page a
     // `from` on the URL names (they signed in elsewhere since the gate wrote
-    // it), else home.
+    // it), else home. Never to another auth page, which would only bounce back
+    // here.
     if (hasSession && publicRoute) {
-      const wanted = safeReturnPath(request.nextUrl.searchParams.get(RETURN_PARAM)) ?? homePath
+      const from = safeReturnPath(request.nextUrl.searchParams.get(RETURN_PARAM))
+      const wanted = from && !isPublicRoute(pathnameOf(from), publicRoutes) ? from : homePath
       return NextResponse.redirect(new URL(underBasePath(basePath, wanted), request.url))
     }
 
