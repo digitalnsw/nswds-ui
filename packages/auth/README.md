@@ -20,8 +20,12 @@ Environment (the repo-root `.env`, which every app's `next.config` loads; see `.
 `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (the app's origin, no path) and
 `SIGNUP_ALLOWED_EMAILS` (fail-closed: unset means nobody can register).
 
-The Drizzle schema and its migrations live here (`src/db/schema.ts`, `drizzle/`). Apply them once per
-database with `npm run db:migrate -w @workspace/auth`; `db:generate` after a schema change.
+The database is nswds-design's, and nswds-design owns its schema and migrations
+(`src/db/schema.ts`, `drizzle/` and `npm run db:migrate` in that repo). `src/db/schema.ts` here is a
+copy the Drizzle adapter needs and must match that file; a schema change is made in nswds-design,
+migrated from there, and then copied here and into the other toolkit. There is deliberately no
+migration tooling in this package, so no repo but nswds-design writes the database's migration
+history.
 
 The browser suites run a built app with no database: `NSWDS_AUTH_GATE=off` lifts the gate, and
 only on localhost, so the switch cannot open a deployment. Each `playwright.config.ts` passes it to

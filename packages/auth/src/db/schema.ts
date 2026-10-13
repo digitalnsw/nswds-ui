@@ -3,6 +3,11 @@ import { boolean, index, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 /**
  * Better Auth's core tables for email + password sign-in.
  *
+ * A copy of nswds-design's `src/db/schema.ts`, which owns the shared database's
+ * schema and migrations: every NSW Design site signs in against that database.
+ * Change it there, migrate from there, then copy it here and into the other
+ * toolkit's package; there are no migrations in this package.
+ *
  * The shape is not ours to invent: the Drizzle adapter looks each column up by
  * the JS property key (the camelCase field name — `emailVerified`, `createdAt`,
  * …), so those keys must match Better Auth's model fields exactly or requests
