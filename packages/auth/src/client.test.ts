@@ -8,7 +8,16 @@ vi.mock('better-auth/react', () => ({
 
 import { createAuthClient } from 'better-auth/react'
 
-import { AUTH_TIMEOUT_MS, getAuthClient, settle, signOutEverywhere, UNREACHABLE } from './client'
+import {
+  AUTH_TIMEOUT_MS,
+  getAuthClient,
+  settle,
+  SIGN_UP_TIMED_OUT,
+  signOutEverywhere,
+  signUpErrorMessage,
+  TIMED_OUT,
+  UNREACHABLE,
+} from './client'
 
 const created = vi.mocked(createAuthClient)
 
@@ -106,7 +115,7 @@ describe('settle', () => {
     expect(consoleError).not.toHaveBeenCalled()
   })
 
-  it('aborts a request that never settles and reports it as unreachable', async () => {
+  it('aborts a request that never settles and reports it as timed out', async () => {
     vi.useFakeTimers()
     try {
       let given: AbortSignal | undefined
@@ -117,7 +126,10 @@ describe('settle', () => {
       await vi.advanceTimersByTimeAsync(AUTH_TIMEOUT_MS - 1)
       expect(given?.aborted).toBe(false)
       await vi.advanceTimersByTimeAsync(1)
-      await expect(result).resolves.toEqual({ data: null, error: { message: UNREACHABLE } })
+      await expect(result).resolves.toEqual({
+        data: null,
+        error: { message: TIMED_OUT, code: 'TIMEOUT' },
+      })
       expect(given?.aborted).toBe(true)
     } finally {
       vi.useRealTimers()
@@ -155,5 +167,22 @@ describe('signOutEverywhere on a network failure', () => {
       }),
     }
     await expect(signOutEverywhere(c)).resolves.toMatchObject({ error: { message: UNREACHABLE } })
+  })
+})
+
+describe('signUpErrorMessage', () => {
+  it('warns that a timed-out sign-up may have created the account', () => {
+    expect(signUpErrorMessage({ message: TIMED_OUT, code: 'TIMEOUT' })).toBe(SIGN_UP_TIMED_OUT)
+  })
+
+  it("shows the server's own message otherwise", () => {
+    expect(signUpErrorMessage({ message: UNREACHABLE })).toBe(UNREACHABLE)
+    expect(
+      signUpErrorMessage({ message: 'User already exists', code: 'USER_ALREADY_EXISTS' }),
+    ).toBe('User already exists')
+  })
+
+  it('falls back to a generic message', () => {
+    expect(signUpErrorMessage({})).toBe('Could not create your account. Please try again.')
   })
 })

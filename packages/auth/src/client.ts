@@ -36,7 +36,14 @@ export type AppAuthClient = ReturnType<typeof createAuthClient>
 /** Shown when the request never reached the server (offline, DNS, a dropped connection). */
 export const UNREACHABLE = 'Could not reach the server. Check your connection and try again.'
 
-/** How long an auth request may take before it is aborted and reported as unreachable. */
+/**
+ * Shown when the request was aborted at the deadline. The server may still
+ * have acted on it, so a caller whose request is not safe to repeat (sign-up)
+ * checks `error.code === 'TIMEOUT'` and says so.
+ */
+export const TIMED_OUT = 'The server took too long to answer. Please try again.'
+
+/** How long an auth request may take before it is aborted and reported as `TIMED_OUT`. */
 export const AUTH_TIMEOUT_MS = 15_000
 
 /**
@@ -46,15 +53,16 @@ export const AUTH_TIMEOUT_MS = 15_000
  * would skip a caller's error path and leave its control pending forever.
  * A stalled connection may never settle at all, so the call also gets a
  * deadline: after `timeoutMs` its request is aborted through the signal it is
- * given, and the result is returned without waiting for the call to notice.
- * Either way the result is `{ data: null, error: { message: UNREACHABLE } }`,
- * so the same path handles both. The same helper lives in nswds-design's
+ * given, and `{ data: null, error: { message: TIMED_OUT, code: 'TIMEOUT' } }`
+ * is returned without waiting for the call to notice. A rejection becomes
+ * `{ data: null, error: { message: UNREACHABLE } }`, so the same error path
+ * handles all three. The same helper lives in nswds-design's
  * `src/lib/auth-client.ts`.
  */
 export async function settle<T extends { error: unknown }>(
   call: (signal: AbortSignal) => Promise<T>,
   timeoutMs = AUTH_TIMEOUT_MS,
-): Promise<T | { data: null; error: { message: string; status?: number } }> {
+): Promise<T | { data: null; error: { message: string; status?: number; code?: 'TIMEOUT' } }> {
   const controller = new AbortController()
   let timer: ReturnType<typeof setTimeout> | undefined
   const deadline = new Promise<never>((_, reject) => {
@@ -69,10 +77,27 @@ export async function settle<T extends { error: unknown }>(
   } catch (cause) {
     // Keep the cause visible: a bug inside `call` would otherwise read as a network failure.
     console.error('Auth request rejected', cause)
+    // Only the deadline aborts this controller.
+    if (controller.signal.aborted)
+      return { data: null, error: { message: TIMED_OUT, code: 'TIMEOUT' } }
     return { data: null, error: { message: UNREACHABLE } }
   } finally {
     clearTimeout(timer)
   }
+}
+
+/**
+ * A timed-out sign-up may still have created the account on the server, and a
+ * second attempt would then fail as a duplicate, so point the visitor at
+ * signing in first.
+ */
+export const SIGN_UP_TIMED_OUT =
+  'The server took too long to answer, so your account may have been created. Try signing in before signing up again.'
+
+/** The message the sign-up form shows for a failed attempt. */
+export function signUpErrorMessage(error: { message?: string; code?: string }): string {
+  if (error.code === 'TIMEOUT') return SIGN_UP_TIMED_OUT
+  return error.message ?? 'Could not create your account. Please try again.'
 }
 
 /** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
