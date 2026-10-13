@@ -8,7 +8,7 @@ vi.mock('better-auth/react', () => ({
 
 import { createAuthClient } from 'better-auth/react'
 
-import { getAuthClient, signOutEverywhere } from './client'
+import { getAuthClient, settle, signOutEverywhere, UNREACHABLE } from './client'
 
 const created = vi.mocked(createAuthClient)
 
@@ -59,5 +59,43 @@ describe('signOutEverywhere', () => {
     const c = stub({ message: 'network down' })
     await expect(signOutEverywhere(c)).resolves.toEqual({ error: { message: 'network down' } })
     expect(c.signOut).not.toHaveBeenCalled()
+  })
+})
+
+describe('settle', () => {
+  it('passes a resolved result through untouched', async () => {
+    const result = { data: { ok: true }, error: null }
+    await expect(settle(async () => result)).resolves.toBe(result)
+  })
+
+  it('turns a rejected request into an error result, so a control never stays pending', async () => {
+    await expect(
+      settle(async () => {
+        throw new TypeError('fetch failed')
+      }),
+    ).resolves.toEqual({ data: null, error: { message: UNREACHABLE } })
+  })
+})
+
+describe('signOutEverywhere on a network failure', () => {
+  it('reports the failure instead of rejecting, when revoking cannot reach the server', async () => {
+    const c = {
+      revokeSessions: vi.fn(async () => {
+        throw new TypeError('fetch failed')
+      }),
+      signOut: vi.fn(async () => ({ error: null })),
+    }
+    await expect(signOutEverywhere(c)).resolves.toEqual({ error: { message: UNREACHABLE } })
+    expect(c.signOut).not.toHaveBeenCalled()
+  })
+
+  it('reports the failure instead of rejecting, when sign-out cannot reach the server', async () => {
+    const c = {
+      revokeSessions: vi.fn(async () => ({ error: null })),
+      signOut: vi.fn(async () => {
+        throw new TypeError('fetch failed')
+      }),
+    }
+    await expect(signOutEverywhere(c)).resolves.toMatchObject({ error: { message: UNREACHABLE } })
   })
 })

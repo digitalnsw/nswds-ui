@@ -33,6 +33,27 @@ export function getAuthClient(basePath = ''): AppAuthClient {
 
 export type AppAuthClient = ReturnType<typeof createAuthClient>
 
+/** Shown when the request never reached the server (offline, DNS, a dropped connection). */
+export const UNREACHABLE = 'Could not reach the server. Check your connection and try again.'
+
+/**
+ * Run a Better Auth client call and always get a result back. The client
+ * resolves with `{ error }` for an error the server answers with, but rejects
+ * when the request fails before that (offline, a dropped connection), which
+ * would skip a caller's error path and leave its control pending forever.
+ * Here a rejection becomes `{ data: null, error: { message: UNREACHABLE } }`,
+ * so the same path handles both.
+ */
+export async function settle<T extends { error: unknown }>(
+  call: () => Promise<T>,
+): Promise<T | { data: null; error: { message: string; status?: number } }> {
+  try {
+    return await call()
+  } catch {
+    return { data: null, error: { message: UNREACHABLE } }
+  }
+}
+
 /** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
 interface SignOutClient {
   revokeSessions: () => Promise<{ error: { message?: string; status?: number } | null }>
@@ -64,11 +85,11 @@ interface SignOutClient {
 export async function signOutEverywhere(
   client: SignOutClient,
 ): Promise<{ error: { message?: string; status?: number } | null }> {
-  const revoked = await client.revokeSessions()
+  const revoked = await settle(() => client.revokeSessions())
   // 401: this session is already gone from the database (revoked on another
   // device or site, by the revoke script, or by an earlier attempt whose
   // sign-out then failed). With no session there is no authority to revoke
   // others; sign-out still clears this browser's cookies.
-  if (revoked.error && revoked.error.status !== 401) return revoked
-  return client.signOut()
+  if (revoked.error && revoked.error.status !== 401) return { error: revoked.error }
+  return settle(() => client.signOut())
 }

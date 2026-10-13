@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
-import { getAuthClient } from '../client'
+import { getAuthClient, settle } from '../client'
 import { RETURN_PARAM, safeReturnPath } from '../return-path'
 
 export interface SignInFormProps {
@@ -80,7 +80,7 @@ export function SignInForm({
     setError(null)
     setPending(true)
 
-    const { error } = await client.signIn.email({ email, password })
+    const { error } = await settle(() => client.signIn.email({ email, password }))
 
     if (error) {
       setError(error.message ?? 'Invalid email or password.')
