@@ -32,3 +32,27 @@ export function getAuthClient(basePath = ''): AppAuthClient {
 }
 
 export type AppAuthClient = ReturnType<typeof createAuthClient>
+
+/** What `signOutEverywhere` needs of a client; typed structurally so a test can stub it. */
+interface SignOutClient {
+  revokeSessions: () => Promise<{ error: { message?: string } | null }>
+  signOut: () => Promise<{ error: { message?: string } | null }>
+}
+
+/**
+ * Sign out of every session the user holds, then clear this browser's cookie.
+ *
+ * Revoking first is what makes a sign-out complete: one sign-in covers every
+ * NSW Design site, and a session design.nsw.gov.au issued before the cookies
+ * were renamed (`SESSION_COOKIE_PREFIX`) is not the one a browser presents, so
+ * a plain sign-out would leave it valid in the database, where a rollback to
+ * the old cookie name would read it again. On a failure nothing further is
+ * tried and the error is returned, so the caller keeps the visitor in place.
+ */
+export async function signOutEverywhere(
+  client: SignOutClient,
+): Promise<{ error: { message?: string } | null }> {
+  const revoked = await client.revokeSessions()
+  if (revoked.error) return revoked
+  return client.signOut()
+}

@@ -5,7 +5,7 @@ import type { Route } from 'next'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { getAuthClient } from '../client'
+import { getAuthClient, signOutEverywhere } from '../client'
 
 export interface SignOutButtonProps {
   /**
@@ -48,7 +48,7 @@ export function SignOutButton({
   async function handleClick() {
     setPending(true)
     setError(null)
-    const { error } = await client.signOut()
+    const { error } = await signOutEverywhere(client)
 
     if (error) {
       setError(error.message ?? 'Could not sign you out. Please try again.')
