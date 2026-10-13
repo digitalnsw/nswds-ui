@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-import { getAuthClient, settle } from '../client'
+import { getAuthClient, settle, signUpErrorMessage } from '../client'
 import { returnPath, useReturnPath, withReturnPath } from './sign-in-form'
 
 export interface SignUpFormProps {
@@ -52,10 +52,12 @@ export function SignUpForm({
     setError(null)
     setPending(true)
 
-    const { error } = await settle(() => client.signUp.email({ name, email, password }))
+    const { error } = await settle((signal) =>
+      client.signUp.email({ name, email, password, fetchOptions: { signal } }),
+    )
 
     if (error) {
-      setError(error.message ?? 'Could not create your account. Please try again.')
+      setError(signUpErrorMessage(error))
       setPending(false)
       return
     }
