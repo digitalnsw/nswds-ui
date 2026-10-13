@@ -13,7 +13,7 @@ import { IconSearch } from '../icons/search.js'
 
 import { Button, ButtonLink } from './button.js'
 import { Header, HeaderActions, HeaderBrand } from './header.js'
-import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
+import { expectNullVariantsMatchDefault } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Header/Tests',
@@ -426,11 +426,8 @@ export const CssCheck: Story = {
 }
 
 /**
- * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
- * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Each variant is now resolved once (`resolveVariant`), so the
- * null spelling and the default spelling must render identically: classes,
- * data attributes and painted result. The colour context is resolved from the same value but is only
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * The colour context is resolved from the same value but is only
  * observable on the dark surfaces, which the Colours story covers.
  */
 export const NullVariantsAreTheDefaults: Story = {
@@ -443,14 +440,41 @@ export const NullVariantsAreTheDefaults: Story = {
       <Header id='header-null' color={null} container={null} sticky={false}>
         <HeaderBrand sitename='Null variants' version='2.1.0' />
       </Header>
+      {/* A consumer's own data-color must not desync the attribute from the
+          classes, while a pinned data-scrolled (state, which the docs pin on
+          to show the treatment) must survive. */}
+      <div data-override=''>
+        <Header id='header-override' sticky={false} data-color='dark' data-scrolled=''>
+          <HeaderBrand sitename='Consumer attributes' version='2.1.0' />
+        </Header>
+      </div>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const [byDefault, byNull] = queryVariantPair(canvasElement, 'header')
+    const headers = canvasElement.querySelectorAll<HTMLElement>('[data-slot="header"]')
+    if (headers.length !== 3) {
+      throw new Error(`Expected 3 headers, got ${headers.length}.`)
+    }
+    const [byDefault, byNull, override] = headers as unknown as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ]
     expectNullVariantsMatchDefault(byDefault, byNull, {
       attrs: { color: 'white' },
       sentinelClass: 'bg-white',
       innerSlot: 'header-container',
     })
+
+    if (override.dataset.color !== 'white' || !override.classList.contains('bg-white')) {
+      throw new Error(
+        `Expected a consumer data-color to be overridden by the resolved colour, got data-color="${override.dataset.color}".`,
+      )
+    }
+    if (override.dataset.scrolled !== '') {
+      throw new Error(
+        `Expected a pinned data-scrolled='' to survive the render, got ${JSON.stringify(override.dataset.scrolled)}.`,
+      )
+    }
   },
 }

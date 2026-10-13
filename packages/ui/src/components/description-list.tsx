@@ -2,10 +2,11 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
-// Shared by cva's defaultVariants, the data-layout attribute and the `??`
-// normaliser in `DescriptionList`, so they can't drift apart.
+// Shared by cva's defaultVariants, the data-layout attribute and the
+// `resolveVariant` call in `DescriptionList`, so they can't drift apart.
 const DEFAULT_DESCRIPTION_LIST_LAYOUT = 'stacked'
 
 /**

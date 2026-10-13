@@ -3,7 +3,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 import { Badge, type BadgeProps } from '../components/badge.js'
 import { Link } from '../components/link.js'
@@ -45,7 +46,7 @@ type HeaderColor = keyof typeof headerColors
 // Shared by cva's defaultVariants, the data-color attribute and the logo
 // context, so the four can't drift apart.
 const DEFAULT_HEADER_COLOR: HeaderColor = 'white'
-// Shared by cva's defaultVariants and the `??` normaliser in `Header`.
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Header`.
 const DEFAULT_HEADER_CONTAINER = 'fluid'
 
 const headerVariants = cva(
@@ -434,13 +435,15 @@ function Header({
     <header
       id='nsw-header'
       data-slot='header'
-      {...props}
-      // After the spread, so a consumer's own `data-*` cannot desync the
-      // attribute from the classes both derive from the resolved value.
-      data-color={colorway}
       // Present-or-absent rather than "true"/"false", so it reads like Base
       // UI's data-disabled and Tailwind's bare `data-scrolled:` variant works.
+      // Before the spread on purpose: it is state, not a variant, and the
+      // docs pin it on (`data-scrolled=''`) to show the scrolled treatment.
       data-scrolled={isScrolled || undefined}
+      {...props}
+      // After the spread, so a consumer's own `data-color` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
       className={cn(
         headerVariants({ color: colorway }),
         // z-40 sits below the z-50 SkipLinks: a sticky header at the same

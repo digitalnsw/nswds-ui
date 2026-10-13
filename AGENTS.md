@@ -385,7 +385,9 @@ Add an entry to `packages/ui/registry.json`:
 }
 ```
 
-Only list `src/lib/utils.ts` if the component uses `cn()`. List every dep the component
+List every `src/lib/*` file the component imports as a `registry:lib` file — `utils.ts` for
+`cn()`, `variants.ts` for `resolveVariant()` (its own file, so it never collides with the
+`lib/utils.ts` a consumer already owns). List every dep the component
 actually imports, even one a `registryDependencies` sibling already installs — consumers
 install them on `shadcn add`, and relying on a sibling's declaration breaks silently the
 day that sibling drops it.
@@ -446,39 +448,39 @@ from the tsup build** (see tsup.config.ts: `name.endsWith('.stories.tsx')` check
 
 Run from the **repo root** unless noted.
 
-| What                            | Command                                                        |
-| ------------------------------- | -------------------------------------------------------------- |
-| Install deps                    | `npm install`                                                  |
-| Dev all apps                    | `npm run dev`                                                  |
-| Storybook only                  | `npm run dev -w @workspace/storybook` → http://localhost:6006  |
-| Web sandbox only                | `npm run dev -w web` → http://localhost:3000                   |
+| What                            | Command                                                            |
+| ------------------------------- | ------------------------------------------------------------------ |
+| Install deps                    | `npm install`                                                      |
+| Dev all apps                    | `npm run dev`                                                      |
+| Storybook only                  | `npm run dev -w @workspace/storybook` → http://localhost:6006      |
+| Web sandbox only                | `npm run dev -w web` → http://localhost:3000                       |
 | Infographics site only          | `npm run dev -w infographics` → http://localhost:3001/infographics |
-| Build everything                | `npm run build`                                                |
-| Build UI package only           | `npm run build -w @nswds/ui`                                   |
-| Build JS only                   | `npm run build:js -w @nswds/ui`                                |
-| Build CSS only                  | `npm run build:css -w @nswds/ui`                               |
-| Lint all                        | `npm run lint`                                                 |
-| Format all                      | `npm run format`                                               |
-| Check formatting                | `npm run format:check`                                         |
-| Check workflow interpolation    | `npm run check:workflows`                                      |
-| Test the root scripts           | `npm run test:scripts`                                         |
-| Type check all                  | `npm run typecheck`                                            |
-| Check component drift           | `npm run check:drift -w @nswds/ui`                             |
-| Check radius scale              | `npm run check:radius -w @nswds/ui`                            |
-| Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`) |
-| Check icons parity              | `npm run check:icons -w @nswds/ui`                             |
-| Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                   |
-| Check the story standard        | `npm run check:stories -w @nswds/ui`                           |
-| Check variant normalisation     | `npm run check:variants -w @nswds/ui`                          |
-| Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                      |
-| Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`          |
-| Check published package         | `npm run check:package -w @nswds/ui`                           |
-| Run @nswds/ui unit tests        | `npm test -w @nswds/ui` (needs `dist/`)                        |
-| Test consumer fixture           | `./scripts/test-consumer-fixture.sh`                           |
-| Build registry JSON             | `npm run registry:build`                                       |
-| Validate registry.json          | `npm run registry:validate`                                    |
-| Check registry items resolve    | `npm run check:registry-resolves -w @nswds/ui`                 |
-| Run Storybook tests             | `npm run test -w @workspace/storybook`                         |
+| Build everything                | `npm run build`                                                    |
+| Build UI package only           | `npm run build -w @nswds/ui`                                       |
+| Build JS only                   | `npm run build:js -w @nswds/ui`                                    |
+| Build CSS only                  | `npm run build:css -w @nswds/ui`                                   |
+| Lint all                        | `npm run lint`                                                     |
+| Format all                      | `npm run format`                                                   |
+| Check formatting                | `npm run format:check`                                             |
+| Check workflow interpolation    | `npm run check:workflows`                                          |
+| Test the root scripts           | `npm run test:scripts`                                             |
+| Type check all                  | `npm run typecheck`                                                |
+| Check component drift           | `npm run check:drift -w @nswds/ui`                                 |
+| Check radius scale              | `npm run check:radius -w @nswds/ui`                                |
+| Check cascade safety            | `npm run check:cascade -w @nswds/ui` (needs `dist/styles.css`)     |
+| Check icons parity              | `npm run check:icons -w @nswds/ui`                                 |
+| Check portal boundaries         | `npm run check:portal-boundary -w @nswds/ui`                       |
+| Check the story standard        | `npm run check:stories -w @nswds/ui`                               |
+| Check variant normalisation     | `npm run check:variants -w @nswds/ui`                              |
+| Check theme parity              | `npm run check:theme-parity -w @nswds/ui`                          |
+| Check storybook pre-bundle list | `npm run check:optimize-deps -w @workspace/storybook`              |
+| Check published package         | `npm run check:package -w @nswds/ui`                               |
+| Run @nswds/ui unit tests        | `npm test -w @nswds/ui` (needs `dist/`)                            |
+| Test consumer fixture           | `./scripts/test-consumer-fixture.sh`                               |
+| Build registry JSON             | `npm run registry:build`                                           |
+| Validate registry.json          | `npm run registry:validate`                                        |
+| Check registry items resolve    | `npm run check:registry-resolves -w @nswds/ui`                     |
+| Run Storybook tests             | `npm run test -w @workspace/storybook`                             |
 
 The registry commands run in `packages/ui` but output to `apps/registry/public/r/`.
 
@@ -513,7 +515,7 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   expression context and are ignored; secrets are NOT exempt (see §8). The one
   `ALLOWED` entry is `…head.repo.fork`, a platform-computed boolean.
 - **`test:scripts`** is `node --test scripts/*.test.mjs packages/ui/scripts/*.test.mjs
-  apps/web/*.test.mjs apps/storybook/scripts/*.test.mjs`.
+apps/web/*.test.mjs apps/storybook/scripts/*.test.mjs`.
   Today that is the `check:workflows` scanner, the `check:portal-boundary`,
   `check:theme-parity`, `check:stories` and `check:variants` gates, a guard pinning
   `globals.css`'s `@source` directives to `packages/ui/src` (one outside it
@@ -601,11 +603,16 @@ usual trio cannot see (`check:cascade` is not a step of its own — it runs insi
   classes disagree — and lints, typechecks and passes every story that passes
   a member value. The same pair was hand-fixed in nine components across two
   PRs before this held it. Resolve each variant once with `resolveVariant`
-  from `src/lib/utils.ts` and feed that one value to cva, the attribute and
-  anything else that reads it; write the attributes after the `{...props}`
-  spread so a consumer cannot desync them. Presence coercion
-  (`data-icon-only={iconOnly || undefined}`) is not flagged. Parses the syntax
-  tree, like the two gates above, and is self-tested under `test:scripts`.
+  from `src/lib/variants.ts` and feed that one value to cva, the attribute and
+  anything else that reads it; write variant-derived attributes after the
+  `{...props}` spread so a consumer cannot desync them (state such as Header's
+  `data-scrolled` stays before it, so docs can pin it). The gate also follows
+  an alias (`const look = variant ?? 'x'` or `resolveVariant(variant, 'x')`
+  then `data-variant={look}`), a ternary, and any cva function declared in the
+  file or named `*Variants`/`*Cva`, and scopes its match to one component.
+  Presence coercion (`data-icon-only={iconOnly || undefined}`) is not flagged.
+  Parses the syntax tree, like the two gates above, and is self-tested under
+  `test:scripts`.
 - **`check:theme-parity`** (`packages/ui/scripts/check-theme-parity.mjs`)
   asserts the shadcn→NSW token map is identical across the two channels that
   ship it: the `:root { }` block of `src/styles/theme.css` (the npm surface,
@@ -964,12 +971,12 @@ Four separate Vercel projects, each linked to `github.com/digitalnsw/nswds-ui`. 
 detects npm from `package-lock.json` and runs `npm install` from the git root regardless of
 which project's Root Directory is set.
 
-| Vercel project       | Root Directory   | Public URL                                                  | Purpose                        |
-| -------------------- | ---------------- | ----------------------------------------------------------- | ------------------------------ |
-| `nswds-ui-web`       | `apps/web`       | `https://ui.design.nsw.gov.au` (the earlier `ui.digital.nsw.gov.au` redirects here, all but `/registry`) | Dev sandbox / design docs site |
-| `nswds-ui-infographics` | `apps/infographics` | `https://ui.design.nsw.gov.au/infographics` (zone; origin `infographics.design.nsw.gov.au`) | Infographics site |
-| `nswds-ui-storybook` | `apps/storybook` | `https://ui.design.nsw.gov.au/storybook` (zone; origin `storybook.design.nsw.gov.au`) | Component catalogue            |
-| `nswds-ui-registry`  | `apps/registry`  | `https://registry.design.nsw.gov.au` (legacy path proxied — see below) | shadcn registry JSON endpoint  |
+| Vercel project          | Root Directory      | Public URL                                                                                               | Purpose                        |
+| ----------------------- | ------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `nswds-ui-web`          | `apps/web`          | `https://ui.design.nsw.gov.au` (the earlier `ui.digital.nsw.gov.au` redirects here, all but `/registry`) | Dev sandbox / design docs site |
+| `nswds-ui-infographics` | `apps/infographics` | `https://ui.design.nsw.gov.au/infographics` (zone; origin `infographics.design.nsw.gov.au`)              | Infographics site              |
+| `nswds-ui-storybook`    | `apps/storybook`    | `https://ui.design.nsw.gov.au/storybook` (zone; origin `storybook.design.nsw.gov.au`)                    | Component catalogue            |
+| `nswds-ui-registry`     | `apps/registry`     | `https://registry.design.nsw.gov.au` (legacy path proxied — see below)                                   | shadcn registry JSON endpoint  |
 
 ### One domain, zones under it
 
@@ -1203,7 +1210,7 @@ deploy, use **Redeploy** with "Use project's Ignore Build Step" unchecked.
 
 Only live items belong here — a fixed entry is deleted, not struck through.
 
-| #   | Issue                                                   | Where / status                                                                                                                                        |
-| --- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `apps/web` has no content (`page.tsx` returns null)     | Expected; it's a dev sandbox                                                                                                                          |
-| 2   | vitest majors are blocked while Storybook's addon lags   | `@storybook/addon-vitest` peers vitest `^3 \|\| ^4` in every release incl. 11.0.0-alpha.0, so vitest 5 cannot resolve; Renovate blocks the major (nswds-devops `default.json`). Unblocks when the addon's peer admits `^5` — upstream storybookjs/storybook#36082, #35752 |
+| #   | Issue                                                  | Where / status                                                                                                                                                                                                                                                            |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `apps/web` has no content (`page.tsx` returns null)    | Expected; it's a dev sandbox                                                                                                                                                                                                                                              |
+| 2   | vitest majors are blocked while Storybook's addon lags | `@storybook/addon-vitest` peers vitest `^3 \|\| ^4` in every release incl. 11.0.0-alpha.0, so vitest 5 cannot resolve; Renovate blocks the major (nswds-devops `default.json`). Unblocks when the addon's peer admits `^5` — upstream storybookjs/storybook#36082, #35752 |

@@ -8,7 +8,8 @@ import { IconCheck } from '../icons/check.js'
 import { IconExpandLess } from '../icons/expand-less.js'
 import { IconExpandMore } from '../icons/expand-more.js'
 import { ButtonGroupBoundary } from '../lib/button-group-context.js'
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 const Select = SelectPrimitive.Root
 

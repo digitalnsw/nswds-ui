@@ -597,11 +597,8 @@ export const CssCheck: Story = {
 }
 
 /**
- * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
- * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Each variant is now resolved once (`resolveVariant`), so the
- * null spelling and the default spelling must render identically: classes,
- * data attributes and painted result. The panel colourway is resolved from the same value, so each bar
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * The panel colourway is resolved from the same value, so each bar
  * opens one section and the portalled panels are held to the same classes
  * too. Multi-instance: the component defaults to `id="nsw-main-navigation"`,
  * which is only valid once per page.

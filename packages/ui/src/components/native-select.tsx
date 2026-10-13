@@ -2,7 +2,8 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 import { IconExpandMore } from '../icons/expand-more.js'
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 const nativeSelectVariants = cva(
   // Field foundation shared with Input (input.tsx) and the Select trigger: the

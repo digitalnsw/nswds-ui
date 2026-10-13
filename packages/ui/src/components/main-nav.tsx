@@ -4,7 +4,8 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
 import { IconEast } from '../icons/east.js'
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 import {
   NavigationMenu,
@@ -52,10 +53,10 @@ const mainNavColors = [
 
 type MainNavColor = (typeof mainNavColors)[number]
 
-// Shared by the bar's and the panel's cva defaultVariants and the `??`
-// normaliser in `MainNav`, so they can't drift apart.
+// Shared by the bar's and the panel's cva defaultVariants and the
+// `resolveVariant` call in `MainNav`, so they can't drift apart.
 const DEFAULT_MAIN_NAV_COLOR: MainNavColor = 'white'
-// Shared by cva's defaultVariants and the `??` normaliser in `MainNav`.
+// Shared by cva's defaultVariants and the `resolveVariant` call in `MainNav`.
 const DEFAULT_MAIN_NAV_CONTAINER = 'fluid'
 
 const mainNavVariants = cva(

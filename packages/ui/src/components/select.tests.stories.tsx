@@ -68,11 +68,8 @@ export const CssCheck: Story = {
 }
 
 /**
- * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
- * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Each variant is now resolved once (`resolveVariant`), so the
- * null spelling and the default spelling must render identically: classes,
- * data attributes and painted result. `size` and `variant` have no native attribute to collide with.
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `size` and `variant` have no native attribute to collide with.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',

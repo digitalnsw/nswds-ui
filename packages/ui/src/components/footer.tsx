@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 import { ButtonLink, type IconSlot, TouchTarget } from '../components/button.js'
 import { Link } from '../components/link.js'
@@ -41,10 +42,10 @@ const footerColors = [
 
 type FooterColor = (typeof footerColors)[number]
 
-// Shared by cva's defaultVariants, the `??` normaliser in `Footer` and
+// Shared by cva's defaultVariants, the `resolveVariant` call in `Footer` and
 // `footerLogoType`, so they can't drift apart.
 const DEFAULT_FOOTER_COLOR: FooterColor = 'white'
-// Shared by cva's defaultVariants and the `??` normaliser in `Footer`.
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Footer`.
 const DEFAULT_FOOTER_CONTAINER = 'fluid'
 
 /**

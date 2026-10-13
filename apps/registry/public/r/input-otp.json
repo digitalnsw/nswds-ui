@@ -21,7 +21,7 @@
     },
     {
       "path": "src/lib/utils.ts",
-      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n\n/**\n * Resolves a cva variant prop to its default once, so the value fed to cva,\n * to the `data-*` attribute and to anything else that reads it agrees.\n *\n * cva reads an explicit `null` as \"no variant\" (no classes for that axis) but\n * `undefined` and `''` as \"use `defaultVariants`\", while `??` falls through\n * only for `null` and `undefined`. A component that wrote `data-color={color\n * ?? DEFAULT}` beside `variants({ color })` therefore advertised the default\n * with none of its classes for `null`, and `''` for `''`. `||` covers all\n * three, and every variant key here is a non-empty string, so a falsy value\n * is never a member.\n */\nexport function resolveVariant<T extends string>(value: T | null | undefined, fallback: T): T {\n  return value || fallback\n}\n",
+      "content": "import { clsx, type ClassValue } from 'clsx'\nimport { twMerge } from 'tailwind-merge'\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}\n",
       "type": "registry:lib",
       "target": "lib/utils.ts"
     }

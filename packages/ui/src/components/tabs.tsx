@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 function Tabs({ className, orientation = 'horizontal', ...props }: TabsPrimitive.Root.Props) {
   return (
@@ -65,16 +66,21 @@ const TabsListContext = React.createContext<TabsVariant>('default')
 
 function TabsList({
   className,
-  variant = 'default',
+  variant,
   ...props
 }: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) {
+  // Resolved once (see `resolveVariant`), so the context, `data-variant` and
+  // cva agree for `null` and `''` as well as the default spelling.
+  const look = resolveVariant(variant, 'default')
   return (
-    <TabsListContext.Provider value={variant ?? 'default'}>
+    <TabsListContext.Provider value={look}>
       <TabsPrimitive.List
         data-slot='tabs-list'
-        data-variant={variant}
-        className={cn(tabsListVariants({ variant }), className)}
         {...props}
+        // After the spread, so a consumer's own `data-variant` cannot desync
+        // the attribute from the classes both derive from the resolved value.
+        data-variant={look}
+        className={cn(tabsListVariants({ variant: look }), className)}
       />
     </TabsListContext.Provider>
   )

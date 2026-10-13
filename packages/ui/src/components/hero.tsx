@@ -2,7 +2,8 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 /**
  * Surface colours a hero can be drawn on, in the Header's and Masthead's
@@ -49,9 +50,9 @@ const heroColors = {
 type HeroColor = keyof typeof heroColors
 
 const DEFAULT_HERO_COLOR: HeroColor = 'white'
-// Shared by cva's defaultVariants and the `??` normalisers (and, for layout
-// and fit, the data-* attributes), so they can't drift apart — the arrangement
-// Header and Masthead use for their colour.
+// Shared by cva's defaultVariants and the `resolveVariant` calls (and, for
+// layout and fit, the data-* attributes), so they can't drift apart — the
+// arrangement Header and Masthead use for their colour.
 const DEFAULT_HERO_LAYOUT = 'split'
 const DEFAULT_HERO_CONTAINER = 'fluid'
 const DEFAULT_HERO_FIT = 'framed'

@@ -65,11 +65,8 @@ export const CssCheck: Story = {
 }
 
 /**
- * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
- * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Each variant is now resolved once (`resolveVariant`), so the
- * null spelling and the default spelling must render identically: classes,
- * data attributes and painted result. `size` is omitted from the native props and `variant` has no native
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `size` is omitted from the native props and `variant` has no native
  * attribute, so both take `null` as typed; the wrapper mirrors the control's
  * attributes and is held to the same values.
  */

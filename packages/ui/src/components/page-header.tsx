@@ -3,7 +3,8 @@ import type * as React from 'react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { overlayInk } from '../lib/overlay.js'
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 /**
  * The colourways a page header's title box can wear. Each sets two custom
@@ -44,7 +45,7 @@ const pageHeaderColors = {
 type PageHeaderColor = keyof typeof pageHeaderColors
 
 const DEFAULT_PAGE_HEADER_COLOR: PageHeaderColor = 'blue'
-// Shared by cva's defaultVariants and the normaliser in `PageHeader`.
+// Shared by cva's defaultVariants and the `resolveVariant` call in `PageHeader`.
 const DEFAULT_PAGE_HEADER_CONTAINER = 'fluid'
 
 const pageHeaderVariants = cva(

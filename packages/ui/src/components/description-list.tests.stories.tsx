@@ -75,11 +75,8 @@ export const CssCheck: Story = {
 }
 
 /**
- * `null` is the value cva and `??` disagree on: cva reads an explicit `null`
- * as "no variant" (no classes for that axis at all) where `??` falls through
- * to the default. Each variant is now resolved once (`resolveVariant`), so the
- * null spelling and the default spelling must render identically: classes,
- * data attributes and painted result. `layout` has no native attribute to collide with.
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `layout` has no native attribute to collide with.
  */
 export const NullVariantsAreTheDefaults: Story = {
   name: 'Null variants are the defaults',
@@ -110,5 +107,23 @@ export const NullVariantsAreTheDefaults: Story = {
       sentinelClass: 'flex',
       style: ['display'],
     })
+  },
+}
+
+/**
+ * The resolved `data-layout` is written after the props spread, so a
+ * consumer's own `data-layout` cannot advertise a layout the classes do not
+ * paint.
+ */
+export const ConsumerDataAttributeCannotDesync: Story = {
+  name: 'Consumer data attribute cannot desync',
+  render: (args) => <DescriptionList {...args} data-layout='inline' />,
+  play: async ({ canvasElement }) => {
+    const list = getList(canvasElement)
+    if (list.dataset.layout !== 'stacked' || !list.classList.contains('flex')) {
+      throw new Error(
+        `Expected the resolved layout to win over a consumer data-layout, got data-layout="${list.dataset.layout}" with "${list.className}".`,
+      )
+    }
   },
 }

@@ -1,7 +1,8 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import React from 'react'
 
-import { cn, resolveVariant } from '../lib/utils.js'
+import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 // Colour pairs are curated for WCAG 2.2 AAA (1.4.6 Contrast Enhanced): every
 // text/background combination below resolves to at least 7:1, in BOTH themes.
@@ -34,7 +35,7 @@ type MastheadColor = keyof typeof mastheadColors
 // Shared by cva's defaultVariants and the data-color attribute, so the two
 // can't drift apart — the same arrangement as Header, Footer and MainNav.
 const DEFAULT_MASTHEAD_COLOR: MastheadColor = 'dark'
-// Shared by cva's defaultVariants and the `??` normaliser in `Masthead`.
+// Shared by cva's defaultVariants and the `resolveVariant` call in `Masthead`.
 const DEFAULT_MASTHEAD_CONTAINER = 'fluid'
 
 const mastheadVariants = cva('w-full text-xs', {

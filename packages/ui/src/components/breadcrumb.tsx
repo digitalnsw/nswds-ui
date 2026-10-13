@@ -9,6 +9,7 @@ import { IconChevronRight } from '../icons/chevron-right.js'
 import { IconMoreHoriz } from '../icons/more-horiz.js'
 import { overlayInk } from '../lib/overlay.js'
 import { cn } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 import { TouchTarget } from './button.js'
 import {
   DropdownMenu,
@@ -194,9 +195,9 @@ function Breadcrumb({
   VariantProps<typeof breadcrumbVariants> & {
     collapse?: boolean
   }) {
-  // VariantProps admits null, which cva reads as "no variant" and would leave
-  // every --bc-* variable unset.
-  const look = variant ?? 'default'
+  // Resolved once (see `resolveVariant`): VariantProps admits null, which cva
+  // reads as "no variant" and would leave every --bc-* variable unset.
+  const look = resolveVariant(variant, 'default')
   const collapses = collapse
   const navRef = React.useRef<HTMLElement>(null)
   // null until measured: the CSS width fallback applies until then.
@@ -291,12 +292,14 @@ function Breadcrumb({
         }}
         aria-label={ariaLabel}
         data-slot='breadcrumb'
-        data-variant={look}
         data-collapse={collapses || undefined}
         data-measured={collapses && wraps !== null ? '' : undefined}
         data-collapsed={collapses && wraps ? '' : undefined}
-        className={cn(breadcrumbVariants({ variant: look }), collapses && 'w-full', className)}
         {...props}
+        // After the spread, so a consumer's own `data-variant` cannot desync
+        // the attribute from the classes both derive from the resolved value.
+        data-variant={look}
+        className={cn(breadcrumbVariants({ variant: look }), collapses && 'w-full', className)}
       />
     </BreadcrumbHiddenContext.Provider>
   )

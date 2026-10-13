@@ -10,7 +10,7 @@ import {
   HeroTitle,
 } from '../components/hero.js'
 import { IconArrowForward } from '../icons/arrow-forward.js'
-import { resolveVariant } from '../lib/utils.js'
+import { resolveVariant } from '../lib/variants.js'
 
 // ── Sample content — replace with your service's own ────────────────────────
 const contentSample = {
