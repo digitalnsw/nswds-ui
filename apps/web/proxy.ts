@@ -23,6 +23,6 @@ export const config = {
   // needs to render. The matcher must be a literal here: Next reads it from
   // this file statically.
   matcher: [
-    '/((?!api/auth|infographics/api/auth|infographics/sign-(?:in|up)(?:/|$)|registry(?:/|$)|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
+    '/((?!api/auth(?:/|$)|infographics/api/auth(?:/|$)|infographics/sign-(?:in|up)(?:/|$)|registry(?:/|$)|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
   ],
 }

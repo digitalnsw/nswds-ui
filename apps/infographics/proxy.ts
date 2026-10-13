@@ -18,6 +18,6 @@ export const config = {
   // basePath to these itself. The matcher must be a literal here: Next reads it
   // from this file statically.
   matcher: [
-    '/((?!api/auth|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
+    '/((?!api/auth(?:/|$)|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
   ],
 }
