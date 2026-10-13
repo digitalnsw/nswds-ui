@@ -115,6 +115,28 @@ function normalisedIdentifier(expression) {
   return null
 }
 
+/**
+ * The static name of an object-literal key — `className`, `'className'` and
+ * `['className']` all read as `className` — or `null` for a dynamic key.
+ */
+function propertyKey(name) {
+  if (!name) return null
+  if (
+    ts.isIdentifier(name) ||
+    ts.isStringLiteral(name) ||
+    ts.isNoSubstitutionTemplateLiteral(name)
+  ) {
+    return name.text
+  }
+  if (
+    ts.isComputedPropertyName(name) &&
+    (ts.isStringLiteral(name.expression) || ts.isNoSubstitutionTemplateLiteral(name.expression))
+  ) {
+    return name.expression.text
+  }
+  return null
+}
+
 const isFunctionLike = (node) =>
   ts.isFunctionDeclaration(node) ||
   ts.isFunctionExpression(node) ||
@@ -237,7 +259,7 @@ export function checkVariantSource(source, fileName = 'component.tsx') {
           for (const property of argument.properties) {
             // `className`/`class` are cva's extra-classes options, not
             // variants, so an identifier passed through them is never raw.
-            const key = property.name && ts.isIdentifier(property.name) ? property.name.text : null
+            const key = propertyKey(property.name)
             if (key === 'className' || key === 'class') continue
             // Keyed on the VALUE handed to cva, so a renamed prop
             // (`{ color: colorProp }`) is caught as well as `{ color }`.

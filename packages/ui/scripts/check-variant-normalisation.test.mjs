@@ -104,6 +104,14 @@ test('passes the same through the class option and the className shorthand', () 
   assert.deepEqual(messages(source), [])
 })
 
+test('passes className and class written as string-literal and computed keys', () => {
+  const source = component(`
+  const colorway = resolveVariant(color, DEFAULT_COLOR)
+  return <div {...props} data-color={colorway} className={widgetVariants({ color: colorway, 'className': color, ['class']: color })} />
+  `)
+  assert.deepEqual(messages(source), [])
+})
+
 // ─── Shapes that must fail ──────────────────────────────────────────────────
 
 test('fails the original pattern: ?? in the attribute, raw shorthand to cva', () => {
