@@ -427,8 +427,8 @@ function Header({
 
   // Resolved once (see `resolveVariant`), so cva, `data-color` and the colour
   // context agree for `null` and `''` as well as the default spelling, and
-  // `container={null}` keeps the inner wrapper's `max-w-[var(--header-max-width,…)]`
-  // class instead of dropping it.
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--header-max-width`, instead of dropping it.
   const colorway = resolveVariant(color, DEFAULT_HEADER_COLOR)
   const containerway = resolveVariant(container, DEFAULT_HEADER_CONTAINER)
 

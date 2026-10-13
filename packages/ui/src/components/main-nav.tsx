@@ -622,8 +622,8 @@ function MainNav({
 
   // Resolved once (see `resolveVariant`), so cva, `data-color` and the panel
   // colourway agree for `null` and `''` as well as the default spelling, and
-  // `container={null}` keeps the inner wrapper's `max-w-[var(--main-nav-max-width,…)]`
-  // class instead of dropping it.
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--main-nav-max-width`, instead of dropping it.
   const colorway = resolveVariant(color, DEFAULT_MAIN_NAV_COLOR)
   const containerway = resolveVariant(container, DEFAULT_MAIN_NAV_CONTAINER)
 

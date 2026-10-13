@@ -149,8 +149,8 @@ function PageHeader({
 }: PageHeaderProps) {
   // Resolved once (see `resolveVariant`), so cva and `data-color` agree for
   // `null` and `''` as well as the default spelling, and
-  // `container={null}` keeps the inner wrapper's `max-w-[var(--page-header-max-width,…)]`
-  // class instead of dropping it.
+  // `container={null}` keeps the inner wrapper's max-width class, which reads
+  // `--page-header-max-width`, instead of dropping it.
   const colorway = resolveVariant(color, DEFAULT_PAGE_HEADER_COLOR)
   const containerway = resolveVariant(container, DEFAULT_PAGE_HEADER_CONTAINER)
   return (
