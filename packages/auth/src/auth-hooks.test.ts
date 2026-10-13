@@ -96,6 +96,20 @@ describe('createAuth wiring', () => {
     ])
   })
 
+  it('does not trust the Vercel addresses of a production deployment that shares the cookie', () => {
+    // The shared cookie is scoped to design.nsw.gov.au, which a browser drops on
+    // *.vercel.app: refuse the origin rather than sign in into nothing.
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('VERCEL_ENV', 'production')
+    vi.stubEnv('BETTER_AUTH_URL', 'https://ui.design.nsw.gov.au')
+    vi.stubEnv('VERCEL_URL', 'nswds-ui-web-abc123.vercel.app')
+    vi.stubEnv('VERCEL_BRANCH_URL', 'nswds-ui-web-git-main.vercel.app')
+    const { trustedOrigins } = createAuth({
+      trustedOrigins: ['https://infographics.design.nsw.gov.au'],
+    }).options
+    expect(trustedOrigins).toEqual(['https://infographics.design.nsw.gov.au'])
+  })
+
   it('trusts only the listed origins when no Vercel address is set', () => {
     vi.stubEnv('NODE_ENV', 'production')
     vi.stubEnv('VERCEL_URL', undefined)

@@ -24,13 +24,22 @@ import { parseAllowedEmails } from './signup-allowlist'
  * deployment (`*.vercel.app`) or a project's own address is not, so those are
  * trusted from the addresses Vercel sets for the deployment itself
  * (`VERCEL_URL`, `VERCEL_BRANCH_URL`): a preview can then be signed in to.
+ *
+ * Not in production, though, where the session cookie is scoped to
+ * design.nsw.gov.au (`sharedCookieDomain`): a browser drops that cookie when
+ * it arrives on a `*.vercel.app` address, so a sign-in there would appear to
+ * succeed and leave the visitor signed out. Leaving those addresses untrusted
+ * turns that into a plain "Invalid origin" refusal instead. Production is
+ * signed into on its own domain.
+ *
  * An app adds its own further origins (a zone's own domain) through
  * `trustedOrigins`.
  */
-function resolveTrustedOrigins(extra: readonly string[]): string[] {
+function resolveTrustedOrigins(extra: readonly string[], cookieDomain?: string): string[] {
   if (process.env.NODE_ENV === 'development') {
     return ['http://localhost:*', 'http://127.0.0.1:*', ...extra]
   }
+  if (cookieDomain) return [...extra]
   const vercel = [process.env.VERCEL_URL, process.env.VERCEL_BRANCH_URL]
     .filter((host): host is string => Boolean(host))
     .map((host) => `https://${host}`)
@@ -156,7 +165,7 @@ export function createAuth({
   return betterAuth({
     baseURL: process.env.BETTER_AUTH_URL,
     basePath: nextBasePath ? authBasePath() : authBasePath(basePath),
-    trustedOrigins: resolveTrustedOrigins(trustedOrigins),
+    trustedOrigins: resolveTrustedOrigins(trustedOrigins, cookieDomain),
     session: {
       cookieCache: { enabled: true, maxAge: 60 },
     },
