@@ -52,9 +52,14 @@ interface SignOutClient {
  * failed session deletion, clears the cookie and still answers success, so it
  * cannot be trusted to end a session; `revokeSessions` throws instead. If it
  * fails, nothing further is tried and the error is returned, so the visitor
- * stays signed in and can retry. If this session is already gone (401) there
- * is nothing to revoke and sign-out runs to clear the cookies, which is also
- * how a retry after a failed sign-out completes.
+ * stays signed in and can retry.
+ *
+ * If this session is already gone (401), the browser is already signed out and
+ * has no session left to act with, so it cannot revoke any other: sign-out
+ * runs to clear its cookies, and the visitor lands on the sign-in page, which
+ * is all the controls promise. Any other session then ends at its own expiry
+ * or its own sign-out. This is also how a retry completes when a sign-out
+ * failed after its revoke had already ended every session.
  */
 export async function signOutEverywhere(
   client: SignOutClient,
@@ -62,8 +67,8 @@ export async function signOutEverywhere(
   const revoked = await client.revokeSessions()
   // 401: this session is already gone from the database (revoked on another
   // device or site, by the revoke script, or by an earlier attempt whose
-  // sign-out then failed), so there is nothing left to revoke. Sign-out still
-  // clears this browser's cookies.
+  // sign-out then failed). With no session there is no authority to revoke
+  // others; sign-out still clears this browser's cookies.
   if (revoked.error && revoked.error.status !== 401) return revoked
   return client.signOut()
 }
