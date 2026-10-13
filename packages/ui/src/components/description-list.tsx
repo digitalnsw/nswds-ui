@@ -2,7 +2,12 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
+
+// Shared by cva's defaultVariants, the data-layout attribute and the
+// `resolveVariant` call in `DescriptionList`, so they can't drift apart.
+const DEFAULT_DESCRIPTION_LIST_LAYOUT = 'stacked'
 
 /**
  * Term/detail pairs — metadata strips, summary rows, key–value facts.
@@ -49,7 +54,7 @@ const descriptionListVariants = cva('', {
     },
   },
   defaultVariants: {
-    layout: 'stacked',
+    layout: DEFAULT_DESCRIPTION_LIST_LAYOUT,
   },
 })
 
@@ -80,13 +85,18 @@ type DescriptionListProps = React.ComponentPropsWithoutRef<'dl'> &
  * `stacked` has no such requirement — wrap or don't, it reads the same.
  */
 function DescriptionList({ className, layout, ref, ...props }: DescriptionListProps) {
+  // Resolved once (see `resolveVariant`), so cva and `data-layout` agree for
+  // `null` and `''` as well as the default spelling.
+  const layoutway = resolveVariant(layout, DEFAULT_DESCRIPTION_LIST_LAYOUT)
   return (
     <dl
       ref={ref}
       data-slot='description-list'
-      data-layout={layout ?? 'stacked'}
-      className={cn(descriptionListVariants({ layout, className }))}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-layout={layoutway}
+      className={cn(descriptionListVariants({ layout: layoutway, className }))}
     />
   )
 }

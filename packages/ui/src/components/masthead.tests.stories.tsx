@@ -8,6 +8,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { Masthead } from './masthead.js'
+import { expectNullVariantsMatchDefault, queryVariantPair } from './story-helpers.js'
 
 const meta = {
   title: 'Components/Masthead/Tests',
@@ -125,5 +126,27 @@ export const CssCheck: Story = {
         `Expected bg-primary-800 to resolve to a visible colour, got "${bg}". Is globals.css loaded?`,
       )
     }
+  },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `container` has no native attribute to collide with.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: (args) => (
+    <div className='space-y-4'>
+      <Masthead {...args} color={undefined} container={undefined} id='masthead-default' />
+      <Masthead {...args} color={null} container={null} id='masthead-null' />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'masthead')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'dark' },
+      sentinelClass: 'bg-primary-800',
+      innerSlot: 'masthead-container',
+    })
   },
 }

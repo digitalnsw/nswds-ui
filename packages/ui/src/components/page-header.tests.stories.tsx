@@ -21,7 +21,7 @@ import {
   PageHeaderTitle,
   type PageHeaderColor,
 } from './page-header.js'
-import { resolveColor } from './story-helpers.js'
+import { expectNullVariantsMatchDefault, queryVariantPair, resolveColor } from './story-helpers.js'
 
 const colors: PageHeaderColor[] = ['blue', 'navy', 'red']
 
@@ -143,4 +143,35 @@ export const ColourwayWiringDark: Story = {
   ...wiring,
   name: 'Colourway wiring (dark)',
   globals: { theme: 'dark' },
+}
+
+/**
+ * The null spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `container` has no native attribute to collide with.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: () => (
+    <div className='flex flex-col gap-4 bg-background'>
+      <PageHeader labelledBy='null-default-title'>
+        <PageHeaderTitle id='null-default-title' headingLevel={2}>
+          Default variants
+        </PageHeaderTitle>
+      </PageHeader>
+      <PageHeader color={null} container={null} labelledBy='null-null-title'>
+        <PageHeaderTitle id='null-null-title' headingLevel={2}>
+          Null variants
+        </PageHeaderTitle>
+      </PageHeader>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'page-header')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { color: 'blue' },
+      sentinelClass: '[--page-header-box:var(--primary-600)]',
+      style: [],
+      innerSlot: 'page-header-inner',
+    })
+  },
 }

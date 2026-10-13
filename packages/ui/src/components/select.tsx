@@ -8,6 +8,7 @@ import { IconCheck } from '../icons/check.js'
 import { IconExpandLess } from '../icons/expand-less.js'
 import { IconExpandMore } from '../icons/expand-more.js'
 import { ButtonGroupBoundary } from '../lib/button-group-context.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 const Select = SelectPrimitive.Root
@@ -73,13 +74,19 @@ function SelectTrigger({
   children,
   ...props
 }: SelectPrimitive.Trigger.Props & VariantProps<typeof selectTriggerVariants>) {
+  // Resolved once (see `resolveVariant`), so cva and the data attributes
+  // agree for `null` and `''` as well as the default spelling.
+  const variantway = resolveVariant(variant, 'default')
+  const sizeway = resolveVariant(size, 'default')
   return (
     <SelectPrimitive.Trigger
       data-slot='select-trigger'
-      data-size={size ?? 'default'}
-      data-variant={variant ?? 'default'}
-      className={cn(selectTriggerVariants({ variant, size, className }))}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-size={sizeway}
+      data-variant={variantway}
+      className={cn(selectTriggerVariants({ variant: variantway, size: sizeway, className }))}
     >
       {children}
       <SelectPrimitive.Icon

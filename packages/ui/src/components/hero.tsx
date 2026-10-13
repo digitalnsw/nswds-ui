@@ -2,6 +2,7 @@ import type * as React from 'react'
 
 import { cva, type VariantProps } from 'class-variance-authority'
 
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 /**
@@ -49,6 +50,12 @@ const heroColors = {
 type HeroColor = keyof typeof heroColors
 
 const DEFAULT_HERO_COLOR: HeroColor = 'white'
+// Shared by cva's defaultVariants and the `resolveVariant` calls (and, for
+// layout and fit, the data-* attributes), so they can't drift apart — the
+// arrangement Header and Masthead use for their colour.
+const DEFAULT_HERO_LAYOUT = 'split'
+const DEFAULT_HERO_CONTAINER = 'fluid'
+const DEFAULT_HERO_FIT = 'framed'
 
 const heroVariants = cva('group/hero w-full text-(--hero-ink)', {
   variants: {
@@ -94,13 +101,15 @@ const heroInnerVariants = cva(
       },
     },
     defaultVariants: {
-      layout: 'split',
-      container: 'fluid',
+      layout: DEFAULT_HERO_LAYOUT,
+      container: DEFAULT_HERO_CONTAINER,
     },
   },
 )
 
-type HeroProps = React.ComponentPropsWithoutRef<'section'> &
+// The native `color` attribute is omitted so the prop type admits the `null`
+// cva's `VariantProps` allows and the component resolves.
+type HeroProps = Omit<React.ComponentPropsWithoutRef<'section'>, 'color'> &
   VariantProps<typeof heroVariants> &
   VariantProps<typeof heroInnerVariants> & {
     /**
@@ -158,20 +167,31 @@ function Hero({
   children,
   ...props
 }: HeroProps) {
+  // Resolved once (see `resolveVariant`), so cva, the data attributes and
+  // anything else reading these agree for `null` and `''` as well as the
+  // default spelling.
+  const colorway = resolveVariant(color, DEFAULT_HERO_COLOR)
+  const layoutway = resolveVariant(layout, DEFAULT_HERO_LAYOUT)
+  const containerway = resolveVariant(container, DEFAULT_HERO_CONTAINER)
   return (
     <section
       ref={ref}
       data-slot='hero'
-      data-color={color ?? DEFAULT_HERO_COLOR}
-      data-layout={layout ?? 'split'}
-      data-align={align}
       aria-labelledby={labelledBy}
-      className={cn(heroVariants({ color, className }))}
       {...props}
+      // After the spread, so a consumer's own `data-*` cannot desync the
+      // attribute from the classes both derive from the resolved value.
+      data-color={colorway}
+      data-layout={layoutway}
+      data-align={align}
+      className={cn(heroVariants({ color: colorway, className }))}
     >
       <div
         data-slot='hero-inner'
-        className={cn(heroInnerVariants({ layout, container }), innerClassName)}
+        className={cn(
+          heroInnerVariants({ layout: layoutway, container: containerway }),
+          innerClassName,
+        )}
       >
         {children}
       </div>
@@ -336,7 +356,7 @@ const heroMediaVariants = cva(
       },
     },
     defaultVariants: {
-      fit: 'framed',
+      fit: DEFAULT_HERO_FIT,
     },
   },
 )
@@ -352,13 +372,15 @@ type HeroMediaProps = React.ComponentPropsWithoutRef<'div'> &
  * title, descriptive when it carries meaning the text does not.
  */
 function HeroMedia({ className, fit, ref, ...props }: HeroMediaProps) {
+  // Resolved once, as `Hero` does for `color` and `layout`.
+  const fitway = resolveVariant(fit, DEFAULT_HERO_FIT)
   return (
     <div
       ref={ref}
       data-slot='hero-media'
-      data-fit={fit ?? 'framed'}
-      className={cn(heroMediaVariants({ fit, className }))}
       {...props}
+      data-fit={fitway}
+      className={cn(heroMediaVariants({ fit: fitway, className }))}
     />
   )
 }

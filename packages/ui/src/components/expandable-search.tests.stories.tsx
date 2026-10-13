@@ -10,7 +10,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
 import { ExpandableSearch, ExpandableSearchField } from './expandable-search.js'
-import { expectContrast } from './story-helpers.js'
+import {
+  expectContrast,
+  expectNullVariantsMatchDefault,
+  queryVariantPair,
+} from './story-helpers.js'
 
 const meta = {
   title: 'Components/ExpandableSearch/Tests',
@@ -300,5 +304,32 @@ export const CssCheck: Story = {
     if (buttonColor === styles.backgroundColor) {
       throw new Error('The button icon paints its own surface colour — the ink failed to apply.')
     }
+  },
+}
+
+/**
+ * ExpandableSearch advertised `data-variant="default"` for a `null` variant
+ * while handing cva the raw prop, so the form painted no surface. The null
+ * spelling must render as the default (see `expectNullVariantsMatchDefault`).
+ * `variant` has no native attribute to collide with.
+ */
+export const NullVariantsAreTheDefaults: Story = {
+  name: 'Null variants are the defaults',
+  render: () => (
+    <div className='space-y-4'>
+      <ExpandableSearch aria-label='Default variant'>
+        <ExpandableSearchField placeholder='Search' />
+      </ExpandableSearch>
+      <ExpandableSearch aria-label='Null variant' variant={null}>
+        <ExpandableSearchField placeholder='Search' />
+      </ExpandableSearch>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [byDefault, byNull] = queryVariantPair(canvasElement, 'expandable-search')
+    expectNullVariantsMatchDefault(byDefault, byNull, {
+      attrs: { variant: 'default' },
+      sentinelClass: 'bg-grey-100',
+    })
   },
 }

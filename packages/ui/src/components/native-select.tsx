@@ -2,6 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import * as React from 'react'
 
 import { IconExpandMore } from '../icons/expand-more.js'
+import { resolveVariant } from '../lib/resolve-variant.js'
 import { cn } from '../lib/utils.js'
 
 const nativeSelectVariants = cva(
@@ -33,6 +34,10 @@ type NativeSelectProps = Omit<React.ComponentProps<'select'>, 'size'> &
   VariantProps<typeof nativeSelectVariants>
 
 function NativeSelect({ className, variant, size, ...props }: NativeSelectProps) {
+  // Resolved once (see `resolveVariant`), so cva and the four data attributes
+  // agree for `null` and `''` as well as the default spelling.
+  const variantway = resolveVariant(variant, 'default')
+  const sizeway = resolveVariant(size, 'default')
   return (
     <div
       className={cn(
@@ -40,15 +45,17 @@ function NativeSelect({ className, variant, size, ...props }: NativeSelectProps)
         className,
       )}
       data-slot='native-select-wrapper'
-      data-size={size ?? 'default'}
-      data-variant={variant ?? 'default'}
+      data-size={sizeway}
+      data-variant={variantway}
     >
       <select
         data-slot='native-select'
-        data-size={size ?? 'default'}
-        data-variant={variant ?? 'default'}
-        className={cn(nativeSelectVariants({ variant, size }))}
         {...props}
+        // After the spread, so a consumer's own `data-*` cannot desync the
+        // attributes from the classes both derive from the resolved values.
+        data-size={sizeway}
+        data-variant={variantway}
+        className={cn(nativeSelectVariants({ variant: variantway, size: sizeway }))}
       />
       <IconExpandMore
         className='pointer-events-none absolute end-3 top-1/2 size-5 -translate-y-1/2 text-primary select-none'
