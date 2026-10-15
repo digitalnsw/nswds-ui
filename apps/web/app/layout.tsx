@@ -1,6 +1,8 @@
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
+import { AppLinkProvider } from '@/components/link-provider'
+import { SiteShell } from '@/components/site-shell'
 import { ThemeProvider } from '@/components/theme-provider'
 // Import the SOURCE dev entry (not the `@nswds/ui/styles.css` export, which
 // is the prebuilt dist/styles.css) so this app's Tailwind build scans
@@ -55,7 +57,11 @@ export default function RootLayout({
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <AppLinkProvider>
+            <SiteShell>{children}</SiteShell>
+          </AppLinkProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
