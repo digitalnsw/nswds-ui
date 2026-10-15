@@ -1,22 +1,9 @@
-import {
-  Footer,
-  Header,
-  HeaderActions,
-  HeaderBrand,
-  Masthead,
-  SkipLink,
-  SkipLinks,
-} from '@nswds/ui'
+import { Header, HeaderActions, HeaderBrand, Masthead, SkipLink, SkipLinks } from '@nswds/ui'
 import { AuthMenu } from '@workspace/auth/components'
 import type * as React from 'react'
 
+import { SiteFooter } from '@/components/site-footer'
 import { siteName } from '@/lib/site_name'
-
-const legalLinks = [
-  { name: 'Accessibility', href: 'https://www.nsw.gov.au/accessibility' },
-  { name: 'Privacy', href: 'https://www.nsw.gov.au/privacy' },
-  { name: 'Copyright', href: 'https://www.nsw.gov.au/copyright' },
-]
 
 /**
  * The page chrome the root layout renders once: skip links, masthead, header
@@ -39,7 +26,7 @@ function SiteShell({ children }: { children: React.ReactNode }) {
       <main id='main-content' className='flex-1'>
         {children}
       </main>
-      <Footer department='Digital NSW, Department of Customer Service' legalLinks={legalLinks} />
+      <SiteFooter renderedYear={new Date().getFullYear()} />
     </div>
   )
 }
