@@ -17,7 +17,14 @@ export const config = {
   // block the CSS/JS/fonts the sign-in page needs to render. Next prefixes the
   // basePath to these itself. The matcher must be a literal here: Next reads it
   // from this file statically.
+  //
+  // `'/'` is the app's root, and the catch-all below cannot reach it: Next
+  // prefixes the basePath to the source as written, so the catch-all's leading
+  // slash becomes `/infographics/…` and never matches the bare `/infographics`
+  // the root is served at. Next compiles a `'/'` source to the basePath itself.
+  // proxy-matcher.test.ts in @workspace/auth holds this.
   matcher: [
+    '/',
     '/((?!api/auth(?:/|$)|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
   ],
 }
