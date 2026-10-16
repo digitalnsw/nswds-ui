@@ -118,6 +118,15 @@ describe('redactUrl', () => {
     expect(redactUrl('sms:0400123456?body=hi')).toBe(`sms:${REDACTED_VALUE}`)
   })
 
+  it('redacts a query-only or fragment-only reference without adding a path', () => {
+    expect(redactUrl('?email=person@example.com')).toBe('')
+    expect(redactUrl('#email=person@example.com')).toBe('')
+    expect(redactUrl('?utm_source=newsletter&email=person@example.com')).toBe(
+      '?utm_source=newsletter',
+    )
+    expect(redactUrl('?from=/account?email=a@b.c#x')).toBe('?from=%2Faccount')
+  })
+
   it('leaves prose alone and fails closed on an unparseable URL', () => {
     expect(redactUrl('Is from=/a?b=c a URL? No')).toBe('Is from=/a?b=c a URL? No')
     expect(redactUrl('https://%?q=secret')).toBe(REDACTED_VALUE)

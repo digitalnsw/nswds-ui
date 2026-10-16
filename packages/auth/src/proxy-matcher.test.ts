@@ -50,6 +50,13 @@ const APPS: AppCase[] = [
       '/infographics/_next/image',
       '/infographics/favicon.ico',
       '/infographics/fonts/public-sans.woff2',
+      // Vercel Web Analytics and Speed Insights post to the domain root, outside the basePath, so
+      // the zone's proxy never sees them on its own domain either.
+      '/_vercel/insights/view',
+      '/_vercel/speed-insights/vitals',
+      // And should one ever post under it, the catch-all leaves it out as well.
+      '/infographics/_vercel/insights/view',
+      '/infographics/_vercel/speed-insights/vitals',
     ],
   },
   {

@@ -34,7 +34,12 @@ const CONTACT_SCHEME = /^\s*(mailto|tel|sms|callto|facetime|skype|whatsapp|geo):
 
 function isUrlShaped(value: string): boolean {
   const trimmed = value.trim()
-  return ABSOLUTE_URL_PATTERN.test(trimmed) || trimmed.startsWith('/')
+  return (
+    ABSOLUTE_URL_PATTERN.test(trimmed) ||
+    trimmed.startsWith('/') ||
+    trimmed.startsWith('?') ||
+    trimmed.startsWith('#')
+  )
 }
 
 /**
@@ -144,6 +149,9 @@ export function redactUrl(value: string): string {
   url.hash = ''
 
   if (ABSOLUTE_URL_PATTERN.test(trimmed)) return url.toString()
+  // A query-only or fragment-only reference (`?…`, `#…`), such as a captured `href`: only what is
+  // left of its query, never the throwaway base's path.
+  if (trimmed.startsWith('?') || trimmed.startsWith('#')) return url.search
   // Protocol-relative (`//host/path`): the host is real and stays.
   if (trimmed.startsWith('//')) return `//${url.host}${url.pathname}${url.search}`
   return `${url.pathname}${url.search}`
