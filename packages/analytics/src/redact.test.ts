@@ -201,6 +201,9 @@ describe('paths', () => {
     expect(isCleanPath('/account/%E0%A4%A%40example.com')).toBe(false)
     expect(isCleanPath('/account/person\uFF20example.com')).toBe(false)
     expect(isCleanPath('/account/person%EF%BC%A0example.com')).toBe(false)
+    expect(isCleanPath('/account/person%EF%BC%A0example.com%FF')).toBe(false)
+    expect(isCleanPath('/account/%FFperson%EF%BC%A0example.com')).toBe(false)
+    expect(isCleanPath('/account/%E0%A4%A0%FF%40')).toBe(false)
     expect(redactUrl('/account/person%2540example.com')).toBe('/account/%5Bredacted%5D')
     // Encoded past every layer this unwraps: redacted, since it cannot be read.
     expect(isCleanPath(`/a/%${'25'.repeat(10)}40`)).toBe(false)

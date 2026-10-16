@@ -123,8 +123,8 @@ const MAX_DECODES = 8
 
 /**
  * Whether a path segment holds an email address, however many times it was percent-encoded
- * (`person%2540example.com` is `person@example.com` decoded twice). Each layer is unwrapped one
- * escape at a time, so a malformed escape elsewhere in the segment cannot hide a good one.
+ * (`person%2540example.com` is `person@example.com` decoded twice). Each layer is decoded
+ * leniently (`decodeEscapes`), so a malformed escape elsewhere in the segment cannot hide a good one.
  */
 function isPersonalSegment(segment: string): boolean {
   let current = segment
@@ -138,17 +138,17 @@ function isPersonalSegment(segment: string): boolean {
   return true
 }
 
-/** One layer of percent-decoding, each escape on its own; a malformed one is left as written. */
+const utf8 = new TextDecoder()
+
+/**
+ * One layer of percent-decoding, a run of escapes at a time, as lenient UTF-8: a malformed byte
+ * becomes U+FFFD and every valid character around it, a fullwidth `＠` among them, still decodes.
+ */
 function decodeEscapes(text: string): string {
   return text.replace(/(?:%[0-9a-f]{2})+/gi, (run) => {
-    try {
-      return decodeURIComponent(run)
-    } catch {
-      // Not UTF-8 as a whole (a lone or cut-off byte): decode the ASCII bytes, `@` among them.
-      return run.replace(/%([0-7][0-9a-f])/gi, (_escape, hex: string) =>
-        String.fromCharCode(parseInt(hex, 16)),
-      )
-    }
+    const bytes = new Uint8Array(run.length / 3)
+    for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(run.slice(i * 3 + 1, i * 3 + 3), 16)
+    return utf8.decode(bytes)
   })
 }
 
