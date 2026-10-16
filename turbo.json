@@ -7,7 +7,8 @@
     "REGISTRY_LOCATION",
     "REGISTRY_ORIGIN",
     "INFOGRAPHICS_ORIGIN",
-    "STORYBOOK_ORIGIN"
+    "STORYBOOK_ORIGIN",
+    "VERCEL_ENV"
   ],
   "globalPassThroughEnv": [
     "DATABASE_URL",
@@ -17,8 +18,7 @@
     "NSWDS_AUTH_GATE",
     "VERCEL",
     "VERCEL_URL",
-    "VERCEL_BRANCH_URL",
-    "VERCEL_ENV"
+    "VERCEL_BRANCH_URL"
   ],
   "globalDependencies": [".env", "registry.config.json"],
   "tasks": {
