@@ -1,13 +1,11 @@
 'use client'
 
-import { Analytics } from '@vercel/analytics/next'
-import { Analytics as AnalyticsWithRoute } from '@vercel/analytics/react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
-import { SpeedInsights as SpeedInsightsWithRoute } from '@vercel/speed-insights/react'
-import { usePathname } from 'next/navigation'
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/react'
+import { useParams, usePathname } from 'next/navigation'
 
-import { zonePath } from './paths'
 import { isCleanReferrer, redactUrl } from './redact'
+import { reportedPage } from './report-path'
 
 export interface VercelReportersProps {
   /**
@@ -22,8 +20,12 @@ export interface VercelReportersProps {
  * the sign-in page's `from` parameter, so the URL is redacted first (./redact.ts). Module-scope
  * functions, so the props keep one identity and the packages do not re-register them.
  */
-function redactEvent<T extends { url: string }>(event: T): T {
-  return { ...event, url: redactUrl(event.url) }
+function redactEvent<T extends { url: string; route?: string }>(event: T): T {
+  return {
+    ...event,
+    url: redactUrl(event.url),
+    ...(event.route === undefined ? {} : { route: redactUrl(event.route) }),
+  }
 }
 
 /**
@@ -35,31 +37,24 @@ function redactPageEvent<T extends { url: string }>(event: T): T | null {
   return isCleanReferrer(document.referrer) ? redactEvent(event) : null
 }
 
-/** Vercel Web Analytics and Speed Insights. */
-export function VercelReporters({ basePath }: VercelReportersProps) {
-  if (!basePath) {
-    return (
-      <>
-        <Analytics beforeSend={redactPageEvent} />
-        <SpeedInsights beforeSend={redactEvent} />
-      </>
-    )
-  }
-  return <ZoneReporters basePath={basePath} />
-}
-
 /**
- * For a zone: the route is the path, set on the React components the Next ones wrap. The Next
- * wrappers work the route out from Next's params without the basePath, and their types do not
- * accept one; all they add besides is a microfrontends base path, which a zone does not have. A zone
- * with dynamic segments would need its own route patterns here; neither zone has one.
+ * Vercel Web Analytics and Speed Insights. The React components, given the route and path
+ * (`reportedPage`), rather than the Next ones, which work both out from Next's hooks and send the
+ * path as it is, a segment holding an email address included. Everything else the Next ones add is
+ * passed here too: `framework`, and a microfrontend's observability base path and config, which
+ * `withMicrofrontends` sets at build time.
  */
-function ZoneReporters({ basePath }: { basePath: string }) {
-  const path = zonePath(basePath, usePathname())
+export function VercelReporters({ basePath = '' }: VercelReportersProps) {
+  const { route, path } = reportedPage(basePath, usePathname(), useParams())
+  const observability = {
+    framework: 'next',
+    basePath: process.env.NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH,
+    configString: process.env.NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG,
+  }
   return (
     <>
-      <AnalyticsWithRoute framework='next' route={path} path={path} beforeSend={redactPageEvent} />
-      <SpeedInsightsWithRoute framework='next' route={path} beforeSend={redactEvent} />
+      <Analytics {...observability} route={route} path={path} beforeSend={redactPageEvent} />
+      <SpeedInsights {...observability} route={route} beforeSend={redactEvent} />
     </>
   )
 }

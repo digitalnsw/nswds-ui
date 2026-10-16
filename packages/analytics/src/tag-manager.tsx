@@ -49,7 +49,9 @@ const onServer = () => false
  * inlines it.
  *
  * The check runs again on every client-side navigation, so a visitor who signs in from a clean
- * sign-in page gets the container on the page the form sends them to. Once loaded it stays loaded,
+ * sign-in page gets the container on the page the form sends them to. One the gate sent to sign in
+ * (its address carries `from`) is moved on by a full document load that replaces the sign-in page
+ * (`replacementAddress` in @workspace/auth), so the page they wanted starts a clean document. Once loaded it stays loaded,
  * so the check also requires the document's first address to be clean (`firstLocation`), and the
  * referrer GA4 will report (`isCleanReferrer`).
  *

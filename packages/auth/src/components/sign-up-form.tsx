@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient, settle, signUpErrorMessage } from '../client'
-import { returnPath, useReturnPath, withReturnPath } from './sign-in-form'
+import { leaveAuthPage, returnPath, useReturnPath, withReturnPath } from './sign-in-form'
 
 export interface SignUpFormProps {
   /**
@@ -62,10 +62,7 @@ export function SignUpForm({
       return
     }
 
-    // The return path is checked to be a path of this app (`safeReturnPath`);
-    // an app with `typedRoutes` cannot know it statically, hence the cast.
-    router.push((returnPath() ?? homeHref) as Route)
-    router.refresh()
+    leaveAuthPage(router, basePath, returnPath() ?? homeHref)
   }
 
   return (

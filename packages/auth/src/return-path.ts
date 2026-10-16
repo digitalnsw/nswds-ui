@@ -51,3 +51,28 @@ const SAME_ORIGIN = 'https://same-origin.invalid'
 export function pathnameOf(returnPath: string): string {
   return new URL(returnPath, SAME_ORIGIN).pathname
 }
+
+/**
+ * `path` under the app's `basePath`, without the `/infographics/` a plain join
+ * would produce for the root: Next 308s that to `/infographics`, and a zone's
+ * rewrite on the shared domain only matches the slash-less form directly.
+ */
+export function underBasePath(basePath: string, path: string): string {
+  return basePath && path === '/' ? basePath : `${basePath}${path}`
+}
+
+/**
+ * The address to load in place of an auth page once the visitor is in, or
+ * `null` to move on with a client-side push. A page whose own address carries a
+ * query or a fragment (the gate's `from`) is replaced by a full document load:
+ * Back can no longer return to it, and the analytics (@workspace/analytics),
+ * which stay off for the life of a document that began at such an address,
+ * start afresh on the clean one.
+ */
+export function replacementAddress(
+  current: { search: string; hash: string },
+  basePath: string,
+  destination: string,
+): string | null {
+  return current.search || current.hash ? underBasePath(basePath, destination) : null
+}

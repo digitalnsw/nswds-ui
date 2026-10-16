@@ -1,7 +1,9 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 
-import { pathnameOf, RETURN_PARAM, safeReturnPath } from './return-path'
+import { pathnameOf, RETURN_PARAM, safeReturnPath, underBasePath } from './return-path'
+
+export { underBasePath }
 
 /**
  * The shape of `auth` the gate needs: only the server-side session read. Typed
@@ -47,15 +49,6 @@ export function isGateLifted(hostname: string): boolean {
     process.env.VERCEL !== '1' &&
     LOOPBACK_HOSTS.has(hostname)
   )
-}
-
-/**
- * `path` under the app's `basePath`, without the `/infographics/` a plain join
- * would produce for the root: Next 308s that to `/infographics`, and a zone's
- * rewrite on the shared domain only matches the slash-less form directly.
- */
-export function underBasePath(basePath: string, path: string): string {
-  return basePath && path === '/' ? basePath : `${basePath}${path}`
 }
 
 export function isPublicRoute(

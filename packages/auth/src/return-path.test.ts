@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { safeReturnPath } from './return-path'
+import { replacementAddress, safeReturnPath } from './return-path'
 
 describe('safeReturnPath', () => {
   it('accepts a path of this app, query included', () => {
@@ -35,5 +35,23 @@ describe('safeReturnPath', () => {
     ]) {
       expect(safeReturnPath(value), String(value)).toBeNull()
     }
+  })
+})
+
+describe('replacementAddress', () => {
+  it('replaces an auth page whose address carries a query or fragment, under the basePath', () => {
+    expect(replacementAddress({ search: '?from=%2Faccount', hash: '' }, '', '/account')).toBe(
+      '/account',
+    )
+    expect(replacementAddress({ search: '?from=%2F', hash: '' }, '/infographics', '/')).toBe(
+      '/infographics',
+    )
+    expect(replacementAddress({ search: '', hash: '#x' }, '/signature', '/account')).toBe(
+      '/signature/account',
+    )
+  })
+
+  it('leaves a clean auth page to a client-side push', () => {
+    expect(replacementAddress({ search: '', hash: '' }, '', '/account')).toBeNull()
   })
 })
