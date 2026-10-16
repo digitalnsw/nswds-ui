@@ -6,7 +6,7 @@ Analytics for this repo's Next apps (web and the infographics zone), set up the 
   each app's `instrumentation-client.ts`. Production builds on a `design.nsw.gov.au` address only; replay, exception capture and PostHog's web
   vitals are off; `sensitiveContent` also masks element text and attributes and turns off dead-click
   capture. Every captured URL loses its fragment and every query parameter (`src/redact.ts`) bar
-  `utm_*` and the sign-in gate's `from`, cut to its path.
+  the five standard `utm_` names with label-like values, and the sign-in gate's `from`, cut to its path.
 - `@workspace/analytics/reporters`: `<VercelReporters basePath? />`, Vercel Web Analytics and Speed
   Insights. A zone passes its `basePath` so its pages are reported at their real path in the host
   app's project. Both redact the reported URL the same way.

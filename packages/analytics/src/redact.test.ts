@@ -22,6 +22,22 @@ describe('redactUrl', () => {
     expect(result).not.toMatch(/token|secret|person|example/)
   })
 
+  it('keeps only the five campaign names, and only label-like values', () => {
+    const kept = redactUrl(
+      `${origin}/?utm_source=newsletter&utm_medium=email&utm_campaign=spring+sale&utm_term=nsw-gov_2026&utm_content=hero`,
+    )
+    expect(kept).toBe(
+      `${origin}/?utm_source=newsletter&utm_medium=email&utm_campaign=spring+sale&utm_term=nsw-gov_2026&utm_content=hero`,
+    )
+
+    // A campaign-shaped name, an email or URL as a campaign value, and an over-long value.
+    expect(redactUrl(`${origin}/?utm_person@example.com`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_id=secret`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_term=person@example.com`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_source=https://example.com/x`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_source=${'a'.repeat(101)}`)).toBe(`${origin}/`)
+  })
+
   it('drops the fragment, with or without a query, in every URL form', () => {
     expect(redactUrl(`${origin}/account#email=person@example.com`)).toBe(`${origin}/account`)
     expect(redactUrl(`${origin}/?utm_source=x#secret`)).toBe(`${origin}/?utm_source=x`)

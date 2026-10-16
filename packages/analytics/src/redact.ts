@@ -4,8 +4,9 @@
  * visitor asked for, query and all, into the sign-in page's `from` parameter, so whatever a link
  * carried would otherwise be reported as part of the sign-in page's URL.
  *
- * What survives is an allowlist: `utm_*` campaign parameters, and `from` cut to its path, which
- * still says where the visitor was going. Every other parameter is dropped, name and value, since
+ * What survives is an allowlist: the five standard campaign parameters, while their values look like
+ * campaign labels (`CAMPAIGN_VALUE`), and `from` cut to its path, which still says where the visitor
+ * was going. Every other parameter is dropped, name and value, since
  * a bare name (`?person@example.com`) carries data as well as a value does, and a parameter added
  * later is covered by default. The fragment is dropped too: it is the one part of a URL a link can
  * put data in without it ever reaching a server. Only URL-shaped strings are touched, so an event's
@@ -34,9 +35,30 @@ function pathOnly(value: string): string {
   return value.split(/[?#]/, 1)[0] ?? ''
 }
 
-/** Whether a query parameter survives, by name. */
-function isAllowedParam(key: string): boolean {
-  return key === RETURN_PARAM || key.startsWith('utm_')
+/**
+ * The campaign parameters kept, by exact name. Not a `utm_` prefix: a link can put anything in a
+ * name, and `?utm_person@example.com` would pass a prefix test.
+ */
+export const CAMPAIGN_PARAMS: ReadonlySet<string> = new Set([
+  'utm_source',
+  'utm_medium',
+  'utm_campaign',
+  'utm_term',
+  'utm_content',
+])
+
+/**
+ * What a campaign value may look like: a label, such as `newsletter`, `spring sale` or
+ * `nsw-gov_2026`, up to 100 characters. No `@`, `/`, `:` or `=`, so an email address, a URL or a
+ * nested query is dropped with its parameter, whatever name it was sent under.
+ */
+export const CAMPAIGN_VALUE = /^[\w .~+-]{1,100}$/
+
+/** The value a parameter is reported with, or `null` to drop it, name and all. */
+function allowedValue(key: string, value: string): string | null {
+  if (key === RETURN_PARAM) return pathOnly(value)
+  if (CAMPAIGN_PARAMS.has(key) && CAMPAIGN_VALUE.test(value)) return value
+  return null
 }
 
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */
@@ -56,8 +78,8 @@ export function redactUrl(value: string): string {
 
   const params = new URLSearchParams()
   for (const [key, entry] of url.searchParams) {
-    if (!isAllowedParam(key)) continue
-    params.append(key, key === RETURN_PARAM ? pathOnly(entry) : entry)
+    const allowed = allowedValue(key, entry)
+    if (allowed !== null) params.append(key, allowed)
   }
   url.search = params.toString()
   url.hash = ''
