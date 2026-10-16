@@ -65,6 +65,12 @@ const nextConfig = {
   // `/infographics/` still 308 to their slashless form.
   skipTrailingSlashRedirect: true,
   // ui.digital.nsw.gov.au moves to ui.design.nsw.gov.au, all but /registry (hosts.mjs).
+  // `strict-origin` on every response: only the origin as `Referer`, same-origin requests included.
+  // GA4 in the shared Tag Manager container reports `document.referrer` as it is, so a same-site
+  // page must never hand it a full address (@workspace/analytics, `isCleanReferrer`).
+  async headers() {
+    return [{ source: '/:path*', headers: [{ key: 'Referrer-Policy', value: 'strict-origin' }] }]
+  },
   async redirects() {
     return hostRedirects()
   },

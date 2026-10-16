@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   isCleanLocation,
+  isCleanReferrer,
   REDACTED_VALUE,
   redactProperties,
   redactUrl,
@@ -148,5 +149,24 @@ describe('isCleanLocation', () => {
     expect(isCleanLocation('?person@example.com', '')).toBe(false)
     expect(isCleanLocation('?utm_term=a@b.c', '')).toBe(false)
     expect(isCleanLocation('', '#email=a@b.c')).toBe(false)
+  })
+})
+
+describe('isCleanReferrer', () => {
+  const site = 'https://ui.design.nsw.gov.au'
+
+  it('passes no referrer, another site, and a clean or origin-only one from this site', () => {
+    expect(isCleanReferrer('', site)).toBe(true)
+    expect(isCleanReferrer('https://example.com/page?email=a@b.c', site)).toBe(true)
+    expect(isCleanReferrer(`${site}/`, site)).toBe(true)
+    expect(isCleanReferrer(`${site}/sign-in?from=%2Faccount`, site)).toBe(true)
+  })
+
+  it('fails a referrer from this site with anything to redact, or one it cannot read', () => {
+    expect(
+      isCleanReferrer(`${site}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`, site),
+    ).toBe(false)
+    expect(isCleanReferrer(`${site}/x#email=a@b.c`, site)).toBe(false)
+    expect(isCleanReferrer('not a url', site)).toBe(false)
   })
 })

@@ -165,3 +165,21 @@ function redactValue<T>(value: T, clones: WeakMap<object, unknown>): T {
   for (const [key, entry] of Object.entries(value)) clone[key] = redactValue(entry, clones)
   return clone as T
 }
+
+/**
+ * Whether a referrer is safe for a reporter that reads it itself, such as Google Tag Manager, whose
+ * GA4 tag sends `document.referrer` as `page_referrer`. A referrer from another site is left alone:
+ * the browser has already cut it to that site's own policy. One from this site must be clean
+ * (`isCleanLocation`); the apps send `Referrer-Policy: strict-origin`, which cuts it to the origin
+ * anyway, so this is the backstop for a policy that is ever loosened.
+ */
+export function isCleanReferrer(referrer: string, origin: string): boolean {
+  if (!referrer) return true
+  let url: URL
+  try {
+    url = new URL(referrer)
+  } catch {
+    return false
+  }
+  return url.origin !== origin || isCleanLocation(url.search, url.hash)
+}
