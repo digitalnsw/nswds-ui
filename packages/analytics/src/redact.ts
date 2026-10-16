@@ -101,16 +101,14 @@ function allowedValue(key: string, value: string): string | null {
   return null
 }
 
-/** A fragment that is only an in-page anchor, such as `#install`. */
-const ANCHOR_FRAGMENT = /^#[\p{L}\p{N}_-]{1,100}$/u
-
 /**
  * Whether a page's query string and fragment would pass through `redactUrl` unchanged: every
- * parameter allowed with its value as is, and the fragment empty or a plain anchor. For a reporter
- * that cannot be given a redacted URL, such as Google Tag Manager, which reads the address itself.
+ * parameter allowed with its value as is, and no fragment at all, since `redactUrl` drops every one
+ * and an in-page anchor is as much whatever a link put there as any other. For a reporter that
+ * cannot be given a redacted URL, such as Google Tag Manager, which reads the address itself.
  */
 export function isCleanLocation(search: string, hash: string): boolean {
-  if (hash && !ANCHOR_FRAGMENT.test(hash)) return false
+  if (hash) return false
   for (const [key, value] of new URLSearchParams(search)) {
     if (allowedValue(key, value) !== value) return false
   }

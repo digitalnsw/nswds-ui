@@ -37,9 +37,10 @@ const onServer = () => false
  * nothing when the ID is unset, when the page is not on a production address (`isProductionHost`:
  * a zone's production build also serves a host app's preview), or when the address carries anything
  * `redactUrl` would remove (`isCleanLocation`). GA4 reads the address itself and cannot be handed a
- * redacted one, so a sign-in page the gate sent a visitor to (it carries `from`), or a link with
- * any other parameter, loads no container at all. Place it in `<html>`, before `<body>`. The app passes
- * `process.env.NEXT_PUBLIC_GTM_ID`, read where Next inlines it.
+ * redacted one, so a sign-in page the gate sent a visitor to (it carries `from`), a link with any
+ * other parameter, or one with a fragment, even an in-page anchor, loads no container at all. Place
+ * it in `<html>`, before `<body>`. The app passes `process.env.NEXT_PUBLIC_GTM_ID`, read where Next
+ * inlines it.
  *
  * The check runs again on every client-side navigation, so a visitor who signs in from a clean
  * sign-in page gets the container on the page the form sends them to. Once loaded it stays loaded,

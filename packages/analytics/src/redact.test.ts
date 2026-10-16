@@ -185,10 +185,9 @@ describe('redactProperties', () => {
 })
 
 describe('isCleanLocation', () => {
-  it('passes an address redactUrl would leave as is, with or without a plain anchor', () => {
+  it('passes an address redactUrl would leave as is', () => {
     expect(isCleanLocation('', '')).toBe(true)
     expect(isCleanLocation('?utm_source=newsletter', '')).toBe(true)
-    expect(isCleanLocation('', '#install')).toBe(true)
   })
 
   it('fails anything redactUrl would remove', () => {
@@ -197,6 +196,8 @@ describe('isCleanLocation', () => {
     expect(isCleanLocation('?person@example.com', '')).toBe(false)
     expect(isCleanLocation('?utm_term=a@b.c', '')).toBe(false)
     expect(isCleanLocation('', '#email=a@b.c')).toBe(false)
+    expect(isCleanLocation('', '#install')).toBe(false)
+    expect(isCleanLocation('?utm_source=newsletter', '#person')).toBe(false)
   })
 })
 
