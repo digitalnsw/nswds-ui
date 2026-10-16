@@ -36,6 +36,9 @@ describe('redactUrl', () => {
     expect(redactUrl(`${origin}/?utm_term=person@example.com`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_source=https://example.com/x`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_source=${'a'.repeat(101)}`)).toBe(`${origin}/`)
+    // A trailing newline: JavaScript's `$` matches before one only with the `m` flag, which
+    // CAMPAIGN_VALUE does not use, so this is dropped like any other non-label value.
+    expect(redactUrl(`${origin}/?utm_source=ok%0A`)).toBe(`${origin}/`)
   })
 
   it('drops the fragment, with or without a query, in every URL form', () => {
