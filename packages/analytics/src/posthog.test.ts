@@ -38,6 +38,32 @@ describe('posthogOptions', () => {
   })
 })
 
+describe('before_send', () => {
+  it('redacts the return path in properties, $set and $set_once, and keeps the token', () => {
+    const beforeSend = posthogOptions({ site: 'test' }).before_send as (event: unknown) => unknown
+    const page = `https://ui.design.nsw.gov.au/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`
+    const event = {
+      event: '$pageview',
+      properties: { token: 'phc_test', $current_url: page, $referrer: page },
+      $set: { $current_url: page },
+      $set_once: { $initial_current_url: page },
+    }
+    const original = structuredClone(event)
+
+    const result = beforeSend(event) as typeof event
+
+    expect(JSON.stringify(result)).not.toMatch(/a@b\.c|email/)
+    expect(result.properties.$current_url).toContain('from=%2Faccount')
+    expect(result.properties.token).toBe('phc_test')
+    expect(event).toEqual(original)
+  })
+
+  it('passes a dropped event through as null', () => {
+    const beforeSend = posthogOptions({ site: 'test' }).before_send as (event: unknown) => unknown
+    expect(beforeSend(null)).toBeNull()
+  })
+})
+
 describe('startPostHog', () => {
   it('starts on production with the options for the site', () => {
     const posthog = { init: vi.fn() }

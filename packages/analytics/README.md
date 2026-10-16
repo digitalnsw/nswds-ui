@@ -5,10 +5,11 @@ Analytics for this repo's Next apps (web and the infographics zone), set up the 
 - `@workspace/analytics/posthog`: `startPostHog(posthog, { site, sensitiveContent }, env)`, called from
   each app's `instrumentation-client.ts`. Production only; replay, exception capture and PostHog's web
   vitals are off; `sensitiveContent` also masks element text and attributes and turns off dead-click
-  capture.
+  capture. Every captured URL loses its query string (`src/redact.ts`), bar `utm_*` and the
+  sign-in gate's `from`, cut to its path.
 - `@workspace/analytics/reporters`: `<VercelReporters basePath? />`, Vercel Web Analytics and Speed
   Insights. A zone passes its `basePath` so its pages are reported at their real path in the host
-  app's project.
+  app's project. Both redact the reported URL the same way.
 - `@workspace/analytics/tag-manager`: `<TagManager containerId={process.env.NEXT_PUBLIC_GTM_ID} />`, the
   shared Google Tag Manager container, or nothing when the ID is unset.
 

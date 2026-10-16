@@ -7,6 +7,7 @@ import { SpeedInsights as SpeedInsightsWithRoute } from '@vercel/speed-insights/
 import { usePathname } from 'next/navigation'
 
 import { zonePath } from './paths'
+import { redactUrl } from './redact'
 
 export interface VercelReportersProps {
   /**
@@ -17,15 +18,21 @@ export interface VercelReportersProps {
 }
 
 /**
- * Vercel Web Analytics and Speed Insights. Neither redacts the URL: nothing on these sites writes a
- * visitor's input to its query string.
+ * Both reporters send the page's full URL; the sign-in gate puts a requested page's query string in
+ * the sign-in page's `from` parameter, so the URL is redacted first (./redact.ts). Module-scope
+ * functions, so the props keep one identity and the packages do not re-register them.
  */
+function redactEvent<T extends { url: string }>(event: T): T {
+  return { ...event, url: redactUrl(event.url) }
+}
+
+/** Vercel Web Analytics and Speed Insights. */
 export function VercelReporters({ basePath }: VercelReportersProps) {
   if (!basePath) {
     return (
       <>
-        <Analytics />
-        <SpeedInsights />
+        <Analytics beforeSend={redactEvent} />
+        <SpeedInsights beforeSend={redactEvent} />
       </>
     )
   }
@@ -42,8 +49,8 @@ function ZoneReporters({ basePath }: { basePath: string }) {
   const path = zonePath(basePath, usePathname())
   return (
     <>
-      <AnalyticsWithRoute framework='next' route={path} path={path} />
-      <SpeedInsightsWithRoute framework='next' route={path} />
+      <AnalyticsWithRoute framework='next' route={path} path={path} beforeSend={redactEvent} />
+      <SpeedInsightsWithRoute framework='next' route={path} beforeSend={redactEvent} />
     </>
   )
 }

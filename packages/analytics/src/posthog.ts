@@ -1,5 +1,7 @@
 import type { PostHog, PostHogConfig } from 'posthog-js'
 
+import { redactProperties } from './redact'
+
 /**
  * PostHog for the NSW Design sites, which share one PostHog project. Every app calls `startPostHog`
  * from its `instrumentation-client.ts` with the two `NEXT_PUBLIC_` values read there: Next inlines
@@ -68,6 +70,17 @@ export function posthogOptions({
     ...(sensitiveContent
       ? { mask_all_text: true, mask_all_element_attributes: true, capture_dead_clicks: false }
       : {}),
+    // Query strings out of every captured URL (./redact.ts): `$current_url`, `$referrer` and the
+    // `$initial_*` pair. `$set` and `$set_once` sit beside `properties` on the event, not inside it,
+    // so each is redacted on its own.
+    before_send: (event) => {
+      if (!event) return event
+      const redacted = { ...event }
+      if (redacted.properties) redacted.properties = redactProperties(redacted.properties)
+      if (redacted.$set) redacted.$set = redactProperties(redacted.$set)
+      if (redacted.$set_once) redacted.$set_once = redactProperties(redacted.$set_once)
+      return redacted
+    },
     // Registered in `loaded`, which posthog-js runs before it schedules the initial pageview, so the
     // first event carries it.
     loaded: (instance) => {

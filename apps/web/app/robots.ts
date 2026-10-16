@@ -10,7 +10,8 @@ import { siteURL } from '@/lib/site_name'
  *   matching `isPostHogProxyPath` (analytics-proxy.mjs). A bare `/nswa` prefix would also block an
  *   unrelated future route such as `/nswautomation`.
  * - `/api/` and the infographics zone's `/infographics/api/`: auth endpoints, not pages.
- * - `/registry/`: the legacy registry alias, JSON for the shadcn CLI rather than pages.
+ * - `/registry`: the legacy registry alias, JSON for the shadcn CLI rather than pages. `/registry$`
+ *   and `/registry/`, for the same reason as `/nswa`: the bare path is rewritten to the registry too.
  *
  * The sitemap URL is absolute, so a preview deployment's copy still names production.
  */
@@ -19,7 +20,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/nswa$', '/nswa/', '/api/', '/infographics/api/', '/registry/'],
+      disallow: ['/nswa$', '/nswa/', '/api/', '/infographics/api/', '/registry$', '/registry/'],
     },
     sitemap: `${siteURL}/sitemap.xml`,
   }
