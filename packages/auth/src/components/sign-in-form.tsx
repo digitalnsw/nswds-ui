@@ -3,7 +3,7 @@
 import { Button, Callout, Input, Label } from '@nswds/ui'
 import type { Route } from 'next'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
 import { getAuthClient, settle } from '../client'
@@ -48,10 +48,10 @@ export function returnPath(): string | null {
  */
 export function leaveAuthPage(
   router: ReturnType<typeof useRouter>,
-  basePath: string | undefined,
+  routePathname: string,
   destination: string,
 ): void {
-  const replacement = replacementAddress(window.location, basePath ?? '', destination)
+  const replacement = replacementAddress(window.location, routePathname, destination)
   if (replacement) {
     window.location.replace(replacement)
     return
@@ -91,6 +91,7 @@ export function SignInForm({
 }: SignInFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const pathname = usePathname()
   const from = useReturnPath()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -112,7 +113,7 @@ export function SignInForm({
       return
     }
 
-    leaveAuthPage(router, basePath, returnPath() ?? homeHref)
+    leaveAuthPage(router, pathname, returnPath() ?? homeHref)
   }
 
   return (

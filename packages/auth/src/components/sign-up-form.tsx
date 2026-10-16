@@ -3,7 +3,7 @@
 import { Button, Callout, Input, Label } from '@nswds/ui'
 import type { Route } from 'next'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient, settle, signUpErrorMessage } from '../client'
@@ -40,6 +40,7 @@ export function SignUpForm({
 }: SignUpFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const pathname = usePathname()
   const from = useReturnPath()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -62,7 +63,7 @@ export function SignUpForm({
       return
     }
 
-    leaveAuthPage(router, basePath, returnPath() ?? homeHref)
+    leaveAuthPage(router, pathname, returnPath() ?? homeHref)
   }
 
   return (

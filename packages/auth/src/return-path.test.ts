@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { replacementAddress, safeReturnPath } from './return-path'
+import { replacementAddress, routerBasePath, safeReturnPath } from './return-path'
 
 describe('safeReturnPath', () => {
   it('accepts a path of this app, query included', () => {
@@ -38,20 +38,41 @@ describe('safeReturnPath', () => {
   })
 })
 
+describe('routerBasePath', () => {
+  it("reads Next's basePath off the page's two pathnames", () => {
+    expect(routerBasePath('/sign-in', '/sign-in')).toBe('')
+    expect(routerBasePath('/signature/sign-in', '/sign-in')).toBe('/signature')
+    expect(routerBasePath('/infographics', '/')).toBe('/infographics')
+    expect(routerBasePath('/infographics/', '/')).toBe('/infographics')
+    expect(routerBasePath('/', '/')).toBe('')
+    // The builder: its routes carry `/builder` themselves, with no Next basePath.
+    expect(routerBasePath('/builder/sign-in', '/builder/sign-in')).toBe('')
+    expect(routerBasePath('/elsewhere', '/sign-in')).toBeNull()
+  })
+})
+
 describe('replacementAddress', () => {
+  const at = (pathname: string, search = '?from=%2Fx', hash = '') => ({ pathname, search, hash })
+
   it('replaces an auth page whose address carries a query or fragment, under the basePath', () => {
-    expect(replacementAddress({ search: '?from=%2Faccount', hash: '' }, '', '/account')).toBe(
-      '/account',
-    )
-    expect(replacementAddress({ search: '?from=%2F', hash: '' }, '/infographics', '/')).toBe(
-      '/infographics',
-    )
-    expect(replacementAddress({ search: '', hash: '#x' }, '/signature', '/account')).toBe(
+    expect(replacementAddress(at('/sign-in'), '/sign-in', '/account')).toBe('/account')
+    expect(replacementAddress(at('/infographics/sign-in'), '/sign-in', '/')).toBe('/infographics')
+    expect(replacementAddress(at('/signature/sign-up', '', '#x'), '/sign-up', '/account')).toBe(
       '/signature/account',
     )
   })
 
-  it('leaves a clean auth page to a client-side push', () => {
-    expect(replacementAddress({ search: '', hash: '' }, '', '/account')).toBeNull()
+  it('adds nothing to a builder route, which carries `/builder` itself', () => {
+    expect(replacementAddress(at('/builder/sign-in'), '/builder/sign-in', '/builder/x')).toBe(
+      '/builder/x',
+    )
+    expect(replacementAddress(at('/builder/sign-up'), '/builder/sign-up', '/builder')).toBe(
+      '/builder',
+    )
+  })
+
+  it('leaves a clean auth page, or one whose basePath cannot be read, to a client-side push', () => {
+    expect(replacementAddress(at('/sign-in', ''), '/sign-in', '/account')).toBeNull()
+    expect(replacementAddress(at('/elsewhere'), '/sign-in', '/account')).toBeNull()
   })
 })
