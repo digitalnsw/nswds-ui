@@ -38,8 +38,18 @@ export const config = {
   // `/nswa/:path*` is listed on its own because the catch-all below skips paths ending in `.js`, and
   // PostHog loads its config and extensions from `/nswa/.../*.js`: those must reach the proxy too,
   // or they would go to PostHog with the session cookie.
+  //
+  // `/(.+/)` sends every trailing-slash path here, the ones the catch-all leaves out included (the
+  // auth APIs, the infographics zone's sign-in pages, `/registry`, static files):
+  // `skipTrailingSlashRedirect` (next.config.mjs) turns Next's own redirect off everywhere, and
+  // `analyticsProxy` puts it back, so it has to see them all. It answers them with a redirect, so they
+  // never reach the gate.
+  //
+  // `_vercel/` is left out with `_next`: Vercel Web Analytics and Speed Insights post their beacons
+  // there, same-origin, and a signed-out visitor's would otherwise be redirected to sign-in.
   matcher: [
     '/nswa/:path*',
-    '/((?!api/auth(?:/|$)|infographics/api/auth(?:/|$)|infographics/sign-(?:in|up)(?:/|$)|registry(?:/|$)|_next|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
+    '/((?!api/auth(?:/|$)|infographics/api/auth(?:/|$)|infographics/sign-(?:in|up)(?:/|$)|registry(?:/|$)|_next|_vercel/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|txt|woff|woff2|ttf|map)$).*)',
+    '/(.+/)',
   ],
 }

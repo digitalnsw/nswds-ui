@@ -69,12 +69,20 @@ const APPS: AppCase[] = [
       '/nswa/i/v0/e/',
       '/nswa/static/array.js',
       '/nswa/array/phc_test/config.js',
+      // Trailing-slash paths the catch-all leaves out: Next's own redirect is off
+      // (`skipTrailingSlashRedirect`), so the proxy must see them to restore it.
+      '/api/auth/get-session/',
+      '/infographics/sign-in/',
+      '/registry/r/button.json/',
     ],
     open: [
       '/api/auth/get-session',
       '/infographics/api/auth/get-session',
       '/infographics/sign-in',
       '/registry/r/button.json',
+      // Vercel Web Analytics and Speed Insights beacons, same-origin.
+      '/_vercel/insights/view',
+      '/_vercel/speed-insights/vitals',
       '/_next/static/chunks/main.js',
       '/favicon.ico',
     ],

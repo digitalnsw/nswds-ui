@@ -1,6 +1,5 @@
-import { GoogleTagManager } from '@next/third-parties/google'
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
+import { VercelReporters } from '@workspace/analytics/reporters'
+import { TagManager } from '@workspace/analytics/tag-manager'
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
@@ -13,6 +12,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 // detection of the folder it builds in (see the note in globals.css).
 import './globals.css'
 
+import { basePath } from '@/lib/auth'
 import { site } from '@/lib/site'
 
 const publicSans = Public_Sans({
@@ -47,17 +47,6 @@ export const viewport: Viewport = {
   ],
 }
 
-/**
- * The Google Tag Manager container the NSW Design sites share (its GA4 tag fires inside it), or
- * `undefined` to render no tag at all. Unset is the correct state for `next dev` and previews,
- * none of which should report, so this is silent where a missing PostHog token is loud. The ID is
- * a team shared variable in Vercel, on Production only. NEXT_PUBLIC_ values are inlined at build
- * time, so setting it changes nothing until the next deployment.
- * This zone's pages are served on ui.design.nsw.gov.au, so Vercel Analytics and Speed Insights load
- * from that domain's root and report to the web app's project, under `/infographics`.
- */
-const gtmContainerId = process.env.NEXT_PUBLIC_GTM_ID?.trim() || undefined
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -70,17 +59,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
-      {gtmContainerId ? <GoogleTagManager gtmId={gtmContainerId} /> : null}
+      <TagManager containerId={process.env.NEXT_PUBLIC_GTM_ID} />
       <body>
         <ThemeProvider>
           <AppLinkProvider>
             <SiteShell>{children}</SiteShell>
           </AppLinkProvider>
         </ThemeProvider>
-        {/* No URL redaction, unlike the contrast checker: nothing on this site writes a visitor's
-            input to its query string. */}
-        <Analytics />
-        <SpeedInsights />
+        {/* A zone: its reports land in the web app's project, under /infographics. */}
+        <VercelReporters basePath={basePath} />
       </body>
     </html>
   )

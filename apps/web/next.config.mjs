@@ -53,7 +53,7 @@ const nextConfig = {
   // for them (the destructure note on useChromeHeight, the
   // set-state-in-effect disable in push-menu).
   reactCompiler: true,
-  transpilePackages: ['@nswds/ui', '@workspace/auth'],
+  transpilePackages: ['@nswds/ui', '@workspace/auth', '@workspace/analytics'],
   // PostHog's ingestion paths end in a slash (`/nswa/e/`, `/nswa/i/v0/e/`). Next's automatic
   // trailing-slash redirect would strip it before the rewrite below runs, and the SDK does not follow
   // the redirect, so ingestion would stop with no error anywhere. proxy.ts reinstates the redirect

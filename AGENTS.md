@@ -1081,6 +1081,20 @@ through) — see `.env.example`. Storybook and the registry
 are static and carry no gate of their own; through the web app's zone rewrite
 `/storybook` is gated, on `storybook.design.nsw.gov.au` it is not.
 
+**Analytics** (`packages/analytics`, `@workspace/analytics`): both Next apps start PostHog from
+their `instrumentation-client.ts` (`startPostHog`, production deployments only), render Vercel Web
+Analytics and Speed Insights (`VercelReporters`; the infographics zone passes its `basePath`, so its
+pages are reported at their real path in the web project) and the shared Google Tag Manager
+container (`TagManager`). PostHog posts to `/nswa`, which only `apps/web` serves:
+`apps/web/analytics-proxy.mjs` rewrites it to PostHog with the `cookie` (the session, scoped to all
+of `design.nsw.gov.au`), `authorization` and `referer` headers stripped, ahead of the sign-in gate,
+and the web proxy matcher lists `/nswa/:path*` on its own because the catch-all skips `.js`. The web
+app sets `skipTrailingSlashRedirect` because PostHog's ingestion paths end in a slash; a third
+matcher entry, `/(.+/)`, sends every slashed path to the proxy, which restores the redirect.
+`_vercel/` stays outside the gate for the Vercel beacons. Variables:
+`NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` (Preview and Production) and `NEXT_PUBLIC_GTM_ID` (Production),
+both team shared variables.
+
 **`apps/web`** — `apps/web/vercel.json`
 
 ```

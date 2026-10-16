@@ -16,6 +16,9 @@ export const POSTHOG_PROXY_PATH = '/nswa'
 /**
  * The prefix exactly, or as a path segment. Not a bare `startsWith('/nswa')`, which would also
  * match an unrelated future route such as `/nswautomation`.
+ *
+ * @param {string} path
+ * @returns {boolean}
  */
 export function isPostHogProxyPath(path) {
   return path === POSTHOG_PROXY_PATH || path.startsWith(`${POSTHOG_PROXY_PATH}/`)
@@ -31,12 +34,16 @@ export function isPostHogProxyPath(path) {
  *   authorization  Never set by the SDK; removed so it cannot start leaking unnoticed.
  *   referer        A referrer policy trims cross-origin requests only; these are same-origin, so
  *                  the full page URL would go with them.
+ *
+ * @type {readonly string[]}
  */
 export const POSTHOG_PROXY_STRIPPED_HEADERS = ['cookie', 'authorization', 'referer']
 
 /**
  * The rewrites to PostHog's US region. Order matters: the catch-all must come last or it swallows
  * `/nswa/static` and `/nswa/array`, which are served from the assets origin, not ingestion.
+ *
+ * @returns {{ source: string, destination: string }[]}
  */
 export function posthogRewrites() {
   return [
@@ -59,6 +66,9 @@ export function posthogRewrites() {
  * ingestion would stop silently. Everything else keeps one URL per page.
  *
  * Root is exempt. A path of only slashes is left alone rather than collapsing to root.
+ *
+ * @param {URL} url
+ * @returns {URL | null}
  */
 export function trailingSlashRedirectTarget(url) {
   if (url.pathname === '/' || !url.pathname.endsWith('/')) return null
@@ -80,6 +90,9 @@ export function trailingSlashRedirectTarget(url) {
  * anyway. A trailing-slash page path is redirected here, before the gate, so the redirect reads the
  * same whether or not the visitor is signed in, and before the zone rewrites (which run after the
  * proxy), so `/storybook/` and `/infographics/` still 308 to their slashless form as they did.
+ *
+ * @param {import('next/server.js').NextRequest} request
+ * @returns {import('next/server.js').NextResponse | null}
  */
 export function analyticsProxy(request) {
   const { pathname } = request.nextUrl

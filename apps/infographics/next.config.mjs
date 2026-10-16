@@ -24,7 +24,7 @@ const nextConfig = {
   // babel-plugin-react-compiler alone does nothing
   // (node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/reactCompiler.md).
   reactCompiler: true,
-  transpilePackages: ['@nswds/ui', '@workspace/auth'],
+  transpilePackages: ['@nswds/ui', '@workspace/auth', '@workspace/analytics'],
   async redirects() {
     return [
       {

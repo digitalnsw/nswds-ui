@@ -63,6 +63,19 @@ test('a trailing-slash page path 308s to its slashless form, keeping the query',
   assert.equal(response.headers.get('location'), `${origin}/storybook?path=/docs`)
 })
 
+test('the slashed paths the gate never sees 308 too, as Next redirected them before', () => {
+  for (const [from, to] of [
+    ['/api/auth/get-session/', '/api/auth/get-session'],
+    ['/infographics/sign-in/', '/infographics/sign-in'],
+    ['/registry/r/button.json/', '/registry/r/button.json'],
+  ]) {
+    const response = analyticsProxy(new NextRequest(`${origin}${from}`))
+    assert.ok(response, from)
+    assert.equal(response.status, 308, from)
+    assert.equal(response.headers.get('location'), `${origin}${to}`, from)
+  }
+})
+
 test('any other request is handed on to the sign-in gate', () => {
   assert.equal(analyticsProxy(new NextRequest(`${origin}/`)), null)
   assert.equal(analyticsProxy(new NextRequest(`${origin}/infographics`)), null)
