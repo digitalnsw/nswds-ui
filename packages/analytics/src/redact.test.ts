@@ -162,18 +162,21 @@ describe('isCleanLocation', () => {
 describe('isCleanReferrer', () => {
   const site = 'https://ui.design.nsw.gov.au'
 
-  it('passes no referrer, another site, and a clean or origin-only one from this site', () => {
-    expect(isCleanReferrer('', site)).toBe(true)
-    expect(isCleanReferrer('https://example.com/page?email=a@b.c', site)).toBe(true)
-    expect(isCleanReferrer(`${site}/`, site)).toBe(true)
-    expect(isCleanReferrer(`${site}/sign-in?from=%2Faccount`, site)).toBe(true)
+  it('passes no referrer, and an origin-only or clean one from any site', () => {
+    expect(isCleanReferrer('')).toBe(true)
+    expect(isCleanReferrer('https://www.google.com/')).toBe(true)
+    expect(isCleanReferrer('https://example.com/a-page')).toBe(true)
+    expect(isCleanReferrer(`${site}/`)).toBe(true)
+    expect(isCleanReferrer(`${site}/sign-in?from=%2Faccount`)).toBe(true)
   })
 
-  it('fails a referrer from this site with anything to redact, or one it cannot read', () => {
+  it('fails anything to redact from any site, credentials, or one it cannot read', () => {
     expect(
-      isCleanReferrer(`${site}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`, site),
+      isCleanReferrer(`${site}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`),
     ).toBe(false)
-    expect(isCleanReferrer(`${site}/x#email=a@b.c`, site)).toBe(false)
-    expect(isCleanReferrer('not a url', site)).toBe(false)
+    expect(isCleanReferrer(`${site}/x#email=a@b.c`)).toBe(false)
+    expect(isCleanReferrer('https://example.com/page?email=a@b.c')).toBe(false)
+    expect(isCleanReferrer('https://person:secret@example.com/')).toBe(false)
+    expect(isCleanReferrer('not a url')).toBe(false)
   })
 })

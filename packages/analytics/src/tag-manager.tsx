@@ -28,7 +28,7 @@ const allowedHere = () =>
   isProductionHost(window.location.hostname) &&
   isCleanLocation(window.location.search, window.location.hash) &&
   (!firstLocation || isCleanLocation(firstLocation.search, firstLocation.hash)) &&
-  isCleanReferrer(document.referrer, window.location.origin)
+  isCleanReferrer(document.referrer)
 // The server cannot know which address the page will be shown on, so it renders no tag.
 const onServer = () => false
 

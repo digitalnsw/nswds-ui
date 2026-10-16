@@ -172,12 +172,15 @@ function redactValue<T>(value: T, clones: WeakMap<object, unknown>): T {
 
 /**
  * Whether a referrer is safe for a reporter that reads it itself, such as Google Tag Manager, whose
- * GA4 tag sends `document.referrer` as `page_referrer`. A referrer from another site is left alone:
- * the browser has already cut it to that site's own policy. One from this site must be clean
- * (`isCleanLocation`); the apps send `Referrer-Policy: strict-origin`, which cuts it to the origin
- * anyway, so this is the backstop for a policy that is ever loosened.
+ * GA4 tag sends `document.referrer` as `page_referrer`. The same rule as for the page's own address,
+ * whichever site the referrer is from: no credentials, and nothing `isCleanLocation` would remove.
+ * Another site's referrer is usually only its origin already (browsers default to
+ * `strict-origin-when-cross-origin`), so this rarely costs a page view; when a site does send a full
+ * address, nothing here can redact it, so the container stays off. The apps' own
+ * `Referrer-Policy: strict-origin` cuts a same-site referrer to the origin. A path is not judged:
+ * there is no way to tell a sensitive one from a page name.
  */
-export function isCleanReferrer(referrer: string, origin: string): boolean {
+export function isCleanReferrer(referrer: string): boolean {
   if (!referrer) return true
   let url: URL
   try {
@@ -185,5 +188,6 @@ export function isCleanReferrer(referrer: string, origin: string): boolean {
   } catch {
     return false
   }
-  return url.origin !== origin || isCleanLocation(url.search, url.hash)
+  if (url.username || url.password) return false
+  return isCleanLocation(url.search, url.hash)
 }
