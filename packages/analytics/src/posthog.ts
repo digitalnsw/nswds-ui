@@ -26,7 +26,10 @@ export interface PostHogSiteOptions {
 export interface PostHogEnvironment {
   /** `process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN`: a team shared variable in Vercel. */
   token: string | undefined
-  /** `process.env.NEXT_PUBLIC_VERCEL_ENV`: exposed by Vercel on every deployment. */
+  /**
+   * `process.env.NEXT_PUBLIC_NSWDS_VERCEL_ENV`: Vercel's `VERCEL_ENV`, inlined by the app's
+   * `next.config` `env`.
+   */
   vercelEnv: string | undefined
   /** `window.location.hostname`: the address the visitor sees. */
   hostname: string | undefined
@@ -37,7 +40,7 @@ export interface PostHogEnvironment {
  * proxy serves every deployment, so without the first check a reviewer clicking through a pull
  * request's preview would be counted as a visitor. Without the second, a zone's pages would still
  * count from a host app's preview, which rewrites the zone's path to its production deployment
- * (`isProductionHost`). Local runs have no `NEXT_PUBLIC_VERCEL_ENV` and are skipped the same way.
+ * (`isProductionHost`). Local runs have no `VERCEL_ENV` and are skipped the same way.
  */
 export function shouldCapture(
   vercelEnv: string | undefined,

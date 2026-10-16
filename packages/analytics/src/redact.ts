@@ -30,9 +30,21 @@ function isUrlShaped(value: string): boolean {
   return ABSOLUTE_URL_PATTERN.test(trimmed) || trimmed.startsWith('/')
 }
 
-/** A return path without its own query or fragment. */
-function pathOnly(value: string): string {
-  return value.split(/[?#]/, 1)[0] ?? ''
+/**
+ * A return path cut to its path, or `null` when it is not a path on this site. The gate only ever
+ * writes a local path, but `from` on the sign-in page's address is whatever a link put there, and
+ * `from=https://example.com/person@example.com` must not be reported as a path. A value that does
+ * not start with a single `/`, or that resolves off-site (`//host`, `/\\host`), is dropped.
+ */
+function localPath(value: string): string | null {
+  if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return null
+  let url: URL
+  try {
+    url = new URL(value, 'http://redact.invalid')
+  } catch {
+    return null
+  }
+  return url.origin === 'http://redact.invalid' ? url.pathname : null
 }
 
 /**
@@ -48,20 +60,51 @@ export const CAMPAIGN_PARAMS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * What a campaign value may look like: a label in any language, such as `newsletter`, `spring sale`,
- * `nsw-gov_2026`, `café` or `春`, up to 100 characters. Letters, combining marks (an accent sent
+ * The characters a campaign value may use: a label in any language, such as `newsletter`,
+ * `spring sale`, `nsw-gov_2026`, `café` or `春`. Letters, combining marks (an accent sent
  * decomposed) and digits from any script, plus space and `_.~+-`. No `@`, `/`, `:` or `=`, so an
  * email address, a URL or a nested query is dropped with its parameter, whatever name it was sent
- * under. The `u` flag makes the classes Unicode-aware and counts the limit in characters; there is
- * no `m` flag, so `$` cannot match before a trailing newline.
+ * under. The `u` flag makes the classes Unicode-aware; there is no `m` flag, so `$` cannot match
+ * before a trailing newline.
  */
-export const CAMPAIGN_VALUE = /^[\p{L}\p{M}\p{N}_ .~+-]{1,100}$/u
+export const CAMPAIGN_CHARACTERS = /^[\p{L}\p{M}\p{N}_ .~+-]+$/u
+
+/**
+ * The longest campaign value kept, in characters as a reader counts them (grapheme clusters), so a
+ * label spelled with decomposed accents has the same limit as the same label precomposed.
+ */
+export const CAMPAIGN_MAX_LENGTH = 100
+
+const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+
+/** Whether a campaign value is a label short enough to keep. */
+function isCampaignValue(value: string): boolean {
+  if (!CAMPAIGN_CHARACTERS.test(value)) return false
+  const length = Array.from(graphemes.segment(value)).length
+  return length > 0 && length <= CAMPAIGN_MAX_LENGTH
+}
 
 /** The value a parameter is reported with, or `null` to drop it, name and all. */
 function allowedValue(key: string, value: string): string | null {
-  if (key === RETURN_PARAM) return pathOnly(value)
-  if (CAMPAIGN_PARAMS.has(key) && CAMPAIGN_VALUE.test(value)) return value
+  if (key === RETURN_PARAM) return localPath(value)
+  if (CAMPAIGN_PARAMS.has(key) && isCampaignValue(value)) return value
   return null
+}
+
+/** A fragment that is only an in-page anchor, such as `#install`. */
+const ANCHOR_FRAGMENT = /^#[\p{L}\p{N}_-]{1,100}$/u
+
+/**
+ * Whether a page's query string and fragment would pass through `redactUrl` unchanged: every
+ * parameter allowed with its value as is, and the fragment empty or a plain anchor. For a reporter
+ * that cannot be given a redacted URL, such as Google Tag Manager, which reads the address itself.
+ */
+export function isCleanLocation(search: string, hash: string): boolean {
+  if (hash && !ANCHOR_FRAGMENT.test(hash)) return false
+  for (const [key, value] of new URLSearchParams(search)) {
+    if (allowedValue(key, value) !== value) return false
+  }
+  return true
 }
 
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */

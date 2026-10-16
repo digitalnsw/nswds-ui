@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { REDACTED_VALUE, redactProperties, redactUrl, RETURN_PARAM } from './redact'
+import {
+  isCleanLocation,
+  REDACTED_VALUE,
+  redactProperties,
+  redactUrl,
+  RETURN_PARAM,
+} from './redact'
 
 const origin = 'https://ui.design.nsw.gov.au'
 
@@ -20,6 +26,32 @@ describe('redactUrl', () => {
 
     expect(result).toBe(`${origin}/?utm_source=newsletter`)
     expect(result).not.toMatch(/token|secret|person|example/)
+  })
+
+  it('keeps `from` only as a path on this site', () => {
+    const at = (from: string) => redactUrl(`${origin}/sign-in?from=${encodeURIComponent(from)}`)
+
+    expect(at('/infographics/account')).toBe(`${origin}/sign-in?from=%2Finfographics%2Faccount`)
+    for (const offsite of [
+      'https://example.com/person@example.com',
+      '//example.com/person@example.com',
+      '/\\example.com/person',
+      'person@example.com',
+    ]) {
+      expect(at(offsite), offsite).toBe(`${origin}/sign-in`)
+    }
+  })
+
+  it('limits a campaign label by characters as read, however its accents are encoded', () => {
+    const composed = '\u00e9'.repeat(100)
+    const decomposed = 'e\u0301'.repeat(100)
+    const keep = (value: string) =>
+      redactUrl(`${origin}/?utm_campaign=${encodeURIComponent(value)}`) !== `${origin}/`
+
+    expect(keep(composed)).toBe(true)
+    expect(keep(decomposed)).toBe(true)
+    expect(keep(composed + '\u00e9')).toBe(false)
+    expect(keep(decomposed + 'e\u0301')).toBe(false)
   })
 
   it('keeps only the five campaign names, and only label-like values', () => {
@@ -100,5 +132,21 @@ describe('redactProperties', () => {
     expect(result.token).toBe('phc_projectApiKey')
     expect(result.$set_once.$initial_referrer).toBe('$direct')
     expect(result.self).toBe(result)
+  })
+})
+
+describe('isCleanLocation', () => {
+  it('passes an address redactUrl would leave as is, with or without a plain anchor', () => {
+    expect(isCleanLocation('', '')).toBe(true)
+    expect(isCleanLocation('?utm_source=newsletter', '')).toBe(true)
+    expect(isCleanLocation('?from=%2Faccount', '')).toBe(true)
+    expect(isCleanLocation('', '#install')).toBe(true)
+  })
+
+  it('fails anything redactUrl would remove', () => {
+    expect(isCleanLocation(`?from=${encodeURIComponent('/account?email=a@b.c')}`, '')).toBe(false)
+    expect(isCleanLocation('?person@example.com', '')).toBe(false)
+    expect(isCleanLocation('?utm_term=a@b.c', '')).toBe(false)
+    expect(isCleanLocation('', '#email=a@b.c')).toBe(false)
   })
 })
