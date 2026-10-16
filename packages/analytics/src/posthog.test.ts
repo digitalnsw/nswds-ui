@@ -58,7 +58,7 @@ describe('before_send', () => {
     const result = beforeSend(event) as typeof event
 
     expect(JSON.stringify(result)).not.toMatch(/a@b\.c|email/)
-    expect(result.properties.$current_url).toContain('from=%2Faccount')
+    expect(result.properties.$current_url).toBe('https://ui.design.nsw.gov.au/sign-in')
     expect(result.properties.token).toBe('phc_test')
     expect(event).toEqual(original)
   })

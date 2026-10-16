@@ -5,16 +5,13 @@
  * carried would otherwise be reported as part of the sign-in page's URL.
  *
  * What survives is an allowlist: the five standard campaign parameters, while their values look like
- * campaign labels (`CAMPAIGN_VALUE`), and `from` cut to its path, which still says where the visitor
- * was going. Every other parameter is dropped, name and value, since
+ * campaign labels (`CAMPAIGN_CHARACTERS`). Every other parameter is dropped, name and value, since
  * a bare name (`?person@example.com`) carries data as well as a value does, and a parameter added
- * later is covered by default. The fragment is dropped too: it is the one part of a URL a link can
+ * later is covered by default. That includes `from`: even cut to its path it is whatever a link put
+ * there (`from=/account/person@example.com`), and nothing here can tell a route from personal data. The fragment is dropped too: it is the one part of a URL a link can
  * put data in without it ever reaching a server. Only URL-shaped strings are touched, so an event's
  * opaque `token` property, which posthog-js drops the event without, is left alone.
  */
-
-/** The gate's return parameter, `RETURN_PARAM` in packages/auth/src/return-path.ts. */
-export const RETURN_PARAM = 'from'
 
 export const REDACTED_VALUE = '[redacted]'
 
@@ -62,23 +59,6 @@ function isUrlShaped(input: string): boolean {
 }
 
 /**
- * A return path cut to its path, or `null` when it is not a path on this site. The gate only ever
- * writes a local path, but `from` on the sign-in page's address is whatever a link put there, and
- * `from=https://example.com/person@example.com` must not be reported as a path. A value that does
- * not start with a single `/`, or that resolves off-site (`//host`, `/\\host`), is dropped.
- */
-function localPath(value: string): string | null {
-  if (!value.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return null
-  let url: URL
-  try {
-    url = new URL(value, 'http://redact.invalid')
-  } catch {
-    return null
-  }
-  return url.origin === 'http://redact.invalid' ? url.pathname : null
-}
-
-/**
  * The campaign parameters kept, by exact name. Not a `utm_` prefix: a link can put anything in a
  * name, and `?utm_person@example.com` would pass a prefix test.
  */
@@ -117,7 +97,6 @@ function isCampaignValue(value: string): boolean {
 
 /** The value a parameter is reported with, or `null` to drop it, name and all. */
 function allowedValue(key: string, value: string): string | null {
-  if (key === RETURN_PARAM) return localPath(value)
   if (CAMPAIGN_PARAMS.has(key) && isCampaignValue(value)) return value
   return null
 }
