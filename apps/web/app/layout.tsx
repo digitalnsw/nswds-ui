@@ -1,3 +1,6 @@
+import { GoogleTagManager } from '@next/third-parties/google'
+import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
@@ -44,6 +47,15 @@ export const viewport: Viewport = {
   ],
 }
 
+/**
+ * The Google Tag Manager container the NSW Design sites share (its GA4 tag fires inside it), or
+ * `undefined` to render no tag at all. Unset is the correct state for `next dev` and previews,
+ * none of which should report, so this is silent where a missing PostHog token is loud. The ID is
+ * a team shared variable in Vercel, on Production only. NEXT_PUBLIC_ values are inlined at build
+ * time, so setting it changes nothing until the next deployment.
+ */
+const gtmContainerId = process.env.NEXT_PUBLIC_GTM_ID?.trim() || undefined
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -56,12 +68,17 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
+      {gtmContainerId ? <GoogleTagManager gtmId={gtmContainerId} /> : null}
       <body>
         <ThemeProvider>
           <AppLinkProvider>
             <SiteShell>{children}</SiteShell>
           </AppLinkProvider>
         </ThemeProvider>
+        {/* No URL redaction, unlike the contrast checker: nothing on this site writes a visitor's
+            input to its query string. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { posthogRewrites } from './analytics-proxy.mjs'
 import { hostRedirects } from './hosts.mjs'
 import { zoneRewrites } from './zones.mjs'
 
@@ -53,6 +54,12 @@ const nextConfig = {
   // set-state-in-effect disable in push-menu).
   reactCompiler: true,
   transpilePackages: ['@nswds/ui', '@workspace/auth'],
+  // PostHog's ingestion paths end in a slash (`/nswa/e/`, `/nswa/i/v0/e/`). Next's automatic
+  // trailing-slash redirect would strip it before the rewrite below runs, and the SDK does not follow
+  // the redirect, so ingestion would stop with no error anywhere. proxy.ts reinstates the redirect
+  // for every page path (analytics-proxy.mjs), before the zone rewrites, so `/storybook/` and
+  // `/infographics/` still 308 to their slashless form.
+  skipTrailingSlashRedirect: true,
   // ui.digital.nsw.gov.au moves to ui.design.nsw.gov.au, all but /registry (hosts.mjs).
   async redirects() {
     return hostRedirects()
@@ -67,6 +74,8 @@ const nextConfig = {
       // Proxy the stable production alias — never a per-deploy URL. The registry project
       // must have Deployment Protection disabled or these fetches return 401.
       afterFiles: [
+        // The PostHog proxy (analytics-proxy.mjs), for this app and the infographics zone.
+        ...posthogRewrites(),
         {
           source: '/registry',
           destination: registryOrigin,

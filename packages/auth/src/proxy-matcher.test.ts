@@ -63,6 +63,12 @@ const APPS: AppCase[] = [
       '/infographics',
       '/infographics/account',
       '/storybook',
+      // Not gated: the PostHog proxy, which the proxy must still see to strip the session cookie
+      // (apps/web/analytics-proxy.mjs). Its `.js` paths are the case the catch-all would miss.
+      '/nswa',
+      '/nswa/i/v0/e/',
+      '/nswa/static/array.js',
+      '/nswa/array/phc_test/config.js',
     ],
     open: [
       '/api/auth/get-session',
