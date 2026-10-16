@@ -118,6 +118,32 @@ describe('redactUrl', () => {
     expect(redactUrl('sms:0400123456?body=hi')).toBe(`sms:${REDACTED_VALUE}`)
   })
 
+  it('redacts absolute URLs spelled the ways a browser still follows', () => {
+    const query = '?utm_source=newsletter&email=person@example.com'
+    for (const spelling of [
+      'https:\\\\example.com/',
+      'https:/example.com/',
+      'https:example.com/',
+      'HTTPS:\\/example.com/',
+      'ht\ttps://example.com/',
+      'https://exa\nmple.com/',
+      '\u0001https://example.com/',
+    ]) {
+      expect(redactUrl(`${spelling}${query}`)).toBe('https://example.com/?utm_source=newsletter')
+    }
+    expect(redactUrl('http:example.com/?email=person@example.com')).toBe('http://example.com/')
+  })
+
+  it('redacts backslash-led references as the paths and hosts a browser reads them as', () => {
+    expect(redactUrl('\\\\example.com/a?email=person@example.com')).toBe('//example.com/a')
+    expect(redactUrl('/\\example.com/a?email=person@example.com')).toBe('//example.com/a')
+    expect(redactUrl('\\account?email=person@example.com')).toBe('/account')
+  })
+
+  it('redacts a contact link behind control characters', () => {
+    expect(redactUrl('\u0001mai\tlto:person@example.com')).toBe('mailto:[redacted]')
+  })
+
   it('redacts a query-only or fragment-only reference without adding a path', () => {
     expect(redactUrl('?email=person@example.com')).toBe('')
     expect(redactUrl('#email=person@example.com')).toBe('')

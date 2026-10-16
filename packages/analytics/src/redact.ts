@@ -22,24 +22,43 @@ export const REDACTED_VALUE = '[redacted]'
 const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i
 
 /**
- * Absolute URLs and paths only. `new URL(value, base)` parses ordinary prose as a relative URL, so
- * a bare "has a `?`" test would rewrite free text this promises to leave alone.
+ * The schemes the URL parser reads as absolute however many slashes, of either kind, follow the
+ * colon: `https:\\example.com/`, `https:/example.com/` and `https:example.com/` are all
+ * `https://example.com/` to a browser following an `href`.
  */
+const SPECIAL_SCHEME = /^(?:https?|wss?|ftp|file):/i
+
+/**
+ * A value as the URL parser reads it: leading and trailing control characters and spaces stripped,
+ * and every tab and newline removed, so `\x01https://…` and `ht\ntps://…` are classified as the
+ * URLs they parse to.
+ */
+function parserInput(value: string): string {
+  let start = 0
+  let end = value.length
+  while (start < end && value.charCodeAt(start) <= 0x20) start++
+  while (end > start && value.charCodeAt(end - 1) <= 0x20) end--
+  return value.slice(start, end).replace(/[\t\n\r]/g, '')
+}
+
+function isAbsolute(input: string): boolean {
+  return ABSOLUTE_URL_PATTERN.test(input) || SPECIAL_SCHEME.test(input)
+}
+
 /**
  * Link schemes whose target is a person rather than a page: an autocaptured `href` such as
  * `mailto:person@example.com` or `tel:0400…` would otherwise be reported whole. They are not
  * URL-shaped by the test below, so they are matched first and their target is redacted.
  */
-const CONTACT_SCHEME = /^\s*(mailto|tel|sms|callto|facetime|skype|whatsapp|geo):/i
+const CONTACT_SCHEME = /^(mailto|tel|sms|callto|facetime|skype|whatsapp|geo):/i
 
-function isUrlShaped(value: string): boolean {
-  const trimmed = value.trim()
-  return (
-    ABSOLUTE_URL_PATTERN.test(trimmed) ||
-    trimmed.startsWith('/') ||
-    trimmed.startsWith('?') ||
-    trimmed.startsWith('#')
-  )
+/**
+ * Absolute URLs and references only: paths (`/…`, or `\…`, which a browser reads as `/…`),
+ * queries and fragments. `new URL(value, base)` parses ordinary prose as a relative URL, so a bare
+ * "has a `?`" test would rewrite free text this promises to leave alone.
+ */
+function isUrlShaped(input: string): boolean {
+  return isAbsolute(input) || /^[/\\?#]/.test(input)
 }
 
 /**
@@ -121,14 +140,17 @@ export function isCleanLocation(search: string, hash: string): boolean {
 
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */
 export function redactUrl(value: string): string {
-  const contact = CONTACT_SCHEME.exec(value)
+  const input = parserInput(value)
+  const contact = CONTACT_SCHEME.exec(input)
   if (contact) return `${contact[1]!.toLowerCase()}:${REDACTED_VALUE}`
-  if (!isUrlShaped(value)) return value
+  if (!isUrlShaped(input)) return value
 
-  const trimmed = value.trim()
+  // An absolute URL is parsed without a base: against one with the same scheme, the parser reads
+  // `http:example.com` as a relative path rather than the host a browser would go to.
+  const absolute = isAbsolute(input)
   let url: URL
   try {
-    url = new URL(trimmed, 'http://redact.invalid')
+    url = absolute ? new URL(input) : new URL(input, 'http://redact.invalid')
   } catch {
     // URL-shaped but unparseable: it cannot be inspected, and this is the last stop before the
     // data leaves the browser, so it fails closed.
@@ -148,12 +170,12 @@ export function redactUrl(value: string): string {
   url.search = params.toString()
   url.hash = ''
 
-  if (ABSOLUTE_URL_PATTERN.test(trimmed)) return url.toString()
+  if (absolute) return url.toString()
   // A query-only or fragment-only reference (`?…`, `#…`), such as a captured `href`: only what is
   // left of its query, never the throwaway base's path.
-  if (trimmed.startsWith('?') || trimmed.startsWith('#')) return url.search
-  // Protocol-relative (`//host/path`): the host is real and stays.
-  if (trimmed.startsWith('//')) return `//${url.host}${url.pathname}${url.search}`
+  if (input.startsWith('?') || input.startsWith('#')) return url.search
+  // Protocol-relative (`//host/path`, or with either slash a backslash): the host is real and stays.
+  if (/^[/\\]{2}/.test(input)) return `//${url.host}${url.pathname}${url.search}`
   return `${url.pathname}${url.search}`
 }
 
