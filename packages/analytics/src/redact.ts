@@ -115,15 +115,41 @@ function isCampaignValue(value: string): boolean {
   return length > 0 && length <= CAMPAIGN_MAX_LENGTH
 }
 
-/** Whether a path segment holds an email address, encoded or not. */
+/** An at sign, ASCII or fullwidth (`＠`, which some keyboards and pastes produce). */
+const AT_SIGN = /[@\uFF20]/
+
+/** The most layers of percent-encoding a segment is unwrapped through. */
+const MAX_DECODES = 8
+
+/**
+ * Whether a path segment holds an email address, however many times it was percent-encoded
+ * (`person%2540example.com` is `person@example.com` decoded twice). Each layer is unwrapped one
+ * escape at a time, so a malformed escape elsewhere in the segment cannot hide a good one.
+ */
 function isPersonalSegment(segment: string): boolean {
-  let decoded = segment
-  try {
-    decoded = decodeURIComponent(segment)
-  } catch {
-    // A malformed escape: read it as written.
+  let current = segment
+  for (let i = 0; i <= MAX_DECODES; i++) {
+    if (AT_SIGN.test(current)) return true
+    const next = decodeEscapes(current)
+    if (next === current) return false
+    current = next
   }
-  return decoded.includes('@')
+  // Still encoded after every layer: nothing here can say what it holds, so it is redacted.
+  return true
+}
+
+/** One layer of percent-decoding, each escape on its own; a malformed one is left as written. */
+function decodeEscapes(text: string): string {
+  return text.replace(/(?:%[0-9a-f]{2})+/gi, (run) => {
+    try {
+      return decodeURIComponent(run)
+    } catch {
+      // Not UTF-8 as a whole (a lone or cut-off byte): decode the ASCII bytes, `@` among them.
+      return run.replace(/%([0-7][0-9a-f])/gi, (_escape, hex: string) =>
+        String.fromCharCode(parseInt(hex, 16)),
+      )
+    }
+  })
 }
 
 const REDACTED_SEGMENT = encodeURIComponent(REDACTED_VALUE)
@@ -226,7 +252,9 @@ function redact(value: string, knownUrl: boolean): string {
  * Hrefs inside posthog-js's `$elements_chain`, a single string such as
  * `a.nav:attr__href="/x?email=…"href="/x?email=…"nth-child="1"`: each attribute is `name="value"`,
  * after the element's `:` or the previous value's closing quote, with `"` in a value escaped as
- * `\"`. The chain is sent with every autocaptured event, beside `$elements`.
+ * `\"`. The chain is sent with every autocaptured event, beside `$elements`. A redacted href is
+ * written back with `"` and `\` percent-encoded, which leaves nothing in it to escape: posthog-js
+ * escapes quotes but not backslashes, so a backslash written back could end the value early.
  */
 const CHAIN_HREF = /(?<=^|[:"])([\w-]*href)="((?:[^"\\]|\\.)*)"/g
 
@@ -234,7 +262,8 @@ const CHAIN_HREF = /(?<=^|[:"])([\w-]*href)="((?:[^"\\]|\\.)*)"/g
 export function redactElementsChain(chain: string): string {
   return chain.replace(CHAIN_HREF, (_match, name: string, escaped: string) => {
     const href = escaped.replace(/\\"/g, '"')
-    return `${name}="${redactHref(href).replace(/"/g, '\\"')}"`
+    const written = redactHref(href).replace(/["\\]/g, (char) => encodeURIComponent(char))
+    return `${name}="${written}"`
   })
 }
 

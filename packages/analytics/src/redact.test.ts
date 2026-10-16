@@ -194,6 +194,19 @@ describe('paths', () => {
     expect(isCleanPath('/account/person@example.com')).toBe(false)
     expect(isCleanPath('/a/%E0%A4%A')).toBe(true)
   })
+
+  it('finds an email address however many times it was encoded, or written fullwidth', () => {
+    expect(isCleanPath('/account/person%2540example.com')).toBe(false)
+    expect(isCleanPath('/account/person%25252540example.com')).toBe(false)
+    expect(isCleanPath('/account/%E0%A4%A%40example.com')).toBe(false)
+    expect(isCleanPath('/account/person\uFF20example.com')).toBe(false)
+    expect(isCleanPath('/account/person%EF%BC%A0example.com')).toBe(false)
+    expect(redactUrl('/account/person%2540example.com')).toBe('/account/%5Bredacted%5D')
+    // Encoded past every layer this unwraps: redacted, since it cannot be read.
+    expect(isCleanPath(`/a/%${'25'.repeat(10)}40`)).toBe(false)
+    expect(isCleanPath(`/a/%${'25'.repeat(7)}40`)).toBe(false)
+    expect(isCleanPath('/a/100%25-done')).toBe(true)
+  })
 })
 
 describe('redactElementsChain', () => {
@@ -209,7 +222,10 @@ describe('redactElementsChain', () => {
     expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
       'a:href="/a"text="href=1"',
     )
-    expect(redactElementsChain('a:href="say \\"hi\\""')).toBe('a:href="say \\"hi\\""')
+    expect(redactElementsChain('a:href="say \\"hi\\""')).toBe('a:href="say %22hi%22"')
+    expect(redactElementsChain('a:href="a\\b?q=1"nth-child="1"')).toBe(
+      'a:href="a%5Cb"nth-child="1"',
+    )
   })
 })
 
