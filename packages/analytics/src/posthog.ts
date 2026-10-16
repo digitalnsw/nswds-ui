@@ -77,9 +77,9 @@ export function posthogOptions({
     ...(sensitiveContent
       ? { mask_all_text: true, mask_all_element_attributes: true, capture_dead_clicks: false }
       : {}),
-    // Query strings and fragments out of every captured URL (./redact.ts): `$current_url`, `$referrer` and the
-    // `$initial_*` pair. `$set` and `$set_once` sit beside `properties` on the event, not inside it,
-    // so each is redacted on its own.
+    // Query strings and fragments out of every captured URL (./redact.ts): `$current_url`,
+    // `$referrer` and the `$initial_*` pair. `$set` and `$set_once` sit beside `properties` on the
+    // event, not inside it, so each is redacted on its own.
     before_send: (event) => {
       if (!event) return event
       const redacted = { ...event }
