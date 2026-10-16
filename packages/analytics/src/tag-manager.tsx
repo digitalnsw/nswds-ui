@@ -46,6 +46,11 @@ const onServer = () => false
  * sign-in page gets the container on the page the form sends them to. Once loaded it stays loaded,
  * so the check also requires the document's first address to be clean (`firstLocation`), and the
  * referrer GA4 will report (`isCleanReferrer`).
+ *
+ * What it cannot cover is an address that changes after the container has loaded without a
+ * navigation through Next, such as an in-page link that adds a fragment: no script can be unloaded.
+ * Keeping the fragment out from then on is the container's job, in the `page_location` it gives the
+ * GA4 tag.
  */
 export function TagManager({ containerId }: { containerId: string | undefined }) {
   // `useSearchParams` needs a Suspense boundary, or the page it renders in would opt out of static
