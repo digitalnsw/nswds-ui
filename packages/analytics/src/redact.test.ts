@@ -104,6 +104,13 @@ describe('redactUrl', () => {
     expect(redactUrl('//ui.design.nsw.gov.au/x?q=1')).toBe('//ui.design.nsw.gov.au/x')
   })
 
+  it('drops credentials from an absolute URL, with or without a query', () => {
+    expect(redactUrl('https://person:secret@example.com/path?private=1')).toBe(
+      'https://example.com/path',
+    )
+    expect(redactUrl('https://person@example.com/path')).toBe('https://example.com/path')
+  })
+
   it('leaves prose alone and fails closed on an unparseable URL', () => {
     expect(redactUrl('Is from=/a?b=c a URL? No')).toBe('Is from=/a?b=c a URL? No')
     expect(redactUrl('https://%?q=secret')).toBe(REDACTED_VALUE)

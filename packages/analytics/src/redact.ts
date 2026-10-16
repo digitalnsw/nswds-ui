@@ -120,7 +120,11 @@ export function redactUrl(value: string): string {
     // data leaves the browser, so it fails closed.
     return REDACTED_VALUE
   }
-  if (!url.search && !url.hash) return value
+  if (!url.search && !url.hash && !url.username && !url.password) return value
+
+  // Credentials in the address (`https://user:secret@host/`) are never reported.
+  url.username = ''
+  url.password = ''
 
   const params = new URLSearchParams()
   for (const [key, entry] of url.searchParams) {
