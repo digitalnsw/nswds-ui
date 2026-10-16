@@ -2,7 +2,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { posthogOptions, shouldCapture, startPostHog } from './posthog'
 
-const production = { token: 'phc_test', vercelEnv: 'production', hostname: 'ui.design.nsw.gov.au' }
+const production = {
+  token: 'phc_test',
+  vercelEnv: 'production',
+  hostname: 'ui.design.nsw.gov.au',
+  canonicalHost: 'ui.design.nsw.gov.au',
+}
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -80,13 +85,9 @@ describe('startPostHog', () => {
       const posthog = { init: vi.fn() }
       const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      expect(
-        startPostHog(
-          posthog,
-          { site: 'ui-web' },
-          { token: 'phc_test', vercelEnv, hostname: 'ui.design.nsw.gov.au' },
-        ),
-      ).toBe('skipped')
+      expect(startPostHog(posthog, { site: 'ui-web' }, { ...production, vercelEnv })).toBe(
+        'skipped',
+      )
       expect(posthog.init).not.toHaveBeenCalled()
       expect(error).not.toHaveBeenCalled()
     },
@@ -103,11 +104,12 @@ describe('startPostHog', () => {
     expect(error).toHaveBeenCalledOnce()
   })
 
-  it('captures on a production build at a production address only', () => {
-    expect(shouldCapture('production', 'ui.design.nsw.gov.au')).toBe(true)
-    expect(shouldCapture('production', 'design.nsw.gov.au')).toBe(true)
-    expect(shouldCapture('preview', 'ui.design.nsw.gov.au')).toBe(false)
-    expect(shouldCapture(undefined, 'localhost')).toBe(false)
+  it("captures on a production build at the app's canonical host only", () => {
+    const host = 'email.design.nsw.gov.au'
+    expect(shouldCapture('production', host, host)).toBe(true)
+    expect(shouldCapture('preview', host, host)).toBe(false)
+    expect(shouldCapture('production', 'signature.design.nsw.gov.au', host)).toBe(false)
+    expect(shouldCapture(undefined, 'localhost', host)).toBe(false)
   })
 
   it("stays silent on a host app's preview that serves a zone's production build", () => {

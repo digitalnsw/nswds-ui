@@ -111,6 +111,13 @@ describe('redactUrl', () => {
     expect(redactUrl('https://person@example.com/path')).toBe('https://example.com/path')
   })
 
+  it('redacts the target of a contact link, whatever its case or padding', () => {
+    expect(redactUrl('mailto:person@example.com')).toBe(`mailto:${REDACTED_VALUE}`)
+    expect(redactUrl('tel:+61400123456')).toBe(`tel:${REDACTED_VALUE}`)
+    expect(redactUrl('  MAILTO:Person@Example.com')).toBe(`mailto:${REDACTED_VALUE}`)
+    expect(redactUrl('sms:0400123456?body=hi')).toBe(`sms:${REDACTED_VALUE}`)
+  })
+
   it('leaves prose alone and fails closed on an unparseable URL', () => {
     expect(redactUrl('Is from=/a?b=c a URL? No')).toBe('Is from=/a?b=c a URL? No')
     expect(redactUrl('https://%?q=secret')).toBe(REDACTED_VALUE)
@@ -126,6 +133,7 @@ describe('redactProperties', () => {
     const page = `${origin}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`
     const bag: Record<string, unknown> = {
       token: 'phc_projectApiKey',
+      $elements: [{ tag_name: 'a', attr__href: 'mailto:a@b.c' }],
       $current_url: page,
       $set_once: { $initial_current_url: page, $initial_referrer: '$direct' },
     }
@@ -139,6 +147,7 @@ describe('redactProperties', () => {
     expect(JSON.stringify({ ...result, self: undefined })).not.toMatch(/a@b\.c|email/)
     expect(result.token).toBe('phc_projectApiKey')
     expect(result.$set_once.$initial_referrer).toBe('$direct')
+    expect(JSON.stringify(result.$elements)).not.toContain('a@b.c')
     expect(result.self).toBe(result)
   })
 })
@@ -162,20 +171,17 @@ describe('isCleanLocation', () => {
 describe('isCleanReferrer', () => {
   const site = 'https://ui.design.nsw.gov.au'
 
-  it('passes no referrer, and an origin-only or clean one from any site', () => {
+  it('passes no referrer and an origin-only one from any site', () => {
     expect(isCleanReferrer('')).toBe(true)
     expect(isCleanReferrer('https://www.google.com/')).toBe(true)
-    expect(isCleanReferrer('https://example.com/a-page')).toBe(true)
     expect(isCleanReferrer(`${site}/`)).toBe(true)
-    expect(isCleanReferrer(`${site}/sign-in?from=%2Faccount`)).toBe(true)
   })
 
-  it('fails anything to redact from any site, credentials, or one it cannot read', () => {
-    expect(
-      isCleanReferrer(`${site}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`),
-    ).toBe(false)
-    expect(isCleanReferrer(`${site}/x#email=a@b.c`)).toBe(false)
-    expect(isCleanReferrer('https://example.com/page?email=a@b.c')).toBe(false)
+  it('fails a path, a query, a fragment or credentials from any site, or one it cannot read', () => {
+    expect(isCleanReferrer('https://example.com/account/person@example.com')).toBe(false)
+    expect(isCleanReferrer(`${site}/sign-in?from=%2Faccount`)).toBe(false)
+    expect(isCleanReferrer('https://example.com/?email=a@b.c')).toBe(false)
+    expect(isCleanReferrer(`${site}/#email=a@b.c`)).toBe(false)
     expect(isCleanReferrer('https://person:secret@example.com/')).toBe(false)
     expect(isCleanReferrer('not a url')).toBe(false)
   })

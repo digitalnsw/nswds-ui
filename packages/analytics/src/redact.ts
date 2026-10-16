@@ -25,6 +25,13 @@ const ABSOLUTE_URL_PATTERN = /^[a-z][a-z0-9+.-]*:\/\//i
  * Absolute URLs and paths only. `new URL(value, base)` parses ordinary prose as a relative URL, so
  * a bare "has a `?`" test would rewrite free text this promises to leave alone.
  */
+/**
+ * Link schemes whose target is a person rather than a page: an autocaptured `href` such as
+ * `mailto:person@example.com` or `tel:0400…` would otherwise be reported whole. They are not
+ * URL-shaped by the test below, so they are matched first and their target is redacted.
+ */
+const CONTACT_SCHEME = /^\s*(mailto|tel|sms|callto|facetime|skype|whatsapp|geo):/i
+
 function isUrlShaped(value: string): boolean {
   const trimmed = value.trim()
   return ABSOLUTE_URL_PATTERN.test(trimmed) || trimmed.startsWith('/')
@@ -109,6 +116,8 @@ export function isCleanLocation(search: string, hash: string): boolean {
 
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */
 export function redactUrl(value: string): string {
+  const contact = CONTACT_SCHEME.exec(value)
+  if (contact) return `${contact[1]!.toLowerCase()}:${REDACTED_VALUE}`
   if (!isUrlShaped(value)) return value
 
   const trimmed = value.trim()
@@ -172,13 +181,12 @@ function redactValue<T>(value: T, clones: WeakMap<object, unknown>): T {
 
 /**
  * Whether a referrer is safe for a reporter that reads it itself, such as Google Tag Manager, whose
- * GA4 tag sends `document.referrer` as `page_referrer`. The same rule as for the page's own address,
- * whichever site the referrer is from: no credentials, and nothing `isCleanLocation` would remove.
- * Another site's referrer is usually only its origin already (browsers default to
- * `strict-origin-when-cross-origin`), so this rarely costs a page view; when a site does send a full
- * address, nothing here can redact it, so the container stays off. The apps' own
- * `Referrer-Policy: strict-origin` cuts a same-site referrer to the origin. A path is not judged:
- * there is no way to tell a sensitive one from a page name.
+ * GA4 tag sends `document.referrer` as `page_referrer`. Only an origin passes, from any site: a
+ * path can carry personal data as well as a query can (`/account/person@example.com`), and nothing
+ * here can tell which. Browsers send only the origin across sites by default
+ * (`strict-origin-when-cross-origin`), and the apps' own `Referrer-Policy: strict-origin` does the
+ * same within a site, so this rarely costs a page view; when a site sends more, the container stays
+ * off.
  */
 export function isCleanReferrer(referrer: string): boolean {
   if (!referrer) return true
@@ -188,6 +196,5 @@ export function isCleanReferrer(referrer: string): boolean {
   } catch {
     return false
   }
-  if (url.username || url.password) return false
-  return isCleanLocation(url.search, url.hash)
+  return !url.username && !url.password && url.pathname === '/' && !url.search && !url.hash
 }

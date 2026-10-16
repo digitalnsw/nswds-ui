@@ -1,6 +1,5 @@
 import type { PostHog, PostHogConfig } from 'posthog-js'
 
-import { isProductionHost } from './paths'
 import { redactProperties } from './redact'
 
 /**
@@ -33,20 +32,28 @@ export interface PostHogEnvironment {
   vercelEnv: string | undefined
   /** `window.location.hostname`: the address the visitor sees. */
   hostname: string | undefined
+  /**
+   * The one host this app reports from: where its domain's `/nswa` proxy is served
+   * (`ui.design.nsw.gov.au`, `email.design.nsw.gov.au`). A zone's or microfrontend's own address,
+   * and every preview address, has no proxy, so nothing starts there.
+   */
+  canonicalHost: string
 }
 
 /**
- * Only production reports, on a production address. The token is shared with Preview too, and the
- * proxy serves every deployment, so without the first check a reviewer clicking through a pull
- * request's preview would be counted as a visitor. Without the second, a zone's pages would still
- * count from a host app's preview, which rewrites the zone's path to its production deployment
- * (`isProductionHost`). Local runs have no `VERCEL_ENV` and are skipped the same way.
+ * Only a production build on the app's canonical host reports. The token is shared with Preview
+ * too, and without the first check a reviewer clicking through a pull request's preview would be
+ * counted as a visitor. Without the second, a zone's pages would still count from a host app's
+ * preview, which rewrites the zone's path to its production deployment, and a zone's own address,
+ * which has no `/nswa` proxy, would post events nowhere. Local runs have no `VERCEL_ENV` and are
+ * skipped the same way.
  */
 export function shouldCapture(
   vercelEnv: string | undefined,
   hostname: string | undefined,
+  canonicalHost: string,
 ): boolean {
-  return vercelEnv === 'production' && isProductionHost(hostname)
+  return vercelEnv === 'production' && hostname === canonicalHost
 }
 
 /** The `posthog.init` options. Exported so the tests read the same object the apps start with. */
@@ -103,7 +110,7 @@ export function posthogOptions({
 export type PostHogStart = 'skipped' | 'missing-token' | 'started'
 
 /**
- * Start PostHog on a production deployment at a production address. A missing token there is logged, loudly and once, and
+ * Start PostHog on a production deployment at the app's canonical host. A missing token there is logged, loudly and once, and
  * never thrown: a throw escapes the client instrumentation hook and takes the whole client bundle
  * with it, so React never hydrates. NEXT_PUBLIC_ values are inlined at build time, so the message
  * says to redeploy.
@@ -111,9 +118,9 @@ export type PostHogStart = 'skipped' | 'missing-token' | 'started'
 export function startPostHog(
   posthog: Pick<PostHog, 'init'>,
   options: PostHogSiteOptions,
-  { token, vercelEnv, hostname }: PostHogEnvironment,
+  { token, vercelEnv, hostname, canonicalHost }: PostHogEnvironment,
 ): PostHogStart {
-  if (!shouldCapture(vercelEnv, hostname)) return 'skipped'
+  if (!shouldCapture(vercelEnv, hostname, canonicalHost)) return 'skipped'
 
   if (!token) {
     console.error(
