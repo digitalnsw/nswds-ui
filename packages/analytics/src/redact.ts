@@ -1,14 +1,15 @@
 /**
- * Query strings out of every URL the reporters send. The sites put nothing of their own in a query
- * string, but the sign-in gate (packages/auth/src/proxy.ts) copies the page a signed-out visitor
- * asked for, query and all, into the sign-in page's `from` parameter, so whatever a link carried
- * would otherwise be reported as part of the sign-in page's URL.
+ * Query strings and fragments out of every URL the reporters send. The sites put nothing of their
+ * own in either, but the sign-in gate (packages/auth/src/proxy.ts) copies the page a signed-out
+ * visitor asked for, query and all, into the sign-in page's `from` parameter, so whatever a link
+ * carried would otherwise be reported as part of the sign-in page's URL.
  *
- * What survives: `utm_*` campaign parameters, and `from` cut to its path, which still says where
- * the visitor was going. Every other value becomes `[redacted]`, so a parameter added later is
- * covered by default. Values are rewritten rather than removed: posthog-js drops any event whose
- * `token` property a `before_send` hook removed, and only URL-shaped strings are touched, which an
- * opaque token is not.
+ * What survives is an allowlist: `utm_*` campaign parameters, and `from` cut to its path, which
+ * still says where the visitor was going. Every other parameter is dropped, name and value, since
+ * a bare name (`?person@example.com`) carries data as well as a value does, and a parameter added
+ * later is covered by default. The fragment is dropped too: it is the one part of a URL a link can
+ * put data in without it ever reaching a server. Only URL-shaped strings are touched, so an event's
+ * opaque `token` property, which posthog-js drops the event without, is left alone.
  */
 
 /** The gate's return parameter, `RETURN_PARAM` in packages/auth/src/return-path.ts. */
@@ -33,6 +34,11 @@ function pathOnly(value: string): string {
   return value.split(/[?#]/, 1)[0] ?? ''
 }
 
+/** Whether a query parameter survives, by name. */
+function isAllowedParam(key: string): boolean {
+  return key === RETURN_PARAM || key.startsWith('utm_')
+}
+
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */
 export function redactUrl(value: string): string {
   if (!isUrlShaped(value)) return value
@@ -46,20 +52,20 @@ export function redactUrl(value: string): string {
     // data leaves the browser, so it fails closed.
     return REDACTED_VALUE
   }
-  if (!url.search) return value
+  if (!url.search && !url.hash) return value
 
   const params = new URLSearchParams()
   for (const [key, entry] of url.searchParams) {
-    if (key.startsWith('utm_')) params.append(key, entry)
-    else if (key === RETURN_PARAM) params.append(key, pathOnly(entry))
-    else params.append(key, REDACTED_VALUE)
+    if (!isAllowedParam(key)) continue
+    params.append(key, key === RETURN_PARAM ? pathOnly(entry) : entry)
   }
   url.search = params.toString()
+  url.hash = ''
 
   if (ABSOLUTE_URL_PATTERN.test(trimmed)) return url.toString()
   // Protocol-relative (`//host/path`): the host is real and stays.
-  if (trimmed.startsWith('//')) return `//${url.host}${url.pathname}${url.search}${url.hash}`
-  return `${url.pathname}${url.search}${url.hash}`
+  if (trimmed.startsWith('//')) return `//${url.host}${url.pathname}${url.search}`
+  return `${url.pathname}${url.search}`
 }
 
 /**

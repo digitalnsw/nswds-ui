@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest'
 import { REDACTED_VALUE, redactProperties, redactUrl, RETURN_PARAM } from './redact'
 
 const origin = 'https://ui.design.nsw.gov.au'
-const encoded = encodeURIComponent(REDACTED_VALUE)
 
 describe('redactUrl', () => {
   it("cuts the sign-in gate's return path to its path, dropping the query it carried", () => {
@@ -16,13 +15,21 @@ describe('redactUrl', () => {
     expect(result).toBe(`${origin}/sign-in?from=%2Faccount`)
   })
 
-  it('keeps campaign parameters and redacts every other value', () => {
-    const result = redactUrl(`${origin}/?utm_source=newsletter&token=secret&q=anything`)
+  it('keeps campaign parameters and drops every other parameter, name and value', () => {
+    const result = redactUrl(`${origin}/?utm_source=newsletter&token=secret&person@example.com`)
 
-    expect(result).toContain('utm_source=newsletter')
-    expect(result).toContain(`token=${encoded}`)
-    expect(result).toContain(`q=${encoded}`)
-    expect(result).not.toMatch(/secret|anything/)
+    expect(result).toBe(`${origin}/?utm_source=newsletter`)
+    expect(result).not.toMatch(/token|secret|person|example/)
+  })
+
+  it('drops the fragment, with or without a query, in every URL form', () => {
+    expect(redactUrl(`${origin}/account#email=person@example.com`)).toBe(`${origin}/account`)
+    expect(redactUrl(`${origin}/?utm_source=x#secret`)).toBe(`${origin}/?utm_source=x`)
+    expect(redactUrl('/account#secret')).toBe('/account')
+    expect(redactUrl('//ui.design.nsw.gov.au/a#secret')).toBe('//ui.design.nsw.gov.au/a')
+    expect(redactUrl(`${origin}/sign-in?from=${encodeURIComponent('/a#secret')}`)).toBe(
+      `${origin}/sign-in?from=%2Fa`,
+    )
   })
 
   it('leaves a URL with no query byte-identical', () => {
@@ -32,7 +39,7 @@ describe('redactUrl', () => {
 
   it('redacts a path without adding an origin, and keeps a protocol-relative host', () => {
     expect(redactUrl('/sign-in?from=/a?b=c')).toBe('/sign-in?from=%2Fa')
-    expect(redactUrl('//ui.design.nsw.gov.au/x?q=1')).toBe(`//ui.design.nsw.gov.au/x?q=${encoded}`)
+    expect(redactUrl('//ui.design.nsw.gov.au/x?q=1')).toBe('//ui.design.nsw.gov.au/x')
   })
 
   it('leaves prose alone and fails closed on an unparseable URL', () => {
