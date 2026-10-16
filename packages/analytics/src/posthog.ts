@@ -78,6 +78,11 @@ export function posthogOptions({
     //
     // Replay is off on every site.
     disable_session_recording: true,
+    // No `/flags` request, and so no remote config either: no site uses feature flags, and that
+    // request carries the visitor's first address (`$initial_current_url`) in its body, where
+    // `before_send` cannot reach it. Everything these sites use is set here instead, which is also
+    // what keeps heatmaps, surveys and the like off until a site turns them on in this file.
+    advanced_disable_flags: true,
     // An exception's message and stack can carry whatever the page was handling: an email's text, a
     // pasted URL, an error body. Nothing reads PostHog's error tracking for these sites.
     capture_exceptions: false,

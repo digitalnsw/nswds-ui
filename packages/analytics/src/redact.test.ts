@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   isCleanLocation,
+  isCleanPath,
   isCleanReferrer,
   REDACTED_VALUE,
+  redactElementsChain,
+  redactHref,
   redactProperties,
   redactUrl,
 } from './redact'
@@ -160,7 +163,79 @@ describe('redactUrl', () => {
   })
 })
 
+describe('redactHref', () => {
+  it('redacts a document-relative reference, keeping its path as written', () => {
+    expect(redactHref('details?email=person@example.com')).toBe('details')
+    expect(redactHref('./a?utm_source=x&token=1#y')).toBe('./a?utm_source=x')
+    expect(redactHref('../a/b?q=1')).toBe('../a/b')
+    expect(redactHref('$direct')).toBe('$direct')
+    expect(redactHref('')).toBe('')
+  })
+
+  it('redacts every other form as redactUrl does', () => {
+    expect(redactHref('/a?email=x')).toBe('/a')
+    expect(redactHref('mailto:a@b.c')).toBe(`mailto:${REDACTED_VALUE}`)
+    expect(redactHref(`${origin}/a?email=x`)).toBe(`${origin}/a`)
+  })
+})
+
+describe('paths', () => {
+  it('redacts a path segment holding an email address, encoded or not', () => {
+    expect(redactUrl(`${origin}/account/person@example.com`)).toBe(
+      `${origin}/account/%5Bredacted%5D`,
+    )
+    expect(redactUrl('/account/person%40example.com/x')).toBe('/account/%5Bredacted%5D/x')
+    expect(redactHref('people/person@example.com?x=1')).toBe('people/%5Bredacted%5D')
+  })
+
+  it('leaves an ordinary path alone, and says which paths are clean', () => {
+    expect(redactUrl(`${origin}/components/button`)).toBe(`${origin}/components/button`)
+    expect(isCleanPath('/components/button')).toBe(true)
+    expect(isCleanPath('/account/person@example.com')).toBe(false)
+    expect(isCleanPath('/a/%E0%A4%A')).toBe(true)
+  })
+})
+
+describe('redactElementsChain', () => {
+  it('redacts each href in the chain and leaves the rest as it is', () => {
+    const chain =
+      'a.nav:attr__href="/x?email=a@b.c"href="/x?email=a@b.c"nth-child="2"text="Hi";div:nth-child="1"'
+    expect(redactElementsChain(chain)).toBe(
+      'a.nav:attr__href="/x"href="/x"nth-child="2"text="Hi";div:nth-child="1"',
+    )
+  })
+
+  it('keeps escaped quotes escaped, and leaves an href-like text alone', () => {
+    expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
+      'a:href="/a"text="href=1"',
+    )
+    expect(redactElementsChain('a:href="say \\"hi\\""')).toBe('a:href="say \\"hi\\""')
+  })
+})
+
 describe('redactProperties', () => {
+  it('reads properties named for URLs as URLs, and redacts keys that are addresses', () => {
+    const result = redactProperties({
+      $elements: [{ attr__href: 'details?email=a@b.c', href: 'details?email=a@b.c' }],
+      $external_click_url: 'details?email=a@b.c',
+      $referrer: '$direct',
+      $pathname: '/account/a@b.c',
+      $heatmap_data: {
+        [`${origin}/a?email=a@b.c`]: [1],
+        [`${origin}/a?token=2`]: [2],
+      },
+      note: 'details?email=a@b.c',
+    })
+
+    expect(result.$elements).toEqual([{ attr__href: 'details', href: 'details' }])
+    expect(result.$external_click_url).toBe('details')
+    expect(result.$referrer).toBe('$direct')
+    expect(result.$pathname).toBe('/account/%5Bredacted%5D')
+    expect(result.$heatmap_data).toEqual({ [`${origin}/a`]: [1, 2] })
+    // Prose under any other name stays as written.
+    expect(result.note).toBe('details?email=a@b.c')
+  })
+
   it('redacts nested bags, keeps the token, and survives a cycle', () => {
     const page = `${origin}/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`
     const bag: Record<string, unknown> = {
@@ -217,5 +292,22 @@ describe('isCleanReferrer', () => {
     expect(isCleanReferrer(`${site}/#email=a@b.c`)).toBe(false)
     expect(isCleanReferrer('https://person:secret@example.com/')).toBe(false)
     expect(isCleanReferrer('not a url')).toBe(false)
+  })
+})
+
+describe('without Intl.Segmenter', () => {
+  it('loads, and counts a campaign label in code points instead', async () => {
+    vi.resetModules()
+    vi.stubGlobal('Intl', { ...Intl, Segmenter: undefined })
+    try {
+      const { redactUrl: redactWithout } = await import('./redact')
+      expect(redactWithout(`${origin}/?utm_source=newsletter`)).toBe(
+        `${origin}/?utm_source=newsletter`,
+      )
+      expect(redactWithout(`${origin}/?utm_source=${'a'.repeat(101)}`)).toBe(`${origin}/`)
+    } finally {
+      vi.unstubAllGlobals()
+      vi.resetModules()
+    }
   })
 })

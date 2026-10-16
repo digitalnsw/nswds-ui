@@ -21,6 +21,7 @@ describe('posthogOptions', () => {
       api_host: '/nswa',
       capture_pageview: 'history_change',
       disable_session_recording: true,
+      advanced_disable_flags: true,
       capture_exceptions: false,
       capture_performance: { web_vitals: false },
     })
@@ -44,6 +45,28 @@ describe('posthogOptions', () => {
 })
 
 describe('before_send', () => {
+  it('redacts the autocapture chain and the heatmap addresses posthog-js builds itself', () => {
+    const beforeSend = posthogOptions({ site: 'test' }).before_send as (event: unknown) => unknown
+    const page = 'https://ui.design.nsw.gov.au/sign-in?from=%2Fa%3Femail%3Da%40b.c'
+    const event = {
+      event: '$autocapture',
+      properties: {
+        $elements_chain: 'a:attr__href="mailto:a@b.c"href="details?email=a@b.c"nth-child="1"',
+        $heatmap_data: { [page]: [{ x: 1 }] },
+      },
+    }
+
+    const result = beforeSend(event) as typeof event
+
+    expect(JSON.stringify(result)).not.toMatch(/a@b\.c|a%40b\.c|email/)
+    expect(result.properties.$elements_chain).toBe(
+      'a:attr__href="mailto:[redacted]"href="details"nth-child="1"',
+    )
+    expect(result.properties.$heatmap_data).toEqual({
+      'https://ui.design.nsw.gov.au/sign-in': [{ x: 1 }],
+    })
+  })
+
   it('redacts the return path in properties, $set and $set_once, and keeps the token', () => {
     const beforeSend = posthogOptions({ site: 'test' }).before_send as (event: unknown) => unknown
     const page = `https://ui.design.nsw.gov.au/sign-in?from=${encodeURIComponent('/account?email=a@b.c')}`

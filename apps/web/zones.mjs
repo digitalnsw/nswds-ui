@@ -16,6 +16,9 @@
  * @property {boolean} trailingSlash Whether the zone serves its root at `path/`: a static
  *   Storybook does (its index.html), a Next app with a basePath serves it at `path` and redirects
  *   `path/` there, so sending the bare path to `path/` would loop.
+ * @property {boolean} inSitemap Whether this domain's address is the zone's own, listed in the
+ *   sitemap (app/sitemap.ts). Storybook's is its own domain, where it is not behind sign-in; here it
+ *   is a gated copy, which a crawler should not be sent to.
  */
 
 /** @type {readonly Zone[]} */
@@ -25,12 +28,14 @@ export const zones = [
     project: 'nswds-ui-infographics',
     origin: process.env.INFOGRAPHICS_ORIGIN || 'https://infographics.design.nsw.gov.au',
     trailingSlash: false,
+    inSitemap: true,
   },
   {
     path: '/storybook',
     project: 'nswds-ui-storybook',
     origin: process.env.STORYBOOK_ORIGIN || 'https://storybook.design.nsw.gov.au',
     trailingSlash: true,
+    inSitemap: false,
   },
 ]
 

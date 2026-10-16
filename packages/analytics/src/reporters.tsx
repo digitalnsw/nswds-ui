@@ -7,7 +7,7 @@ import { SpeedInsights as SpeedInsightsWithRoute } from '@vercel/speed-insights/
 import { usePathname } from 'next/navigation'
 
 import { zonePath } from './paths'
-import { redactUrl } from './redact'
+import { isCleanReferrer, redactUrl } from './redact'
 
 export interface VercelReportersProps {
   /**
@@ -26,12 +26,21 @@ function redactEvent<T extends { url: string }>(event: T): T {
   return { ...event, url: redactUrl(event.url) }
 }
 
+/**
+ * Web Analytics also reports `document.referrer`, which `beforeSend` cannot rewrite. The apps send
+ * only an origin (`Referrer-Policy: strict-origin`) and other sites usually do too; when one sends
+ * more, the page view is not sent, as Tag Manager does not load (`isCleanReferrer`).
+ */
+function redactPageEvent<T extends { url: string }>(event: T): T | null {
+  return isCleanReferrer(document.referrer) ? redactEvent(event) : null
+}
+
 /** Vercel Web Analytics and Speed Insights. */
 export function VercelReporters({ basePath }: VercelReportersProps) {
   if (!basePath) {
     return (
       <>
-        <Analytics beforeSend={redactEvent} />
+        <Analytics beforeSend={redactPageEvent} />
         <SpeedInsights beforeSend={redactEvent} />
       </>
     )
@@ -49,7 +58,7 @@ function ZoneReporters({ basePath }: { basePath: string }) {
   const path = zonePath(basePath, usePathname())
   return (
     <>
-      <AnalyticsWithRoute framework='next' route={path} path={path} beforeSend={redactEvent} />
+      <AnalyticsWithRoute framework='next' route={path} path={path} beforeSend={redactPageEvent} />
       <SpeedInsightsWithRoute framework='next' route={path} beforeSend={redactEvent} />
     </>
   )

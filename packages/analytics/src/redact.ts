@@ -8,9 +8,13 @@
  * campaign labels (`CAMPAIGN_CHARACTERS`). Every other parameter is dropped, name and value, since
  * a bare name (`?person@example.com`) carries data as well as a value does, and a parameter added
  * later is covered by default. That includes `from`: even cut to its path it is whatever a link put
- * there (`from=/account/person@example.com`), and nothing here can tell a route from personal data. The fragment is dropped too: it is the one part of a URL a link can
- * put data in without it ever reaching a server. Only URL-shaped strings are touched, so an event's
- * opaque `token` property, which posthog-js drops the event without, is left alone.
+ * there (`from=/account/person@example.com`), and nothing here can tell a route from personal data.
+ * The fragment is dropped too: it is the one part of a URL a link can put data in without it ever
+ * reaching a server. A path segment holding an email address (`/account/person@example.com`) is
+ * redacted wherever a path is reported, the page's own included, since no route here has an `@` in
+ * it. Only URL-shaped strings are touched, so an event's opaque `token` property, which posthog-js
+ * drops the event without, is left alone; a property named for a URL (`href`, `…_url`,
+ * `…referrer`) is always read as one.
  */
 
 export const REDACTED_VALUE = '[redacted]'
@@ -86,13 +90,55 @@ export const CAMPAIGN_CHARACTERS = /^[\p{L}\p{M}\p{N}_ .~+-]+$/u
  */
 export const CAMPAIGN_MAX_LENGTH = 100
 
-const graphemes = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+/**
+ * The grapheme segmenter, made on first use and `null` where the browser has none. Not at module
+ * scope: Firefox before 125 has no `Intl.Segmenter`, Next 16 supports Firefox from 111, and a throw
+ * while this module loads would stop every page that imports it from hydrating.
+ */
+let graphemes: Intl.Segmenter | null | undefined
+
+/** A value's length in grapheme clusters, or in code points where they cannot be counted. */
+function graphemeCount(value: string): number {
+  if (graphemes === undefined) {
+    graphemes =
+      typeof Intl.Segmenter === 'function'
+        ? new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+        : null
+  }
+  return graphemes ? Array.from(graphemes.segment(value)).length : Array.from(value).length
+}
 
 /** Whether a campaign value is a label short enough to keep. */
 function isCampaignValue(value: string): boolean {
   if (!CAMPAIGN_CHARACTERS.test(value)) return false
-  const length = Array.from(graphemes.segment(value)).length
+  const length = graphemeCount(value)
   return length > 0 && length <= CAMPAIGN_MAX_LENGTH
+}
+
+/** Whether a path segment holds an email address, encoded or not. */
+function isPersonalSegment(segment: string): boolean {
+  let decoded = segment
+  try {
+    decoded = decodeURIComponent(segment)
+  } catch {
+    // A malformed escape: read it as written.
+  }
+  return decoded.includes('@')
+}
+
+const REDACTED_SEGMENT = encodeURIComponent(REDACTED_VALUE)
+
+/** A path with every segment that holds an email address redacted. */
+function redactPathText(path: string): string {
+  return path
+    .split('/')
+    .map((segment) => (isPersonalSegment(segment) ? REDACTED_SEGMENT : segment))
+    .join('/')
+}
+
+/** Whether a page's path would be reported as it is (`redactPathText` leaves it unchanged). */
+export function isCleanPath(pathname: string): boolean {
+  return redactPathText(pathname) === pathname
 }
 
 /** The value a parameter is reported with, or `null` to drop it, name and all. */
@@ -117,10 +163,23 @@ export function isCleanLocation(search: string, hash: string): boolean {
 
 /** Redact one URL string. Anything not URL-shaped comes back unchanged. */
 export function redactUrl(value: string): string {
+  return redact(value, false)
+}
+
+/**
+ * Redact a value known to be a URL, such as an `href` as written in the page: a document-relative
+ * reference (`details?email=…`, `./a`, `../a`) is redacted too, which `redactUrl` leaves alone
+ * because prose looks the same.
+ */
+export function redactHref(value: string): string {
+  return redact(value, true)
+}
+
+function redact(value: string, knownUrl: boolean): string {
   const input = parserInput(value)
   const contact = CONTACT_SCHEME.exec(input)
   if (contact) return `${contact[1]!.toLowerCase()}:${REDACTED_VALUE}`
-  if (!isUrlShaped(input)) return value
+  if (!knownUrl && !isUrlShaped(input)) return value
 
   // An absolute URL is parsed without a base: against one with the same scheme, the parser reads
   // `http:example.com` as a relative path rather than the host a browser would go to.
@@ -133,11 +192,15 @@ export function redactUrl(value: string): string {
     // data leaves the browser, so it fails closed.
     return REDACTED_VALUE
   }
-  if (!url.search && !url.hash && !url.username && !url.password) return value
+  const path = redactPathText(url.pathname)
+  if (!url.search && !url.hash && !url.username && !url.password && path === url.pathname) {
+    return value
+  }
 
   // Credentials in the address (`https://user:secret@host/`) are never reported.
   url.username = ''
   url.password = ''
+  url.pathname = path
 
   const params = new URLSearchParams()
   for (const [key, entry] of url.searchParams) {
@@ -153,21 +216,50 @@ export function redactUrl(value: string): string {
   if (input.startsWith('?') || input.startsWith('#')) return url.search
   // Protocol-relative (`//host/path`, or with either slash a backslash): the host is real and stays.
   if (/^[/\\]{2}/.test(input)) return `//${url.host}${url.pathname}${url.search}`
-  return `${url.pathname}${url.search}`
+  if (/^[/\\]/.test(input)) return `${url.pathname}${url.search}`
+  // Document-relative (`details?…`, `../a`): its own path as written, which the throwaway base would
+  // resolve away. A path holds no `?` or `#`, so it is everything before the first of them.
+  return `${redactPathText(input.split(/[?#]/, 1)[0]!)}${url.search}`
+}
+
+/**
+ * Hrefs inside posthog-js's `$elements_chain`, a single string such as
+ * `a.nav:attr__href="/x?email=…"href="/x?email=…"nth-child="1"`: each attribute is `name="value"`,
+ * after the element's `:` or the previous value's closing quote, with `"` in a value escaped as
+ * `\"`. The chain is sent with every autocaptured event, beside `$elements`.
+ */
+const CHAIN_HREF = /(?<=^|[:"])([\w-]*href)="((?:[^"\\]|\\.)*)"/g
+
+/** Redact every href in an elements chain, leaving the rest of it as it is. */
+export function redactElementsChain(chain: string): string {
+  return chain.replace(CHAIN_HREF, (_match, name: string, escaped: string) => {
+    const href = escaped.replace(/\\"/g, '"')
+    return `${name}="${redactHref(href).replace(/"/g, '\\"')}"`
+  })
+}
+
+/** Property names whose values are URLs whatever they look like (`href`, `$current_url`, …). */
+const URL_PROPERTY = /(?:^\$?|_)(?:href|url|referrer)$/i
+
+function redactString(value: string, key: string | undefined): string {
+  if (key === '$elements_chain') return redactElementsChain(value)
+  if (key !== undefined && URL_PROPERTY.test(key)) return redactHref(value)
+  return redactUrl(value)
 }
 
 /**
  * Redact every URL-shaped string in a property bag, however deep: PostHog's `$set` and `$set_once`
  * are nested bags holding `$initial_current_url` and `$initial_referrer`. No depth limit, since a
  * cap would pass everything below it through unredacted. Each object maps to its clone before the
- * clone is filled, so a cycle ends and is redacted too.
+ * clone is filled, so a cycle ends and is redacted too. Keys are redacted as well: a heatmap event's
+ * `$heatmap_data` is keyed by the page's full address.
  */
 export function redactProperties<T>(properties: T): T {
-  return redactValue(properties, new WeakMap<object, unknown>())
+  return redactValue(properties, new WeakMap<object, unknown>(), undefined)
 }
 
-function redactValue<T>(value: T, clones: WeakMap<object, unknown>): T {
-  if (typeof value === 'string') return redactUrl(value) as T
+function redactValue<T>(value: T, clones: WeakMap<object, unknown>, key: string | undefined): T {
+  if (typeof value === 'string') return redactString(value, key) as T
   if (!value || typeof value !== 'object') return value
 
   const existing = clones.get(value)
@@ -176,13 +268,22 @@ function redactValue<T>(value: T, clones: WeakMap<object, unknown>): T {
   if (Array.isArray(value)) {
     const clone: unknown[] = []
     clones.set(value, clone)
-    for (const entry of value) clone.push(redactValue(entry, clones))
+    for (const entry of value) clone.push(redactValue(entry, clones, key))
     return clone as T
   }
 
   const clone: Record<string, unknown> = {}
   clones.set(value, clone)
-  for (const [key, entry] of Object.entries(value)) clone[key] = redactValue(entry, clones)
+  for (const [name, entry] of Object.entries(value)) {
+    const redactedName = redactUrl(name)
+    const redacted = redactValue(entry, clones, name)
+    const existing = clone[redactedName]
+    // Two addresses that redact to the same one keep both lists (a heatmap's clicks, per page).
+    clone[redactedName] =
+      Object.hasOwn(clone, redactedName) && Array.isArray(existing) && Array.isArray(redacted)
+        ? [...existing, ...redacted]
+        : redacted
+  }
   return clone as T
 }
 

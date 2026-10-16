@@ -15,8 +15,8 @@ export const config = {
   // Run on every route except the auth API (must stay reachable while signed
   // out), Next internals, Vercel's analytics beacons, and static assets —
   // otherwise the redirect would also block the CSS/JS/fonts the sign-in page
-  // needs to render. Next prefixes the basePath to these itself. The matcher must be a literal here: Next reads it
-  // from this file statically.
+  // needs to render. Next prefixes the basePath to these itself. The matcher
+  // must be a literal here: Next reads it from this file statically.
   //
   // `'/'` is the app's root, and the catch-all below cannot reach it: Next
   // prefixes the basePath to the source as written, so the catch-all's leading

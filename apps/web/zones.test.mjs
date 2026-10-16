@@ -21,6 +21,11 @@ test('each zone owns its own path, apart from the registry alias', () => {
   assert.ok(!paths.includes('/registry'), 'the registry is an alias with its own rules, not a zone')
 })
 
+test('the sitemap lists the infographics zone and leaves Storybook to its own domain', () => {
+  const listed = zones.filter((zone) => zone.inSitemap).map((zone) => zone.path)
+  assert.deepEqual(listed, ['/infographics'])
+})
+
 test('each zone is fetched from a custom domain, never a vercel.app name', () => {
   for (const zone of zones) {
     assert.equal(refuseOrigin(zone.origin), undefined, zone.path)
