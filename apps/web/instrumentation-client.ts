@@ -9,5 +9,6 @@ startPostHog(
   {
     token: process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN,
     vercelEnv: process.env.NEXT_PUBLIC_VERCEL_ENV,
+    hostname: window.location.hostname,
   },
 )

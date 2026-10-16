@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { posthogOptions, shouldCapture, startPostHog } from './posthog'
 
-const production = { token: 'phc_test', vercelEnv: 'production' }
+const production = { token: 'phc_test', vercelEnv: 'production', hostname: 'ui.design.nsw.gov.au' }
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -80,9 +80,13 @@ describe('startPostHog', () => {
       const posthog = { init: vi.fn() }
       const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-      expect(startPostHog(posthog, { site: 'ui-web' }, { token: 'phc_test', vercelEnv })).toBe(
-        'skipped',
-      )
+      expect(
+        startPostHog(
+          posthog,
+          { site: 'ui-web' },
+          { token: 'phc_test', vercelEnv, hostname: 'ui.design.nsw.gov.au' },
+        ),
+      ).toBe('skipped')
       expect(posthog.init).not.toHaveBeenCalled()
       expect(error).not.toHaveBeenCalled()
     },
@@ -92,16 +96,30 @@ describe('startPostHog', () => {
     const posthog = { init: vi.fn() }
     const error = vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    expect(startPostHog(posthog, { site: 'ui-web' }, { token: '', vercelEnv: 'production' })).toBe(
+    expect(startPostHog(posthog, { site: 'ui-web' }, { ...production, token: '' })).toBe(
       'missing-token',
     )
     expect(posthog.init).not.toHaveBeenCalled()
     expect(error).toHaveBeenCalledOnce()
   })
 
-  it('captures on production only', () => {
-    expect(shouldCapture('production')).toBe(true)
-    expect(shouldCapture('preview')).toBe(false)
-    expect(shouldCapture(undefined)).toBe(false)
+  it('captures on a production build at a production address only', () => {
+    expect(shouldCapture('production', 'ui.design.nsw.gov.au')).toBe(true)
+    expect(shouldCapture('production', 'design.nsw.gov.au')).toBe(true)
+    expect(shouldCapture('preview', 'ui.design.nsw.gov.au')).toBe(false)
+    expect(shouldCapture(undefined, 'localhost')).toBe(false)
+  })
+
+  it("stays silent on a host app's preview that serves a zone's production build", () => {
+    const posthog = { init: vi.fn() }
+
+    expect(
+      startPostHog(
+        posthog,
+        { site: 'email-design-signature' },
+        { ...production, hostname: 'nswds-email-design-docs-git-x-digital-nsw.vercel.app' },
+      ),
+    ).toBe('skipped')
+    expect(posthog.init).not.toHaveBeenCalled()
   })
 })

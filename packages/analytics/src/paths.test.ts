@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { tagManagerId, zonePath } from './paths'
+import { isProductionHost, tagManagerId, zonePath } from './paths'
 
 describe('zonePath', () => {
   it("states a zone's page with its basePath, the root as the basePath itself", () => {
@@ -16,5 +16,17 @@ describe('tagManagerId', () => {
     expect(tagManagerId('')).toBeUndefined()
     expect(tagManagerId('  ')).toBeUndefined()
     expect(tagManagerId(' GTM-TEST ')).toBe('GTM-TEST')
+  })
+})
+
+describe('isProductionHost', () => {
+  it('accepts the domain and its subdomains, nothing else', () => {
+    expect(isProductionHost('design.nsw.gov.au')).toBe(true)
+    expect(isProductionHost('email.design.nsw.gov.au')).toBe(true)
+    expect(isProductionHost('nswds-email-design-docs-git-x-digital-nsw.vercel.app')).toBe(false)
+    expect(isProductionHost('localhost')).toBe(false)
+    expect(isProductionHost('evildesign.nsw.gov.au')).toBe(false)
+    expect(isProductionHost('design.nsw.gov.au.example.com')).toBe(false)
+    expect(isProductionHost(undefined)).toBe(false)
   })
 })
