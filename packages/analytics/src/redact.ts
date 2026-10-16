@@ -48,11 +48,14 @@ export const CAMPAIGN_PARAMS: ReadonlySet<string> = new Set([
 ])
 
 /**
- * What a campaign value may look like: a label, such as `newsletter`, `spring sale` or
- * `nsw-gov_2026`, up to 100 characters. No `@`, `/`, `:` or `=`, so an email address, a URL or a
- * nested query is dropped with its parameter, whatever name it was sent under.
+ * What a campaign value may look like: a label in any language, such as `newsletter`, `spring sale`,
+ * `nsw-gov_2026`, `café` or `春`, up to 100 characters. Letters, combining marks (an accent sent
+ * decomposed) and digits from any script, plus space and `_.~+-`. No `@`, `/`, `:` or `=`, so an
+ * email address, a URL or a nested query is dropped with its parameter, whatever name it was sent
+ * under. The `u` flag makes the classes Unicode-aware and counts the limit in characters; there is
+ * no `m` flag, so `$` cannot match before a trailing newline.
  */
-export const CAMPAIGN_VALUE = /^[\w .~+-]{1,100}$/
+export const CAMPAIGN_VALUE = /^[\p{L}\p{M}\p{N}_ .~+-]{1,100}$/u
 
 /** The value a parameter is reported with, or `null` to drop it, name and all. */
 function allowedValue(key: string, value: string): string | null {

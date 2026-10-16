@@ -30,12 +30,22 @@ describe('redactUrl', () => {
       `${origin}/?utm_source=newsletter&utm_medium=email&utm_campaign=spring+sale&utm_term=nsw-gov_2026&utm_content=hero`,
     )
 
+    // Labels in other languages: Chinese, and an accent sent both composed and decomposed.
+    for (const label of ['春', 'café', 'cafe\u0301', 'Tiếng Việt']) {
+      const url = `${origin}/?utm_campaign=${encodeURIComponent(label)}`
+      expect(redactUrl(url), label).toBe(url.replace(/%20/g, '+'))
+    }
+
     // A campaign-shaped name, an email or URL as a campaign value, and an over-long value.
     expect(redactUrl(`${origin}/?utm_person@example.com`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_id=secret`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_term=person@example.com`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_source=https://example.com/x`)).toBe(`${origin}/`)
     expect(redactUrl(`${origin}/?utm_source=${'a'.repeat(101)}`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_source=${'春'.repeat(101)}`)).toBe(`${origin}/`)
+    expect(redactUrl(`${origin}/?utm_term=${encodeURIComponent('名前@example.com')}`)).toBe(
+      `${origin}/`,
+    )
     // A trailing newline: JavaScript's `$` matches before one only with the `m` flag, which
     // CAMPAIGN_VALUE does not use, so this is dropped like any other non-label value.
     expect(redactUrl(`${origin}/?utm_source=ok%0A`)).toBe(`${origin}/`)
