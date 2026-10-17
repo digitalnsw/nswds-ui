@@ -305,15 +305,24 @@ const URL_NAME =
 /** An inline `style` attribute, whose `url(…)` values (`background-image`) hold URLs. */
 const STYLE_NAME = /(?:^|_)style$/i
 
-/** Each `url(…)` in a style, quoted or not. */
-const STYLE_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi
+/**
+ * Each `url(…)` in a style: double-quoted, single-quoted or bare, spaces allowed around a quoted
+ * one. No two quantifiers can take the same characters (spaces sit outside the quotes, the URL
+ * inside them), so the match is linear in the style's length whatever it holds.
+ */
+const STYLE_URL = /url\((?:\s*"([^"]*)"\s*|\s*'([^']*)'\s*|([^)"']*))\)/gi
 
 /** Redact the URL inside every `url(…)` of a style, leaving the rest of it as written. */
 function redactStyleUrls(style: string): string {
-  return style.replace(STYLE_URL, (match, quote: string, url: string) => {
-    const redacted = redactHref(url)
-    return redacted === url ? match : `url(${quote}${redacted}${quote})`
-  })
+  return style.replace(
+    STYLE_URL,
+    (match, doubled: string | undefined, single: string | undefined, bare: string | undefined) => {
+      const quote = doubled !== undefined ? '"' : single !== undefined ? "'" : ''
+      const url = (doubled ?? single ?? bare ?? '').trim()
+      const redacted = redactHref(url)
+      return redacted === url ? match : `url(${quote}${redacted}${quote})`
+    },
+  )
 }
 
 /** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */

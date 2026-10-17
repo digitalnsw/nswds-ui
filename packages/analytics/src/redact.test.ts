@@ -295,6 +295,16 @@ describe('redactElementsChain', () => {
     expect(at('')).toBe('')
   })
 
+  it('reads a style in time linear in its length, whatever it holds', () => {
+    const style = `url(${' '.repeat(100_000)}`
+    const started = performance.now()
+    expect(redactElementsChain(`div:attr__style="${style}"`)).toBe(`div:attr__style="${style}"`)
+    expect(performance.now() - started).toBeLessThan(500)
+    expect(redactProperties({ attr__style: 'background:url( "/a?b=1" )' }).attr__style).toBe(
+      'background:url("/a")',
+    )
+  })
+
   it('redacts the URLs in an inline style and in an xlink:href', () => {
     const chain = 'div:attr__style="background-image:url(\'/a?email=a@b.c\'); color:red"'
     expect(redactElementsChain(chain)).toBe(
