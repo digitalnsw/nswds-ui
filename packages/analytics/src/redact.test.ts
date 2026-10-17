@@ -172,6 +172,19 @@ describe('redactHref', () => {
     expect(redactHref('')).toBe('')
   })
 
+  it('reports only the scheme of a non-web address, whose payload it cannot read', () => {
+    expect(redactHref('data:text/plain,person@example.com')).toBe(`data:${REDACTED_VALUE}`)
+    expect(redactHref("javascript:alert('person@example.com')")).toBe(
+      `javascript:${REDACTED_VALUE}`,
+    )
+    expect(redactHref('blob:https://ui.design.nsw.gov.au/1234')).toBe(`blob:${REDACTED_VALUE}`)
+    expect(redactHref('file:///Users/person/notes.txt')).toBe(`file:${REDACTED_VALUE}`)
+    expect(redactUrl('custom-app://open?email=a@b.c')).toBe(`custom-app:${REDACTED_VALUE}`)
+    expect(redactElementsChain('a:href="data:text/plain,a@b.c"')).toBe('a:href="data:[redacted]"')
+    // Prose that merely starts like a scheme is not a known URL, and is left as written.
+    expect(redactUrl('Note: see below')).toBe('Note: see below')
+  })
+
   it('redacts every other form as redactUrl does', () => {
     expect(redactHref('/a?email=x')).toBe('/a')
     expect(redactHref('mailto:a@b.c')).toBe(`mailto:${REDACTED_VALUE}`)

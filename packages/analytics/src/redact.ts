@@ -53,6 +53,9 @@ function isAbsolute(input: string): boolean {
  */
 const CONTACT_SCHEME = /^(mailto|tel|sms|callto|facetime|skype|whatsapp|geo):/i
 
+/** The schemes whose host and path are reported, redacted. Relative references resolve to `http:`. */
+const WEB_PROTOCOLS: ReadonlySet<string> = new Set(['http:', 'https:'])
+
 /**
  * Absolute URLs and references only: paths (`/…`, or `\…`, which a browser reads as `/…`),
  * queries and fragments. `new URL(value, base)` parses ordinary prose as a relative URL, so a bare
@@ -218,6 +221,11 @@ function redact(value: string, knownUrl: boolean): string {
     // data leaves the browser, so it fails closed.
     return REDACTED_VALUE
   }
+  // Only a web address keeps its host and path. Any other scheme (`data:`, `javascript:`, `blob:`,
+  // `file:`, an app's own) carries its payload where a web address has its path, and nothing here
+  // can read that payload, so only the scheme is reported, as for a contact link.
+  if (!WEB_PROTOCOLS.has(url.protocol)) return `${url.protocol}${REDACTED_VALUE}`
+
   const path = redactPathText(url.pathname)
   if (!url.search && !url.hash && !url.username && !url.password && path === url.pathname) {
     return value
