@@ -51,3 +51,47 @@ const SAME_ORIGIN = 'https://same-origin.invalid'
 export function pathnameOf(returnPath: string): string {
   return new URL(returnPath, SAME_ORIGIN).pathname
 }
+
+/**
+ * `path` under the app's `basePath`, without the `/infographics/` a plain join
+ * would produce for the root: Next 308s that to `/infographics`, and a zone's
+ * rewrite on the shared domain only matches the slash-less form directly.
+ */
+export function underBasePath(basePath: string, path: string): string {
+  return basePath && path === '/' ? basePath : `${basePath}${path}`
+}
+
+/**
+ * Next's `basePath`, from the two forms of the page's own address: the
+ * document's pathname (`window.location.pathname`, with the basePath) and the
+ * route's (`usePathname()`, without it). Not the forms' `basePath` prop, which
+ * names the app's auth endpoints: the builder serves them under `/builder` with
+ * no Next basePath, its routes carrying `/builder` themselves. `null` when the
+ * two do not line up.
+ */
+export function routerBasePath(documentPathname: string, routePathname: string): string | null {
+  const document =
+    documentPathname.length > 1 ? documentPathname.replace(/\/+$/, '') : documentPathname
+  if (routePathname === '/') return document === '/' ? '' : document
+  return document.endsWith(routePathname) ? document.slice(0, -routePathname.length) : null
+}
+
+/**
+ * The address to load in place of an auth page once the visitor is in, or
+ * `null` to move on with a client-side push. A page whose own address carries a
+ * query or a fragment (the gate's `from`) is replaced by a full document load:
+ * Back can no longer return to it, and the analytics (@workspace/analytics),
+ * which stay off for the life of a document that began at such an address,
+ * start afresh on the clean one. `destination` is a route, as `router.push`
+ * takes it, so Next's basePath (`routerBasePath`) is added; when that cannot be
+ * worked out, the push is left to Next.
+ */
+export function replacementAddress(
+  current: { pathname: string; search: string; hash: string },
+  routePathname: string,
+  destination: string,
+): string | null {
+  if (!current.search && !current.hash) return null
+  const basePath = routerBasePath(current.pathname, routePathname)
+  return basePath === null ? null : underBasePath(basePath, destination)
+}

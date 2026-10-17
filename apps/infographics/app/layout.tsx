@@ -1,3 +1,5 @@
+import { VercelReporters } from '@workspace/analytics/reporters'
+import { TagManager } from '@workspace/analytics/tag-manager'
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
@@ -10,6 +12,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 // detection of the folder it builds in (see the note in globals.css).
 import './globals.css'
 
+import { basePath } from '@/lib/auth'
 import { site } from '@/lib/site'
 
 const publicSans = Public_Sans({
@@ -56,12 +59,15 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
+      <TagManager containerId={process.env.NEXT_PUBLIC_GTM_ID} />
       <body>
         <ThemeProvider>
           <AppLinkProvider>
             <SiteShell>{children}</SiteShell>
           </AppLinkProvider>
         </ThemeProvider>
+        {/* A zone: its reports land in the web app's project, under /infographics. */}
+        <VercelReporters basePath={basePath} />
       </body>
     </html>
   )

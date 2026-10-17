@@ -3,11 +3,11 @@
 import { Button, Callout, Input, Label } from '@nswds/ui'
 import type { Route } from 'next'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useSyncExternalStore } from 'react'
 
 import { getAuthClient, settle } from '../client'
-import { RETURN_PARAM, safeReturnPath } from '../return-path'
+import { replacementAddress, RETURN_PARAM, safeReturnPath } from '../return-path'
 
 export interface SignInFormProps {
   /**
@@ -40,6 +40,28 @@ export function returnPath(): string | null {
   return safeReturnPath(new URLSearchParams(window.location.search).get(RETURN_PARAM))
 }
 
+/**
+ * Send a visitor who has just signed in or up on to `destination`: by a full
+ * document load that replaces this page when its address carries the gate's
+ * `from` (`replacementAddress`), else by a client-side push, refreshing the
+ * server components so the signed-in state is picked up.
+ */
+export function leaveAuthPage(
+  router: ReturnType<typeof useRouter>,
+  routePathname: string,
+  destination: string,
+): void {
+  const replacement = replacementAddress(window.location, routePathname, destination)
+  if (replacement) {
+    window.location.replace(replacement)
+    return
+  }
+  // The return path is checked to be a path of this app (`safeReturnPath`);
+  // an app with `typedRoutes` cannot know it statically, hence the cast.
+  router.push(destination as Route)
+  router.refresh()
+}
+
 /** The URL never changes under the form, so there is nothing to subscribe to. */
 const subscribeToNothing = () => () => {}
 const noReturnPath = () => null
@@ -69,6 +91,7 @@ export function SignInForm({
 }: SignInFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const pathname = usePathname()
   const from = useReturnPath()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -90,10 +113,7 @@ export function SignInForm({
       return
     }
 
-    // The return path is checked to be a path of this app (`safeReturnPath`);
-    // an app with `typedRoutes` cannot know it statically, hence the cast.
-    router.push((returnPath() ?? homeHref) as Route)
-    router.refresh()
+    leaveAuthPage(router, pathname, returnPath() ?? homeHref)
   }
 
   return (

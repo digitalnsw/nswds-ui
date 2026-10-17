@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+import { posthogRewrites } from './analytics-proxy.mjs'
 import { hostRedirects } from './hosts.mjs'
 import { zoneRewrites } from './zones.mjs'
 
@@ -52,8 +53,24 @@ const nextConfig = {
   // for them (the destructure note on useChromeHeight, the
   // set-state-in-effect disable in push-menu).
   reactCompiler: true,
-  transpilePackages: ['@nswds/ui', '@workspace/auth'],
+  // Vercel's own deployment environment (`production`, `preview`, `development`), inlined for the
+  // browser so @workspace/analytics can start only on production. Passed explicitly rather than
+  // relying on Vercel also exposing a NEXT_PUBLIC_ copy. Empty locally, where nothing reports.
+  env: { NEXT_PUBLIC_NSWDS_VERCEL_ENV: process.env.VERCEL_ENV ?? '' },
+  transpilePackages: ['@nswds/ui', '@workspace/auth', '@workspace/analytics'],
+  // PostHog's ingestion paths end in a slash (`/nswa/e/`, `/nswa/i/v0/e/`). Next's automatic
+  // trailing-slash redirect would strip it before the rewrite below runs, and the SDK does not follow
+  // the redirect, so ingestion would stop with no error anywhere. proxy.ts reinstates the redirect
+  // for every page path (analytics-proxy.mjs), before the zone rewrites, so `/storybook/` and
+  // `/infographics/` still 308 to their slashless form.
+  skipTrailingSlashRedirect: true,
   // ui.digital.nsw.gov.au moves to ui.design.nsw.gov.au, all but /registry (hosts.mjs).
+  // `strict-origin` on every response: only the origin as `Referer`, same-origin requests included.
+  // GA4 in the shared Tag Manager container reports `document.referrer` as it is, so a same-site
+  // page must never hand it a full address (@workspace/analytics, `isCleanReferrer`).
+  async headers() {
+    return [{ source: '/:path*', headers: [{ key: 'Referrer-Policy', value: 'strict-origin' }] }]
+  },
   async redirects() {
     return hostRedirects()
   },
@@ -67,6 +84,8 @@ const nextConfig = {
       // Proxy the stable production alias — never a per-deploy URL. The registry project
       // must have Deployment Protection disabled or these fetches return 401.
       afterFiles: [
+        // The PostHog proxy (analytics-proxy.mjs), for this app and the infographics zone.
+        ...posthogRewrites(),
         {
           source: '/registry',
           destination: registryOrigin,

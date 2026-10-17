@@ -1,0 +1,51 @@
+{
+  "name": "@workspace/analytics",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Analytics for the web app and the infographics zone: PostHog start-up, Vercel Web Analytics and Speed Insights (zone-aware), and the shared Google Tag Manager container.",
+  "exports": {
+    "./posthog": {
+      "types": "./src/posthog.ts",
+      "default": "./src/posthog.ts"
+    },
+    "./reporters": {
+      "types": "./src/reporters.tsx",
+      "default": "./src/reporters.tsx"
+    },
+    "./tag-manager": {
+      "types": "./src/tag-manager.tsx",
+      "default": "./src/tag-manager.tsx"
+    }
+  },
+  "scripts": {
+    "lint": "eslint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@next/third-parties": "^16.4.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0"
+  },
+  "peerDependencies": {
+    "next": ">=16",
+    "posthog-js": ">=1.438",
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "devDependencies": {
+    "@types/node": "^25.1.0",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
+    "eslint": "^9.39.2",
+    "next": "16.4.0",
+    "posthog-js": "^1.438.12",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

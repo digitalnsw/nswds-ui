@@ -50,6 +50,13 @@ const APPS: AppCase[] = [
       '/infographics/_next/image',
       '/infographics/favicon.ico',
       '/infographics/fonts/public-sans.woff2',
+      // Vercel Web Analytics and Speed Insights post to the domain root, outside the basePath, so
+      // the zone's proxy never sees them on its own domain either.
+      '/_vercel/insights/view',
+      '/_vercel/speed-insights/vitals',
+      // And should one ever post under it, the catch-all leaves it out as well.
+      '/infographics/_vercel/insights/view',
+      '/infographics/_vercel/speed-insights/vitals',
     ],
   },
   {
@@ -63,12 +70,26 @@ const APPS: AppCase[] = [
       '/infographics',
       '/infographics/account',
       '/storybook',
+      // Not gated: the PostHog proxy, which the proxy must still see to strip the session cookie
+      // (apps/web/analytics-proxy.mjs). Its `.js` paths are the case the catch-all would miss.
+      '/nswa',
+      '/nswa/i/v0/e/',
+      '/nswa/static/array.js',
+      '/nswa/array/phc_test/config.js',
+      // Trailing-slash paths the catch-all leaves out: Next's own redirect is off
+      // (`skipTrailingSlashRedirect`), so the proxy must see them to restore it.
+      '/api/auth/get-session/',
+      '/infographics/sign-in/',
+      '/registry/r/button.json/',
     ],
     open: [
       '/api/auth/get-session',
       '/infographics/api/auth/get-session',
       '/infographics/sign-in',
       '/registry/r/button.json',
+      // Vercel Web Analytics and Speed Insights beacons, same-origin.
+      '/_vercel/insights/view',
+      '/_vercel/speed-insights/vitals',
       '/_next/static/chunks/main.js',
       '/favicon.ico',
     ],

@@ -24,7 +24,17 @@ const nextConfig = {
   // babel-plugin-react-compiler alone does nothing
   // (node_modules/next/dist/docs/01-app/03-api-reference/05-config/01-next-config-js/reactCompiler.md).
   reactCompiler: true,
-  transpilePackages: ['@nswds/ui', '@workspace/auth'],
+  // Vercel's own deployment environment (`production`, `preview`, `development`), inlined for the
+  // browser so @workspace/analytics can start only on production. Passed explicitly rather than
+  // relying on Vercel also exposing a NEXT_PUBLIC_ copy. Empty locally, where nothing reports.
+  env: { NEXT_PUBLIC_NSWDS_VERCEL_ENV: process.env.VERCEL_ENV ?? '' },
+  transpilePackages: ['@nswds/ui', '@workspace/auth', '@workspace/analytics'],
+  // `strict-origin` on every response: only the origin as `Referer`, same-origin requests included.
+  // GA4 in the shared Tag Manager container reports `document.referrer` as it is, so a same-site
+  // page must never hand it a full address (@workspace/analytics, `isCleanReferrer`).
+  async headers() {
+    return [{ source: '/:path*', headers: [{ key: 'Referrer-Policy', value: 'strict-origin' }] }]
+  },
   async redirects() {
     return [
       {

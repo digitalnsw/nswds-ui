@@ -66,7 +66,10 @@ export function AccountPanel({ user, action }: AccountPanelProps) {
         <CardAction>{action}</CardAction>
       </CardHeader>
       <CardContent>
-        <dl className='grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm'>
+        {/* `ph-no-capture`: the signed-in person's name and email. PostHog's autocapture, rage-click
+            and dead-click capture record the text and attributes of what is clicked, and must never
+            record these. */}
+        <dl className='ph-no-capture grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm'>
           <dt className='font-bold text-foreground'>Name</dt>
           <dd className='text-muted-foreground'>{user.name}</dd>
           <dt className='font-bold text-foreground'>Email</dt>

@@ -1,3 +1,5 @@
+import { VercelReporters } from '@workspace/analytics/reporters'
+import { TagManager } from '@workspace/analytics/tag-manager'
 import type { Viewport } from 'next'
 import { JetBrains_Mono, Public_Sans } from 'next/font/google'
 
@@ -56,12 +58,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${publicSans.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
+      <TagManager containerId={process.env.NEXT_PUBLIC_GTM_ID} />
       <body>
         <ThemeProvider>
           <AppLinkProvider>
             <SiteShell>{children}</SiteShell>
           </AppLinkProvider>
         </ThemeProvider>
+        <VercelReporters />
       </body>
     </html>
   )

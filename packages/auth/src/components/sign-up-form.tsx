@@ -3,11 +3,11 @@
 import { Button, Callout, Input, Label } from '@nswds/ui'
 import type { Route } from 'next'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { getAuthClient, settle, signUpErrorMessage } from '../client'
-import { returnPath, useReturnPath, withReturnPath } from './sign-in-form'
+import { leaveAuthPage, returnPath, useReturnPath, withReturnPath } from './sign-in-form'
 
 export interface SignUpFormProps {
   /**
@@ -40,6 +40,7 @@ export function SignUpForm({
 }: SignUpFormProps) {
   const client = getAuthClient(basePath)
   const router = useRouter()
+  const pathname = usePathname()
   const from = useReturnPath()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -62,10 +63,7 @@ export function SignUpForm({
       return
     }
 
-    // The return path is checked to be a path of this app (`safeReturnPath`);
-    // an app with `typedRoutes` cannot know it statically, hence the cast.
-    router.push((returnPath() ?? homeHref) as Route)
-    router.refresh()
+    leaveAuthPage(router, pathname, returnPath() ?? homeHref)
   }
 
   return (
