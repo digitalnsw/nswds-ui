@@ -22,6 +22,7 @@ describe('posthogOptions', () => {
       capture_pageview: 'history_change',
       disable_session_recording: true,
       advanced_disable_flags: true,
+      persistence: 'localStorage',
       capture_exceptions: false,
       capture_performance: { web_vitals: false },
     })

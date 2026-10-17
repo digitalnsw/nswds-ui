@@ -42,18 +42,18 @@ const onServer = () => false
  * The Google Tag Manager container the NSW Design sites share (its GA4 tag fires inside it), or
  * nothing when the ID is unset or `tagManagerAllowed` says no: when the page is not on a production
  * address (`isProductionHost`: a zone's production build also serves a host app's preview), or when
- * the address carries anything `redactUrl` would remove (`isCleanPath`, `isCleanLocation`). GA4 reads the address itself and cannot be handed a
- * redacted one, so a sign-in page the gate sent a visitor to (it carries `from`), a link with any
- * other parameter, or one with a fragment, even an in-page anchor, loads no container at all. Place
- * it in `<html>`, before `<body>`. The app passes `process.env.NEXT_PUBLIC_GTM_ID`, read where Next
- * inlines it.
+ * the address carries anything `redactUrl` would remove (`isCleanPath`, `isCleanLocation`). GA4
+ * reads the address itself and cannot be handed a redacted one, so a sign-in page the gate sent a
+ * visitor to (it carries `from`), a link with any other parameter, or one with a fragment, even an
+ * in-page anchor, loads no container at all. Place it in `<html>`, before `<body>`. The app passes
+ * `process.env.NEXT_PUBLIC_GTM_ID`, read where Next inlines it.
  *
  * The check runs again on every client-side navigation, so a visitor who signs in from a clean
  * sign-in page gets the container on the page the form sends them to. One the gate sent to sign in
  * (its address carries `from`) is moved on by a full document load that replaces the sign-in page
- * (`replacementAddress` in @workspace/auth), so the page they wanted starts a clean document. Once loaded it stays loaded,
- * so the check also requires the document's first address to be clean (`firstLocation`), and the
- * referrer GA4 will report (`isCleanReferrer`).
+ * (`replacementAddress` in @workspace/auth), so the page they wanted starts a clean document. Once
+ * loaded the container stays loaded, so the check also requires the document's first address to be
+ * clean (`firstLocation`), and the referrer GA4 will report (`isCleanReferrer`).
  *
  * What it cannot cover is an address that changes after the container has loaded without a
  * navigation through Next, such as an in-page link that adds a fragment: no script can be unloaded.

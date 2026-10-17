@@ -24,6 +24,16 @@ describe('redactUrl', () => {
     expect(result).toBe(`${origin}/sign-in`)
   })
 
+  it('drops a campaign value with more digits than a label has, a phone number among them', () => {
+    const at = (value: string) => redactUrl(`${origin}/?utm_term=${encodeURIComponent(value)}`)
+    for (const value of ['0400123456', '0400 123 456', '1234-5678']) {
+      expect(at(value), value).toBe(`${origin}/`)
+    }
+    for (const value of ['nsw-gov_2026', 'issue 12', '1234567']) {
+      expect(at(value), value).not.toBe(`${origin}/`)
+    }
+  })
+
   it('keeps campaign parameters and drops every other parameter, name and value', () => {
     const result = redactUrl(`${origin}/?utm_source=newsletter&token=secret&person@example.com`)
 
@@ -234,11 +244,22 @@ describe('redactElementsChain', () => {
     )
   })
 
+  it('redacts every other attribute that holds a URL, and leaves the rest as written', () => {
+    const chain =
+      'img:attr__src="https://cdn.example/a?email=a@b.c"attr__alt="say \\"hi\\""nth-child="1";' +
+      'button:attr__formaction="/search?token=1"text="/x?y=1"'
+    expect(redactElementsChain(chain)).toBe(
+      'img:attr__src="https://cdn.example/a"attr__alt="say \\"hi\\""nth-child="1";' +
+        'button:attr__formaction="/search"text="/x"',
+    )
+  })
+
   it('keeps escaped quotes escaped, and leaves an href-like text alone', () => {
     expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
       'a:href="/a"text="href=1"',
     )
-    expect(redactElementsChain('a:href="say \\"hi\\""')).toBe('a:href="say %22hi%22"')
+    // Nothing to redact: the value keeps posthog-js's own spelling.
+    expect(redactElementsChain('a:href="say \\"hi\\""')).toBe('a:href="say \\"hi\\""')
     expect(redactElementsChain('a:href="a\\b?q=1"nth-child="1"')).toBe(
       'a:href="a%5Cb"nth-child="1"',
     )
@@ -246,6 +267,18 @@ describe('redactElementsChain', () => {
 })
 
 describe('redactProperties', () => {
+  it('keeps a `__proto__` key as a property, never as the prototype', () => {
+    const bag = JSON.parse('{"__proto__": {"$current_url": "/a?email=a@b.c"}, "x": 1}') as object
+    const result = redactProperties(bag) as Record<string, unknown>
+
+    expect(Object.getPrototypeOf(result)).toBe(Object.prototype)
+    expect(Object.hasOwn(result, '__proto__')).toBe(true)
+    expect(Object.getOwnPropertyDescriptor(result, '__proto__')?.value).toEqual({
+      $current_url: '/a',
+    })
+    expect(result.x).toBe(1)
+  })
+
   it('reads properties named for URLs as URLs, and redacts keys that are addresses', () => {
     const result = redactProperties({
       $elements: [{ attr__href: 'details?email=a@b.c', href: 'details?email=a@b.c' }],

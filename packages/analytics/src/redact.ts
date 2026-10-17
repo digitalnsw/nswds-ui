@@ -111,9 +111,17 @@ function graphemeCount(value: string): number {
   return graphemes ? Array.from(graphemes.segment(value)).length : Array.from(value).length
 }
 
+/**
+ * The most digits a campaign value may hold, spaces or not between them. A label has a year or a
+ * number in it (`nsw-gov_2026`, `issue 12`); a phone number (`0400 123 456`), an account number or
+ * a date of birth has more.
+ */
+export const CAMPAIGN_MAX_DIGITS = 7
+
 /** Whether a campaign value is a label short enough to keep. */
 function isCampaignValue(value: string): boolean {
   if (!CAMPAIGN_CHARACTERS.test(value)) return false
+  if ((value.match(/\p{N}/gu)?.length ?? 0) > CAMPAIGN_MAX_DIGITS) return false
   const length = graphemeCount(value)
   return length > 0 && length <= CAMPAIGN_MAX_LENGTH
 }
@@ -257,21 +265,26 @@ function redact(value: string, knownUrl: boolean): string {
 }
 
 /**
- * Hrefs inside posthog-js's `$elements_chain`, a single string such as
+ * Attributes inside posthog-js's `$elements_chain`, a single string such as
  * `a.nav:attr__href="/x?email=…"href="/x?email=…"nth-child="1"`: each attribute is `name="value"`,
  * after the element's `:` or the previous value's closing quote, with `"` in a value escaped as
- * `\"`. The chain is sent with every autocaptured event, beside `$elements`. A redacted href is
+ * `\"`. The chain is sent with every autocaptured event, beside `$elements`. A redacted value is
  * written back with `"` and `\` percent-encoded, which leaves nothing in it to escape: posthog-js
  * escapes quotes but not backslashes, so a backslash written back could end the value early.
  */
-const CHAIN_HREF = /(?<=^|[:"])([\w-]*href)="((?:[^"\\]|\\.)*)"/g
+const CHAIN_ATTRIBUTE = /(?<=^|[:"])([\w-]+)="((?:[^"\\]|\\.)*)"/g
 
-/** Redact every href in an elements chain, leaving the rest of it as it is. */
+/**
+ * Redact every attribute in an elements chain as the same attribute in `$elements` would be: an
+ * href always read as a URL, any other value (`attr__src`, `attr__action`, `attr__data-url`) when it
+ * is URL-shaped. A value left as it is keeps its original spelling.
+ */
 export function redactElementsChain(chain: string): string {
-  return chain.replace(CHAIN_HREF, (_match, name: string, escaped: string) => {
-    const href = escaped.replace(/\\"/g, '"')
-    const written = redactHref(href).replace(/["\\]/g, (char) => encodeURIComponent(char))
-    return `${name}="${written}"`
+  return chain.replace(CHAIN_ATTRIBUTE, (match, name: string, escaped: string) => {
+    const value = escaped.replace(/\\"/g, '"')
+    const redacted = /href$/i.test(name) ? redactHref(value) : redactUrl(value)
+    if (redacted === value) return match
+    return `${name}="${redacted.replace(/["\\]/g, (char) => encodeURIComponent(char))}"`
   })
 }
 
@@ -316,10 +329,16 @@ function redactValue<T>(value: T, clones: WeakMap<object, unknown>, key: string 
     const redacted = redactValue(entry, clones, name)
     const existing = clone[redactedName]
     // Two addresses that redact to the same one keep both lists (a heatmap's clicks, per page).
-    clone[redactedName] =
-      Object.hasOwn(clone, redactedName) && Array.isArray(existing) && Array.isArray(redacted)
-        ? [...existing, ...redacted]
-        : redacted
+    // Defined, not assigned: an own `__proto__` key would otherwise set the clone's prototype.
+    Object.defineProperty(clone, redactedName, {
+      value:
+        Object.hasOwn(clone, redactedName) && Array.isArray(existing) && Array.isArray(redacted)
+          ? [...existing, ...redacted]
+          : redacted,
+      enumerable: true,
+      writable: true,
+      configurable: true,
+    })
   }
   return clone as T
 }

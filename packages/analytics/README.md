@@ -5,10 +5,12 @@ Analytics for this repo's Next apps (web and the infographics zone), set up the 
 - `@workspace/analytics/posthog`: `startPostHog(posthog, { site, sensitiveContent }, env)`, called
   from each app's `instrumentation-client.ts`. Production builds on the app's canonical host only
   (where its domain's `/nswa` proxy is); replay, exception capture, PostHog's web vitals and the
-  `/flags` request (and with it remote config) are off; `sensitiveContent` also masks element text
+  `/flags` request (and with it remote config) are off; storage is this origin's localStorage, never
+  a cookie shared across design.nsw.gov.au; `sensitiveContent` also masks element text
   and attributes and turns off dead-click capture. Every captured URL (`src/redact.ts`), including
   the hrefs in `$elements_chain` and the addresses heatmaps are keyed by, loses its fragment, every
-  query parameter bar the five standard `utm_` names with label-like values, and any path segment
+  query parameter bar the five standard `utm_` names with label-like values (at most 7 digits), and
+  any path segment
   holding an email address. The sign-in gate's `from` is dropped too, path and all.
 - `@workspace/analytics/reporters`: `<VercelReporters basePath? />`, Vercel Web Analytics and Speed
   Insights. A zone passes its `basePath` so its pages are reported at their real path in the host

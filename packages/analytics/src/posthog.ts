@@ -83,6 +83,11 @@ export function posthogOptions({
     // `before_send` cannot reach it. Everything these sites use is set here instead, which is also
     // what keeps heatmaps, surveys and the like off until a site turns them on in this file.
     advanced_disable_flags: true,
+    // Stored in this origin's localStorage only, never a cookie. posthog-js otherwise keeps the
+    // visitor's first address and referrer (`$initial_person_info`), query and all, in a cookie on
+    // all of design.nsw.gov.au, which every NSW Design site reads under the shared token, including
+    // sites whose own `before_send` does not redact it, and which rides on every request to them.
+    persistence: 'localStorage',
     // An exception's message and stack can carry whatever the page was handling: an email's text, a
     // pasted URL, an error body. Nothing reads PostHog's error tracking for these sites.
     capture_exceptions: false,
