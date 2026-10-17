@@ -254,6 +254,19 @@ describe('redactElementsChain', () => {
     )
   })
 
+  it('reads every URL-bearing attribute as a URL, relative values included', () => {
+    const chain =
+      'img:attr__src="avatar?email=a@b.c"attr__srcset="a.png?x=1 1x, b.png?y=2 2x";' +
+      'button:attr__formaction="search?token=1";form:attr__action="./send?to=a@b.c"'
+    expect(redactElementsChain(chain)).toBe(
+      'img:attr__src="avatar"attr__srcset="a.png 1x, b.png 2x";' +
+        'button:attr__formaction="search";form:attr__action="./send"',
+    )
+    expect(
+      redactProperties({ $elements: [{ attr__src: 'avatar?email=a@b.c', attr__alt: 'a?b' }] }),
+    ).toEqual({ $elements: [{ attr__src: 'avatar', attr__alt: 'a?b' }] })
+  })
+
   it('keeps escaped quotes escaped, and leaves an href-like text alone', () => {
     expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
       'a:href="/a"text="href=1"',

@@ -275,26 +275,52 @@ function redact(value: string, knownUrl: boolean): string {
 const CHAIN_ATTRIBUTE = /(?<=^|[:"])([\w-]+)="((?:[^"\\]|\\.)*)"/g
 
 /**
- * Redact every attribute in an elements chain as the same attribute in `$elements` would be: an
- * href always read as a URL, any other value (`attr__src`, `attr__action`, `attr__data-url`) when it
- * is URL-shaped. A value left as it is keeps its original spelling.
+ * Redact every attribute in an elements chain as the same attribute in `$elements` would be
+ * (`redactNamed`). A value left as it is keeps its original spelling.
  */
 export function redactElementsChain(chain: string): string {
   return chain.replace(CHAIN_ATTRIBUTE, (match, name: string, escaped: string) => {
     const value = escaped.replace(/\\"/g, '"')
-    const redacted = /href$/i.test(name) ? redactHref(value) : redactUrl(value)
+    const redacted = redactNamed(value, name)
     if (redacted === value) return match
     return `${name}="${redacted.replace(/["\\]/g, (char) => encodeURIComponent(char))}"`
   })
 }
 
-/** Property names whose values are URLs whatever they look like (`href`, `$current_url`, …). */
-const URL_PROPERTY = /(?:^\$?|_)(?:href|url|referrer)$/i
+/**
+ * Names whose values are URLs whatever they look like: PostHog's own (`$current_url`,
+ * `$referrer`, `$initial_referrer`) and the HTML attributes that hold one, bare or as autocapture
+ * names them (`href`, `attr__src`, `attr__formaction`). A document-relative value
+ * (`avatar?email=…`) is redacted under any of them.
+ */
+const URL_NAME =
+  /(?:^\$?|_)(?:href|url|referrer|src|action|formaction|poster|cite|ping|background)$/i
+
+/** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */
+const URL_LIST_NAME = /(?:^|_)(?:image)?srcset$/i
+
+/** Redact each URL in a `srcset`, keeping its descriptor (`2x`, `640w`). */
+function redactUrlList(value: string): string {
+  return value
+    .split(',')
+    .map((candidate) => {
+      const [url = '', ...descriptor] = candidate.trim().split(/\s+/)
+      return [redactHref(url), ...descriptor].join(' ')
+    })
+    .join(', ')
+}
+
+/** Redact a value by what its name says it holds. */
+function redactNamed(value: string, name: string | undefined): string {
+  if (name === undefined) return redactUrl(value)
+  if (URL_LIST_NAME.test(name)) return redactUrlList(value)
+  if (URL_NAME.test(name)) return redactHref(value)
+  return redactUrl(value)
+}
 
 function redactString(value: string, key: string | undefined): string {
   if (key === '$elements_chain') return redactElementsChain(value)
-  if (key !== undefined && URL_PROPERTY.test(key)) return redactHref(value)
-  return redactUrl(value)
+  return redactNamed(value, key)
 }
 
 /**
