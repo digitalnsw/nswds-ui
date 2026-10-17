@@ -112,16 +112,22 @@ function graphemeCount(value: string): number {
 }
 
 /**
- * The most digits a campaign value may hold, spaces or not between them. A label has a year or a
- * number in it (`nsw-gov_2026`, `issue 12`); a phone number (`0400 123 456`), an account number or
- * a date of birth has more.
+ * A date as campaigns stamp them (`2026-10-17`, `2026_10_17`, `20261017`): a year from 1900 to
+ * 2099, a month and a day. Taken out before `PHONE_LIKE` is looked for, so a dated campaign stays.
  */
-export const CAMPAIGN_MAX_DIGITS = 7
+const CAMPAIGN_DATE = /(?:19|20)\d{2}([-_.]?)(?:0[1-9]|1[0-2])\1(?:0[1-9]|[12]\d|3[01])/g
+
+/**
+ * Eight or more digits in a run, a single space, `.` or `-` allowed between them: a phone number
+ * (`0400 123 456`, `+61 400 123 456`), an account number or a card number. A label has fewer
+ * (`nsw-gov_2026`, `issue 12`).
+ */
+const PHONE_LIKE = /\p{N}(?:[ .-]?\p{N}){7,}/u
 
 /** Whether a campaign value is a label short enough to keep. */
 function isCampaignValue(value: string): boolean {
   if (!CAMPAIGN_CHARACTERS.test(value)) return false
-  if ((value.match(/\p{N}/gu)?.length ?? 0) > CAMPAIGN_MAX_DIGITS) return false
+  if (PHONE_LIKE.test(value.replace(CAMPAIGN_DATE, ' '))) return false
   const length = graphemeCount(value)
   return length > 0 && length <= CAMPAIGN_MAX_LENGTH
 }
@@ -294,7 +300,21 @@ export function redactElementsChain(chain: string): string {
  * (`avatar?email=…`) is redacted under any of them.
  */
 const URL_NAME =
-  /(?:^\$?|_)(?:href|url|referrer|src|action|formaction|poster|cite|ping|background)$/i
+  /(?:^\$?|[_:])(?:href|url|referrer|src|action|formaction|poster|cite|ping|background)$/i
+
+/** An inline `style` attribute, whose `url(…)` values (`background-image`) hold URLs. */
+const STYLE_NAME = /(?:^|_)style$/i
+
+/** Each `url(…)` in a style, quoted or not. */
+const STYLE_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi
+
+/** Redact the URL inside every `url(…)` of a style, leaving the rest of it as written. */
+function redactStyleUrls(style: string): string {
+  return style.replace(STYLE_URL, (match, quote: string, url: string) => {
+    const redacted = redactHref(url)
+    return redacted === url ? match : `url(${quote}${redacted}${quote})`
+  })
+}
 
 /** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */
 const URL_LIST_NAME = /(?:^|_)(?:image)?srcset$/i
@@ -351,6 +371,7 @@ function redactUrlList(value: string): string {
 function redactNamed(value: string, name: string | undefined): string {
   if (name === undefined) return redactUrl(value)
   if (URL_LIST_NAME.test(name)) return redactUrlList(value)
+  if (STYLE_NAME.test(name)) return redactStyleUrls(value)
   if (URL_NAME.test(name)) return redactHref(value)
   return redactUrl(value)
 }

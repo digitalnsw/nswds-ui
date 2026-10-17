@@ -23,6 +23,7 @@ describe('posthogOptions', () => {
       disable_session_recording: true,
       advanced_disable_flags: true,
       persistence: 'localStorage',
+      cross_subdomain_cookie: false,
       capture_exceptions: false,
       capture_performance: { web_vitals: false },
     })

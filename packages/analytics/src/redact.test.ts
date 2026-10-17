@@ -24,14 +24,23 @@ describe('redactUrl', () => {
     expect(result).toBe(`${origin}/sign-in`)
   })
 
-  it('drops a campaign value with more digits than a label has, a phone number among them', () => {
+  it('drops a campaign value that holds a phone or account number, and keeps a dated one', () => {
     const at = (value: string) => redactUrl(`${origin}/?utm_term=${encodeURIComponent(value)}`)
-    for (const value of ['0400123456', '0400 123 456', '1234-5678']) {
+    for (const value of ['0400123456', '0400 123 456', '+61 400 123 456', '1234-5678']) {
       expect(at(value), value).toBe(`${origin}/`)
     }
-    for (const value of ['nsw-gov_2026', 'issue 12', '1234567']) {
+    for (const value of [
+      'nsw-gov_2026',
+      'issue 12',
+      '1234567',
+      'edm-2026-10-17',
+      'edm_20261017',
+      'newsletter 2026.10.17',
+    ]) {
       expect(at(value), value).not.toBe(`${origin}/`)
     }
+    // A date does not hide a phone number beside it.
+    expect(at('2026-10-17 0400123456')).toBe(`${origin}/`)
   })
 
   it('keeps campaign parameters and drops every other parameter, name and value', () => {
@@ -286,6 +295,25 @@ describe('redactElementsChain', () => {
     expect(at('')).toBe('')
   })
 
+  it('redacts the URLs in an inline style and in an xlink:href', () => {
+    const chain = 'div:attr__style="background-image:url(\'/a?email=a@b.c\'); color:red"'
+    expect(redactElementsChain(chain)).toBe(
+      'div:attr__style="background-image:url(\'/a\'); color:red"',
+    )
+    expect(
+      redactProperties({
+        $elements: [
+          {
+            attr__style: 'background:url(avatar?email=a@b.c) no-repeat',
+            'attr__xlink:href': 'a?b=1',
+          },
+        ],
+      }),
+    ).toEqual({
+      $elements: [{ attr__style: 'background:url(avatar) no-repeat', 'attr__xlink:href': 'a' }],
+    })
+  })
+
   it('keeps escaped quotes escaped, and leaves an href-like text alone', () => {
     expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
       'a:href="/a"text="href=1"',
@@ -360,6 +388,8 @@ describe('isCleanLocation', () => {
   it('passes an address redactUrl would leave as is', () => {
     expect(isCleanLocation('', '')).toBe(true)
     expect(isCleanLocation('?utm_source=newsletter', '')).toBe(true)
+    expect(isCleanLocation('?utm_campaign=edm-2026-10-17', '')).toBe(true)
+    expect(isCleanLocation('?utm_term=0400123456', '')).toBe(false)
   })
 
   it('fails anything redactUrl would remove', () => {
