@@ -27,6 +27,13 @@ describe('reportedPage', () => {
       route: '/signature/%5Bredacted%5D',
       path: '/signature/%5Bredacted%5D',
     })
+    // A dynamic segment's value becomes its template in the route, so only the path holds it.
+    expect(reportedPage('', '/people/a@b.c', { person: 'a@b.c' })).toEqual({
+      route: '/people/[person]',
+      path: '/people/%5Bredacted%5D',
+    })
+    // Encoded in the path, the value no longer matches its param, and the route is the path:
+    // redacted as well.
     expect(reportedPage('', '/people/a%40b.c', { person: 'a@b.c' })).toEqual({
       route: '/people/%5Bredacted%5D',
       path: '/people/%5Bredacted%5D',
