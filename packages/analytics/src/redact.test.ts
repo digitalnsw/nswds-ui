@@ -274,8 +274,14 @@ describe('redactElementsChain', () => {
     )
     expect(at('a.png?x=1,2 1x,b.png?y=a,b 2x')).toBe('a.png 1x, b.png 2x')
     expect(at('a.png?x=1,, b.png?y=2')).toBe('a.png, b.png')
-    expect(at('a.png?x=1 640w (min-width: 1px, 2px), b.png 2x')).toBe(
-      'a.png 640w (min-width: 1px, 2px), b.png 2x',
+    expect(at('a.png?x=1 640w, b.png 1.5x, c.png 100h')).toBe('a.png 640w, b.png 1.5x, c.png 100h')
+    // Anything a descriptor cannot be is dropped, a URL hidden in parentheses with it.
+    expect(at('a.png 1x (x, https://cdn.example/p?token=SECRET 2x), b.png 2x')).toBe(
+      'a.png 1x, b.png 2x',
+    )
+    expect(at('a.png 640w (min-width: 1px, 2px), b.png 2x')).toBe('a.png 640w, b.png 2x')
+    expect(redactElementsChain('img:attr__srcset="a.png 1x (x, /p?token=SECRET 2x)"')).toBe(
+      'img:attr__srcset="a.png 1x"',
     )
     expect(at('')).toBe('')
   })

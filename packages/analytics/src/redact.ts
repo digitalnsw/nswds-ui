@@ -303,8 +303,12 @@ const URL_LIST_NAME = /(?:^|_)(?:image)?srcset$/i
  * Redact each URL in a `srcset`, keeping its descriptor (`2x`, `640w`). Read as the HTML parser
  * reads it, not split at every comma: a candidate's URL is everything up to the next whitespace,
  * commas included (`image?token=a,b`), unless it ends in commas, which then end the candidate;
- * otherwise its descriptor runs to the next comma outside parentheses.
+ * otherwise its descriptor runs to the next comma outside parentheses. Of the descriptor, only
+ * what a descriptor can be is kept (`SRCSET_DESCRIPTOR`: `640w`, `2x`, `1.5x`); anything else, which
+ * could hold a URL of its own, is dropped.
  */
+const SRCSET_DESCRIPTOR = /^\d+(?:\.\d+)?(?:e[+-]?\d+)?[whx]$/i
+
 function redactUrlList(value: string): string {
   const candidates: string[] = []
   let position = 0
@@ -330,7 +334,12 @@ function redactUrlList(value: string): string {
         else if (char === ',' && depth === 0) break
         position++
       }
-      descriptor = value.slice(descriptorStart, position).trim()
+      descriptor = value
+        .slice(descriptorStart, position)
+        .trim()
+        .split(/\s+/)
+        .filter((token) => SRCSET_DESCRIPTOR.test(token))
+        .join(' ')
       position++
     }
     candidates.push(descriptor ? `${redactHref(url)} ${descriptor}` : redactHref(url))
