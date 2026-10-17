@@ -317,10 +317,25 @@ describe('redactElementsChain', () => {
   })
 
   it('reads a style in time linear in its length, whatever it holds', () => {
-    const style = `url(${' '.repeat(100_000)}`
-    const started = performance.now()
-    expect(redactElementsChain(`div:attr__style="${style}"`)).toBe(`div:attr__style="${style}"`)
-    expect(performance.now() - started).toBeLessThan(500)
+    for (const style of [`url(${' '.repeat(100_000)}`, 'url(!'.repeat(100_000)]) {
+      const started = performance.now()
+      expect(redactElementsChain(`div:attr__style="${style}"`)).toBe(`div:attr__style="${style}"`)
+      expect(performance.now() - started).toBeLessThan(500)
+    }
+    // Unclosed, the URL runs to the end of the style, and is redacted all the same.
+    expect(redactProperties({ attr__style: 'background:url(/a?email=a@b.c' }).attr__style).toBe(
+      'background:url(/a',
+    )
+    expect(redactProperties({ attr__style: 'background:url("/a?email=a@b.c' }).attr__style).toBe(
+      'background:url("/a',
+    )
+    // A bracket inside a quoted URL belongs to the URL.
+    expect(redactProperties({ attr__style: 'background:url("/a)b?c=1")' }).attr__style).toBe(
+      'background:url("/a)b")',
+    )
+    expect(
+      redactProperties({ attr__style: "a:url(/x?e=1); b:URL( '/y?e=2' ); c:url(/z)" }).attr__style,
+    ).toBe("a:url(/x); b:url('/y'); c:url(/z)")
     expect(redactProperties({ attr__style: 'background:url( "/a?b=1" )' }).attr__style).toBe(
       'background:url("/a")',
     )

@@ -321,12 +321,8 @@ const URL_NAME =
 /** An inline `style` attribute, whose `url(…)` values (`background-image`) hold URLs. */
 const STYLE_NAME = /(?:^|_)style$/i
 
-/**
- * Each `url(…)` in a style: double-quoted, single-quoted or bare, spaces allowed around a quoted
- * one. No two quantifiers can take the same characters (spaces sit outside the quotes, the URL
- * inside them), so the match is linear in the style's length whatever it holds.
- */
-const STYLE_URL = /url\((?:\s*"([^"]*)"\s*|\s*'([^']*)'\s*|([^)"']*))\)/gi
+/** Where each `url(` in a style starts. A fixed string, so finding them all is linear. */
+const STYLE_URL_START = /url\(/gi
 
 /** A CSS escape: up to six hex digits and one optional space after them, or any other character. */
 const CSS_ESCAPE = /\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|([^\n\r\f0-9a-f]))/gi
@@ -344,18 +340,41 @@ function decodeCssEscapes(text: string): string {
 
 /**
  * Redact the URL inside every `url(…)` of a style, read as CSS reads it (escapes decoded), leaving
- * the rest of it as written. A redacted URL is written back decoded.
+ * the rest of it as written. A redacted URL is written back decoded. Scanned once, left to right,
+ * each `url(` read to its closing quote and bracket, so the time is linear in the style's length
+ * whatever it holds; an unclosed `url(` runs to the end of the style, as it does for CSS.
  */
 function redactStyleUrls(style: string): string {
-  return style.replace(
-    STYLE_URL,
-    (match, doubled: string | undefined, single: string | undefined, bare: string | undefined) => {
-      const quote = doubled !== undefined ? '"' : single !== undefined ? "'" : ''
-      const url = decodeCssEscapes((doubled ?? single ?? bare ?? '').trim())
-      const redacted = redactHref(url)
-      return redacted === url ? match : `url(${quote}${redacted}${quote})`
-    },
-  )
+  let written = ''
+  let from = 0
+  STYLE_URL_START.lastIndex = 0
+  for (let start = STYLE_URL_START.exec(style); start; start = STYLE_URL_START.exec(style)) {
+    if (start.index < from) continue
+    let position = start.index + start[0].length
+    while (position < style.length && /\s/.test(style[position]!)) position++
+    const quote = style[position] === '"' || style[position] === "'" ? style[position]! : ''
+    let raw: string
+    let close: number
+    if (quote) {
+      const end = style.indexOf(quote, position + 1)
+      raw = style.slice(position + 1, end < 0 ? style.length : end)
+      close = end < 0 ? -1 : style.indexOf(')', end + 1)
+    } else {
+      close = style.indexOf(')', position)
+      raw = style.slice(position, close < 0 ? style.length : close).trim()
+    }
+    // Unclosed, the URL runs to the end of the style, as CSS reads it, and so does the redaction.
+    if (close < 0) close = style.length - 1
+    const url = decodeCssEscapes(raw)
+    const redacted = redactHref(url)
+    if (redacted !== url) {
+      const closing = close < style.length && style[close] === ')' ? `${quote})` : ''
+      written += `${style.slice(from, start.index)}url(${quote}${redacted}${closing}`
+      from = close + 1
+    }
+    STYLE_URL_START.lastIndex = close + 1
+  }
+  return written + style.slice(from)
 }
 
 /** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */
