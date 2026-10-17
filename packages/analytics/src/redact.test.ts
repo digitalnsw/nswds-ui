@@ -39,8 +39,15 @@ describe('redactUrl', () => {
     ]) {
       expect(at(value), value).not.toBe(`${origin}/`)
     }
-    // A date does not hide a phone number beside it.
+    // A date does not hide a phone number beside it, or digits joined to it.
     expect(at('2026-10-17 0400123456')).toBe(`${origin}/`)
+    expect(at('1234562026-10-17')).toBe(`${origin}/`)
+    expect(isCleanLocation(`?utm_term=${encodeURIComponent('1234562026-10-17')}`, '')).toBe(false)
+    // A financial year is a label, not a number.
+    for (const value of ['FY2024-2025', 'budget 2024-25']) {
+      expect(at(value), value).not.toBe(`${origin}/`)
+      expect(isCleanLocation(`?utm_campaign=${encodeURIComponent(value)}`, ''), value).toBe(true)
+    }
   })
 
   it('keeps campaign parameters and drops every other parameter, name and value', () => {
@@ -293,6 +300,20 @@ describe('redactElementsChain', () => {
       'img:attr__srcset="a.png 1x"',
     )
     expect(at('')).toBe('')
+  })
+
+  it('reads a style URL as CSS does, its escapes decoded', () => {
+    expect(
+      redactProperties({
+        attr__style: 'background:url(https://cdn.example/account/person\\000040 example.com)',
+      }).attr__style,
+    ).toBe('background:url(https://cdn.example/account/%5Bredacted%5D)')
+    expect(redactProperties({ attr__style: 'background:url(/a\\3f email=x)' }).attr__style).toBe(
+      'background:url(/a)',
+    )
+    expect(redactProperties({ attr__style: 'background:url(/plain\\.png)' }).attr__style).toBe(
+      'background:url(/plain\\.png)',
+    )
   })
 
   it('reads a style in time linear in its length, whatever it holds', () => {

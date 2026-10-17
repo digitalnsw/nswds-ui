@@ -112,22 +112,38 @@ function graphemeCount(value: string): number {
 }
 
 /**
- * A date as campaigns stamp them (`2026-10-17`, `2026_10_17`, `20261017`): a year from 1900 to
- * 2099, a month and a day. Taken out before `PHONE_LIKE` is looked for, so a dated campaign stays.
+ * A run of digits, a single space, `.` or `-` allowed between them, taken whole: `0400 123 456`,
+ * `2026-10-17`, `1234562026-10-17`. Each run is judged as a whole, so a date cannot hide the digits
+ * on either side of it. Linear: the separator and the digit after it never compete.
  */
-const CAMPAIGN_DATE = /(?:19|20)\d{2}([-_.]?)(?:0[1-9]|1[0-2])\1(?:0[1-9]|[12]\d|3[01])/g
+const DIGIT_RUN = /\p{N}(?:[ .-]?\p{N})*/gu
+
+/** A run that is exactly a date as campaigns stamp them (`2026-10-17`, `2026.10.17`, `20261017`). */
+const DATE_RUN = /^(?:19|20)\d{2}([ .-]?)(?:0[1-9]|1[0-2])\1(?:0[1-9]|[12]\d|3[01])$/
+
+/** A run that is exactly a year or financial-year range (`2024-2025`, `2024-25`). */
+const YEAR_RANGE_RUN = /^(?:19|20)\d{2}-(?:(?:19|20)\d{2}|\d{2})$/
+
+/** The fewest digits in a run that is read as a phone, account or card number. */
+const LONG_NUMBER_DIGITS = 8
 
 /**
- * Eight or more digits in a run, a single space, `.` or `-` allowed between them: a phone number
- * (`0400 123 456`, `+61 400 123 456`), an account number or a card number. A label has fewer
- * (`nsw-gov_2026`, `issue 12`).
+ * Whether a campaign value holds a phone number (`0400 123 456`, `+61 400 123 456`), an account
+ * number or a card number: a run of 8 or more digits that is not exactly a date or a year range.
+ * A label has fewer (`nsw-gov_2026`, `issue 12`, `FY2024-2025`, `edm-2026-10-17`).
  */
-const PHONE_LIKE = /\p{N}(?:[ .-]?\p{N}){7,}/u
+function holdsLongNumber(value: string): boolean {
+  for (const [run] of value.matchAll(DIGIT_RUN)) {
+    if (DATE_RUN.test(run) || YEAR_RANGE_RUN.test(run)) continue
+    if ((run.match(/\p{N}/gu)?.length ?? 0) >= LONG_NUMBER_DIGITS) return true
+  }
+  return false
+}
 
 /** Whether a campaign value is a label short enough to keep. */
 function isCampaignValue(value: string): boolean {
   if (!CAMPAIGN_CHARACTERS.test(value)) return false
-  if (PHONE_LIKE.test(value.replace(CAMPAIGN_DATE, ' '))) return false
+  if (holdsLongNumber(value)) return false
   const length = graphemeCount(value)
   return length > 0 && length <= CAMPAIGN_MAX_LENGTH
 }
@@ -312,13 +328,30 @@ const STYLE_NAME = /(?:^|_)style$/i
  */
 const STYLE_URL = /url\((?:\s*"([^"]*)"\s*|\s*'([^']*)'\s*|([^)"']*))\)/gi
 
-/** Redact the URL inside every `url(…)` of a style, leaving the rest of it as written. */
+/** A CSS escape: up to six hex digits and one optional space after them, or any other character. */
+const CSS_ESCAPE = /\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|([^\n\r\f0-9a-f]))/gi
+
+/** A `url(…)` value as CSS reads it, its escapes (`\000040` is `@`) decoded. */
+function decodeCssEscapes(text: string): string {
+  return text.replace(CSS_ESCAPE, (_escape, hex: string | undefined, char: string | undefined) => {
+    if (char !== undefined) return char
+    const code = parseInt(hex!, 16)
+    return code > 0 && code <= 0x10ffff && (code < 0xd800 || code > 0xdfff)
+      ? String.fromCodePoint(code)
+      : '\uFFFD'
+  })
+}
+
+/**
+ * Redact the URL inside every `url(…)` of a style, read as CSS reads it (escapes decoded), leaving
+ * the rest of it as written. A redacted URL is written back decoded.
+ */
 function redactStyleUrls(style: string): string {
   return style.replace(
     STYLE_URL,
     (match, doubled: string | undefined, single: string | undefined, bare: string | undefined) => {
       const quote = doubled !== undefined ? '"' : single !== undefined ? "'" : ''
-      const url = (doubled ?? single ?? bare ?? '').trim()
+      const url = decodeCssEscapes((doubled ?? single ?? bare ?? '').trim())
       const redacted = redactHref(url)
       return redacted === url ? match : `url(${quote}${redacted}${quote})`
     },
