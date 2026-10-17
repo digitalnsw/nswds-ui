@@ -11,7 +11,8 @@ Analytics for this repo's Next apps (web and the infographics zone), set up the 
   the hrefs in `$elements_chain` and the addresses heatmaps are keyed by, loses its fragment, every
   query parameter bar the five standard `utm_` names with label-like values (none holding a phone or account number), and
   any path segment
-  holding an email address. The sign-in gate's `from` is dropped too, path and all.
+  holding an email address. An inline `style` that could hold a URL (a function, string or escape)
+  is redacted whole. The sign-in gate's `from` is dropped too, path and all.
 - `@workspace/analytics/reporters`: `<VercelReporters basePath? />`, Vercel Web Analytics and Speed
   Insights. A zone passes its `basePath` so its pages are reported at their real path in the host
   app's project. Both redact the reported URL, route and path the same way (`src/report-path.ts`),

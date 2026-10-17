@@ -112,14 +112,17 @@ function graphemeCount(value: string): number {
 }
 
 /**
- * A run of digits, a single space, `.` or `-` allowed between them, taken whole: `0400 123 456`,
- * `2026-10-17`, `1234562026-10-17`. Each run is judged as a whole, so a date cannot hide the digits
- * on either side of it. Linear: the separator and the digit after it never compete.
+ * A run of digits, any of the other characters a campaign value may use (` `, `.`, `_`, `~`, `+`,
+ * `-`) between them, taken whole: `0400 123 456`, `1234_5678`, `2026-10-17`, `1234562026-10-17`.
+ * Each run is judged as a whole, so neither a date nor a separator can hide the digits around it.
+ * Linear: the separators and the digit after them never compete.
  */
-const DIGIT_RUN = /\p{N}(?:[ .-]?\p{N})*/gu
+const DIGIT_RUN = /\p{N}(?:[ ._~+-]*\p{N})*/gu
 
-/** A run that is exactly a date as campaigns stamp them (`2026-10-17`, `2026.10.17`, `20261017`). */
-const DATE_RUN = /^(?:19|20)\d{2}([ .-]?)(?:0[1-9]|1[0-2])\1(?:0[1-9]|[12]\d|3[01])$/
+/**
+ * A run that is exactly a date as campaigns stamp them (`2026-10-17`, `2026_10_17`, `20261017`).
+ */
+const DATE_RUN = /^(?:19|20)\d{2}([ ._-]?)(?:0[1-9]|1[0-2])\1(?:0[1-9]|[12]\d|3[01])$/
 
 /** A run that is exactly a year or financial-year range (`2024-2025`, `2024-25`). */
 const YEAR_RANGE_RUN = /^(?:19|20)\d{2}-(?:(?:19|20)\d{2}|\d{2})$/
@@ -318,63 +321,21 @@ export function redactElementsChain(chain: string): string {
 const URL_NAME =
   /(?:^\$?|[_:])(?:href|url|referrer|src|action|formaction|poster|cite|ping|background)$/i
 
-/** An inline `style` attribute, whose `url(…)` values (`background-image`) hold URLs. */
+/** An inline `style` attribute. */
 const STYLE_NAME = /(?:^|_)style$/i
 
-/** Where each `url(` in a style starts. A fixed string, so finding them all is linear. */
-const STYLE_URL_START = /url\(/gi
-
-/** A CSS escape: up to six hex digits and one optional space after them, or any other character. */
-const CSS_ESCAPE = /\\(?:([0-9a-f]{1,6})[ \t\n\r\f]?|([^\n\r\f0-9a-f]))/gi
-
-/** A `url(…)` value as CSS reads it, its escapes (`\000040` is `@`) decoded. */
-function decodeCssEscapes(text: string): string {
-  return text.replace(CSS_ESCAPE, (_escape, hex: string | undefined, char: string | undefined) => {
-    if (char !== undefined) return char
-    const code = parseInt(hex!, 16)
-    return code > 0 && code <= 0x10ffff && (code < 0xd800 || code > 0xdfff)
-      ? String.fromCodePoint(code)
-      : '\uFFFD'
-  })
-}
-
 /**
- * Redact the URL inside every `url(…)` of a style, read as CSS reads it (escapes decoded), leaving
- * the rest of it as written. A redacted URL is written back decoded. Scanned once, left to right,
- * each `url(` read to its closing quote and bracket, so the time is linear in the style's length
- * whatever it holds; an unclosed `url(` runs to the end of the style, as it does for CSS.
+ * A style with nothing in it that can hold a URL: no function (`url(…)`, `image-set(…)`, or one
+ * spelt with escapes, `u\72l(…)`), no string and no escape. CSS has too many ways to write a URL
+ * for a reader here to find each one, so a style is kept only when it can hold none
+ * (`color:red; display:none`); any other is redacted whole. A style tells the analytics nothing a
+ * click needs.
  */
-function redactStyleUrls(style: string): string {
-  let written = ''
-  let from = 0
-  STYLE_URL_START.lastIndex = 0
-  for (let start = STYLE_URL_START.exec(style); start; start = STYLE_URL_START.exec(style)) {
-    if (start.index < from) continue
-    let position = start.index + start[0].length
-    while (position < style.length && /\s/.test(style[position]!)) position++
-    const quote = style[position] === '"' || style[position] === "'" ? style[position]! : ''
-    let raw: string
-    let close: number
-    if (quote) {
-      const end = style.indexOf(quote, position + 1)
-      raw = style.slice(position + 1, end < 0 ? style.length : end)
-      close = end < 0 ? -1 : style.indexOf(')', end + 1)
-    } else {
-      close = style.indexOf(')', position)
-      raw = style.slice(position, close < 0 ? style.length : close).trim()
-    }
-    // Unclosed, the URL runs to the end of the style, as CSS reads it, and so does the redaction.
-    if (close < 0) close = style.length - 1
-    const url = decodeCssEscapes(raw)
-    const redacted = redactHref(url)
-    if (redacted !== url) {
-      const closing = close < style.length && style[close] === ')' ? `${quote})` : ''
-      written += `${style.slice(from, start.index)}url(${quote}${redacted}${closing}`
-      from = close + 1
-    }
-    STYLE_URL_START.lastIndex = close + 1
-  }
-  return written + style.slice(from)
+const PLAIN_STYLE = /^[^()"'\\]*$/
+
+/** An inline style as it is when it can hold no URL, else redacted whole. */
+function redactStyle(style: string): string {
+  return PLAIN_STYLE.test(style) ? style : REDACTED_VALUE
 }
 
 /** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */
@@ -432,7 +393,7 @@ function redactUrlList(value: string): string {
 function redactNamed(value: string, name: string | undefined): string {
   if (name === undefined) return redactUrl(value)
   if (URL_LIST_NAME.test(name)) return redactUrlList(value)
-  if (STYLE_NAME.test(name)) return redactStyleUrls(value)
+  if (STYLE_NAME.test(name)) return redactStyle(value)
   if (URL_NAME.test(name)) return redactHref(value)
   return redactUrl(value)
 }

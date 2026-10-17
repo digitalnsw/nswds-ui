@@ -26,7 +26,16 @@ describe('redactUrl', () => {
 
   it('drops a campaign value that holds a phone or account number, and keeps a dated one', () => {
     const at = (value: string) => redactUrl(`${origin}/?utm_term=${encodeURIComponent(value)}`)
-    for (const value of ['0400123456', '0400 123 456', '+61 400 123 456', '1234-5678']) {
+    for (const value of [
+      '0400123456',
+      '0400 123 456',
+      '+61 400 123 456',
+      '1234-5678',
+      '1234_5678',
+      '1234~5678',
+      '1234  5678',
+      '1234+5678',
+    ]) {
       expect(at(value), value).toBe(`${origin}/`)
     }
     for (const value of [
@@ -36,6 +45,7 @@ describe('redactUrl', () => {
       'edm-2026-10-17',
       'edm_20261017',
       'newsletter 2026.10.17',
+      'edm_2026_10_17',
     ]) {
       expect(at(value), value).not.toBe(`${origin}/`)
     }
@@ -302,61 +312,28 @@ describe('redactElementsChain', () => {
     expect(at('')).toBe('')
   })
 
-  it('reads a style URL as CSS does, its escapes decoded', () => {
-    expect(
-      redactProperties({
-        attr__style: 'background:url(https://cdn.example/account/person\\000040 example.com)',
-      }).attr__style,
-    ).toBe('background:url(https://cdn.example/account/%5Bredacted%5D)')
-    expect(redactProperties({ attr__style: 'background:url(/a\\3f email=x)' }).attr__style).toBe(
-      'background:url(/a)',
-    )
-    expect(redactProperties({ attr__style: 'background:url(/plain\\.png)' }).attr__style).toBe(
-      'background:url(/plain\\.png)',
-    )
-  })
-
-  it('reads a style in time linear in its length, whatever it holds', () => {
-    for (const style of [`url(${' '.repeat(100_000)}`, 'url(!'.repeat(100_000)]) {
-      const started = performance.now()
-      expect(redactElementsChain(`div:attr__style="${style}"`)).toBe(`div:attr__style="${style}"`)
-      expect(performance.now() - started).toBeLessThan(500)
+  it('keeps a plain inline style, and redacts whole any that could hold a URL', () => {
+    const style = (value: string) => redactProperties({ attr__style: value }).attr__style
+    expect(style('color:red; display:none')).toBe('color:red; display:none')
+    expect(style('color:#fff')).toBe('color:#fff')
+    for (const value of [
+      'background:url(/a?email=a@b.c)',
+      'background:url(/a\\)?email=person@example.com)',
+      'background:u\\72l(/a?email=person@example.com)',
+      'background:image-set("/a?email=a@b.c" 1x)',
+      '--x:"/a?email=a@b.c"',
+      'url(!'.repeat(100_000),
+    ]) {
+      expect(style(value), value.slice(0, 40)).toBe(REDACTED_VALUE)
     }
-    // Unclosed, the URL runs to the end of the style, and is redacted all the same.
-    expect(redactProperties({ attr__style: 'background:url(/a?email=a@b.c' }).attr__style).toBe(
-      'background:url(/a',
-    )
-    expect(redactProperties({ attr__style: 'background:url("/a?email=a@b.c' }).attr__style).toBe(
-      'background:url("/a',
-    )
-    // A bracket inside a quoted URL belongs to the URL.
-    expect(redactProperties({ attr__style: 'background:url("/a)b?c=1")' }).attr__style).toBe(
-      'background:url("/a)b")',
-    )
-    expect(
-      redactProperties({ attr__style: "a:url(/x?e=1); b:URL( '/y?e=2' ); c:url(/z)" }).attr__style,
-    ).toBe("a:url(/x); b:url('/y'); c:url(/z)")
-    expect(redactProperties({ attr__style: 'background:url( "/a?b=1" )' }).attr__style).toBe(
-      'background:url("/a")',
+    expect(redactElementsChain('div:attr__style="background:url(/a?e=1)"nth-child="1"')).toBe(
+      'div:attr__style="[redacted]"nth-child="1"',
     )
   })
 
-  it('redacts the URLs in an inline style and in an xlink:href', () => {
-    const chain = 'div:attr__style="background-image:url(\'/a?email=a@b.c\'); color:red"'
-    expect(redactElementsChain(chain)).toBe(
-      'div:attr__style="background-image:url(\'/a\'); color:red"',
-    )
-    expect(
-      redactProperties({
-        $elements: [
-          {
-            attr__style: 'background:url(avatar?email=a@b.c) no-repeat',
-            'attr__xlink:href': 'a?b=1',
-          },
-        ],
-      }),
-    ).toEqual({
-      $elements: [{ attr__style: 'background:url(avatar) no-repeat', 'attr__xlink:href': 'a' }],
+  it('redacts a relative xlink:href', () => {
+    expect(redactProperties({ $elements: [{ 'attr__xlink:href': 'a?b=1' }] })).toEqual({
+      $elements: [{ 'attr__xlink:href': 'a' }],
     })
   })
 
