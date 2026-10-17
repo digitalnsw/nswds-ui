@@ -267,6 +267,19 @@ describe('redactElementsChain', () => {
     ).toEqual({ $elements: [{ attr__src: 'avatar', attr__alt: 'a?b' }] })
   })
 
+  it('reads a srcset as the HTML parser does, commas inside a URL included', () => {
+    const at = (srcset: string) => redactProperties({ attr__srcset: srcset }).attr__srcset as string
+    expect(at('https://cdn.example/image?token=prefix,SECRET 1x')).toBe(
+      'https://cdn.example/image 1x',
+    )
+    expect(at('a.png?x=1,2 1x,b.png?y=a,b 2x')).toBe('a.png 1x, b.png 2x')
+    expect(at('a.png?x=1,, b.png?y=2')).toBe('a.png, b.png')
+    expect(at('a.png?x=1 640w (min-width: 1px, 2px), b.png 2x')).toBe(
+      'a.png 640w (min-width: 1px, 2px), b.png 2x',
+    )
+    expect(at('')).toBe('')
+  })
+
   it('keeps escaped quotes escaped, and leaves an href-like text alone', () => {
     expect(redactElementsChain('a:href="/a?q=\\"x\\""text="href=1"')).toBe(
       'a:href="/a"text="href=1"',

@@ -299,15 +299,43 @@ const URL_NAME =
 /** `srcset` and `imagesrcset`: a comma-separated list of URLs, each with an optional descriptor. */
 const URL_LIST_NAME = /(?:^|_)(?:image)?srcset$/i
 
-/** Redact each URL in a `srcset`, keeping its descriptor (`2x`, `640w`). */
+/**
+ * Redact each URL in a `srcset`, keeping its descriptor (`2x`, `640w`). Read as the HTML parser
+ * reads it, not split at every comma: a candidate's URL is everything up to the next whitespace,
+ * commas included (`image?token=a,b`), unless it ends in commas, which then end the candidate;
+ * otherwise its descriptor runs to the next comma outside parentheses.
+ */
 function redactUrlList(value: string): string {
-  return value
-    .split(',')
-    .map((candidate) => {
-      const [url = '', ...descriptor] = candidate.trim().split(/\s+/)
-      return [redactHref(url), ...descriptor].join(' ')
-    })
-    .join(', ')
+  const candidates: string[] = []
+  let position = 0
+  const skip = (pattern: RegExp) => {
+    while (position < value.length && pattern.test(value[position]!)) position++
+  }
+  for (;;) {
+    skip(/[\s,]/)
+    if (position >= value.length) break
+    const urlStart = position
+    skip(/\S/)
+    let url = value.slice(urlStart, position)
+    let descriptor = ''
+    if (url.endsWith(',')) {
+      url = url.replace(/,+$/, '')
+    } else {
+      const descriptorStart = position
+      let depth = 0
+      while (position < value.length) {
+        const char = value[position]!
+        if (char === '(') depth++
+        else if (char === ')') depth = Math.max(0, depth - 1)
+        else if (char === ',' && depth === 0) break
+        position++
+      }
+      descriptor = value.slice(descriptorStart, position).trim()
+      position++
+    }
+    candidates.push(descriptor ? `${redactHref(url)} ${descriptor}` : redactHref(url))
+  }
+  return candidates.join(', ')
 }
 
 /** Redact a value by what its name says it holds. */
